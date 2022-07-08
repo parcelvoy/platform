@@ -1,0 +1,31 @@
+{
+  "name": "parcelvoy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.4",
+    "@types/koa__router": "^8.0.11",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ses": "^3.121.0",
+    "@aws-sdk/client-sns": "^3.121.0",
+    "@aws-sdk/client-sqs": "^3.121.0",
+    "@koa/router": "^11.0.1",
+    "dotenv": "^16.0.1",
+    "handlebars": "^4.7.7",
+    "handlebars-helpers": "^0.10.0",
+    "handlebars-utils": "^1.0.6",
+    "knex": "^2.1.0",
+    "koa": "^2.13.4",
+    "mysql2": "^2.3.3",
+    "nodemailer": "^6.7.6",
+    "sqs-consumer": "^5.7.0"
+  }
+}
