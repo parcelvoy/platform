@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migration:create": "node ./scripts/create-migration.mjs"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/nodemailer": "^6.4.4",
     "@types/koa__router": "^8.0.11",
+    "@types/nodemailer": "^6.4.4",
+    "nodemon": "^2.0.19",
+    "ts-node": "^10.8.2",
     "typescript": "^4.7.4"
   },
   "dependencies": {
@@ -18,6 +22,7 @@
     "@aws-sdk/client-sns": "^3.121.0",
     "@aws-sdk/client-sqs": "^3.121.0",
     "@koa/router": "^11.0.1",
+    "@rxfork/sqs-consumer": "^6.0.0",
     "dotenv": "^16.0.1",
     "handlebars": "^4.7.7",
     "handlebars-helpers": "^0.10.0",
@@ -25,7 +30,6 @@
     "knex": "^2.1.0",
     "koa": "^2.13.4",
     "mysql2": "^2.3.3",
-    "nodemailer": "^6.7.6",
-    "sqs-consumer": "^5.7.0"
+    "nodemailer": "^6.7.6"
   }
 }

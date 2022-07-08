@@ -2,7 +2,7 @@ import knex, { Knex } from 'knex'
 
 export { Knex }
 
-interface DatabaseConfig {
+export interface DatabaseConnection {
     host: string
     port: number
     user: string
@@ -10,9 +10,18 @@ interface DatabaseConfig {
     database: string
 }
 
+export interface DatabaseConfig {
+    client: 'mysql2' | 'postgres'
+    connection: DatabaseConnection
+}
+
 export default (config: DatabaseConfig) => {
-    return knex({
-        client: 'mysql',
-        connection: config 
+    return knex(config)
+}
+
+export const migrate = async (db: Knex) => {
+    return db.migrate.latest({
+        directory: './db/migrations',
+        tableName: 'migrations'
     })
 }

@@ -6,7 +6,14 @@ export interface Device {
 	app_version: string;
 }
 
-export interface User {
+export interface UserAttribute {
+	id: number;
+	user_id: number;
+	key: string;
+	value: any;
+}
+
+export default interface User {
 	id: number;
 	project_id: number;
 	external_id: string;
@@ -19,9 +26,3 @@ export interface User {
 	updated_at: Date;
 }
 
-export interface UserAttribute {
-	id: number;
-	user_id: number;
-	key: string;
-	value: any;
-}
