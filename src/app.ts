@@ -1,7 +1,7 @@
 import Api from './api'
 import db, { Knex, migrate } from './config/database'
 import { BootEnv, Env, loadRemoteEnv } from './config/env'
-import Queue from './queue'
+import { Queue } from './queue'
 import Mailer from './sender/Mailer'
 
 export default class App {
