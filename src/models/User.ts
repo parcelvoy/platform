@@ -1,3 +1,9 @@
+export interface TemplateUser {
+    id: string
+    email?: string
+    phone?: string
+}
+
 export interface Device {
 	token: string;
 	os: string;
@@ -13,16 +19,19 @@ export interface UserAttribute {
 	value: any;
 }
 
-export default interface User {
-	id: number;
-	project_id: number;
-	external_id: string;
-	email?: string;
-	phone?: string;
-	devices: Device[];
-	data: Record<string, any>; // first_name, last_name live in data
-	attributes: UserAttribute[]; //???
-	created_at: Date;
-	updated_at: Date;
-}
+export class User {
+	id!: number
+	project_id!: number
+	external_id!: string
+	email?: string
+	phone?: string
+	devices!: Device[]
+	data!: Record<string, any> // first_name, last_name live in data
+	attributes!: UserAttribute[] //???
+	created_at!: Date
+	updated_at!: Date
 
+	constructor(json: any) {
+		Object.assign(this, json)
+	}
+}

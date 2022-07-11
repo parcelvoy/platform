@@ -1,14 +1,9 @@
 import Handlebars from 'handlebars'
 import * as StrHelpers from './Helpers/String'
-
-export interface TemplateUser {
-    id: string
-    email?: string
-    phone?: string
-}
+import { User } from '../models/User'
 
 export interface Variables {
-    user: TemplateUser
+    user: User
     event?: Record<string, any>
 }
 
@@ -41,6 +36,18 @@ for (const [i, v] of keys.entries()) {
  * now - current date
  */
 
-export default (template: string, variables: Variables) => {
-    return Handlebars.compile(template)(variables)
+export const flattenUser = (user: User) => {
+    return { 
+        ...user.data, 
+        email: user.email, 
+        phone: user.phone, 
+        id: user.external_id
+    }
+}
+
+export default (template: string, { user, event }: Variables) => {
+    return Handlebars.compile(template)({
+        user: flattenUser(user),
+        event
+    })
 }

@@ -4,6 +4,6 @@ export interface AWSConfig {
 }
 
 export interface AWSCredentials {
-    accessKey: string
+    accessKeyId: string
     secretAccessKey: string
 }

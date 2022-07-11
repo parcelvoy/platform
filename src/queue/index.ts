@@ -1,4 +1,7 @@
 import Job, { EncodedJob } from './Job'
-import Queue from './Queue'
+import Queue, { QueueDriver } from './Queue'
+import { SQSConfig } from './SQSQueueProvider'
+import { MemoryConfig } from './MemoryQueueProvider'
 
-export { Queue, Job, EncodedJob }
+export { Job, EncodedJob, QueueDriver, SQSConfig, MemoryConfig }
+export default Queue
