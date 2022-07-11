@@ -1,7 +1,7 @@
 import Api from './api'
 import db, { Knex, migrate } from './config/database'
-import { BootEnv, Env, loadRemoteEnv } from './config/env'
-import { Queue } from './queue'
+import { Env } from './config/env'
+import Queue from './queue'
 import Mailer from './sender/Mailer'
 
 export default class App {
@@ -14,24 +14,24 @@ export default class App {
         return App.$main
     }
 
-    static async init(bootEnv: BootEnv): Promise<App> {
+    static async init(env: Env): Promise<App> {
 
         // Load database
-        const database = db(bootEnv.db)
+        const database = db(env.db)
 
         // Migrate to latest version
         await migrate(database)
         
         // Load in environment variables from database
-        const env = await loadRemoteEnv(database)
+        // const env = await loadRemoteEnv(database)
 
         // Setup app
         App.$main = new App(
             database, 
             env,
             new Api(),
-            new Mailer(env.mailer),
-            new Queue(env.queue)
+            new Mailer(env.mail[env.mail.driver]),
+            new Queue(env.queue[env.queue.driver])
         )
 
         return App.$main
@@ -48,5 +48,10 @@ export default class App {
 
     listen() {
         this.api.listen(this.env.port)
+    }
+
+    async close() {
+        await this.db.destroy()
+        await this.queue.close()
     }
 }

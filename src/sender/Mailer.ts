@@ -1,6 +1,9 @@
 import nodemailer, { Transporter } from 'nodemailer'
-import aws from '@aws-sdk/client-ses'
+import aws, * as AWS from '@aws-sdk/client-ses'
 import Render, { Variables } from '../render'
+import { AWSConfig } from '../config/aws'
+import MailJob from './MailJob'
+import App from '../app'
 
 /**
  * The templates corresponding to an email message
@@ -16,30 +19,30 @@ export interface EmailMessage {
     replyTo?: string
 }
 
+export type EmailDriver = 'ses' | 'smtp'
+export type EmailConfig = SESConfig | SMTPConfig
+
 interface EmailTypeConfig {
-    type: any
+    driver: EmailDriver
 }
 
-export interface SESConfig extends EmailTypeConfig {
-    type: 'ses'
-    region: string
-    credentials: { accessKeyId: string, secretAccessKey: string }
+export interface SESConfig extends EmailTypeConfig, AWSConfig {
+    driver: 'ses'
 }
 
 export interface SMTPConfig extends EmailTypeConfig {
-    type: 'smtp'
-    port: number
+    driver: 'smtp'
     host: string
-    auth: { user: string, pass: string}
+    port: number
+    secure: boolean
+    auth: { user: string, pass: string }
 }
-
-export type EmailConfig = SESConfig | SMTPConfig
 
 export default class Mailer {
     transport: Transporter
-    constructor(config: EmailConfig) {
-        if (config.type === 'ses') {
-            const ses = new aws.SES({
+    constructor(config?: EmailConfig) {
+        if (config?.driver === 'ses') {
+            const ses = new AWS.SES({
                 region: config.region,
                 credentials: config.credentials
             })
@@ -49,17 +52,16 @@ export default class Mailer {
                 }
             })
         }
-        else {
+        else if (config?.driver === 'smtp') {
             this.transport = nodemailer.createTransport({
                 host: config.host,
                 port: config.port,
-                auth: config.auth,
-                secure: true,
-                tls: {
-                    // do not fail on invalid certs
-                    rejectUnauthorized: false,
-                }
+                secure: config.secure,
+                auth: config.auth
             })
+        }
+        else {
+            throw new Error('A valid mailer must be defined!')
         }
     }
 

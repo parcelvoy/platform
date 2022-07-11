@@ -12,6 +12,6 @@ export default class Api extends Koa {
         //TODO: Need error handler
 
         // Register routes
-        this.use(router)
+        router(this)
     }
 }
