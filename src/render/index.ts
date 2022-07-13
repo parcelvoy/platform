@@ -1,5 +1,8 @@
 import Handlebars from 'handlebars'
 import * as StrHelpers from './Helpers/String'
+import * as NumHelpers from './Helpers/Number'
+import * as UrlHelpers from './Helpers/Url'
+import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../models/User'
 
 export interface Variables {
@@ -7,11 +10,18 @@ export interface Variables {
     event?: Record<string, any>
 }
 
-const keys = Object.keys(StrHelpers)
-const values = Object.values(StrHelpers)
-for (const [i, v] of keys.entries()) {
-    Handlebars.registerHelper(keys[i], values[i])
+const loadHelper = (helper: Record<string, any>) => {
+    const keys = Object.keys(helper)
+    const values = Object.values(helper)
+    for (const [i] of keys.entries()) {
+        Handlebars.registerHelper(keys[i], values[i])
+    }
 }
+
+loadHelper(StrHelpers)
+loadHelper(NumHelpers)
+loadHelper(UrlHelpers)
+loadHelper(ArrayHelpers)
 
 /**
  * Additional helpers that we should have:
@@ -22,15 +32,9 @@ for (const [i, v] of keys.entries()) {
  * gte
  * defaultIfEmpty
  * replace
- * truncate
  * concat (use plus sign)
- * urlEncode
- * numberFormat - Take into account I18N | value, type (currency, percent), locale, digits, rounding mode
  * math - addition, subtraction, multiplication
- * join - Concatenate values in an array
  * ifContains - Check if array contains
- * first - First item in array
- * last - Last item in array
  * dateFormat - date, format (full, long, medium, short, string), tz
  * dateMath - date, math string | Operands +1y-1M+3w-17d+7h+1m-50s | "now" corresponds to current date <-- hate this, can we just use math?
  * now - current date

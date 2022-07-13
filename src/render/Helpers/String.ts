@@ -1,3 +1,17 @@
+import { isNumber } from './Number'
+import { checkType, isType } from './Util'
+
+/**
+ * Return true if `value` is a string.
+ */
+export const isString = function (value: any): boolean {
+    return isType(value, 'string')
+}
+
+export const checkString = (value: any, message?: string): boolean => {
+    return checkType(value, 'string', message)
+}
+
 /**
  * Appends the speficied `suffix to the given `string`.
  */
@@ -47,13 +61,6 @@ export const ellipsis = function (str: string, limit: number): string {
         return str
     }
     return truncate(str, limit) + '…'
-}
-
-/**
- * Return true if `value` is a string.
- */
-export const isString = function (value: any): boolean {
-    return typeof value === 'string'
 }
 
 /**
@@ -165,7 +172,6 @@ export const titleize = function (str: string): string {
  * Removes extraneous whitespace from the beginning and end
  * of a string.
  */
-
 export const trim = function (str: string) {
     return isString(str) ? str.trim() : ''
 }
@@ -186,7 +192,7 @@ export const truncate = function (str: string, limit: number, suffix: string = '
  * Truncate a string to have the specified number of words.
  */
 export const truncateWords = function (str: string, count: number, suffix = ''): string {
-    if (!isString(str) || typeof count !== 'number') return ''
+    if (!isString(str) || !isNumber(count)) return ''
     if (!isString(suffix)) {
         suffix = '…'
     }
