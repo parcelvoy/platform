@@ -9,7 +9,7 @@ export const isString = function (value: any): boolean {
 }
 
 export const checkString = (value: any, message?: string): boolean => {
-    return checkType(value, 'number', message)
+    return checkType(value, 'string', message)
 }
 
 /**
