@@ -9,34 +9,34 @@ export interface EncodedJob {
 }
 
 export default class Job implements EncodedJob {
-    
-    static $name: string = Job.constructor.name
-
     data: any
     options: JobOptions = {
         delay: 0
     }
 
-    get name() {
+    static $name: string = Job.constructor.name
+
+    get name () {
         return this.$static.$name
     }
-    get $static() {
+
+    get $static () {
         return this.constructor as typeof Job
     }
 
-    static async handler(_: any): Promise<any> { 
-        return Promise.reject()
+    static async handler (_: any): Promise<any> {
+        return Promise.reject(new Error('Handler not defined.'))
     }
 
-    static from(...args: any[]): Job {
+    static from (...args: any[]): Job {
         return new this({ ...args })
     }
 
-    constructor(data: any) {
-        this['data'] = data
+    constructor (data: any) {
+        this.data = data
     }
 
-    toJSON() {
+    toJSON () {
         return {
             name: this.name,
             data: this.data,

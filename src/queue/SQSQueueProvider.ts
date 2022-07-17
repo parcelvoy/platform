@@ -2,7 +2,8 @@ import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
 import { AWSConfig } from '../config/aws'
 import Job, { EncodedJob } from './Job'
-import Queue, { QueueTypeConfig, QueueProvider } from './Queue'
+import Queue, { QueueTypeConfig } from './Queue'
+import QueueProvider from './QueueProvider'
 
 export interface SQSConfig extends QueueTypeConfig, AWSConfig {
     driver: 'sqs'
@@ -10,13 +11,12 @@ export interface SQSConfig extends QueueTypeConfig, AWSConfig {
 }
 
 export default class SQSQueueProvider implements QueueProvider {
-    
     app: Consumer
     config: SQSConfig
     queue: Queue
     sqs: AWS.SQS
 
-    constructor(config: SQSConfig, queue: Queue) {
+    constructor (config: SQSConfig, queue: Queue) {
         this.queue = queue
         this.config = config
         this.sqs = new AWS.SQS({ region: config.region })
@@ -31,7 +31,7 @@ export default class SQSQueueProvider implements QueueProvider {
         // Catches errors related to the queue / connection
         this.app.on('error', (error, message) => {
             console.log(error, message)
-            //TODO:  this.queue.errored(this.parse(message), error)
+            // TODO:  this.queue.errored(this.parse(message), error)
         })
 
         // Catches errors related to the job
@@ -41,11 +41,11 @@ export default class SQSQueueProvider implements QueueProvider {
         this.app.start()
     }
 
-    parse(message: AWS.Message): EncodedJob {
+    parse (message: AWS.Message): EncodedJob {
         return JSON.parse(message.Body ?? '')
     }
 
-    async enqueue(job: Job): Promise<void> {
+    async enqueue (job: Job): Promise<void> {
         const params = {
             DelaySeconds: job.options.delay,
             MessageBody: JSON.stringify(job),
@@ -54,11 +54,11 @@ export default class SQSQueueProvider implements QueueProvider {
         await this.sqs.sendMessage(params)
     }
 
-    start(): void {
+    start (): void {
         this.app.start()
     }
 
-    close(): void {
+    close (): void {
         this.app.stop()
     }
 }

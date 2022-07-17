@@ -16,13 +16,11 @@ const checkNumber = (value: any, message?: string): boolean => {
  * For a given set of Handlebars arguments, get the number values.
  */
 const getNumbers = (...args: any[]): number[] => {
-
     // Loop over each value and check its type
     const numbers: number[] = []
     for (const arg of args) {
-
         // Skip the Handlebars helper object
-        if (arg.hasOwnProperty('loc')) continue
+        if (Object.hasOwn(arg, 'loc')) continue
 
         // Check that each value is a number and append
         checkNumber(arg, 'Expected all arguments to be numbers.')
@@ -51,7 +49,6 @@ export const abs = function (value: number | any): number {
  * Return the sum of `a` plus `b`
  */
 export const add = function (...args: any[]): number {
-    console.error("ARGS", args)
     return operate(args, (a, b) => a + b)
 }
 export const plus = add
@@ -124,10 +121,10 @@ export const round = function (value: number): number {
  * @param locale The locale to format the number into (i.e. en-US)
  * @param style If formatting for currency or percent, pass either style
  * @param currency If formatting for currency, pass the desired currency
- * @returns 
+ * @returns A string format of the number matching the specifications
  */
 export const numberFormat = function (
-    value: number, 
+    value: number,
     locale?: string,
     style?: 'currency' | 'percent' | undefined,
     currency?: string
@@ -145,7 +142,7 @@ export const numberFormat = function (
         }
         if (style === 'percent') {
             options.style = style
-        } 
+        }
     }
 
     const formatter = new Intl.NumberFormat(locale, options)

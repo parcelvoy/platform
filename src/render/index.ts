@@ -25,7 +25,7 @@ loadHelper(ArrayHelpers)
 
 /**
  * Additional helpers that we should have:
- * 
+ *
  * lt
  * gt
  * lte
@@ -41,10 +41,10 @@ loadHelper(ArrayHelpers)
  */
 
 export const flattenUser = (user: User) => {
-    return { 
-        ...user.data, 
-        email: user.email, 
-        phone: user.phone, 
+    return {
+        ...user.data,
+        email: user.email,
+        phone: user.phone,
         id: user.external_id
     }
 }

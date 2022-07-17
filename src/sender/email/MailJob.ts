@@ -1,6 +1,6 @@
-import { Job } from '../queue'
-import { User } from '../models/User'
-import App from '../app'
+import { Job } from '../../queue'
+import { User } from '../../models/User'
+import App from '../../app'
 
 interface EmailTrigger {
     email: Email
@@ -22,13 +22,12 @@ interface Email {
 export default class MailJob extends Job {
     static $name = 'email'
 
-    static from(data: EmailTrigger): MailJob {
+    static from (data: EmailTrigger): MailJob {
         // Should only store IDs
         return new this(data)
     }
 
-    static async handler({ email, user, event }: EmailTrigger) {
-
+    static async handler ({ email, user, event }: EmailTrigger) {
         // Pull user details
 
         // Load event details
@@ -39,7 +38,6 @@ export default class MailJob extends Job {
         App.main.mailer.send(email, { user, event }).then((thing) => {
             console.log(thing)
         })
-        
         // Create an event on the user about the email
     }
 }
