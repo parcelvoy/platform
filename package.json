@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "serve": "nodemon",
+    "lint": "eslint --ext .ts --max-warnings 0 src/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "migration:create": "node ./scripts/create-migration.mjs"
   },
@@ -37,6 +38,8 @@
     "knex": "^2.1.0",
     "koa": "^2.13.4",
     "mysql2": "^2.3.3",
-    "nodemailer": "^6.7.6"
+    "nodemailer": "^6.7.6",
+    "pino": "^8.1.0",
+    "pino-pretty": "^8.1.0"
   }
 }

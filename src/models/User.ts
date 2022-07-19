@@ -1,3 +1,6 @@
+// Will be re-enabled in API work
+/* eslint-disable */
+
 export interface TemplateUser {
     id: string
     email?: string

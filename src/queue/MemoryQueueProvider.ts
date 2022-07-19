@@ -1,37 +1,36 @@
-import * as AWS from '@aws-sdk/client-sqs'
-import Job, { EncodedJob } from './Job'
-import Queue, { QueueTypeConfig, QueueProvider } from './Queue'
+import Job from './Job'
+import Queue, { QueueTypeConfig } from './Queue'
+import QueueProvider from './QueueProvider'
 
 export interface MemoryConfig extends QueueTypeConfig {
     driver: 'memory'
 }
 
 export default class MemoryQueueProvider implements QueueProvider {
-    
     queue: Queue
     backlog: Job[] = []
     loop: NodeJS.Timeout | undefined
 
-    constructor(queue: Queue) {
+    constructor (queue: Queue) {
         this.queue = queue
         this.start()
     }
 
-    async enqueue(job: Job): Promise<void> {
+    async enqueue (job: Job): Promise<void> {
         this.backlog.concat(job)
     }
 
-    start(): void {
+    start (): void {
         if (this.loop) return
         this.process()
     }
 
-    close(): void {
+    close (): void {
         clearTimeout(this.loop)
         this.loop = undefined
     }
-    
-    private async process() {
+
+    private async process () {
         for (const job of this.backlog) {
             await this.queue.dequeue(job)
         }
@@ -39,12 +38,11 @@ export default class MemoryQueueProvider implements QueueProvider {
         await this.process()
     }
 
-    private async tick(): Promise<void> {
+    private async tick (): Promise<void> {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve()
             }, 1000)
         })
     }
-
 }

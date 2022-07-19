@@ -27,9 +27,9 @@ export const append = function (str: string, suffix: string) {
  */
 export const camelcase = function (str: string): string {
     if (!isString(str)) return ''
-    return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(word, index) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
         return index === 0 ? word.toLowerCase() : word.toUpperCase()
-      }).replace(/\s+/g, '')
+    }).replace(/\s+/g, '')
 }
 
 /**
@@ -49,7 +49,6 @@ export const capitalizeAll = function (str: string): string {
         return capitalize(word)
     })
 }
-
 
 /**
  * Truncates a string to the specified `length`, and appends
@@ -77,9 +76,9 @@ export const lowercase = function (str: string): string {
  */
 export const occurrences = function (str: string, substring: string): number {
     if (!isString(str) || !isString(str)) return 0
-    var len = substring.length
-    var pos = 0
-    var n = 0
+    const len = substring.length
+    let pos = 0
+    let n = 0
 
     while ((pos = str.indexOf(substring, pos)) > -1) {
         n++
@@ -130,8 +129,8 @@ export const reverse = function (str: string): string {
  */
 export const snakecase = function (str: string): string {
     if (!isString(str)) return ''
-    return str.replace(/[A-Z]/g, (letter, index) => { 
-        return index == 0 ? letter.toLowerCase() : '_'+ letter.toLowerCase()
+    return str.replace(/[A-Z]/g, (letter, index) => {
+        return index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase()
     })
 }
 
@@ -156,13 +155,13 @@ export const startsWith = function (prefix: string, str: string): boolean {
  */
 export const titleize = function (str: string): string {
     if (!isString(str)) return ''
-    var title = str.replace(/[- _]+/g, ' ')
-    var words = title.split(' ')
-    var len = words.length
-    var res = []
-    var i = 0
+    const title = str.replace(/[- _]+/g, ' ')
+    const words = title.split(' ')
+    const res = []
+    let len = words.length
+    let i = 0
     while (len--) {
-        var word = words[i++]
+        const word = words[i++]
         res.push(capitalize(word))
     }
     return res.join(' ')
@@ -197,13 +196,11 @@ export const truncateWords = function (str: string, count: number, suffix = ''):
         suffix = '…'
     }
 
-    var num = Number(count)
-    var arr = str.split(/[ \t]/)
+    const num = Number(count)
+    let arr = str.split(/[ \t]/)
     if (num > arr.length) {
         arr = arr.slice(0, num)
     }
 
-    var val = arr.join(' ').trim()
-    return val + suffix
+    return arr.join(' ').trim() + suffix
 }
-

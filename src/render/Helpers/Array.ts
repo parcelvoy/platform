@@ -20,7 +20,7 @@ export const first = function (array: any[]): any {
 /**
  * Returns the first `n` items of an array.
  */
- export const firstN = function (array: any[], n?: number): any[] {
+export const firstN = function (array: any[], n?: number): any[] {
     checkType(array, 'array')
     if (!isNumber(n)) {
         return array[0]
@@ -56,8 +56,9 @@ export const itemAt = function (array: any[], idx?: number): any {
  */
 export const join = function (array: any, separator?: string): string {
     if (isString(array)) return array
-    if (checkType(array, 'array'))
-    separator = isString(separator) ? separator : ', '
+    if (checkType(array, 'array')) {
+        separator = isString(separator) ? separator : ', '
+    }
     return array.join(separator)
 }
 
@@ -73,7 +74,7 @@ export const last = function (value: any[]): any {
 /**
  * Returns the last `n` items of an array or string. Opposite of `firstN`.
  */
- export const lastN = function (value: any[], n?: number): any[] {
+export const lastN = function (value: any[], n?: number): any[] {
     checkType(value, 'array')
     if (!isNumber(n)) {
         return value[value.length - 1]
@@ -128,8 +129,8 @@ export const reverse = function (value: any[] | string): any[] | string {
  */
 export const sort = function (array: any[], direction?: 'asc' | 'desc'): any[] {
     checkType(array, 'array')
-    if (isString(direction) && direction === 'desc')
+    if (isString(direction) && direction === 'desc') {
         return array.sort().reverse()
+    }
     return array.sort()
 }
-

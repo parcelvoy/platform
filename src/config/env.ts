@@ -1,23 +1,36 @@
 import * as dotenv from 'dotenv'
-dotenv.config()
-
 import { DatabaseConfig } from './database'
-import { EmailDriver, SESConfig, SMTPConfig } from '../sender/Mailer'
-import { QueueDriver, SQSConfig, MemoryConfig } from '../queue'
+import { EmailConfig } from '../sender/email/EmailSender'
+import { QueueConfig } from '../queue'
+import { TextConfig } from '../sender/text/TextSender'
+import { WebhookConfig } from '../sender/webhook/Webhook'
+
+// Load up config variables
+dotenv.config()
 
 export interface Env {
     db: DatabaseConfig
     port: number
-    mail: {
-        driver: EmailDriver
-        smtp?: SMTPConfig
-        ses?: SESConfig
-    }
-    queue: {
-        driver: QueueDriver
-        sqs?: SQSConfig
-        memory?: MemoryConfig
-    }
+    mail: EmailConfig
+    queue: QueueConfig
+    text: TextConfig
+    webhook: WebhookConfig
+}
+
+export interface DriverConfig {
+    driver: string
+}
+
+type DriverLoaders<T> = Record<string, () => T>
+const driver = <T extends DriverConfig>(driver: string | undefined, loaders: DriverLoaders<Omit<T, 'driver'>>) => {
+    const driverKey = driver ?? 'logger'
+    const loadedDriver = loaders[driverKey] ? loaders[driverKey]() : {}
+
+    // TODO: Find solution to force casting
+    // Using because it felt duplicative to have driver
+    // in both the key and object. Also lets you not have
+    // to define types that don't have params
+    return { ...loadedDriver, driver: driverKey } as T
 }
 
 const env: Env = {
@@ -32,44 +45,51 @@ const env: Env = {
         }
     },
     port: parseInt(process.env.PORT!),
-    mail: {
-        driver: process.env.MAIL_DRIVER as EmailDriver,
-        smtp: {
-            driver: 'smtp',
+    mail: driver<EmailConfig>(process.env.MAIL_DRIVER, {
+        smtp: () => ({
             host: process.env.MAIL_HOST!,
             port: parseInt(process.env.MAIL_PORT!),
-            secure: process.env.MAIL_ENCRYPTED == 'true',
-            auth: { 
-                user: process.env.MAIL_USERNAME!, 
+            secure: process.env.MAIL_ENCRYPTED === 'true',
+            auth: {
+                user: process.env.MAIL_USERNAME!,
                 pass: process.env.MAIL_PASSWORD!
             }
-        },
-        ses: {
-            driver: 'ses',
+        }),
+        ses: () => ({
             region: process.env.AWS_REGION!,
             credentials: {
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
             }
-        }
-    },
-    queue: {
-        driver: process.env.QUEUE_DRIVER as QueueDriver,
-        sqs: {
-            driver: 'sqs',
+        })
+    }),
+    queue: driver<QueueConfig>(process.env.QUEUE_DRIVER, {
+        sqs: () => ({
             queueUrl: process.env.AWS_SQS_QUEUE_URL!,
             region: process.env.AWS_REGION!,
             credentials: {
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
             }
-        },
-        memory: {
-            driver: 'memory'
-        }
-    }
+        })
+    }),
+    text: driver<TextConfig>(process.env.TEXT_MESSAGE_DRIVER, {
+        nexmo: () => ({
+            apiKey: process.env.NEXMO_API_KEY!,
+            apiSecret: process.env.NEXMO_API_SECRET!
+        }),
+        plivo: () => ({
+            authId: process.env.PLIVO_AUTH_ID!,
+            authToken: process.env.PLIVO_AUTH_TOKEN!
+        }),
+        twilio: () => ({
+            accountSid: process.env.TWILIO_ACCOUNT_SID!,
+            authToken: process.env.TWILIO_AUTH_TOKEN!
+        })
+    }),
+    webhook: driver<WebhookConfig>(process.env.WEBHOOK_DRIVER, {
+        local: () => ({})
+    })
 }
-
-// Check to ensure ENV exists
 
 export default env
