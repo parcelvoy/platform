@@ -1,8 +1,8 @@
-import nodemailer, { Transporter } from 'nodemailer'
+import nodemailer from 'nodemailer'
 import aws, * as AWS from '@aws-sdk/client-ses'
 import Render, { Variables } from '../../render'
 import { AWSConfig } from '../../config/aws'
-import { LoggerConfig, LoggerDriver } from '../../config/logger'
+import { logger, LoggerConfig, LoggerDriver } from '../../config/logger'
 import { DriverConfig } from '../../config/env'
 
 /**
@@ -38,28 +38,48 @@ export interface SMTPConfig extends EmailTypeConfig {
     auth: { user: string, pass: string }
 }
 
+interface EmailTransporter {
+    sendMail (message: Partial<EmailMessage>): Promise<any>
+    verify (): Promise<true>
+}
+
 export type EmailConfig = SESConfig | SMTPConfig | LoggerConfig
 
 export default class EmailSender {
-    transport: Transporter
+    transport: EmailTransporter
     constructor (config?: EmailConfig) {
         if (config?.driver === 'ses') {
             const ses = new AWS.SES({
                 region: config.region,
                 credentials: config.credentials
             })
-            this.transport = nodemailer.createTransport({
+            const transport = nodemailer.createTransport({
                 SES: {
                     ses, aws
                 }
             })
+            this.transport = {
+                sendMail: message => transport.sendMail(message),
+                verify: () => transport.verify(),
+            }
         } else if (config?.driver === 'smtp') {
-            this.transport = nodemailer.createTransport({
+            const transport = nodemailer.createTransport({
                 host: config.host,
                 port: config.port,
                 secure: config.secure,
                 auth: config.auth
             })
+            this.transport = {
+                sendMail: message => transport.sendMail(message),
+                verify: () => transport.verify(),
+            }
+        } else if (config?.driver === 'logger') {
+            this.transport = {
+                sendMail: async message => {
+                    logger.info(JSON.stringify(message, null, 2))
+                },
+                verify: () => Promise.resolve(true),
+            }
         } else {
             throw new Error('A valid mailer must be defined!')
         }
