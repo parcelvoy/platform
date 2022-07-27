@@ -1,3 +1,4 @@
+import Ajv from 'ajv'
 import Api from './api'
 import db, { Knex, migrate } from './config/database'
 import { Env } from './config/env'
@@ -22,33 +23,30 @@ export default class App {
         // Migrate to latest version
         await migrate(database)
 
-        // Load in environment variables from database
-        // const env = await loadRemoteEnv(database)
-
         // Setup app
-        App.$main = new App(
-            database,
-            env,
-            new Api(),
-            new Queue(env.queue),
-            new EmailSender(env.mail),
-            new TextSender(env.text),
-            new WebhookSender(env.webhook)
-        )
+        App.$main = new App(env, database)
 
         return App.$main
     }
 
+    api: Api
+    queue: Queue
+    mailer: EmailSender
+    texter: TextSender
+    webhooker: WebhookSender
+    validator: Ajv
+
     // eslint-disable-next-line no-useless-constructor
     private constructor (
-        public db: Knex,
         public env: Env,
-        public api: Api,
-        public queue: Queue,
-        public mailer: EmailSender,
-        public texter: TextSender,
-        public webhooker: WebhookSender
+        public db: Knex,
     ) {
+        this.api = new Api(this)
+        this.queue = new Queue(this.env.queue)
+        this.mailer = new EmailSender(this.env.mail)
+        this.texter = new TextSender(this.env.text)
+        this.webhooker = new WebhookSender(this.env.webhook)
+        this.validator = new Ajv()
     }
 
     listen () {

@@ -1,16 +1,24 @@
 import Koa from 'koa'
-import router from './controllers'
+import koaBody from 'koa-body'
+import cors from '@koa/cors'
+import controllers from './controllers'
 
 export default class Api extends Koa {
-    constructor () {
+
+    constructor (
+        public app: import('./app').default
+    ) {
         super()
 
         this.proxy = process.env.NODE_ENV !== 'development'
 
-        // TODO: Need body parser
-        // TODO: Need error handler
+        this.use(koaBody())
+            .use(cors())
+            .use((ctx, next) => {
+                ctx.state.app = this.app
+                return next()
+            })
 
-        // Register routes
-        router(this)
+        controllers(this)
     }
 }
