@@ -49,13 +49,23 @@ exports.up = function(knex) {
                 .references('user.id')
                 .onDelete('CASCADE')
         })
+        .createTable('project_api_key', function(table) {
+            table.increments()
+            table.integer('project_id').unsigned().notNullable()
+            table.string('value', 255).notNullable()
+            table.string('name', 255).notNullable()
+            table.string('description', 2048).nullable()
+            table.timestamps()
+            table.foreign('project_id').references('project.id').onDelete('CASCADE')
+        })
 }
 
 exports.down = function(knex) {
     return knex.schema
         .dropTable('device')
-        .dropTable('users')
+        .dropTable('user')
         .dropTable('admin_project')
         .dropTable('admin')
-        .dropTable('projects')
+        .dropTable('project_api_key')
+        .dropTable('project')
 }

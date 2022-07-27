@@ -5,6 +5,9 @@ import MailJob from '../sender/email/MailJob'
 import { LoggerConfig } from '../config/logger'
 import QueueProvider from './QueueProvider'
 import { DriverConfig } from '../config/env'
+import UserPatchJob from '../job/UserPatchJob'
+import UserDeleteJob from '../job/UserDeleteJob'
+import EventPostJob from '../job/EventPostJob'
 
 export type QueueDriver = 'sqs' | 'memory' | 'logger'
 export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
@@ -27,6 +30,9 @@ export default class Queue {
         }
 
         this.register(MailJob)
+        this.register(UserPatchJob)
+        this.register(UserDeleteJob)
+        this.register(EventPostJob)
     }
 
     async dequeue (job: EncodedJob): Promise<boolean> {
