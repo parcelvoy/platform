@@ -1,7 +1,9 @@
 // Will be re-enabled in API work
 /* eslint-disable */
 
-export interface TemplateUser {
+import Model from './Model'
+
+export interface TemplateUser extends Record<string, any> {
     id: string
     email?: string
     phone?: string
@@ -22,8 +24,7 @@ export interface UserAttribute {
 	value: any;
 }
 
-export class User {
-	id!: number
+export class User extends Model {
 	project_id!: number
 	external_id!: string
 	email?: string
@@ -34,8 +35,12 @@ export class User {
 	created_at!: Date
 	updated_at!: Date
 
-	constructor(data: any) {
-		console.log(JSON.stringify(data))
-		Object.assign(this, data)
+	flatten(): TemplateUser {
+		return {
+			...this.data,
+			email: this.email,
+			phone: this.phone,
+			id: this.external_id,
+		}
 	}
 }

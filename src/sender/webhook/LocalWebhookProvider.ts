@@ -1,12 +1,13 @@
-import { WebhookMessage, WebhookProvider, WebhookResponse } from './Webhook'
+import { Webhook, WebhookResponse } from './Webhook'
+import { WebhookProvider } from './WebhookSender'
 
 export default class LocalWebhookProvider implements WebhookProvider {
-    async send (options: WebhookMessage): Promise<WebhookResponse> {
+    async send(options: Webhook): Promise<WebhookResponse> {
         const { method, endpoint, headers, body } = options
         const response = await fetch(endpoint, {
             method,
             headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         })
 
         const responseBody = await response.json()
@@ -14,7 +15,7 @@ export default class LocalWebhookProvider implements WebhookProvider {
             return {
                 message: options,
                 success: true,
-                response: responseBody
+                response: responseBody,
             }
         } else {
             throw new Error(`${response.status} - ${responseBody.message}`)

@@ -1,13 +1,14 @@
 import { logger } from '../../config/logger'
-import { WebhookMessage, WebhookProvider, WebhookResponse } from './Webhook'
+import { Webhook, WebhookResponse } from './Webhook'
+import { WebhookProvider } from './WebhookSender'
 
 export default class LoggerWebhookProvider implements WebhookProvider {
-    async send (options: WebhookMessage): Promise<WebhookResponse> {
+    async send(options: Webhook): Promise<WebhookResponse> {
         logger.info(options)
         return {
             message: options,
             success: true,
-            response: ''
+            response: '',
         }
     }
 }

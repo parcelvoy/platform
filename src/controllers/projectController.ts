@@ -1,16 +1,16 @@
-import Router from "@koa/router"
-import { projectCreateParams, projectUpdateParams } from "../schemas/projects"
-import { Project } from "../models/Project"
+import Router from '@koa/router'
+import { projectCreateParams, projectUpdateParams } from '../schemas/projects'
+import { Project } from '../models/Project'
 import type App from '../app'
 
 const PROJECT = 'project'
 const USER = 'user'
 
-const router = new Router<{ 
+const router = new Router<{
     app: App
     project?: Project
 }>({
-    prefix: '/projects'
+    prefix: '/projects',
 })
 
 router.get('/', async ctx => {

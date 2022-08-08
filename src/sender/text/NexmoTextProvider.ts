@@ -1,4 +1,5 @@
-import { TextMessage, TextProvider, TextResponse, TextTypeConfig } from './TextSender'
+import { TextMessage, TextResponse } from './TextMessage'
+import { TextProvider, TextTypeConfig } from './TextSender'
 import TextError from './TextError'
 
 export interface NexmoConfig extends TextTypeConfig {
@@ -11,26 +12,26 @@ export default class NexmoProvider implements TextProvider {
     apiKey: string
     apiSecret: string
 
-    constructor ({ apiKey, apiSecret }: NexmoConfig) {
+    constructor({ apiKey, apiSecret }: NexmoConfig) {
         this.apiKey = apiKey
         this.apiSecret = apiSecret
     }
 
-    async send (message: TextMessage): Promise<TextResponse> {
+    async send(message: TextMessage): Promise<TextResponse> {
         const { from, to, text } = message
         const response = await fetch('https://rest.nexmo.com/sms/json', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)'
+                'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
             body: JSON.stringify({
                 api_key: this.apiKey,
                 api_secret: this.apiSecret,
                 from,
                 to,
-                text
-            })
+                text,
+            }),
         })
 
         if (response.ok) {
@@ -44,7 +45,7 @@ export default class NexmoProvider implements TextProvider {
                 return {
                     message,
                     success: true,
-                    response: responseMessage['message-id']
+                    response: responseMessage['message-id'],
                 }
             }
         } else {

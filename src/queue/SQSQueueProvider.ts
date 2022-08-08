@@ -16,7 +16,7 @@ export default class SQSQueueProvider implements QueueProvider {
     queue: Queue
     sqs: AWS.SQS
 
-    constructor (config: SQSConfig, queue: Queue) {
+    constructor(config: SQSConfig, queue: Queue) {
         this.queue = queue
         this.config = config
         this.sqs = new AWS.SQS({ region: config.region })
@@ -25,7 +25,7 @@ export default class SQSQueueProvider implements QueueProvider {
             handleMessage: async (message) => {
                 await this.queue.dequeue(this.parse(message))
             },
-            sqs: this.sqs
+            sqs: this.sqs,
         })
 
         // Catches errors related to the queue / connection
@@ -41,24 +41,24 @@ export default class SQSQueueProvider implements QueueProvider {
         this.app.start()
     }
 
-    parse (message: AWS.Message): EncodedJob {
+    parse(message: AWS.Message): EncodedJob {
         return JSON.parse(message.Body ?? '')
     }
 
-    async enqueue (job: Job): Promise<void> {
+    async enqueue(job: Job): Promise<void> {
         const params = {
             DelaySeconds: job.options.delay,
             MessageBody: JSON.stringify(job),
-            QueueUrl: this.config.queueUrl
+            QueueUrl: this.config.queueUrl,
         }
         await this.sqs.sendMessage(params)
     }
 
-    start (): void {
+    start(): void {
         this.app.start()
     }
 
-    close (): void {
+    close(): void {
         this.app.stop()
     }
 }

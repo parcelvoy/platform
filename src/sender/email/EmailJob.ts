@@ -1,6 +1,7 @@
 import { Job } from '../../queue'
 import { User } from '../../models/User'
 import App from '../../app'
+import { Email } from './Email'
 
 interface EmailTrigger {
     email: Email
@@ -8,26 +9,15 @@ interface EmailTrigger {
     event: any
 }
 
-interface Email {
-    from: string
-    to: string
-    subject: string
-    html: string
-    text: string
-    cc?: string
-    bcc?: string
-    replyTo?: string
-}
-
-export default class MailJob extends Job {
+export default class EmailJob extends Job {
     static $name = 'email'
 
-    static from (data: EmailTrigger): MailJob {
+    static from(data: EmailTrigger): EmailJob {
         // Should only store IDs
         return new this(data)
     }
 
-    static async handler ({ email, user, event }: EmailTrigger) {
+    static async handler({ email, user, event }: EmailTrigger) {
         // Pull user details
 
         // Load event details

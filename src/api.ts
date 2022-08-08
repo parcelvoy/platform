@@ -5,9 +5,8 @@ import controllers from './controllers'
 import { RequestError } from './models/errors'
 
 export default class Api extends Koa {
-
-    constructor (
-        public app: import('./app').default
+    constructor(
+        public app: import('./app').default,
     ) {
         super()
 

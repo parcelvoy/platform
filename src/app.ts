@@ -6,18 +6,18 @@ import { Env } from './config/env'
 import Queue from './queue'
 import EmailSender from './sender/email/EmailSender'
 import TextSender from './sender/text/TextSender'
-import WebhookSender from './sender/webhook/Webhook'
+import WebhookSender from './sender/webhook/WebhookSender'
 
 export default class App {
     private static $main: App
-    static get main () {
+    static get main() {
         if (!App.$main) {
             throw new Error('Instance not setup')
         }
         return App.$main
     }
 
-    static async init (env: Env): Promise<App> {
+    static async init(env: Env): Promise<App> {
         // Load database
         const database = db(env.db)
 
@@ -38,7 +38,7 @@ export default class App {
     validator: Ajv
 
     // eslint-disable-next-line no-useless-constructor
-    private constructor (
+    private constructor(
         public env: Env,
         public db: Knex,
     ) {
@@ -50,11 +50,11 @@ export default class App {
         this.validator = new Ajv()
     }
 
-    listen () {
+    listen() {
         this.api.listen(this.env.port)
     }
 
-    async close () {
+    async close() {
         await this.db.destroy()
         await this.queue.close()
     }

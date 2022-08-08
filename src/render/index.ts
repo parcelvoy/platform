@@ -40,18 +40,9 @@ loadHelper(ArrayHelpers)
  * now - current date
  */
 
-export const flattenUser = (user: User) => {
-    return {
-        ...user.data,
-        email: user.email,
-        phone: user.phone,
-        id: user.external_id
-    }
-}
-
 export default (template: string, { user, event }: Variables) => {
     return Handlebars.compile(template)({
-        user: flattenUser(user),
-        event
+        user: user.flatten(),
+        event,
     })
 }
