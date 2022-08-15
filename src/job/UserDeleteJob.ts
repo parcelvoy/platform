@@ -1,13 +1,11 @@
 
 
 import App from "../app";
-import { logger } from "../config/logger";
-import { ClientDeleteUsersRequest } from "../models/client";
 import { Job } from "../queue";
 
 interface UserDeleteTrigger {
     project_id: number
-    request: ClientDeleteUsersRequest
+    external_id: string
 }
 
 export default class UserDeleteJob extends Job {
@@ -17,16 +15,9 @@ export default class UserDeleteJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, request }: UserDeleteTrigger) {
+    static async handler({ project_id, external_id }: UserDeleteTrigger) {
 
-        if (!request.length) {
-            logger.debug('received empty user patch request? throw error???') //throw?
-            return
-        }
-
-        console.log('deleting users: ' + request.join())
-        
-        await App.main.db.transaction(async trx => trx('user').delete().where({ project_id }).whereIn('external_id', request))
+        await App.main.db.transaction(async trx => trx('users').delete().where({ project_id }).where({ external_id }))
 
     }
 }

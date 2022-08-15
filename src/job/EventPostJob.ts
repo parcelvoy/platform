@@ -1,11 +1,11 @@
 
 import { logger } from "../config/logger";
-import { ClientPostEventsRequest } from "../models/client";
+import { ClientPostEvent } from "../models/client";
 import { Job } from "../queue";
 
 interface EventPostTrigger {
     project_id: number
-    request: ClientPostEventsRequest
+    event: ClientPostEvent
 }
 
 export default class EventPostJob extends Job {
@@ -15,15 +15,10 @@ export default class EventPostJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, request }: EventPostTrigger) {
+    static async handler({ project_id, event }: EventPostTrigger) {
 
-        if (!request.length) {
-            logger.debug('received empty user patch request? throw error???') //throw?
-            return
-        }
-        
-        //TODO handle events...
-        console.log(`project ${project_id} received events: ${JSON.stringify(request)}`)
+        //TODO handle events
+        logger.debug('project ' + project_id + ' received event: ' + JSON.stringify(event))
 
     }
 }

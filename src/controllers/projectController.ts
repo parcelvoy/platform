@@ -18,13 +18,9 @@ router.get('/', async ctx => {
 })
 
 router.post('/', async ctx => {
-    const validate = ctx.state.app.validator.compile(projectCreateParams)
-    if (validate(ctx.request.body)) {
-        const [id] = await ctx.state.app.db(PROJECT).insert(ctx.request.body)
-        ctx.body = await ctx.state.app.db(PROJECT).first().where({ id })
-    } else {
-        ctx.throw(400, validate.errors || 'error!')
-    }
+    const payload = ctx.state.app.validate(projectCreateParams, ctx.request.body)
+    const [id] = await ctx.state.app.db(PROJECT).insert(payload)
+    ctx.body = await ctx.state.app.db(PROJECT).first().where({ id })
 })
 
 router.param('project', async (value, ctx, next) => {
@@ -46,13 +42,9 @@ router.patch('/:project', async ctx => {
         ctx.body = ctx.state.project
         return
     }
-    const validate = ctx.state.app.validator.compile(projectUpdateParams)
-    if (validate(ctx.request.body)) {
-        await ctx.state.app.db(PROJECT).update(ctx.request.body).where({ id: project.id })
-        ctx.body = ctx.state.project = await ctx.state.app.db(PROJECT).first().where({ id: project.id })
-    } else {
-        ctx.throw(400, JSON.stringify(validate.errors))
-    }
+    const payload = ctx.state.app.validate(projectUpdateParams, ctx.request.body)
+    await ctx.state.app.db(PROJECT).update(payload).where({ id: project.id })
+    ctx.body = ctx.state.project = await ctx.state.app.db(PROJECT).first().where({ id: project.id })
 })
 
 router.get('/:project/users', async ctx => {

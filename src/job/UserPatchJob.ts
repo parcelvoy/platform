@@ -1,12 +1,11 @@
 import App from "../app";
 import { User } from "../models/User";
-import { logger } from "../config/logger";
-import { ClientPatchUsersRequest } from "../models/client";
+import { ClientPatchUser } from "../models/client";
 import { Job } from "../queue";
 
 interface UserPatchTrigger {
     project_id: number
-    request: ClientPatchUsersRequest
+    user: ClientPatchUser
 }
 
 export default class UserPatchJob extends Job {
@@ -16,36 +15,31 @@ export default class UserPatchJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, request }: UserPatchTrigger) {
-
-        if (!request.length) {
-            logger.debug('received empty user patch request? throw error???') //throw?
-            return
-        }
+    static async handler({ project_id, user: { external_id, data, ...fields } }: UserPatchTrigger) {
         
         await App.main.db.transaction(async trx => {
 
-            const existing = await trx('user')
+            const existing = await trx('users')
                 .where('project_id', project_id)
-                .whereIn('external_id', request.map(u => u.external_id))
-                .then(list => list.map(u => new User(u)))
+                .where('external_id', external_id)
+                .first()
+                .then(r => new User(r))
 
-            //can we do 'upsert'-style for this in a way that's supported by all DB types that knex supports?
-            for (const { external_id, data = {}, ...fields } of request) {
-                const user = existing.find(u => u.external_id === external_id)
-                if (user) {
-                    await trx('user').update({
-                        data: data ? JSON.stringify({ ...user.data, ...data }) : undefined,
+            if (existing) {
+                await trx('users')
+                    .update({
+                        data: data ? JSON.stringify({ ...existing.data, ...data }) : undefined,
                         ...fields
-                    }).where({ external_id })
-                } else {
-                    await trx('user').insert({
+                    })
+                    .where({ external_id })
+            } else {
+                await trx('users')
+                    .insert({
                         project_id,
                         external_id,
                         data: JSON.stringify(data),
                         ...fields
                     })
-                }
             }
 
         })
