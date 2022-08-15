@@ -22,7 +22,6 @@ router.use(async (ctx, next) => {
     }
 
     const apiKey = await ctx.state.app.db('project_api_keys').first().where({ value })
-    console.log(apiKey)
     if (!apiKey || apiKey.deleted_at) {
         ctx.throw(401, 'invalid api key')
         return
@@ -59,7 +58,7 @@ router.delete('/users', async ctx => {
 
     let userIds = ctx.request.query.user_id || []
     if (!Array.isArray(userIds)) userIds = userIds.length ? [userIds] : []
-    
+
     userIds = ctx.state.app.validate(deleteUsersRequest, userIds)
     
     for (const external_id of userIds) {
