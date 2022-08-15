@@ -34,7 +34,8 @@ export class User {
 	created_at!: Date
 	updated_at!: Date
 
-	constructor(json: any) {
-		Object.assign(this, json)
+	constructor(data: any) {
+		console.log(JSON.stringify(data))
+		Object.assign(this, data)
 	}
 }

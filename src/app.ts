@@ -1,4 +1,5 @@
-import Ajv from 'ajv'
+import Ajv, { JSONSchemaType } from 'ajv'
+import { RequestError } from './models/errors'
 import Api from './api'
 import db, { Knex, migrate } from './config/database'
 import { Env } from './config/env'
@@ -56,5 +57,13 @@ export default class App {
     async close () {
         await this.db.destroy()
         await this.queue.close()
+    }
+
+    validate<T>(schema: JSONSchemaType<T>, data: any) {
+        const validate = this.validator.compile(schema)
+        if (validate(data)) {
+            return data
+        }
+        throw new RequestError(JSON.stringify(validate.errors), 422)
     }
 }
