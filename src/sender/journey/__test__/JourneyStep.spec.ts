@@ -1,5 +1,5 @@
 import { User } from '../../../models/User'
-import { JourneyStep, JourneyEntrance, JourneyGate, JourneyMap } from '../JourneyStep'
+import { JourneyStep, JourneyEntrance, JourneyMap } from '../JourneyStep'
 
 describe('JourneyEntrance', () => {
     describe('user entrance', () => {

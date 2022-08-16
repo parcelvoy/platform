@@ -3,7 +3,7 @@ import { User } from '../../../models/User'
 import Journey from '../Journey'
 import { lastJourneyStep } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
-import { JourneyEntrance, JourneyMap, JourneyUserStep } from '../JourneyStep'
+import { JourneyEntrance, JourneyMap } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {

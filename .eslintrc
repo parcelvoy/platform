@@ -19,6 +19,7 @@
     "rules": {
         "indent": ["error", 4],
         "padded-blocks": "off",
+        "camelcase": "off",
         "no-use-before-define": "off",
         "comma-dangle": "off",
         "space-before-function-paren": ["error", {

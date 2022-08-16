@@ -19,8 +19,6 @@ export default class JourneyService {
         while (nextStep) {
             const parsedStep = this.parse(nextStep)
 
-            console.log('run', nextStep.id)
-
             // If completed, jump to next otherwise validate condition
             if (await parsedStep.hasCompleted(user)) {
                 nextStep = await parsedStep.next(user)

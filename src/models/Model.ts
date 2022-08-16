@@ -91,9 +91,3 @@ export default class Model {
         return db(this.tableName)
     }
 }
-
-export const firstModel = async <T extends new (json: any) => T>(Model: T, promise: Promise<any>): Promise<T | undefined> => {
-    const response = await promise
-    if (!response) return response
-    return new Model(response)
-}

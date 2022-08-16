@@ -55,6 +55,7 @@ export default class Queue {
         console.log('started', job)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async errored(job: EncodedJob, error: Error) {
         // TODO: Do something about failure
     }

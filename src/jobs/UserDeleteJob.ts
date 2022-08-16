@@ -1,7 +1,5 @@
-
-
-import App from "../app";
-import { Job } from "../queue";
+import App from '../app'
+import { Job } from '../queue'
 
 interface UserDeleteTrigger {
     project_id: number
@@ -11,7 +9,7 @@ interface UserDeleteTrigger {
 export default class UserDeleteJob extends Job {
     static $name = 'user_delete'
 
-    static from (data: UserDeleteTrigger): UserDeleteJob {
+    static from(data: UserDeleteTrigger): UserDeleteJob {
         return new this(data)
     }
 
