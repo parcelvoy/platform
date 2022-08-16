@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^28.1.6",
+    "@types/jsonpath": "^0.2.0",
     "@types/koa__router": "^8.0.11",
     "@types/nodemailer": "^6.4.4",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
@@ -39,6 +40,7 @@
     "handlebars": "^4.7.7",
     "handlebars-helpers": "^0.10.0",
     "handlebars-utils": "^1.0.6",
+    "jsonpath": "^1.1.1",
     "knex": "^2.1.0",
     "koa": "^2.13.4",
     "koa-body": "5.0.0",

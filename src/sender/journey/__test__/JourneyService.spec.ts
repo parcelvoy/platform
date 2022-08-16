@@ -3,19 +3,20 @@ import { User } from '../../../models/User'
 import Journey from '../Journey'
 import { lastJourneyStep } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
-import { JourneyEntrance, JourneyGate } from '../JourneyStep'
+import { JourneyEntrance, JourneyMap, JourneyUserStep } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {
-        test('an entrance will proceed to gate', async () => {
+        test('an entrance will proceed to map', async () => {
 
             const journey = await Journey.insertAndFetch()
-            const step2 = await JourneyGate.create('country', {
+            const step2 = await JourneyMap.create('country', {
                 US: 43,
                 ES: 34,
             }, journey.id)
             await JourneyEntrance.create('user', [{
-                attribute: 'language',
+                type: 'string',
+                path: '$.language',
                 operator: '=',
                 value: 'en',
             }], step2.id, journey.id)

@@ -1,7 +1,7 @@
-import { Job } from '../../queue'
-import { User } from '../../models/User'
-import App from '../../app'
-import { Email } from './Email'
+import { Job } from '../queue'
+import { User } from '../models/User'
+import App from '../app'
+import { Email } from '../sender/email/Email'
 
 interface EmailTrigger {
     email: Email

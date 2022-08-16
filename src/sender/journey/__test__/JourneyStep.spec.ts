@@ -1,5 +1,5 @@
 import { User } from '../../../models/User'
-import { JourneyStep, JourneyEntrance, JourneyGate } from '../JourneyStep'
+import { JourneyStep, JourneyEntrance, JourneyGate, JourneyMap } from '../JourneyStep'
 
 describe('JourneyEntrance', () => {
     describe('user entrance', () => {
@@ -8,7 +8,8 @@ describe('JourneyEntrance', () => {
             const email = 'test@test.com'
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
-                attribute: 'email',
+                type: 'string',
+                path: '$.email',
                 operator: '=',
                 value: email,
             }])
@@ -22,7 +23,8 @@ describe('JourneyEntrance', () => {
             const email = 'test@test.com'
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
-                attribute: 'email',
+                type: 'string',
+                path: '$.email',
                 operator: '=',
                 value: 'notequal@test.com',
             }])
@@ -36,7 +38,8 @@ describe('JourneyEntrance', () => {
             const email = 'test@test.com'
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
-                attribute: 'email',
+                type: 'string',
+                path: '$.email',
                 operator: '!=',
                 value: 'notequal@test.com',
             }])
@@ -50,7 +53,8 @@ describe('JourneyEntrance', () => {
             const email = 'test@test.com'
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
-                attribute: 'email',
+                type: 'string',
+                path: '$.email',
                 operator: 'is set',
             }])
             const value = await entrance.condition(user)
@@ -60,7 +64,7 @@ describe('JourneyEntrance', () => {
     })
 })
 
-describe('Journey Gate', () => {
+describe('Journey Map', () => {
     test('different options pick different paths', async () => {
 
         const user = User.fromJson({ data: { progress: '20' } })
@@ -68,16 +72,16 @@ describe('Journey Gate', () => {
         const step2 = await JourneyStep.insertAndFetch()
         const step3 = await JourneyStep.insertAndFetch()
 
-        const gate = await JourneyGate.create('progress', {
+        const map = await JourneyMap.create('progress', {
             10: step1.id,
             20: step2.id,
             30: step3.id,
         })
-        const value1 = await gate.next(user)
+        const value1 = await map.next(user)
         expect(value1?.id).toEqual(step2.id)
 
         user.data.progress = '30'
-        const value2 = await gate.next(user)
+        const value2 = await map.next(user)
         expect(value2?.id).toEqual(step3.id)
     })
 })

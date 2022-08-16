@@ -4,9 +4,10 @@ import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import { LoggerConfig } from '../config/logger'
 import QueueProvider from './QueueProvider'
 import { DriverConfig } from '../config/env'
-import UserPatchJob from '../job/UserPatchJob'
-import UserDeleteJob from '../job/UserDeleteJob'
-import EventPostJob from '../job/EventPostJob'
+import EmailJob from '../jobs/EmailJob'
+import UserPatchJob from '../jobs/UserPatchJob'
+import UserDeleteJob from '../jobs/UserDeleteJob'
+import EventPostJob from '../jobs/EventPostJob'
 
 export type QueueDriver = 'sqs' | 'memory' | 'logger'
 export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
@@ -28,7 +29,7 @@ export default class Queue {
             throw new Error('A valid queue must be defined!')
         }
 
-        this.register(MailJob)
+        this.register(EmailJob)
         this.register(UserPatchJob)
         this.register(UserDeleteJob)
         this.register(EventPostJob)

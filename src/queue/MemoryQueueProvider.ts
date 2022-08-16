@@ -16,7 +16,7 @@ export default class MemoryQueueProvider implements QueueProvider {
         this.start()
     }
 
-    async enqueue (job: Job): Promise<void> {
+    async enqueue(job: Job): Promise<void> {
         this.backlog.push(job)
     }
 
@@ -30,10 +30,13 @@ export default class MemoryQueueProvider implements QueueProvider {
         this.loop = undefined
     }
 
-    private async process () {
-        let job;
-        while (job = this.backlog.shift()) {
-            await this.queue.dequeue(job)
+    private async process() {
+        let job
+        while (job) {
+            job = this.backlog.shift()
+            if (job) {
+                await this.queue.dequeue(job)
+            }
         }
         await this.tick()
         await this.process()

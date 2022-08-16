@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import App from '../app'
-import { pascalToSnakeCase } from '../utilities'
+import { pascalToSnakeCase, pluralize } from '../utilities'
 
 export default class Model {
 
@@ -84,7 +84,7 @@ export default class Model {
     }
 
     static get tableName(): string {
-        return pascalToSnakeCase(this.name)
+        return pluralize(pascalToSnakeCase(this.name))
     }
 
     private static table(db: Knex = App.main.db): Knex.QueryBuilder<any> {

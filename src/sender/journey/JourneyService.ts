@@ -1,6 +1,7 @@
 import { User } from '../../models/User'
 import { getJourneyEntrance, getJourneyStep, lastJourneyStep } from './JourneyRepository'
-import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep } from './JourneyStep'
+import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap } from './JourneyStep'
+import { UserEvent } from './UserEvent'
 
 export default class JourneyService {
 
@@ -9,7 +10,7 @@ export default class JourneyService {
         this.journeyId = journeyId
     }
 
-    async run(user: User, event?: Event) {
+    async run(user: User, event?: UserEvent): Promise<void> {
 
         // Loop through all possible next steps until we get an empty next
         // which signifies that the journey is in a pending state
@@ -17,6 +18,8 @@ export default class JourneyService {
         let nextStep: JourneyStep | undefined | null = await this.nextStep(user)
         while (nextStep) {
             const parsedStep = this.parse(nextStep)
+
+            console.log('run', nextStep.id)
 
             // If completed, jump to next otherwise validate condition
             if (await parsedStep.hasCompleted(user)) {
@@ -35,8 +38,9 @@ export default class JourneyService {
             [JourneyEntrance.name]: JourneyEntrance,
             [JourneyDelay.name]: JourneyDelay,
             [JourneyGate.name]: JourneyGate,
+            [JourneyMap.name]: JourneyMap,
         }
-        return options[step.type].fromJson(step)
+        return options[step.type]?.fromJson(step)
     }
 
     async nextStep(user: User): Promise<JourneyStep | undefined> {

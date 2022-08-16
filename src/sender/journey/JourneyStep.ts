@@ -1,7 +1,9 @@
 import { add, isFuture } from 'date-fns'
 import Model from '../../models/Model'
 import { User } from '../../models/User'
+import { Rule, check } from './RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
+import { UserEvent } from './UserEvent'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -9,6 +11,8 @@ export class JourneyUserStep extends Model {
     journey_id!: number
     step_id!: number
     created_at!: Date
+
+    static tableName = 'journey_user_step'
 }
 
 export class JourneyStep extends Model {
@@ -17,7 +21,7 @@ export class JourneyStep extends Model {
     child_id?: number // the step that comes after
     data: any
 
-    static tableName = 'journey_step'
+    static tableName = 'journey_steps'
     get $name(): string { return this.constructor.name }
 
     async step(user: User, type: string) {
@@ -39,7 +43,7 @@ export class JourneyStep extends Model {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async condition(user: User, event?: Event): Promise<boolean> {
+    async condition(user: User, event?: UserEvent): Promise<boolean> {
         return !(await this.hasCompleted(user))
     }
 
@@ -54,14 +58,75 @@ export class JourneyStep extends Model {
     }
 }
 
-type Operator = '=' | '!=' | 'is set'
-interface Rule {
-    attribute: string
-    operator: Operator
-    value?: string
+// type Operator = '=' | '!=' | 'is set'
+// interface Rule {
+//     attribute: string
+//     operator: Operator
+//     value?: unknown
+//     arrayOperator?: Operator
+// }
+
+// type NumberOperator = '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set'
+// interface NumberRule {
+
+// }
+
+/*
+{
+    "type": "operator",
+    "operator": "and",
+    "children": [
+        {
+            "type": "string",
+            "path": "$.email",
+            "startsWith": "chris"
+        },
+        {
+            "type": "number",
+            "path": "$.count",
+            "operator": ">",
+            "value": "2"
+        }
+    ]
 }
 
-type Conditional = (a: any, b?: any) => boolean
+{
+    email: "chris@twochris.io",
+    count: 2
+}
+*/
+
+// string: is, is not, contains, does not contain, is set, is not set
+// number: =, !=, >, >=, <, <=, is set, is not set
+// boolean: true, false
+// date: ??
+// list: any, all
+
+// [
+//     {
+//         type: 'wrapper',
+//         operator: 'or',
+//         children: [ // could potentially name this `value` to keep with structure
+//             {
+//                 type: 'string',
+//                 path: '$.email',
+//                 operator: '=',
+//                 value: 'email@email.com'
+//             },
+//             {
+//                 type: 'array',
+//                 path: '$.devices.*',
+//                 operator: ''
+//             }
+//         ]
+//     }, // anything not in an `or` wrapper is an `and` by default
+//     {
+//         type: 'number',
+//         path: '$.highScore',
+//         operator: '<',
+//         value: '20'
+//     }
+// ]
 
 export class JourneyEntrance extends JourneyStep {
 
@@ -87,25 +152,16 @@ export class JourneyEntrance extends JourneyStep {
         })
     }
 
-    async condition(user: User, event?: Event): Promise<boolean> {
+    async condition(user: User, event?: UserEvent): Promise<boolean> {
 
         // Based on entrance type get flattened user or event
-        const obj = this.entrance_type === 'user' ? user.flatten() : event
+        const obj = this.entrance_type === 'user' ? user.flatten() : event?.flatten()
 
         // If entrance is event based and we don't have an event, break
         if (!obj) return false
 
         // Check that all rules are met
-        return this.rules.every(rule => this.checkRule(obj, rule))
-    }
-
-    private checkRule(obj: { [key: string]: any }, rule: Rule): boolean {
-        const conditionals: { [key: string]: Conditional } = {
-            '=': (a, b) => a === b,
-            '!=': (a, b) => a !== b,
-            'is set': (a) => a != null,
-        }
-        return conditionals[rule.operator](obj[rule.attribute], rule.value)
+        return check(obj, this.rules)
     }
 }
 
@@ -154,11 +210,48 @@ export class JourneyAction extends JourneyStep {
 
 }
 
-type JourneyMap = Record<string, number>
-
+// Look at a condition tree and evaluate if user passes on to next step
 export class JourneyGate extends JourneyStep {
+    entrance_type!: 'user' | 'event'
+    rule!: Rule
+
+    parseJson(json: any) {
+        super.parseJson(json)
+
+        this.entrance_type = json?.data?.entrance_type
+        this.rule = json?.data.rule
+    }
+
+    static async create(entranceType: string, rules: Rule[], childId?: number, journeyId?: number): Promise<JourneyGate> {
+        return await JourneyGate.insertAndFetch({
+            type: this.name,
+            child_id: childId,
+            journey_id: journeyId,
+            data: {
+                entrance_type: entranceType,
+                rules,
+            },
+        })
+    }
+
+    async condition(user: User, event?: UserEvent): Promise<boolean> {
+
+        // Based on entrance type get flattened user or event
+        const obj = this.entrance_type === 'user' ? user.flatten() : event?.flatten()
+
+        // If entrance is event based and we don't have an event, break
+        if (!obj) return false
+
+        // Check that all rules are met
+        return check(obj, [this.rule])
+    }
+}
+
+type MapOptions = Record<string, number>
+
+export class JourneyMap extends JourneyStep {
     attribute!: string
-    options!: JourneyMap
+    options!: MapOptions
 
     parseJson(json: any) {
         super.parseJson(json)
@@ -167,8 +260,8 @@ export class JourneyGate extends JourneyStep {
         this.options = json?.data.options
     }
 
-    static async create(attribute: string, options: JourneyMap, journeyId?: number): Promise<JourneyGate> {
-        return await JourneyGate.insertAndFetch({
+    static async create(attribute: string, options: MapOptions, journeyId?: number): Promise<JourneyMap> {
+        return await JourneyMap.insertAndFetch({
             type: this.name,
             journey_id: journeyId,
             data: {

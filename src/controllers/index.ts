@@ -11,9 +11,5 @@ export default (api: import('../api').default) => {
 
     api.use(admin.routes()).use(admin.allowedMethods())
 
-    const client = new Router({ prefix: '/client' })
-    // TODO api key validation?
-
     api.use(client.routes()).use(client.allowedMethods())
-
 }

@@ -9,7 +9,7 @@ export class Project extends Model {
     public deleted_at?: Date
 }
 
-export type ProjectParams = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>
+export type ProjectParams = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'parseJson'>
 
 export class ProjectApiKey {
 
