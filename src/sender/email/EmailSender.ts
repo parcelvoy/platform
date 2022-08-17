@@ -4,6 +4,7 @@ import Render, { Variables } from '../../render'
 import { AWSConfig } from '../../config/aws'
 import { logger, LoggerConfig, LoggerDriver } from '../../config/logger'
 import { DriverConfig } from '../../config/env'
+import { EmailTemplate } from '../../models/Template'
 import { Email } from './Email'
 
 export type EmailDriver = 'ses' | 'smtp' | LoggerDriver
@@ -26,7 +27,7 @@ export interface SMTPConfig extends EmailTypeConfig {
 }
 
 interface EmailTransporter {
-    sendMail(message: Partial<Email>): Promise<any>
+    sendMail(message: Email): Promise<any>
     verify(): Promise<true>
 }
 
@@ -72,22 +73,19 @@ export default class EmailSender {
         }
     }
 
-    async send(options: Email, variables: Variables) {
-        const message: Partial<Email> = {
+    async send(options: EmailTemplate, variables: Variables) {
+        const message: Email = {
             subject: Render(options.subject, variables),
             to: Render(options.to, variables),
             from: Render(options.from, variables),
-            html: Render(options.html, variables),
-            text: Render(options.text, variables),
+            html_body: Render(options.html_body, variables),
+            text_body: Render(options.text_body, variables),
         }
-        if (options.replyTo) message.replyTo = Render(options.replyTo, variables)
+        if (options.reply_to) message.reply_to = Render(options.reply_to, variables)
         if (options.cc) message.cc = Render(options.cc, variables)
         if (options.bcc) message.bcc = Render(options.bcc, variables)
 
         await this.transport.sendMail(message)
-
-        // TODO: Create an event for the user that the email was sent
-        // Should event stuff happen here or in job? Prob here
     }
 
     async verify(): Promise<boolean> {

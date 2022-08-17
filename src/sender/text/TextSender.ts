@@ -1,5 +1,6 @@
 import { DriverConfig } from '../../config/env'
 import { LoggerConfig } from '../../config/logger'
+import { TextTemplate } from '../../models/Template'
 import render, { Variables } from '../../render'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoProvider, { NexmoConfig } from './NexmoTextProvider'
@@ -34,7 +35,7 @@ export default class TextSender {
         }
     }
 
-    async send(options: TextMessage, variables: Variables) {
+    async send(options: TextTemplate, variables: Variables) {
         const message = {
             to: options.to,
             from: options.from,
@@ -42,7 +43,5 @@ export default class TextSender {
         }
 
         await this.provider.send(message)
-
-        // TODO: Create an event for the user the message was sent
     }
 }

@@ -8,6 +8,8 @@ import EmailJob from '../jobs/EmailJob'
 import UserPatchJob from '../jobs/UserPatchJob'
 import UserDeleteJob from '../jobs/UserDeleteJob'
 import EventPostJob from '../jobs/EventPostJob'
+import TextJob from '../jobs/TextJob'
+import WebhookJob from '../jobs/WebhookJob'
 
 export type QueueDriver = 'sqs' | 'memory' | 'logger'
 export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
@@ -30,6 +32,8 @@ export default class Queue {
         }
 
         this.register(EmailJob)
+        this.register(TextJob)
+        this.register(WebhookJob)
         this.register(UserPatchJob)
         this.register(UserDeleteJob)
         this.register(EventPostJob)

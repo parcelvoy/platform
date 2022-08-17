@@ -32,9 +32,10 @@ export default class Model {
 
     static async find<T extends typeof Model>(
         this: T,
-        id: number,
+        id: number | undefined,
         db: Knex = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
+        if (!id) return undefined
         const record = await this.table(db).where({ id }).first()
         if (!record) return undefined
         return this.fromJson(record)

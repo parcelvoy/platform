@@ -1,5 +1,6 @@
 import { DriverConfig } from '../../config/env'
 import { LoggerConfig } from '../../config/logger'
+import { WebhookTemplate } from '../../models/Template'
 import Render, { Variables } from '../../render'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
@@ -32,7 +33,7 @@ export default class WebhookSender {
         }
     }
 
-    async send(options: Webhook, variables: Variables) {
+    async send(options: WebhookTemplate, variables: Variables) {
         const headers = Object.keys(options.headers).reduce((headers, key) => {
             headers[key] = Render(options.headers[key], variables)
             return headers
@@ -52,7 +53,5 @@ export default class WebhookSender {
             headers,
             body,
         })
-
-        // TODO: Create an event for the sent webhook
     }
 }

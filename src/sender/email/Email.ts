@@ -1,10 +1,10 @@
 export interface Email {
-    from: string
     to: string
-    subject: string
-    html: string
-    text: string
+    from: string
     cc?: string
     bcc?: string
-    replyTo?: string
+    reply_to?: string
+    subject: string
+    text_body: string
+    html_body: string
 }

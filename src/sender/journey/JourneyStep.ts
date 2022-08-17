@@ -4,6 +4,10 @@ import { User } from '../../models/User'
 import { Rule, check } from './RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from './UserEvent'
+import EmailJob from '../../jobs/EmailJob'
+import App from '../../app'
+import TextJob from '../../jobs/TextJob'
+import WebhookJob from '../../jobs/WebhookJob'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -53,7 +57,7 @@ export class JourneyStep extends Model {
      * @returns JourneyStep if one is available
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async next(user: User, event?: Event): Promise<JourneyStep | undefined> {
+    async next(user: User, event?: UserEvent): Promise<JourneyStep | undefined> {
         return await getJourneyStep(this.child_id)
     }
 }
@@ -206,8 +210,41 @@ export class JourneyDelay extends JourneyStep {
     }
 }
 
+type ChannelType = 'text' | 'email' | 'webhook'
 export class JourneyAction extends JourneyStep {
 
+    channel!: ChannelType
+    template_id!: number
+
+    parseJson(json: any) {
+        super.parseJson(json)
+
+        this.channel = json?.data?.type
+        this.template_id = json?.data?.template_id
+    }
+
+    async next(user: User, event?: UserEvent) {
+        const channels = {
+            email: EmailJob.from({
+                template_id: this.template_id,
+                user_id: user.id,
+                event_id: event?.id,
+            }),
+            text: TextJob.from({
+                template_id: this.template_id,
+                user_id: user.id,
+                event_id: event?.id,
+            }),
+            webhook: WebhookJob.from({
+                template_id: this.template_id,
+                user_id: user.id,
+                event_id: event?.id,
+            }),
+        }
+        App.main.queue.enqueue(channels[this.channel])
+
+        return super.next(user, event)
+    }
 }
 
 // Look at a condition tree and evaluate if user passes on to next step
