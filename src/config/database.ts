@@ -22,6 +22,6 @@ export default (config: DatabaseConfig) => {
 export const migrate = async (db: Knex) => {
     return db.migrate.latest({
         directory: './db/migrations',
-        tableName: 'migrations'
+        tableName: 'migrations',
     })
 }

@@ -1,5 +1,5 @@
-import type { JSONSchemaType } from "ajv";
-import type { ClientDeleteUsersRequest, ClientPatchUsersRequest, ClientPostEventsRequest } from "models/client";
+import type { JSONSchemaType } from 'ajv'
+import type { ClientDeleteUsersRequest, ClientPatchUsersRequest, ClientPostEventsRequest } from 'models/client'
 
 export const patchUsersRequest: JSONSchemaType<ClientPatchUsersRequest> = {
     type: 'array',
@@ -21,9 +21,9 @@ export const patchUsersRequest: JSONSchemaType<ClientPatchUsersRequest> = {
             data: {
                 type: 'object',
                 nullable: true,
-                additionalProperties: true
-            }
-        }
+                additionalProperties: true,
+            },
+        },
     },
     minItems: 1,
 }
@@ -31,7 +31,7 @@ export const patchUsersRequest: JSONSchemaType<ClientPatchUsersRequest> = {
 export const deleteUsersRequest: JSONSchemaType<ClientDeleteUsersRequest> = {
     type: 'array',
     items: {
-        type: 'string'
+        type: 'string',
     },
     minItems: 1,
 }
@@ -52,8 +52,8 @@ export const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
                 type: 'object',
                 nullable: true,
                 additionalProperties: true,
-            }
-        }
+            },
+        },
     },
     minItems: 1,
 }

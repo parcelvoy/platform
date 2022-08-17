@@ -1,9 +1,11 @@
 import { DriverConfig } from '../../config/env'
 import { LoggerConfig } from '../../config/logger'
+import { TextTemplate } from '../../models/Template'
 import render, { Variables } from '../../render'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoProvider, { NexmoConfig } from './NexmoTextProvider'
 import PlivoTextProvider, { PlivoConfig } from './PlivoTextProvider'
+import { TextMessage, TextResponse } from './TextMessage'
 import TwilioTextProvider, { TwilioConfig } from './TwilioTextProvider'
 
 export type TextDriver = 'nexmo' | 'plivo' | 'twilio' | 'logger'
@@ -13,25 +15,13 @@ export interface TextTypeConfig extends DriverConfig {
 
 export type TextConfig = NexmoConfig | PlivoConfig | TwilioConfig | LoggerConfig
 
-export interface TextMessage {
-    to: string
-    from: string
-    text: string
-}
-
-export interface TextResponse {
-    message: TextMessage
-    success: boolean
-    response: string
-}
-
 export interface TextProvider {
     send(message: TextMessage): Promise<TextResponse>
 }
 
 export default class TextSender {
     provider: TextProvider
-    constructor (config?: TextConfig) {
+    constructor(config?: TextConfig) {
         if (config?.driver === 'nexmo') {
             this.provider = new NexmoProvider(config)
         } else if (config?.driver === 'plivo') {
@@ -45,15 +35,13 @@ export default class TextSender {
         }
     }
 
-    async send (options: TextMessage, variables: Variables) {
+    async send(options: TextTemplate, variables: Variables) {
         const message = {
             to: options.to,
             from: options.from,
-            text: render(options.text, variables)
+            text: render(options.text, variables),
         }
 
         await this.provider.send(message)
-
-        // TODO: Create an event for the user the message was sent
     }
 }

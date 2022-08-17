@@ -1,0 +1,56 @@
+exports.up = function(knex) {
+    return knex.schema
+        .createTable('journeys', function(table) {
+            table.increments()
+            table.string('name', 255).defaultTo('')
+            table.string('description', 2048).defaultTo('')
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
+            table.timestamp('deleted_at').nullable()
+        })
+        .createTable('journey_steps', function(table) {
+            table.increments()
+            table.string('type', 255).defaultTo('')
+            table.integer('journey_id')
+                .references('id')
+                .inTable('journeys')
+                .onDelete('CASCADE')
+                .unsigned()
+            table.integer('child_id')
+                .references('id')
+                .inTable('journey_steps')
+                .onDelete('SET NULL')
+                .unsigned()
+            table.json('data')
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
+        })
+        .createTable('journey_user_step', function(table) {
+            table.increments()
+            table.integer('user_id')
+                .references('id')
+                .inTable('users')
+                .onDelete('CASCADE')
+                .unsigned()
+            table.integer('journey_id')
+                .references('id')
+                .inTable('journeys')
+                .onDelete('CASCADE')
+                .unsigned()
+            table.integer('step_id')
+                .references('id')
+                .inTable('journey_steps')
+                .onDelete('CASCADE')
+                .unsigned()
+            table.string('type', 255)
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
+        })
+}
+
+exports.down = function(knex) {
+    return knex.schema
+        .dropTable('journey_user_step')
+        .dropTable('journey_steps')
+        .dropTable('journeys')
+}

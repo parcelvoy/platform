@@ -1,4 +1,5 @@
-import { TextMessage, TextProvider, TextResponse, TextTypeConfig } from './TextSender'
+import { TextMessage, TextResponse } from './TextMessage'
+import { TextProvider, TextTypeConfig } from './TextSender'
 
 export interface TwilioConfig extends TextTypeConfig {
     driver: 'twilio'
@@ -10,12 +11,12 @@ export default class TwilioTextProvider implements TextProvider {
     accountSid: string
     apiKey: string
 
-    constructor ({ accountSid, authToken }: TwilioConfig) {
+    constructor({ accountSid, authToken }: TwilioConfig) {
         this.accountSid = accountSid
         this.apiKey = Buffer.from(`${accountSid}:${authToken}`).toString('base64')
     }
 
-    async send (message: TextMessage): Promise<TextResponse> {
+    async send(message: TextMessage): Promise<TextResponse> {
         const { from, to, text } = message
         const form = new FormData()
         form.append('From', from)
@@ -26,9 +27,9 @@ export default class TwilioTextProvider implements TextProvider {
             method: 'POST',
             headers: {
                 Authorization: `Basic ${this.apiKey}`,
-                'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)'
+                'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
-            body: form
+            body: form,
         })
 
         const responseBody = await response.json()
@@ -36,7 +37,7 @@ export default class TwilioTextProvider implements TextProvider {
             return {
                 message,
                 success: true,
-                response: responseBody.sid
+                response: responseBody.sid,
             }
         } else {
             throw new Error(`${response.status} - ${responseBody.message}`)

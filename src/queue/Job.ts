@@ -10,37 +10,36 @@ export interface EncodedJob {
 
 export default class Job implements EncodedJob {
     data: any
-    options: JobOptions = {
-        delay: 0
-    }
+    options: JobOptions = { delay: 0 }
 
     static $name: string = Job.constructor.name
 
-    get name () {
+    get name() {
         return this.$static.$name
     }
 
-    get $static () {
+    get $static() {
         return this.constructor as typeof Job
     }
 
-    static async handler (_: any): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static async handler(_: any): Promise<any> {
         return Promise.reject(new Error('Handler not defined.'))
     }
 
-    static from (...args: any[]): Job {
+    static from(...args: any[]): Job {
         return new this({ ...args })
     }
 
-    constructor (data: any) {
+    constructor(data: any) {
         this.data = data
     }
 
-    toJSON () {
+    toJSON() {
         return {
             name: this.name,
             data: this.data,
-            options: this.options
+            options: this.options,
         }
     }
 }

@@ -1,17 +1,17 @@
-import { JSONSchemaType } from "ajv";
-import { ProjectParams } from "../models/Project";
+import { JSONSchemaType } from 'ajv'
+import { ProjectParams } from '../models/Project'
 
 export const projectCreateParams: JSONSchemaType<ProjectParams> = {
     type: 'object',
     required: ['name'],
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
         },
         description: {
             type: 'string',
-            nullable: true
-        }
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }
@@ -25,8 +25,8 @@ export const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
         },
         description: {
             type: 'string',
-            nullable: true
-        }
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }

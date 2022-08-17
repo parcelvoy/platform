@@ -5,14 +5,14 @@ import { checkType, isType } from './Util'
 /**
  * Cast the given `value` to an array.
  */
-export const wrap = function (value: any): any[] {
+export const wrap = function(value: any): any[] {
     return value ? (Array.isArray(value) ? value : [value]) : []
 }
 
 /**
  * Returns the first `n` items of an array.
  */
-export const first = function (array: any[]): any {
+export const first = function(array: any[]): any {
     checkType(array, 'array')
     return array[0]
 }
@@ -20,7 +20,7 @@ export const first = function (array: any[]): any {
 /**
  * Returns the first `n` items of an array.
  */
-export const firstN = function (array: any[], n?: number): any[] {
+export const firstN = function(array: any[], n?: number): any[] {
     checkType(array, 'array')
     if (!isNumber(n)) {
         return array[0]
@@ -31,14 +31,14 @@ export const firstN = function (array: any[], n?: number): any[] {
 /**
  * Returns true if `value` is an array.
  */
-export const isArray = function (value: any): boolean {
+export const isArray = function(value: any): boolean {
     return Array.isArray(value)
 }
 
 /**
  * Returns the item from `array` at index `idx`.
  */
-export const itemAt = function (array: any[], idx?: number): any {
+export const itemAt = function(array: any[], idx?: number): any {
     checkType(array, 'array')
     idx = isNumber(idx) ? idx ?? 0 : 0
     if (idx < 0) {
@@ -54,7 +54,7 @@ export const itemAt = function (array: any[], idx?: number): any {
  * Join all elements of array into a string, optionally using a
  * given separator.
  */
-export const join = function (array: any, separator?: string): string {
+export const join = function(array: any, separator?: string): string {
     if (isString(array)) return array
     if (checkType(array, 'array')) {
         separator = isString(separator) ? separator : ', '
@@ -66,7 +66,7 @@ export const join = function (array: any, separator?: string): string {
  * Returns the last item of an array.
  * Opposite of `first`.
  */
-export const last = function (value: any[]): any {
+export const last = function(value: any[]): any {
     checkType(value, 'array')
     return value[value.length - 1]
 }
@@ -74,7 +74,7 @@ export const last = function (value: any[]): any {
 /**
  * Returns the last `n` items of an array or string. Opposite of `firstN`.
  */
-export const lastN = function (value: any[], n?: number): any[] {
+export const lastN = function(value: any[], n?: number): any[] {
     checkType(value, 'array')
     if (!isNumber(n)) {
         return value[value.length - 1]
@@ -85,7 +85,7 @@ export const lastN = function (value: any[], n?: number): any[] {
 /**
  * Returns the length of the given string or array.
  */
-export const length = function (value: any): number {
+export const length = function(value: any): number {
     if (isType(value, 'object')) {
         value = Object.keys(value)
     }
@@ -99,7 +99,7 @@ export const length = function (value: any): number {
  * Map over the given array of objects and create an array containing
  * only the single needed value in the object
  */
-export const pluck = function (array: any[], prop: string): any[] {
+export const pluck = function(array: any[], prop: string): any[] {
     checkType(array, 'array')
 
     return array.map(item => {
@@ -113,7 +113,7 @@ export const pluck = function (array: any[], prop: string): any[] {
 /**
  * Reverse the elements in an array, or the characters in a string.
  */
-export const reverse = function (value: any[] | string): any[] | string {
+export const reverse = function(value: any[] | string): any[] | string {
     if (Array.isArray(value)) {
         return value.reverse()
     }
@@ -127,7 +127,7 @@ export const reverse = function (value: any[] | string): any[] | string {
  * Sort the given `array`. A second direction value may be passed to
  * determine if the array should be in ascending or descending order.
  */
-export const sort = function (array: any[], direction?: 'asc' | 'desc'): any[] {
+export const sort = function(array: any[], direction?: 'asc' | 'desc'): any[] {
     checkType(array, 'array')
     if (isString(direction) && direction === 'desc') {
         return array.sort().reverse()

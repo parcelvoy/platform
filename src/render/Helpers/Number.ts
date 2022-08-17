@@ -4,7 +4,7 @@ import { checkType, isType } from './Util'
 /**
  * Return true if `value` is a number.
  */
-export const isNumber = function (value: any): boolean {
+export const isNumber = function(value: any): boolean {
     return isType(value, 'number')
 }
 
@@ -40,7 +40,7 @@ const operate = (values: any[], operation: (a: number, b: number) => number) => 
 /**
  * Return the magnitude of `a`.
  */
-export const abs = function (value: number | any): number {
+export const abs = function(value: number | any): number {
     const [num] = getNumbers(value)
     return Math.abs(num)
 }
@@ -48,7 +48,7 @@ export const abs = function (value: number | any): number {
 /**
  * Return the sum of `a` plus `b`
  */
-export const add = function (...args: any[]): number {
+export const add = function(...args: any[]): number {
     return operate(args, (a, b) => a + b)
 }
 export const plus = add
@@ -56,7 +56,7 @@ export const plus = add
 /**
  * Get the `Math.ceil()` of the given value.
  */
-export const ceil = function (value: number | any): number {
+export const ceil = function(value: number | any): number {
     const [num] = getNumbers(value)
     return Math.ceil(num)
 }
@@ -64,14 +64,14 @@ export const ceil = function (value: number | any): number {
 /**
  * Divide `a` by `b`
  */
-export const divide = function (...args: any[]): number {
+export const divide = function(...args: any[]): number {
     return operate(args, (a, b) => a / b)
 }
 
 /**
  * Get the `Math.floor()` of the given value.
  */
-export const floor = function (value: number): number {
+export const floor = function(value: number): number {
     const [num] = getNumbers(value)
     return Math.floor(num)
 }
@@ -79,7 +79,7 @@ export const floor = function (value: number): number {
 /**
  * Return the difference of `a` minus `b`.
  */
-export const subtract = function (...args: any[]): number {
+export const subtract = function(...args: any[]): number {
     return operate(args, (a, b) => a - b)
 }
 export const minus = subtract
@@ -87,7 +87,7 @@ export const minus = subtract
 /**
  * Return the product of `a` times `b`.
  */
-export const multiply = function (...args: any[]): number {
+export const multiply = function(...args: any[]): number {
     return operate(args, (a, b) => a * b)
 }
 export const times = multiply
@@ -95,7 +95,7 @@ export const times = multiply
 /**
  * Generate a random number between two values
  */
-export const random = function (min: number, max: number) {
+export const random = function(min: number, max: number) {
     [min, max] = getNumbers(min, max)
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
@@ -103,14 +103,14 @@ export const random = function (min: number, max: number) {
 /**
  * Get the remainder when `a` is divided by `b`.
  */
-export const remainder = function (a: number, b: number): number {
+export const remainder = function(a: number, b: number): number {
     return operate([a, b], (a, b) => a % b)
 }
 
 /**
  * Round the given number.
  */
-export const round = function (value: number): number {
+export const round = function(value: number): number {
     const [num] = getNumbers(value)
     return Math.round(num)
 }
@@ -123,11 +123,11 @@ export const round = function (value: number): number {
  * @param currency If formatting for currency, pass the desired currency
  * @returns A string format of the number matching the specifications
  */
-export const numberFormat = function (
+export const numberFormat = function(
     value: number,
     locale?: string,
     style?: 'currency' | 'percent' | undefined,
-    currency?: string
+    currency?: string,
 ): string {
     const [num] = getNumbers(value)
     if (!locale || !isString(locale)) {

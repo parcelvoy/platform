@@ -11,35 +11,38 @@ export default class MemoryQueueProvider implements QueueProvider {
     backlog: Job[] = []
     loop: NodeJS.Timeout | undefined
 
-    constructor (queue: Queue) {
+    constructor(queue: Queue) {
         this.queue = queue
         this.start()
     }
 
-    async enqueue (job: Job): Promise<void> {
+    async enqueue(job: Job): Promise<void> {
         this.backlog.push(job)
     }
 
-    start (): void {
+    start(): void {
         if (this.loop) return
         this.process()
     }
 
-    close (): void {
+    close(): void {
         clearTimeout(this.loop)
         this.loop = undefined
     }
 
-    private async process () {
-        let job;
-        while (job = this.backlog.shift()) {
-            await this.queue.dequeue(job)
+    private async process() {
+        let job
+        while (job) {
+            job = this.backlog.shift()
+            if (job) {
+                await this.queue.dequeue(job)
+            }
         }
         await this.tick()
         await this.process()
     }
 
-    private async tick (): Promise<void> {
+    private async tick(): Promise<void> {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve()

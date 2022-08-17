@@ -9,5 +9,5 @@ export interface LoggerConfig extends DriverConfig {
 
 // TODO: Check ENV and disable prettier for production
 export const logger = pino({
-    level: process.env.LOG_LEVEL || 'info'
+    level: process.env.LOG_LEVEL || 'info',
 }, pretty({ colorize: true }))

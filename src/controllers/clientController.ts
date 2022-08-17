@@ -1,15 +1,15 @@
-import Router from "@koa/router"
-import type App from "../app"
-import { deleteUsersRequest, patchUsersRequest, postEventsRequest } from "../schemas/client"
-import UserPatchJob from "../job/UserPatchJob"
-import UserDeleteJob from "../job/UserDeleteJob"
-import EventPostJob from "../job/EventPostJob"
+import Router from '@koa/router'
+import type App from '../app'
+import { deleteUsersRequest, patchUsersRequest, postEventsRequest } from '../schemas/client'
+import UserPatchJob from '../jobs/UserPatchJob'
+import UserDeleteJob from '../jobs/UserDeleteJob'
+import EventPostJob from '../jobs/EventPostJob'
 
-const router = new Router<{ 
+const router = new Router<{
     app: App
     project_id: number
 }>({
-    prefix: '/client'
+    prefix: '/client',
 })
 
 router.use(async (ctx, next) => {
@@ -46,7 +46,7 @@ router.patch('/users', async ctx => {
     for (const user of users) {
         await ctx.state.app.queue.enqueue(UserPatchJob.from({
             project_id: ctx.state.project_id,
-            user
+            user,
         }))
     }
 
@@ -60,11 +60,11 @@ router.delete('/users', async ctx => {
     if (!Array.isArray(userIds)) userIds = userIds.length ? [userIds] : []
 
     userIds = ctx.state.app.validate(deleteUsersRequest, userIds)
-    
-    for (const external_id of userIds) {
+
+    for (const externalId of userIds) {
         await ctx.state.app.queue.enqueue(UserDeleteJob.from({
             project_id: ctx.state.project_id,
-            external_id
+            external_id: externalId,
         }))
     }
 
@@ -79,7 +79,7 @@ router.post('/events', async ctx => {
     for (const event of events) {
         await ctx.state.app.queue.enqueue(EventPostJob.from({
             project_id: ctx.state.project_id,
-            event
+            event,
         }))
     }
 
