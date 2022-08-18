@@ -10,6 +10,8 @@ export class UserEvent extends Model {
     name!: string
     data!: Record<string, unknown>
 
+    static jsonAttributes = ['data']
+
     flatten(): TemplateEvent {
         return {
             ...this.data,

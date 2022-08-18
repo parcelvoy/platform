@@ -27,6 +27,7 @@ export class JourneyStep extends Model {
 
     static tableName = 'journey_steps'
     get $name(): string { return this.constructor.name }
+    static jsonAttributes = ['data']
 
     async step(user: User, type: string) {
         await JourneyUserStep.insert({

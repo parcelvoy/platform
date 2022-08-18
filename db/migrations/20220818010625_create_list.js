@@ -9,6 +9,7 @@ exports.up = function(knex) {
                 .references('id')
                 .inTable('projects')
                 .onDelete('CASCADE')
+            table.json('rules')
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())
         })
@@ -26,6 +27,13 @@ exports.up = function(knex) {
                 .references('id')
                 .inTable('lists')
                 .onDelete('CASCADE')
+            table.integer('event_id')
+                .unsigned()
+                .references('id')
+                .inTable('events')
+                .onDelete('CASCADE')
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
         })
 }
 

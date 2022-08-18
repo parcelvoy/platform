@@ -33,6 +33,8 @@ export class User extends Model {
 	data!: Record<string, any> // first_name, last_name live in data
 	attributes!: UserAttribute[] //???
 
+	static jsonAttributes = ['data']
+
 	flatten(): TemplateUser {
 		return {
 			...this.data,
