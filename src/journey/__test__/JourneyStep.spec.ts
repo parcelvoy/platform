@@ -1,4 +1,4 @@
-import { User } from '../../../models/User'
+import { User } from '../../models/User'
 import { JourneyStep, JourneyEntrance, JourneyMap } from '../JourneyStep'
 
 describe('JourneyEntrance', () => {
@@ -9,6 +9,7 @@ describe('JourneyEntrance', () => {
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
                 type: 'string',
+                group: 'user',
                 path: '$.email',
                 operator: '=',
                 value: email,
@@ -24,6 +25,7 @@ describe('JourneyEntrance', () => {
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
                 type: 'string',
+                group: 'user',
                 path: '$.email',
                 operator: '=',
                 value: 'notequal@test.com',
@@ -39,6 +41,7 @@ describe('JourneyEntrance', () => {
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
                 type: 'string',
+                group: 'user',
                 path: '$.email',
                 operator: '!=',
                 value: 'notequal@test.com',
@@ -54,6 +57,7 @@ describe('JourneyEntrance', () => {
             const user = User.fromJson({ email })
             const entrance = await JourneyEntrance.create('user', [{
                 type: 'string',
+                group: 'user',
                 path: '$.email',
                 operator: 'is set',
             }])

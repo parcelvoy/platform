@@ -5,6 +5,8 @@ import { pascalToSnakeCase, pluralize } from '../utilities'
 export default class Model {
 
     id!: number
+    created_at: Date = new Date()
+    updated_at: Date = new Date()
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
@@ -92,3 +94,5 @@ export default class Model {
         return db(this.tableName)
     }
 }
+
+export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson'
