@@ -23,7 +23,7 @@ export const updateLists = async (user: User, event?: UserEvent) => {
         }, list.rules)
 
         // If check passes and user isn't already in the list, add
-        if (result && !existingLists[list.id]) {
+        if (result && !existingLists.includes(list.id)) {
 
             await UserList.insert({
                 user_id: user.id,
