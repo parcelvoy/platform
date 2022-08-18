@@ -78,6 +78,16 @@ export default class Model {
         return await where(this.table(db)).update(data)
     }
 
+    static async updateAndFetch<T extends typeof Model>(
+        this: T,
+        id: number,
+        data: Partial<InstanceType<T>> = {},
+        db: Knex = App.main.db,
+    ): Promise<InstanceType<T>> {
+        await this.table(db).where('id', id).update(data)
+        return await this.find(id) as InstanceType<T>
+    }
+
     static async delete<T extends typeof Model>(
         this: T,
         where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,

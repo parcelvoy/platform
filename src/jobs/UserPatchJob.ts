@@ -1,7 +1,8 @@
-import App from '../app'
 import { User } from '../models/User'
 import { ClientPatchUser } from '../models/client'
 import { Job } from '../queue'
+import { getUserFromExternalId } from '../journey/UserRepository'
+import { updateLists } from '../lists/ListService'
 
 interface UserPatchTrigger {
     project_id: number
@@ -17,30 +18,23 @@ export default class UserPatchJob extends Job {
 
     static async handler({ project_id, user: { external_id, data, ...fields } }: UserPatchTrigger) {
 
-        await App.main.db.transaction(async trx => {
+        // Check for existing user
+        const existing = await getUserFromExternalId(project_id, external_id)
 
-            const existing = await trx('users')
-                .where('project_id', project_id)
-                .where('external_id', external_id)
-                .first()
-                .then(r => User.fromJson(r))
+        // If user, update otherwise insert
+        const user = existing
+            ? await User.updateAndFetch(existing.id, {
+                data: data ? { ...existing.data, ...data } : undefined,
+                ...fields,
+            })
+            : await User.insertAndFetch({
+                project_id,
+                external_id,
+                data,
+                ...fields,
+            })
 
-            if (existing) {
-                await trx('users')
-                    .update({
-                        data: data ? JSON.stringify({ ...existing.data, ...data }) : undefined,
-                        ...fields,
-                    })
-                    .where({ external_id })
-            } else {
-                await trx('users')
-                    .insert({
-                        project_id,
-                        external_id,
-                        data: JSON.stringify(data),
-                        ...fields,
-                    })
-            }
-        })
+        // Use updated user to check for list membership
+        await updateLists(user)
     }
 }

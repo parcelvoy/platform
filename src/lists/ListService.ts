@@ -8,7 +8,7 @@ const getUserListIds = async (user_id: number): Promise<number[]> => {
     return relations.map(item => item.list_id)
 }
 
-export const updateLists = async (user: User, event: UserEvent) => {
+export const updateLists = async (user: User, event?: UserEvent) => {
     const lists = await List.all(qb => qb.where('project_id', user.project_id))
     const existingLists = await getUserListIds(user.id)
     for (const list of lists) {
@@ -18,7 +18,7 @@ export const updateLists = async (user: User, event: UserEvent) => {
         // Check to see if user condition matches list requirements
         const result = check({
             user: user.flatten(),
-            event: event.flatten(),
+            event: event?.flatten(),
         }, list.rules)
 
         // If check passes and user isn't already in the list, add
@@ -27,7 +27,7 @@ export const updateLists = async (user: User, event: UserEvent) => {
             await UserList.insert({
                 user_id: user.id,
                 list_id: list.id,
-                event_id: event.id,
+                event_id: event?.id,
             })
         }
     }
