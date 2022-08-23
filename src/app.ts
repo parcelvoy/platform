@@ -7,6 +7,7 @@ import Queue from './queue'
 import EmailSender from './sender/email/EmailSender'
 import TextSender from './sender/text/TextSender'
 import WebhookSender from './sender/webhook/WebhookSender'
+import configQueue from './config/queue'
 
 export default class App {
     private static $main: App
@@ -26,6 +27,9 @@ export default class App {
 
         // Setup app
         App.$main = new App(env, database)
+
+        // Register jobs
+        configQueue(App.$main.queue)
 
         return App.$main
     }

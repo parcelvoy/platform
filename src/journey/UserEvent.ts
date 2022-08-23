@@ -1,20 +1,23 @@
-import Model from '../../models/Model'
+import Model, { ModelParams } from '../models/Model'
 
 export interface TemplateEvent extends Record<string, any> {
     name: string
 }
 
 export class UserEvent extends Model {
+    project_id!: number
     user_id!: number
     name!: string
-    properties!: Record<string, any>
-    created_at!: Date
-    updated_at!: Date
+    data!: Record<string, unknown>
+
+    static jsonAttributes = ['data']
 
     flatten(): TemplateEvent {
         return {
-            ...this.properties,
+            ...this.data,
             name: this.name,
         }
     }
 }
+
+export type UserEventParams = Omit<UserEvent, ModelParams | 'flatten'>

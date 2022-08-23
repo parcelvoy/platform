@@ -32,8 +32,8 @@ export class User extends Model {
 	devices!: Device[]
 	data!: Record<string, any> // first_name, last_name live in data
 	attributes!: UserAttribute[] //???
-	created_at!: Date
-	updated_at!: Date
+
+	static jsonAttributes = ['data']
 
 	flatten(): TemplateUser {
 		return {

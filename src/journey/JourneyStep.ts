@@ -1,20 +1,20 @@
 import { add, isFuture } from 'date-fns'
-import Model from '../../models/Model'
-import { User } from '../../models/User'
-import { Rule, check } from './RuleEngine'
+import Model from '../models/Model'
+import { User } from '../models/User'
+import Rule from '../rules/Rule'
+import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from './UserEvent'
-import EmailJob from '../../jobs/EmailJob'
-import App from '../../app'
-import TextJob from '../../jobs/TextJob'
-import WebhookJob from '../../jobs/WebhookJob'
+import EmailJob from '../jobs/EmailJob'
+import App from '../app'
+import TextJob from '../jobs/TextJob'
+import WebhookJob from '../jobs/WebhookJob'
 
 export class JourneyUserStep extends Model {
     user_id!: number
     type!: string
     journey_id!: number
     step_id!: number
-    created_at!: Date
 
     static tableName = 'journey_user_step'
 }
@@ -27,6 +27,7 @@ export class JourneyStep extends Model {
 
     static tableName = 'journey_steps'
     get $name(): string { return this.constructor.name }
+    static jsonAttributes = ['data']
 
     async step(user: User, type: string) {
         await JourneyUserStep.insert({
@@ -134,13 +135,11 @@ export class JourneyStep extends Model {
 
 export class JourneyEntrance extends JourneyStep {
 
-    entrance_type!: 'user' | 'event'
     rules: Rule[] = []
 
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.entrance_type = json?.data?.entrance_type
         this.rules = json?.data.rules
     }
 
@@ -157,15 +156,10 @@ export class JourneyEntrance extends JourneyStep {
     }
 
     async condition(user: User, event?: UserEvent): Promise<boolean> {
-
-        // Based on entrance type get flattened user or event
-        const obj = this.entrance_type === 'user' ? user.flatten() : event?.flatten()
-
-        // If entrance is event based and we don't have an event, break
-        if (!obj) return false
-
-        // Check that all rules are met
-        return check(obj, this.rules)
+        return check({
+            user: user.flatten(),
+            event: event?.flatten(),
+        }, this.rules)
     }
 }
 
@@ -272,15 +266,10 @@ export class JourneyGate extends JourneyStep {
     }
 
     async condition(user: User, event?: UserEvent): Promise<boolean> {
-
-        // Based on entrance type get flattened user or event
-        const obj = this.entrance_type === 'user' ? user.flatten() : event?.flatten()
-
-        // If entrance is event based and we don't have an event, break
-        if (!obj) return false
-
-        // Check that all rules are met
-        return check(obj, [this.rule])
+        return check({
+            user: user.flatten(),
+            event: event?.flatten(),
+        }, [this.rule])
     }
 }
 

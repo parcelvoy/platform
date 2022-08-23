@@ -1,9 +1,9 @@
 import { Job } from '../queue'
 import { User } from '../models/User'
 import App from '../app'
-import { UserEvent } from '../sender/journey/UserEvent'
+import { UserEvent } from '../journey/UserEvent'
 import { TextTemplate } from '../models/Template'
-import { createEvent } from '../sender/journey/UserEventRepository'
+import { createEvent } from '../journey/UserEventRepository'
 import { MessageTrigger } from '../models/MessageTrigger'
 
 export default class TextJob extends Job {
@@ -27,8 +27,13 @@ export default class TextJob extends Job {
         await App.main.texter.send(template, { user, event })
 
         // Create an event on the user about the text
-        createEvent(user_id, 'text_sent', {
-            // TODO: Add whatever other attributes
+        createEvent({
+            project_id: user.project_id,
+            user_id: user.id,
+            name: 'text_sent',
+            data: {
+                // TODO: Add whatever other attributes
+            },
         })
     }
 }

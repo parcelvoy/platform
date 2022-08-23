@@ -4,12 +4,6 @@ import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import { LoggerConfig } from '../config/logger'
 import QueueProvider from './QueueProvider'
 import { DriverConfig } from '../config/env'
-import EmailJob from '../jobs/EmailJob'
-import UserPatchJob from '../jobs/UserPatchJob'
-import UserDeleteJob from '../jobs/UserDeleteJob'
-import EventPostJob from '../jobs/EventPostJob'
-import TextJob from '../jobs/TextJob'
-import WebhookJob from '../jobs/WebhookJob'
 
 export type QueueDriver = 'sqs' | 'memory' | 'logger'
 export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
@@ -30,13 +24,6 @@ export default class Queue {
         } else {
             throw new Error('A valid queue must be defined!')
         }
-
-        this.register(EmailJob)
-        this.register(TextJob)
-        this.register(WebhookJob)
-        this.register(UserPatchJob)
-        this.register(UserDeleteJob)
-        this.register(EventPostJob)
     }
 
     async dequeue(job: EncodedJob): Promise<boolean> {

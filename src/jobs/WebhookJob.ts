@@ -3,8 +3,8 @@ import { User } from '../models/User'
 import App from '../app'
 import { MessageTrigger } from '../models/MessageTrigger'
 import { WebhookTemplate } from '../models/Template'
-import { UserEvent } from '../sender/journey/UserEvent'
-import { createEvent } from '../sender/journey/UserEventRepository'
+import { UserEvent } from '../journey/UserEvent'
+import { createEvent } from '../journey/UserEventRepository'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'
@@ -26,8 +26,13 @@ export default class WebhookJob extends Job {
         await App.main.webhooker.send(template, { user, event })
 
         // Create an event on the user about the email
-        createEvent(user_id, 'webhook_sent', {
-            // TODO: Add whatever other attributes
+        createEvent({
+            project_id: user.project_id,
+            user_id: user.id,
+            name: 'webhook_sent',
+            data: {
+                // TODO: Add whatever other attributes
+            },
         })
     }
 }

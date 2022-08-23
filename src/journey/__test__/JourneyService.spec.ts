@@ -1,5 +1,5 @@
-import { Project } from '../../../models/Project'
-import { User } from '../../../models/User'
+import { Project } from '../../models/Project'
+import { User } from '../../models/User'
 import Journey from '../Journey'
 import { lastJourneyStep } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
@@ -16,6 +16,7 @@ describe('Run', () => {
             }, journey.id)
             await JourneyEntrance.create('user', [{
                 type: 'string',
+                group: 'user',
                 path: '$.language',
                 operator: '=',
                 value: 'en',

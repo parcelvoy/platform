@@ -5,6 +5,10 @@ import { pascalToSnakeCase, pluralize } from '../utilities'
 export default class Model {
 
     id!: number
+    created_at: Date = new Date()
+    updated_at: Date = new Date()
+
+    static jsonAttributes: string[] = []
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
@@ -14,6 +18,13 @@ export default class Model {
 
     parseJson(json: any) {
         Object.assign(this, json)
+    }
+
+    static formatJson(json: any): Record<string, unknown> {
+        for (const attribute of this.jsonAttributes) {
+            json[attribute] = JSON.stringify(json[attribute])
+        }
+        return json
     }
 
     static query<T extends typeof Model>(this: T, db: Knex = App.main.db): Knex.QueryBuilder<InstanceType<T>> {
@@ -55,7 +66,8 @@ export default class Model {
         data: Partial<InstanceType<T>> = {},
         db: Knex = App.main.db,
     ): Promise<number> {
-        return await this.table(db).insert(data)
+        const formattedData = this.formatJson(data)
+        return await this.table(db).insert(formattedData)
     }
 
     static async insertAndFetch<T extends typeof Model>(
@@ -63,17 +75,31 @@ export default class Model {
         data: Partial<InstanceType<T>> = {},
         db: Knex = App.main.db,
     ): Promise<InstanceType<T>> {
-        const id: number = await this.table(db).insert(data)
+        const formattedData = this.formatJson(data)
+        const id: number = await this.table(db).insert(formattedData)
         return await this.find(id) as InstanceType<T>
     }
 
     static async update<T extends typeof Model>(
         this: T,
         where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,
-        data: any = {},
+        data: Partial<InstanceType<T>> = {},
         db: Knex = App.main.db,
     ): Promise<number> {
-        return await where(this.table(db)).update(data)
+        const formattedData = this.formatJson(data)
+        return await where(this.table(db)).update(formattedData)
+    }
+
+    static async updateAndFetch<T extends typeof Model>(
+        this: T,
+        id: number,
+        data: Partial<InstanceType<T>> = {},
+        db: Knex = App.main.db,
+    ): Promise<InstanceType<T>> {
+        const formattedData = this.formatJson(data)
+        console.log(formattedData)
+        await this.table(db).where('id', id).update(formattedData)
+        return await this.find(id) as InstanceType<T>
     }
 
     static async delete<T extends typeof Model>(
@@ -92,3 +118,5 @@ export default class Model {
         return db(this.tableName)
     }
 }
+
+export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson'

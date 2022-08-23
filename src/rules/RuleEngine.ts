@@ -1,15 +1,7 @@
 import jsonpath from 'jsonpath'
-
-export type Operator = '=' | '!=' | '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor'
-export type RuleType = 'wrapper' | 'string' | 'number' | 'boolean' | 'date' | 'array'
-
-export interface Rule {
-    type: RuleType
-    path: string
-    operator: Operator
-    value?: unknown
-    children?: Rule[]
-}
+import { TemplateEvent } from '../journey/UserEvent'
+import { TemplateUser } from '../models/User'
+import Rule, { Operator, RuleGroup, RuleType } from './Rule'
 
 class Registry<T> {
     #registered: { [key: string]: T } = {}
@@ -24,8 +16,13 @@ class Registry<T> {
     }
 }
 
+interface RuleCheckInput {
+    user: TemplateUser
+    event?: TemplateEvent
+}
+
 interface RuleCheck {
-    check(value: Record<string, unknown>, rule: Rule): boolean
+    check(value: RuleCheckInput, rule: Rule): boolean
 }
 
 const ruleRegistry = new Registry<RuleCheck>()
@@ -36,8 +33,16 @@ class RuleEvalException extends Error {
     }
 }
 
+const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: any) => T): T | undefined => {
+    const inputValue = input[rule.group]
+    if (!inputValue) return undefined
+    const pathValue = jsonpath.query(input[rule.group], rule.path)
+    if (!pathValue) return undefined
+    return cast(pathValue)
+}
+
 const WrapperRule: RuleCheck = {
-    check(input: Record<string, unknown>, rule: Rule) {
+    check(input: RuleCheckInput, rule: Rule) {
         const predicate = (child: Rule) => ruleRegistry.get(child.type)?.check(input, child)
         if (!rule.children) return true
 
@@ -58,8 +63,10 @@ const WrapperRule: RuleCheck = {
 }
 
 const StringRule: RuleCheck = {
-    check(input: Record<string, unknown>, rule: Rule) {
-        const value = String(jsonpath.query(input, rule.path))
+    check(input: RuleCheckInput, rule: Rule) {
+        const value = queryValue(input, rule, item => String(item))
+        if (!value) return false
+
         if (rule.operator === '=') {
             return value === rule.value
         }
@@ -77,8 +84,9 @@ const StringRule: RuleCheck = {
 }
 
 const NumberRule: RuleCheck = {
-    check(input: Record<string, unknown>, rule: Rule) {
-        const value = Number(jsonpath.query(input, rule.path))
+    check(input: RuleCheckInput, rule: Rule) {
+        const value = queryValue(input, rule, item => Number(item))
+        if (!value) return false
 
         if (rule.operator === 'is set') {
             return value != null
@@ -122,8 +130,8 @@ const NumberRule: RuleCheck = {
 }
 
 const BooleanRule: RuleCheck = {
-    check(input: Record<string, unknown>, rule: Rule) {
-        const value = Boolean(jsonpath.query(input, rule.path))
+    check(input: RuleCheckInput, rule: Rule) {
+        const value = queryValue(input, rule, item => Boolean(item))
         return value === rule.value
     },
 }
@@ -134,13 +142,22 @@ ruleRegistry.register('boolean', BooleanRule)
 // TODO: Add dates ruleset
 ruleRegistry.register('wrapper', WrapperRule)
 
-export const check = (value: Record<string, unknown>, rules: Rule[]) => {
-    const baseRule = make('wrapper', '$', 'and', undefined, rules)
+export const check = (value: RuleCheckInput, rules: Rule[]) => {
+    const baseRule = make({ type: 'wrapper', operator: 'and', children: rules })
     return ruleRegistry.get('wrapper').check(value, baseRule)
 }
 
-export const make = (type: RuleType, path = '$', operator: Operator = '=', value?: unknown, children?: Rule[]): Rule => {
+interface RuleMake {
+    type: RuleType
+    group?: RuleGroup
+    path?: string
+    operator?: Operator
+    value?: unknown
+    children?: Rule[]
+}
+
+export const make = ({ type, group = 'user', path = '$', operator = '=', value, children }: RuleMake): Rule => {
     return {
-        type, path, operator, value, children,
+        type, group, path, operator, value, children,
     }
 }
