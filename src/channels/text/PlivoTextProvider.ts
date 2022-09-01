@@ -1,19 +1,12 @@
 import { TextMessage, TextResponse } from './TextMessage'
-import { TextProvider, TextTypeConfig } from './TextSender'
+import { TextProvider } from './TextProvider'
 
-export interface PlivoConfig extends TextTypeConfig {
-    driver: 'plivo'
-    authId: string
-    authToken: string
-}
+export default class PlivoTextProvider extends TextProvider {
+    authId!: string
+    authToken!: string
 
-export default class PlivoTextProvider implements TextProvider {
-    authId: string
-    apiKey: string
-
-    constructor({ authId, authToken }: PlivoConfig) {
-        this.authId = authId
-        this.apiKey = Buffer.from(`${authId}:${authToken}`).toString('base64')
+    get apiKey(): string {
+        return Buffer.from(`${this.authId}:${this.authToken}`).toString('base64')
     }
 
     async send(message: TextMessage): Promise<TextResponse> {

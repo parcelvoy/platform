@@ -1,7 +1,7 @@
 import { Webhook, WebhookResponse } from './Webhook'
-import { WebhookProvider } from './WebhookSender'
+import { WebhookProvider } from './WebhookProvider'
 
-export default class LocalWebhookProvider implements WebhookProvider {
+export default class LocalWebhookProvider extends WebhookProvider {
     async send(options: Webhook): Promise<WebhookResponse> {
         const { method, endpoint, headers, body } = options
         const response = await fetch(endpoint, {

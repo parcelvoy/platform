@@ -24,7 +24,7 @@ export default class TextJob extends Job {
         if (!user || !template) return
 
         // Send and render email
-        await App.main.texter.send(template, { user, event })
+        await App.main.text?.send(template, { user, event })
 
         // Create an event on the user about the text
         createEvent({
@@ -32,6 +32,7 @@ export default class TextJob extends Job {
             user_id: user.id,
             name: 'text_sent',
             data: {
+                template_id,
                 // TODO: Add whatever other attributes
             },
         })

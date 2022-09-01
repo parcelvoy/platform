@@ -24,14 +24,15 @@ export default class EmailJob extends Job {
         if (!user || !template) return
 
         // Send and render email
-        await App.main.mailer.send(template, { user, event })
+        await App.main.email?.send(template, { user, event })
 
         // Create an event on the user about the email
         await createEvent({
             project_id: user.project_id,
             user_id: user.id,
             name: 'email_sent',
-            data: { // TODO: Add whatever other attributes
+            data: {
+                template_id,
             },
         })
     }

@@ -1,11 +1,9 @@
 import pino from 'pino'
 import pretty from 'pino-pretty'
-import { DriverConfig } from './env'
+import { Provider } from '../env/Provider'
 
-export type LoggerDriver = 'logger'
-export interface LoggerConfig extends DriverConfig {
-    driver: 'logger'
-}
+export type LoggerProviderName = 'logger'
+export class LoggerProvider extends Provider { }
 
 // TODO: Check ENV and disable prettier for production
 export const logger = pino({

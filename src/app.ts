@@ -1,15 +1,13 @@
 import Ajv, { JSONSchemaType } from 'ajv'
 import { RequestError } from './models/errors'
 import Api from './api'
-import db, { Knex, migrate } from './config/database'
+import db, { Database, migrate } from './config/database'
 import { Env } from './config/env'
 import Queue from './queue'
-import EmailSender from './sender/email/EmailSender'
-import TextSender from './sender/text/TextSender'
-import WebhookSender from './sender/webhook/WebhookSender'
 import configQueue from './config/queue'
+import { Channels, configChannels, ChannelAccessor } from './config/channels'
 
-export default class App {
+export default class App extends ChannelAccessor {
     private static $main: App
     static get main() {
         if (!App.$main) {
@@ -25,32 +23,32 @@ export default class App {
         // Migrate to latest version
         await migrate(database)
 
-        // Setup app
-        App.$main = new App(env, database)
+        // Load channels
+        const channels = await configChannels(database)
 
-        // Register jobs
-        configQueue(App.$main.queue)
+        console.log(channels)
+
+        // Setup Queue and register jobs
+        const queue = await configQueue(database)
+
+        // Setup app
+        App.$main = new App(env, database, queue, channels)
 
         return App.$main
     }
 
     api: Api
-    queue: Queue
-    mailer: EmailSender
-    texter: TextSender
-    webhooker: WebhookSender
     validator: Ajv
 
     // eslint-disable-next-line no-useless-constructor
     private constructor(
         public env: Env,
-        public db: Knex,
+        public db: Database,
+        public queue: Queue,
+        channels: Channels,
     ) {
+        super(channels)
         this.api = new Api(this)
-        this.queue = new Queue(this.env.queue)
-        this.mailer = new EmailSender(this.env.mail)
-        this.texter = new TextSender(this.env.text)
-        this.webhooker = new WebhookSender(this.env.webhook)
         this.validator = new Ajv()
     }
 

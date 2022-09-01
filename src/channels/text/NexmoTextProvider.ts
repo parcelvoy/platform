@@ -1,21 +1,10 @@
 import { TextMessage, TextResponse } from './TextMessage'
-import { TextProvider, TextTypeConfig } from './TextSender'
 import TextError from './TextError'
+import { TextProvider } from './TextProvider'
 
-export interface NexmoConfig extends TextTypeConfig {
-    driver: 'nexmo'
-    apiKey: string
-    apiSecret: string
-}
-
-export default class NexmoProvider implements TextProvider {
-    apiKey: string
-    apiSecret: string
-
-    constructor({ apiKey, apiSecret }: NexmoConfig) {
-        this.apiKey = apiKey
-        this.apiSecret = apiSecret
-    }
+export default class NexmoTextProvider extends TextProvider {
+    apiKey!: string
+    apiSecret!: string
 
     async send(message: TextMessage): Promise<TextResponse> {
         const { from, to, text } = message

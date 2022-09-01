@@ -1,6 +1,6 @@
-import knex, { Knex } from 'knex'
+import knex, { Knex as Database } from 'knex'
 
-export { Knex }
+export { Database }
 
 export interface DatabaseConnection {
     host: string
@@ -19,7 +19,7 @@ export default (config: DatabaseConfig) => {
     return knex(config)
 }
 
-export const migrate = async (db: Knex) => {
+export const migrate = async (db: Database) => {
     return db.migrate.latest({
         directory: './db/migrations',
         tableName: 'migrations',

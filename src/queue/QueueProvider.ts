@@ -1,9 +1,12 @@
 import Queue from './Queue'
 import Job from './Job'
+import { Provider } from '../env/Provider'
 
-export default interface QueueProvider {
-    queue: Queue
-    enqueue(job: Job): Promise<void>
-    start(): void
-    close(): void
+export type QueueProviderName = 'sqs' | 'memory'
+
+export default abstract class QueueProvider extends Provider {
+    abstract load(queue: Queue): void
+    abstract enqueue(job: Job): Promise<void>
+    abstract start(): void
+    abstract close(): void
 }

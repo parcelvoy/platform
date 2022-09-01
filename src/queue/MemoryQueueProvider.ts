@@ -1,17 +1,13 @@
 import Job from './Job'
-import Queue, { QueueTypeConfig } from './Queue'
+import Queue from './Queue'
 import QueueProvider from './QueueProvider'
 
-export interface MemoryConfig extends QueueTypeConfig {
-    driver: 'memory'
-}
-
-export default class MemoryQueueProvider implements QueueProvider {
-    queue: Queue
+export default class MemoryQueueProvider extends QueueProvider {
+    queue!: Queue
     backlog: Job[] = []
     loop: NodeJS.Timeout | undefined
 
-    constructor(queue: Queue) {
+    load(queue: Queue) {
         this.queue = queue
         this.start()
     }

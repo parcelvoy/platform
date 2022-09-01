@@ -1,19 +1,12 @@
 import { TextMessage, TextResponse } from './TextMessage'
-import { TextProvider, TextTypeConfig } from './TextSender'
+import { TextProvider } from './TextProvider'
 
-export interface TwilioConfig extends TextTypeConfig {
-    driver: 'twilio'
-    accountSid: string
-    authToken: string
-}
+export default class TwilioTextProvider extends TextProvider {
+    accountSid!: string
+    authToken!: string
 
-export default class TwilioTextProvider implements TextProvider {
-    accountSid: string
-    apiKey: string
-
-    constructor({ accountSid, authToken }: TwilioConfig) {
-        this.accountSid = accountSid
-        this.apiKey = Buffer.from(`${accountSid}:${authToken}`).toString('base64')
+    get apiKey(): string {
+        return Buffer.from(`${this.accountSid}:${this.authToken}`).toString('base64')
     }
 
     async send(message: TextMessage): Promise<TextResponse> {

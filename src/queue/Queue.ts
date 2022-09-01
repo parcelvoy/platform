@@ -1,29 +1,17 @@
 import Job, { EncodedJob } from './Job'
-import SQSQueueProvider, { SQSConfig } from './SQSQueueProvider'
-import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
-import { LoggerConfig } from '../config/logger'
 import QueueProvider from './QueueProvider'
-import { DriverConfig } from '../config/env'
-
-export type QueueDriver = 'sqs' | 'memory' | 'logger'
-export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
-
-export interface QueueTypeConfig extends DriverConfig {
-    driver: QueueDriver
-}
 
 export default class Queue {
     provider: QueueProvider
     jobs: Record<string, (data: any) => Promise<any>> = {}
 
-    constructor(config?: QueueConfig) {
-        if (config?.driver === 'sqs') {
-            this.provider = new SQSQueueProvider(config, this)
-        } else if (config?.driver === 'memory') {
-            this.provider = new MemoryQueueProvider(this)
+    constructor(provider?: QueueProvider) {
+        if (provider) {
+            this.provider = provider
         } else {
             throw new Error('A valid queue must be defined!')
         }
+        provider.load(this)
     }
 
     async dequeue(job: EncodedJob): Promise<boolean> {

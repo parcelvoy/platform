@@ -1,5 +1,5 @@
-import { Knex } from 'knex'
 import App from '../app'
+import { Database } from '../config/database'
 import { pascalToSnakeCase, pluralize } from '../utilities'
 
 export default class Model {
@@ -27,14 +27,14 @@ export default class Model {
         return json
     }
 
-    static query<T extends typeof Model>(this: T, db: Knex = App.main.db): Knex.QueryBuilder<InstanceType<T>> {
+    static query<T extends typeof Model>(this: T, db: Database = App.main.db): Database.QueryBuilder<InstanceType<T>> {
         return this.table(db)
     }
 
     static async first<T extends typeof Model>(
         this: T,
-        where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,
-        db: Knex = App.main.db,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
+        db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         const record = await where(this.table(db)).first()
         if (!record) return undefined
@@ -44,7 +44,7 @@ export default class Model {
     static async find<T extends typeof Model>(
         this: T,
         id: number | undefined,
-        db: Knex = App.main.db,
+        db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         if (!id) return undefined
         const record = await this.table(db).where({ id }).first()
@@ -54,8 +54,8 @@ export default class Model {
 
     static async all<T extends typeof Model>(
         this: T,
-        where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,
-        db: Knex = App.main.db,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
+        db: Database = App.main.db,
     ): Promise<InstanceType<T>[]> {
         const records = await where(this.table(db))
         return records.map((item: any) => this.fromJson(item))
@@ -64,7 +64,7 @@ export default class Model {
     static async insert<T extends typeof Model>(
         this: T,
         data: Partial<InstanceType<T>> = {},
-        db: Knex = App.main.db,
+        db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)
         return await this.table(db).insert(formattedData)
@@ -73,7 +73,7 @@ export default class Model {
     static async insertAndFetch<T extends typeof Model>(
         this: T,
         data: Partial<InstanceType<T>> = {},
-        db: Knex = App.main.db,
+        db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
         const id: number = await this.table(db).insert(formattedData)
@@ -82,9 +82,9 @@ export default class Model {
 
     static async update<T extends typeof Model>(
         this: T,
-        where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
         data: Partial<InstanceType<T>> = {},
-        db: Knex = App.main.db,
+        db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)
         return await where(this.table(db)).update(formattedData)
@@ -94,7 +94,7 @@ export default class Model {
         this: T,
         id: number,
         data: Partial<InstanceType<T>> = {},
-        db: Knex = App.main.db,
+        db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
         console.log(formattedData)
@@ -104,8 +104,8 @@ export default class Model {
 
     static async delete<T extends typeof Model>(
         this: T,
-        where: (builder: Knex.QueryBuilder<any>) => Knex.QueryBuilder<any>,
-        db: Knex = App.main.db,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
+        db: Database = App.main.db,
     ): Promise<number> {
         return await where(this.table(db)).delete()
     }
@@ -114,7 +114,7 @@ export default class Model {
         return pluralize(pascalToSnakeCase(this.name))
     }
 
-    private static table(db: Knex = App.main.db): Knex.QueryBuilder<any> {
+    static table(db: Database = App.main.db): Database.QueryBuilder<any> {
         return db(this.tableName)
     }
 }
