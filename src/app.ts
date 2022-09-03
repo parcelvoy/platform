@@ -3,7 +3,6 @@ import { RequestError } from './models/errors'
 import Api from './api'
 import db, { Database, migrate } from './config/database'
 import { Env } from './config/env'
-import Queue from './queue'
 
 export default class App {
     private static $main: App
@@ -39,6 +38,9 @@ export default class App {
         this.api = new Api(this)
         this.validator = new Ajv()
         this.#registered = {}
+
+        // TODO: Need to somehow pre-warm or boot up queues so jobs
+        // can run without having to first add one
     }
 
     listen() {

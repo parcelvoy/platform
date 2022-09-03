@@ -213,7 +213,7 @@ export class JourneyAction extends JourneyStep {
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.channel = json?.data?.type
+        this.channel = json?.data?.channel
         this.template_id = json?.data?.template_id
     }
 
@@ -237,7 +237,7 @@ export class JourneyAction extends JourneyStep {
         }
 
         const queue = await loadQueue(user.project_id)
-        queue.enqueue(channels[this.channel])
+        await queue.enqueue(channels[this.channel])
 
         return super.next(user, event)
     }

@@ -10,7 +10,7 @@ exports.up = function(knex) {
                 .onDelete('CASCADE')
             table.string('name', 255).defaultTo('')
             table.string('group', 255).notNullable()
-            table.json('config')
+            table.json('data')
             table.boolean('is_default').defaultTo(0)
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())

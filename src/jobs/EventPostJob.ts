@@ -1,4 +1,4 @@
-import { logger } from '../config/logger'
+import { updateJourneys } from '../journey/JourneyService'
 import { createEvent } from '../journey/UserEventRepository'
 import { getUserFromExternalId } from '../journey/UserRepository'
 import { updateLists } from '../lists/ListService'
@@ -32,5 +32,8 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateLists(user, dbEvent)
+
+        // Use event to trigger journeys
+        await updateJourneys(user, dbEvent)
     }
 }

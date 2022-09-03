@@ -2,6 +2,12 @@ exports.up = function(knex) {
     return knex.schema
         .createTable('journeys', function(table) {
             table.increments()
+            table.integer('project_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('projects')
+                .onDelete('CASCADE')
             table.string('name', 255).defaultTo('')
             table.string('description', 2048).defaultTo('')
             table.timestamp('created_at').defaultTo(knex.fn.now())
