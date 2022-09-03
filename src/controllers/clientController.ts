@@ -4,6 +4,7 @@ import { deleteUsersRequest, patchUsersRequest, postEventsRequest } from '../sch
 import UserPatchJob from '../jobs/UserPatchJob'
 import UserDeleteJob from '../jobs/UserDeleteJob'
 import EventPostJob from '../jobs/EventPostJob'
+import { loadQueue } from '../config/queue'
 
 const router = new Router<{
     app: App
@@ -43,8 +44,9 @@ router.patch('/users', async ctx => {
 
     const users = ctx.state.app.validate(patchUsersRequest, ctx.request.body)
 
+    const queue = await loadQueue(ctx.state.project_id)
     for (const user of users) {
-        await ctx.state.app.queue.enqueue(UserPatchJob.from({
+        await queue.enqueue(UserPatchJob.from({
             project_id: ctx.state.project_id,
             user,
         }))
@@ -61,8 +63,9 @@ router.delete('/users', async ctx => {
 
     userIds = ctx.state.app.validate(deleteUsersRequest, userIds)
 
+    const queue = await loadQueue(ctx.state.project_id)
     for (const externalId of userIds) {
-        await ctx.state.app.queue.enqueue(UserDeleteJob.from({
+        await queue.enqueue(UserDeleteJob.from({
             project_id: ctx.state.project_id,
             external_id: externalId,
         }))
@@ -76,8 +79,9 @@ router.post('/events', async ctx => {
 
     const events = ctx.state.app.validate(postEventsRequest, ctx.request.body)
 
+    const queue = await loadQueue(ctx.state.project_id)
     for (const event of events) {
-        await ctx.state.app.queue.enqueue(EventPostJob.from({
+        await queue.enqueue(EventPostJob.from({
             project_id: ctx.state.project_id,
             event,
         }))

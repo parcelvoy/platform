@@ -18,9 +18,10 @@ export class Provider extends Model {
 
 export type ProviderMap<T extends Provider> = (record: any) => T
 
-export const defaultProvider = async <T extends Provider>(group: ProviderGroup, mapper: ProviderMap<T>, db?: Database): Promise<T | undefined> => {
+export const defaultProvider = async <T extends Provider>(group: ProviderGroup, projectId: number, mapper: ProviderMap<T>, db?: Database): Promise<T | undefined> => {
     const record = await Provider.table(db)
         .where('group', group)
+        .where('project_id', projectId)
         .where('is_default', true)
         .first()
     if (!record) return

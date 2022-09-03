@@ -54,7 +54,7 @@ export default class Model {
 
     static async all<T extends typeof Model>(
         this: T,
-        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any> = qb => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T>[]> {
         const records = await where(this.table(db))

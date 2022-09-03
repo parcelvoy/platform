@@ -1,4 +1,3 @@
-import { Database } from '../../config/database'
 import { defaultProvider } from '../../env/Provider'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
@@ -14,8 +13,8 @@ export const providerMap = (record: { name: EmailProviderName }): EmailProvider 
     }[record.name]
 }
 
-export const loadChannel = async (db: Database): Promise<EmailChannel | undefined> => {
-    const provider = await defaultProvider('email', providerMap, db)
+export const loadEmailChannel = async (projectId: number): Promise<EmailChannel | undefined> => {
+    const provider = await defaultProvider('email', projectId, providerMap)
     if (!provider) return
     return new EmailChannel(provider)
 }

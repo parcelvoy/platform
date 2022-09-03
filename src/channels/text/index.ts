@@ -1,4 +1,3 @@
-import { Database } from '../../config/database'
 import { defaultProvider } from '../../env/Provider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
@@ -16,8 +15,8 @@ export const providerMap = (record: { name: TextProviderName }): TextProvider =>
     }[record.name]
 }
 
-export const loadChannel = async (db: Database): Promise<TextChannel | undefined> => {
-    const provider = await defaultProvider('text', providerMap, db)
+export const loadTextChannel = async (projectId: number): Promise<TextChannel | undefined> => {
+    const provider = await defaultProvider('text', projectId, providerMap)
     if (!provider) return
     return new TextChannel(provider)
 }

@@ -1,4 +1,3 @@
-import { Database } from '../config/database'
 import { defaultProvider } from '../env/Provider'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider from './MemoryQueueProvider'
@@ -13,8 +12,8 @@ export const providerMap = (record: { name: QueueProviderName }): QueueProvider 
     }[record.name]
 }
 
-export const defaultQueueProvider = async (db: Database): Promise<QueueProvider> => {
-    const provider = await defaultProvider('queue', providerMap, db)
+export const defaultQueueProvider = async (projectId: number): Promise<QueueProvider> => {
+    const provider = await defaultProvider('queue', projectId, providerMap)
     if (!provider) return new MemoryQueueProvider()
     return provider
 }

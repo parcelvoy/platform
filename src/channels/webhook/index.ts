@@ -1,4 +1,3 @@
-import { Database } from '../../config/database'
 import { defaultProvider } from '../../env/Provider'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
@@ -12,8 +11,8 @@ export const providerMap = (record: { name: WebhookProviderName }): WebhookProvi
     }[record.name]
 }
 
-export const loadChannel = async (db: Database): Promise<WebhookChannel | undefined> => {
-    const provider = await defaultProvider('webhook', providerMap, db)
+export const loadWebhookChannel = async (projectId: number): Promise<WebhookChannel | undefined> => {
+    const provider = await defaultProvider('webhook', projectId, providerMap)
     if (!provider) return
     return new WebhookChannel(provider)
 }

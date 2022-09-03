@@ -4,10 +4,8 @@ import Api from './api'
 import db, { Database, migrate } from './config/database'
 import { Env } from './config/env'
 import Queue from './queue'
-import configQueue from './config/queue'
-import { Channels, configChannels, ChannelAccessor } from './config/channels'
 
-export default class App extends ChannelAccessor {
+export default class App {
     private static $main: App
     static get main() {
         if (!App.$main) {
@@ -23,33 +21,24 @@ export default class App extends ChannelAccessor {
         // Migrate to latest version
         await migrate(database)
 
-        // Load channels
-        const channels = await configChannels(database)
-
-        console.log(channels)
-
-        // Setup Queue and register jobs
-        const queue = await configQueue(database)
-
         // Setup app
-        App.$main = new App(env, database, queue, channels)
+        App.$main = new App(env, database)
 
         return App.$main
     }
 
     api: Api
     validator: Ajv
+    #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
     private constructor(
         public env: Env,
         public db: Database,
-        public queue: Queue,
-        channels: Channels,
     ) {
-        super(channels)
         this.api = new Api(this)
         this.validator = new Ajv()
+        this.#registered = {}
     }
 
     listen() {
@@ -58,7 +47,15 @@ export default class App extends ChannelAccessor {
 
     async close() {
         await this.db.destroy()
-        await this.queue.close()
+        // await this.queue.close()
+    }
+
+    get<T>(key: number | string): T {
+        return this.#registered[key] as T
+    }
+
+    set(key: number | string, value: unknown) {
+        this.#registered[key] = value
     }
 
     validate<T>(schema: JSONSchemaType<T>, data: any) {

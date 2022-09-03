@@ -3,7 +3,7 @@ import render, { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
 
 export default class TextChannel {
-    provider: TextProvider
+    private provider: TextProvider
     constructor(provider?: TextProvider) {
         if (provider) {
             this.provider = provider

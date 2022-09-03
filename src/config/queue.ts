@@ -5,19 +5,31 @@ import TextJob from '../jobs/TextJob'
 import UserDeleteJob from '../jobs/UserDeleteJob'
 import UserPatchJob from '../jobs/UserPatchJob'
 import WebhookJob from '../jobs/WebhookJob'
-import { Database } from './database'
+import App from '../app'
 
-export default async (db: Database) => {
+export type Queues = Record<number, Queue>
 
-    const provider = await defaultQueueProvider(db)
-    const queue = new Queue(provider)
-
+export const loadJobs = (queue: Queue) => {
     queue.register(EmailJob)
     queue.register(TextJob)
     queue.register(WebhookJob)
     queue.register(UserPatchJob)
     queue.register(UserDeleteJob)
     queue.register(EventPostJob)
+}
 
-    return queue
+export const loadQueue = async (projectId: number, app = App.main): Promise<Queue> => {
+
+    const key = `projects_${projectId}_queue`
+    const cache = app.get<Queue>(key)
+    if (cache) return cache
+
+    const provider = await defaultQueueProvider(projectId)
+    const queue = new Queue(provider)
+
+    // TODO: Not scalable, should be shared handlers
+    loadJobs(queue)
+
+    app.set(key, queue)
+    return app.get(key)
 }

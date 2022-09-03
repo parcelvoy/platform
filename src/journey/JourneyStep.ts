@@ -6,9 +6,9 @@ import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from './UserEvent'
 import EmailJob from '../jobs/EmailJob'
-import App from '../app'
 import TextJob from '../jobs/TextJob'
 import WebhookJob from '../jobs/WebhookJob'
+import { loadQueue } from '../config/queue'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -235,7 +235,9 @@ export class JourneyAction extends JourneyStep {
                 event_id: event?.id,
             }),
         }
-        App.main.queue.enqueue(channels[this.channel])
+
+        const queue = await loadQueue(user.project_id)
+        queue.enqueue(channels[this.channel])
 
         return super.next(user, event)
     }
