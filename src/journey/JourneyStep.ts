@@ -1,14 +1,11 @@
 import { add, isFuture } from 'date-fns'
-import Model from '../models/Model'
-import { User } from '../models/User'
+import Model from '../core/Model'
+import { User } from '../users/User'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
-import { UserEvent } from './UserEvent'
-import EmailJob from '../jobs/EmailJob'
-import TextJob from '../jobs/TextJob'
-import WebhookJob from '../jobs/WebhookJob'
-import { loadQueue } from '../config/queue'
+import { UserEvent } from '../users/UserEvent'
+import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -135,31 +132,22 @@ export class JourneyStep extends Model {
 
 export class JourneyEntrance extends JourneyStep {
 
-    rules: Rule[] = []
+    list_id!: number
 
     parseJson(json: any) {
         super.parseJson(json)
-
-        this.rules = json?.data.rules
+        this.list_id = json?.data.list_id
     }
 
-    static async create(entranceType: string, rules: Rule[], childId?: number, journeyId?: number): Promise<JourneyEntrance> {
+    static async create(listId: number, childId?: number, journeyId?: number): Promise<JourneyEntrance> {
         return await JourneyEntrance.insertAndFetch({
             type: this.name,
             child_id: childId,
             journey_id: journeyId,
             data: {
-                entrance_type: entranceType,
-                rules,
+                list_id: listId,
             },
         })
-    }
-
-    async condition(user: User, event?: UserEvent): Promise<boolean> {
-        return check({
-            user: user.flatten(),
-            event: event?.flatten(),
-        }, this.rules)
     }
 }
 
@@ -204,40 +192,21 @@ export class JourneyDelay extends JourneyStep {
     }
 }
 
-type ChannelType = 'text' | 'email' | 'webhook'
 export class JourneyAction extends JourneyStep {
 
-    channel!: ChannelType
-    template_id!: number
+    campaign_id!: number
 
     parseJson(json: any) {
         super.parseJson(json)
-
-        this.channel = json?.data?.channel
-        this.template_id = json?.data?.template_id
+        this.campaign_id = json?.data?.campaign_id
     }
 
     async next(user: User, event?: UserEvent) {
-        const channels = {
-            email: EmailJob.from({
-                template_id: this.template_id,
-                user_id: user.id,
-                event_id: event?.id,
-            }),
-            text: TextJob.from({
-                template_id: this.template_id,
-                user_id: user.id,
-                event_id: event?.id,
-            }),
-            webhook: WebhookJob.from({
-                template_id: this.template_id,
-                user_id: user.id,
-                event_id: event?.id,
-            }),
-        }
 
-        const queue = await loadQueue(user.project_id)
-        await queue.enqueue(channels[this.channel])
+        const campaign = await getCampaign(this.campaign_id)
+        if (campaign) {
+            await sendCampaign(campaign, user, event)
+        }
 
         return super.next(user, event)
     }

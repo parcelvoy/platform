@@ -1,8 +1,8 @@
 import { updateJourneys } from '../journey/JourneyService'
-import { createEvent } from '../journey/UserEventRepository'
-import { getUserFromExternalId } from '../journey/UserRepository'
+import { createEvent } from '../users/UserEventRepository'
+import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
-import { ClientPostEvent } from '../models/client'
+import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
 
 interface EventPostTrigger {

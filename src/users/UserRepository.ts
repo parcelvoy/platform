@@ -1,4 +1,4 @@
-import { User } from '../models/User'
+import { User } from '../users/User'
 
 export const getUserFromExternalId = async (projectId: number, externalId: string): Promise<User | undefined> => {
     return await User.first(

@@ -1,5 +1,5 @@
 import { Database } from '../config/database'
-import Model from '../models/Model'
+import Model from './Model'
 
 export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook' | 'queue'
 

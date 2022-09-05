@@ -1,6 +1,6 @@
 import pino from 'pino'
 import pretty from 'pino-pretty'
-import { Provider } from '../env/Provider'
+import { Provider } from '../core/Provider'
 
 export type LoggerProviderName = 'logger'
 export class LoggerProvider extends Provider { }

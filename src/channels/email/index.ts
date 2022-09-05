@@ -1,4 +1,4 @@
-import { defaultProvider } from '../../env/Provider'
+import { defaultProvider } from '../../core/Provider'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
 import LoggerEmailProvider from './LoggerEmailProvider'

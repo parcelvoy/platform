@@ -1,7 +1,7 @@
-import { User } from '../models/User'
-import { ClientPatchUser } from '../models/client'
+import { User } from '../users/User'
+import { ClientPatchUser } from './Client'
 import { Job } from '../queue'
-import { getUserFromExternalId } from '../journey/UserRepository'
+import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
 import { updateJourneys } from '../journey/JourneyService'
 

@@ -1,8 +1,8 @@
 import Koa from 'koa'
 import koaBody from 'koa-body'
 import cors from '@koa/cors'
-import controllers from './controllers'
-import { RequestError } from './models/errors'
+import controllers from './config/controllers'
+import { RequestError } from './core/errors'
 
 export default class Api extends Koa {
     constructor(

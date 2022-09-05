@@ -3,11 +3,17 @@ import * as StrHelpers from './Helpers/String'
 import * as NumHelpers from './Helpers/Number'
 import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
-import { User } from '../models/User'
+import { User } from '../users/User'
+
+export interface RenderContext {
+    template_id: number
+    campaign_id: number
+}
 
 export interface Variables {
     user: User
     event?: Record<string, any>
+    context?: RenderContext
 }
 
 const loadHelper = (helper: Record<string, any>) => {
@@ -44,5 +50,6 @@ export default (template: string, { user, event }: Variables) => {
     return Handlebars.compile(template)({
         user: user.flatten(),
         event,
+        // unsubscribeUrl: unsubscribeLink(user),
     })
 }

@@ -1,4 +1,4 @@
-import { defaultProvider } from '../env/Provider'
+import { defaultProvider } from '../core/Provider'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider from './MemoryQueueProvider'
 import Queue from './Queue'

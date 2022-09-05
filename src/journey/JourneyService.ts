@@ -1,8 +1,8 @@
-import { User } from '../models/User'
+import { User } from '../users/User'
 import Journey from './Journey'
 import { getJourneyEntrance, getJourneyStep, lastJourneyStep } from './JourneyRepository'
 import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap, JourneyAction } from './JourneyStep'
-import { UserEvent } from './UserEvent'
+import { UserEvent } from '../users/UserEvent'
 
 // TODO: Hate this, should journeys required lists for entrance?
 // TODO: Should there even be a service?

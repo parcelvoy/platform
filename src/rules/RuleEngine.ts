@@ -1,6 +1,6 @@
 import jsonpath from 'jsonpath'
-import { TemplateEvent } from '../journey/UserEvent'
-import { TemplateUser } from '../models/User'
+import { TemplateEvent } from '../users/UserEvent'
+import { TemplateUser } from '../users/User'
 import Rule, { Operator, RuleGroup, RuleType } from './Rule'
 
 class Registry<T> {

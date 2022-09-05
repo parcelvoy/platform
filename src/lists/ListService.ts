@@ -1,5 +1,5 @@
-import { UserEvent } from '../journey/UserEvent'
-import { User } from '../models/User'
+import { UserEvent } from '../users/UserEvent'
+import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
 import List, { UserList } from './List'
 
@@ -14,7 +14,8 @@ export const updateLists = async (user: User, event?: UserEvent) => {
 
     for (const list of lists) {
 
-        // TODO: Check that the user wasn't previously unsubscribed from list
+        // // If user has previously unsubscribed, break
+        // if (existingLists.unsubscribed.includes(list.id)) continue
 
         // Check to see if user condition matches list requirements
         const result = check({
@@ -30,6 +31,9 @@ export const updateLists = async (user: User, event?: UserEvent) => {
                 list_id: list.id,
                 event_id: event?.id ?? undefined,
             })
+
+            // TODO: Membership change should re-run associated journeys
+
         }
     }
 }

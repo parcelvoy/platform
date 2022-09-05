@@ -1,10 +1,10 @@
 import Queue, { defaultQueueProvider } from '../queue'
-import EmailJob from '../jobs/EmailJob'
-import EventPostJob from '../jobs/EventPostJob'
-import TextJob from '../jobs/TextJob'
-import UserDeleteJob from '../jobs/UserDeleteJob'
-import UserPatchJob from '../jobs/UserPatchJob'
-import WebhookJob from '../jobs/WebhookJob'
+import EmailJob from '../channels/email/EmailJob'
+import EventPostJob from '../client/EventPostJob'
+import TextJob from '../channels/text/TextJob'
+import UserDeleteJob from '../client/UserDeleteJob'
+import UserPatchJob from '../client/UserPatchJob'
+import WebhookJob from '../channels/webhook/WebhookJob'
 import App from '../app'
 
 export type Queues = Record<number, Queue>

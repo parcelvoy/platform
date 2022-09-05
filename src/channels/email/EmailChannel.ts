@@ -1,5 +1,5 @@
 import Render, { Variables } from '../../render'
-import { EmailTemplate } from '../../models/Template'
+import { EmailTemplate } from '../../render/Template'
 import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
@@ -19,8 +19,8 @@ export default class EmailChannel {
             subject: Render(options.subject, variables),
             to: Render(options.to, variables),
             from: Render(options.from, variables),
-            html_body: Render(options.html_body, variables),
-            text_body: Render(options.text_body, variables),
+            html: Render(options.html_body, variables),
+            text: Render(options.text_body, variables),
         }
         if (options.reply_to) message.reply_to = Render(options.reply_to, variables)
         if (options.cc) message.cc = Render(options.cc, variables)

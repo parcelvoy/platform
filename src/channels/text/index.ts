@@ -1,4 +1,4 @@
-import { defaultProvider } from '../../env/Provider'
+import { defaultProvider } from '../../core/Provider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
