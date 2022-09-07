@@ -1,5 +1,36 @@
 exports.up = function(knex) {
     return knex.schema
+        .createTable('subscriptions', function(table) {
+            table.increments()
+            table.integer('project_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('projects')
+                .onDelete('CASCADE')
+            table.string('name', 255).defaultTo('')
+            table.string('channel', 255).notNullable()
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
+        })
+        .createTable('user_subscription', function(table) {
+            table.increments()
+            table.integer('subscription_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('subscriptions')
+                .onDelete('CASCADE')
+            table.integer('user_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('users')
+                .onDelete('CASCADE')
+            table.tinyint('state')
+            table.timestamp('created_at').defaultTo(knex.fn.now())
+            table.timestamp('updated_at').defaultTo(knex.fn.now())
+        })
         .createTable('campaigns', function(table) {
             table.increments()
             table.integer('project_id')
@@ -16,6 +47,12 @@ exports.up = function(knex) {
                 .onDelete('CASCADE')
             table.string('name', 255).defaultTo('')
             table.string('channel', 255).notNullable()
+            table.integer('subscription_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('subscriptions')
+                .onDelete('CASCADE')
             table.integer('template_id')
                 .unsigned()
                 .notNullable()
@@ -30,4 +67,6 @@ exports.up = function(knex) {
 exports.down = function(knex) {
     knex.schema
         .dropTable('campaigns')
+        .dropTable('user_subscriptions')
+        .dropTable('subscriptions')
 }

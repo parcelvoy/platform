@@ -1,6 +1,6 @@
-import Model from './Model'
+import Model from '../core/Model'
 
-export class Project extends Model {
+export default class Project extends Model {
 
     public name!: string
     public description?: string

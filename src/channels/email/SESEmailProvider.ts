@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import aws, * as AWS from '@aws-sdk/client-ses'
-import { AWSConfig } from '../../config/aws'
+import { AWSConfig } from '../../core/aws'
 import EmailProvider from './EmailProvider'
 
 export default class SESEmailProvider extends EmailProvider {

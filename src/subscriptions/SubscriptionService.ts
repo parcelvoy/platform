@@ -1,9 +1,22 @@
-import { combineURLs, encrypt } from '../utilities'
+import List from '../lists/List'
+import { User } from '../users/User'
+import { combineURLs } from '../utilities'
+import { SubscriptionState, UserSubscription } from './Subscription'
 
-export const unsubscribe = async (user: User, list: List): Promise<void> => {
-    await UserList.update(qb => qb.where('user_id', user.id).where('list_id', list.id), {
-        deleted_at: new Date(),
-    })
+export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
+    const condition = {
+        user_id: userId,
+        subscription_id: subscriptionId,
+    }
+    const previous = await UserSubscription.first(qb => qb.where(condition))
+    if (previous) {
+        UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
+    } else {
+        UserSubscription.insert({
+            ...condition,
+            state: SubscriptionState.unsubscribed,
+        })
+    }
 }
 
 export const unsubscribeLink = (user: User, list?: List): string => {

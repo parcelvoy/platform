@@ -1,6 +1,6 @@
 import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
-import { AWSConfig } from '../config/aws'
+import { AWSConfig } from '../core/aws'
 import Job, { EncodedJob } from './Job'
 import Queue from './Queue'
 import QueueProvider from './QueueProvider'
