@@ -1,4 +1,3 @@
-import List from '../lists/List'
 import { User } from '../users/User'
 import { combineURLs } from '../utilities'
 import { SubscriptionState, UserSubscription } from './Subscription'
@@ -19,8 +18,6 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     }
 }
 
-export const unsubscribeLink = (user: User, list?: List): string => {
-    // const listKey = encrypt(String(list.id))
-    // const userKey = encrypt(String(user.id))
-    return combineURLs([process.env.BASE_URL!])
+export const unsubscribeLink = (user: User, campaignId: number): string => {
+    return combineURLs([process.env.BASE_URL!, String(user.id), String(campaignId)])
 }
