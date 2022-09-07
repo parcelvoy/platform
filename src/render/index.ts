@@ -4,6 +4,7 @@ import * as NumHelpers from './Helpers/Number'
 import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
+import { unsubscribeLink } from '../subscriptions/SubscriptionService'
 
 export interface RenderContext {
     template_id: number
@@ -11,9 +12,9 @@ export interface RenderContext {
 }
 
 export interface Variables {
+    context: RenderContext
     user: User
     event?: Record<string, any>
-    context?: RenderContext
 }
 
 const loadHelper = (helper: Record<string, any>) => {
@@ -46,10 +47,11 @@ loadHelper(ArrayHelpers)
  * now - current date
  */
 
-export default (template: string, { user, event }: Variables) => {
+export default (template: string, { user, event, context }: Variables) => {
     return Handlebars.compile(template)({
         user: user.flatten(),
         event,
-        // unsubscribeUrl: unsubscribeLink(user),
+        context,
+        unsubscribeUrl: unsubscribeLink(user, context?.campaign_id),
     })
 }
