@@ -3,7 +3,6 @@ import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignParams } from './Campaign'
 import { createCampaign, getCampaign, sendList } from './CampaignService'
-import List from '../lists/List'
 
 const router = new Router<{
     app: App
@@ -94,9 +93,7 @@ router.put('/:campaignId', async ctx => {
 })
 
 router.post('/:campaignId/send', async ctx => {
-    const list = await List.find(1)
-
-    await sendList(ctx.state.campaign!, list!)
+    await sendList(ctx.state.campaign!)
 })
 
 export default router

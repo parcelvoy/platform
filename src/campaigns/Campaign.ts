@@ -4,7 +4,7 @@ import Model from '../core/Model'
 export default class Campaign extends Model {
     project_id!: number
     name!: string
-    list_id!: number
+    list_id?: number
     channel!: ChannelType
     subscription_id!: number
     template_id!: number

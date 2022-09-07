@@ -5,7 +5,7 @@ import WebhookJob from '../channels/webhook/WebhookJob'
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import Campaign, { CampaignParams } from './Campaign'
-import List, { UserList } from '../lists/List'
+import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 
@@ -44,11 +44,15 @@ export async function sendCampaign(campaign: Campaign, user: User | number, even
     await queue.enqueue(channels[campaign.channel])
 }
 
-export const sendList = async (campaign: Campaign, list: List) => {
+export const sendList = async (campaign: Campaign) => {
+
+    if (!campaign.list_id) {
+        throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
+    }
 
     // Stream results so that we aren't overwhelmed by millions
     // or potential entries
-    await recipientQuery(campaign, list)
+    await recipientQuery(campaign)
         .stream(async function(stream) {
 
             // For each result streamed back, process campaign send
@@ -58,12 +62,12 @@ export const sendList = async (campaign: Campaign, list: List) => {
         })
 }
 
-export const recipientQuery = (campaign: Campaign, list: List) => {
+export const recipientQuery = (campaign: Campaign) => {
 
     // Merge user subscription state in to filter out anyone
     // who we can't send do
     return UserList.query()
-        .where('list_id', list.id)
+        .where('list_id', campaign.list_id)
         .leftJoin('user_subscription', qb => {
             qb.on('lists.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))

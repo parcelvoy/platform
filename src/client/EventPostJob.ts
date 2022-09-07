@@ -1,4 +1,3 @@
-import { updateJourneys } from '../journey/JourneyService'
 import { createEvent } from '../users/UserEventRepository'
 import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
@@ -32,8 +31,5 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateLists(user, dbEvent)
-
-        // Use event to trigger journeys
-        await updateJourneys(user, dbEvent)
     }
 }
