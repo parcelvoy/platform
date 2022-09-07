@@ -3,7 +3,6 @@ import Rule from '../rules/Rule'
 
 export default class List extends Model {
     project_id!: number
-    parent_id!: number
     name!: string
     rules!: Rule[]
 

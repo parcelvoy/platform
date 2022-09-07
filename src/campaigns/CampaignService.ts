@@ -28,6 +28,8 @@ export function sendCampaign(campaign: Campaign, user: User, event?: UserEvent):
 export function sendCampaign(campaign: Campaign, userId: number, eventId?: number): Promise<void>
 export async function sendCampaign(campaign: Campaign, user: User | number, event?: UserEvent | number): Promise<void> {
 
+    // TODO: Might also need to check for unsubscribe in here since we can
+    // do individual sends
     const body = {
         campaign_id: campaign.id,
         user_id: user instanceof User ? user.id : user,
