@@ -1,5 +1,5 @@
 import { ChannelType } from '../config/channels'
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 
 export default class Campaign extends Model {
     project_id!: number
@@ -10,4 +10,4 @@ export default class Campaign extends Model {
     template_id!: number
 }
 
-export type CampaignParams = Omit<Campaign, 'id' | 'channel' | 'created_at' | 'updated_at' | 'deleted_at' | 'parseJson'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'channel'>

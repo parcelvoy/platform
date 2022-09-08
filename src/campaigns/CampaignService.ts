@@ -9,8 +9,12 @@ import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 
-export const getCampaign = async (id: number): Promise<Campaign | undefined> => {
-    return await Campaign.find(id)
+export const allCampaigns = async (project_id: number): Promise<Campaign[]> => {
+    return await Campaign.all(qb => qb.where('project_id', project_id))
+}
+
+export const getCampaign = async (id: number, projectId: number): Promise<Campaign | undefined> => {
+    return await Campaign.find(id, qb => qb.where('project_id', projectId))
 }
 
 export const createCampaign = async (params: CampaignParams): Promise<Campaign> => {

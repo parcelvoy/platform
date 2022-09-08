@@ -203,7 +203,7 @@ export class JourneyAction extends JourneyStep {
 
     async next(user: User, event?: UserEvent) {
 
-        const campaign = await getCampaign(this.campaign_id)
+        const campaign = await getCampaign(this.campaign_id, user.project_id)
         if (campaign) {
             await sendCampaign(campaign, user, event)
         }

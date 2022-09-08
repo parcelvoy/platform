@@ -48,10 +48,13 @@ export default class Model {
     static async find<T extends typeof Model>(
         this: T,
         id: number | undefined,
+        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any> = (qb) => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         if (!id) return undefined
-        const record = await this.table(db).where({ id }).first()
+        const record = await where(this.table(db))
+            .where({ id })
+            .first()
         if (!record) return undefined
         return this.fromJson(record)
     }

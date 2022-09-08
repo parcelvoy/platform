@@ -4,6 +4,7 @@ import { DatabaseConfig } from './database'
 export interface Env {
     db: DatabaseConfig
     port: number
+    secret: string
 }
 
 export interface DriverConfig {
@@ -26,5 +27,6 @@ export default (type?: EnvType): Env => {
             },
         },
         port: parseInt(process.env.PORT!),
+        secret: process.env.APP_SECRET!,
     }
 }
