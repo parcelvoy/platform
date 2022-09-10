@@ -1,4 +1,4 @@
-import { defaultProvider } from '../../env/Provider'
+import { defaultProvider } from '../../core/Provider'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
 import WebhookChannel from './WebhookChannel'

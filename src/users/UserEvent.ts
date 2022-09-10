@@ -1,4 +1,4 @@
-import Model, { ModelParams } from '../models/Model'
+import Model, { ModelParams } from '../core/Model'
 
 export interface TemplateEvent extends Record<string, any> {
     name: string

@@ -1,6 +1,6 @@
 import Queue from './Queue'
 import Job from './Job'
-import { Provider } from '../env/Provider'
+import { Provider } from '../core/Provider'
 
 export type QueueProviderName = 'sqs' | 'memory'
 

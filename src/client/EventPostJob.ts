@@ -1,8 +1,7 @@
-import { updateJourneys } from '../journey/JourneyService'
-import { createEvent } from '../journey/UserEventRepository'
-import { getUserFromExternalId } from '../journey/UserRepository'
+import { createEvent } from '../users/UserEventRepository'
+import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
-import { ClientPostEvent } from '../models/client'
+import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
 
 interface EventPostTrigger {
@@ -32,8 +31,5 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateLists(user, dbEvent)
-
-        // Use event to trigger journeys
-        await updateJourneys(user, dbEvent)
     }
 }

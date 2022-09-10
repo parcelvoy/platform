@@ -1,7 +1,8 @@
-import { UserEvent } from '../journey/UserEvent'
-import { User } from '../models/User'
+import { UserEvent } from '../users/UserEvent'
+import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
 import List, { UserList } from './List'
+import { enterJourneyFromList } from '../journey/JourneyService'
 
 const getUserListIds = async (user_id: number): Promise<number[]> => {
     const relations = await UserList.all(qb => qb.where('user_id', user_id))
@@ -13,8 +14,6 @@ export const updateLists = async (user: User, event?: UserEvent) => {
     const existingLists = await getUserListIds(user.id)
 
     for (const list of lists) {
-
-        // TODO: Check that the user wasn't previously unsubscribed from list
 
         // Check to see if user condition matches list requirements
         const result = check({
@@ -30,6 +29,9 @@ export const updateLists = async (user: User, event?: UserEvent) => {
                 list_id: list.id,
                 event_id: event?.id ?? undefined,
             })
+
+            // Find all associated journeys based on list and enter user
+            await enterJourneyFromList(list, user, event)
         }
     }
 }

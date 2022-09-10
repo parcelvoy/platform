@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import { LoggerProviderName } from '../../config/logger'
-import { Provider } from '../../env/Provider'
+import { Provider } from '../../core/Provider'
 import { Email } from './Email'
 
 export type EmailProviderName = 'ses' | 'smtp' | LoggerProviderName

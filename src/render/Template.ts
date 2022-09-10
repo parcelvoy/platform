@@ -1,4 +1,4 @@
-import Model from './Model'
+import Model from '../core/Model'
 
 class Template extends Model {
     project_id!: number

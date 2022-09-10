@@ -1,7 +1,7 @@
 // Will be re-enabled in API work
 /* eslint-disable */
 
-import Model from './Model'
+import Model from '../core/Model'
 
 export interface TemplateUser extends Record<string, any> {
     id: string

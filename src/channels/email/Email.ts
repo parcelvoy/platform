@@ -5,6 +5,6 @@ export interface Email {
     bcc?: string
     reply_to?: string
     subject: string
-    text_body: string
-    html_body: string
+    text: string
+    html: string
 }

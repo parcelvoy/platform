@@ -1,5 +1,6 @@
-import { Project } from '../../models/Project'
-import { User } from '../../models/User'
+import List from '../../lists/List'
+import Project from '../../projects/Project'
+import { User } from '../../users/User'
 import Journey from '../Journey'
 import { lastJourneyStep } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
@@ -10,17 +11,20 @@ describe('Run', () => {
         test('an entrance will proceed to map', async () => {
 
             const journey = await Journey.insertAndFetch()
+            const list = await List.insertAndFetch({
+                rules: [{
+                    type: 'string',
+                    group: 'user',
+                    path: '$.language',
+                    operator: '=',
+                    value: 'en',
+                }],
+            })
             const step2 = await JourneyMap.create('country', {
                 US: 43,
                 ES: 34,
             }, journey.id)
-            await JourneyEntrance.create('user', [{
-                type: 'string',
-                group: 'user',
-                path: '$.language',
-                operator: '=',
-                value: 'en',
-            }], step2.id, journey.id)
+            await JourneyEntrance.create(list.id, step2.id, journey.id)
 
             const service = new JourneyService(journey.id)
 

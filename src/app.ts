@@ -1,5 +1,3 @@
-import Ajv, { JSONSchemaType } from 'ajv'
-import { RequestError } from './models/errors'
 import Api from './api'
 import db, { Database, migrate } from './config/database'
 import { Env } from './config/env'
@@ -27,7 +25,6 @@ export default class App {
     }
 
     api: Api
-    validator: Ajv
     #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
@@ -36,7 +33,6 @@ export default class App {
         public db: Database,
     ) {
         this.api = new Api(this)
-        this.validator = new Ajv()
         this.#registered = {}
 
         // TODO: Need to somehow pre-warm or boot up queues so jobs
@@ -58,13 +54,5 @@ export default class App {
 
     set(key: number | string, value: unknown) {
         this.#registered[key] = value
-    }
-
-    validate<T>(schema: JSONSchemaType<T>, data: any) {
-        const validate = this.validator.compile(schema)
-        if (validate(data)) {
-            return data
-        }
-        throw new RequestError(JSON.stringify(validate.errors), 422)
     }
 }

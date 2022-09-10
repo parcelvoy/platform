@@ -2,6 +2,10 @@ import App from '../app'
 import { Database } from '../config/database'
 import { pascalToSnakeCase, pluralize } from '../utilities'
 
+export const raw = (raw: Database.Value, db: Database = App.main.db) => {
+    return db.raw(raw)
+}
+
 export default class Model {
 
     id!: number
@@ -117,6 +121,8 @@ export default class Model {
     static table(db: Database = App.main.db): Database.QueryBuilder<any> {
         return db(this.tableName)
     }
+
+    static raw = raw
 }
 
 export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson'
