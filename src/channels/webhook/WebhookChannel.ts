@@ -1,4 +1,4 @@
-import { WebhookTemplate } from '../../models/Template'
+import { WebhookTemplate } from '../../render/Template'
 import Render, { Variables } from '../../render'
 import { WebhookProvider } from './WebhookProvider'
 
