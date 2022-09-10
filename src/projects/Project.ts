@@ -1,4 +1,4 @@
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 
 export default class Project extends Model {
 
@@ -7,7 +7,7 @@ export default class Project extends Model {
     public deleted_at?: Date
 }
 
-export type ProjectParams = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'parseJson'>
+export type ProjectParams = Omit<Project, ModelParams | 'deleted_at'>
 
 export class ProjectApiKey extends Model {
 

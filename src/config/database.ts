@@ -16,7 +16,7 @@ export interface DatabaseConfig {
 }
 
 export default (config: DatabaseConfig) => {
-    return knex(config)
+    return knex({ ...config, asyncStackTraces: true })
 }
 
 export const migrate = async (db: Database) => {

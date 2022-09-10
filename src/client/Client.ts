@@ -1,4 +1,4 @@
-import type { User } from './User'
+import type { User } from '../users/User'
 
 export type ClientPatchUser = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>
 

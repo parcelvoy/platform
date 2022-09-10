@@ -1,19 +1,31 @@
-import { User } from '../../models/User'
-import { JourneyStep, JourneyEntrance, JourneyMap } from '../JourneyStep'
+import { createProject } from '../../projects/ProjectService'
+import Rule from '../../rules/Rule'
+import { User } from '../../users/User'
+import { JourneyStep, JourneyMap, JourneyGate } from '../JourneyStep'
 
-describe('JourneyEntrance', () => {
-    describe('user entrance', () => {
+describe('JourneyGate', () => {
+
+    const createUser = async () => {
+        const email = 'test@test.com'
+        const project = await createProject({ name: 'project' })
+        return await User.insertAndFetch({ external_id: '1', email, project_id: project.id, data: {} })
+    }
+
+    describe('user gate', () => {
+        const createGate = async (rule: Rule) => {
+            return await JourneyGate.create('user', rule)
+        }
+
         test('condition passes with valid equals rule', async () => {
 
-            const email = 'test@test.com'
-            const user = User.fromJson({ email })
-            const entrance = await JourneyEntrance.create('user', [{
+            const user = await createUser()
+            const entrance = await createGate({
                 type: 'string',
                 group: 'user',
                 path: '$.email',
                 operator: '=',
-                value: email,
-            }])
+                value: user.email,
+            })
             const value = await entrance.condition(user)
 
             expect(value).toBeTruthy()
@@ -21,15 +33,14 @@ describe('JourneyEntrance', () => {
 
         test('condition fails with incorrect equals rule', async () => {
 
-            const email = 'test@test.com'
-            const user = User.fromJson({ email })
-            const entrance = await JourneyEntrance.create('user', [{
+            const user = await createUser()
+            const entrance = await createGate({
                 type: 'string',
                 group: 'user',
                 path: '$.email',
                 operator: '=',
                 value: 'notequal@test.com',
-            }])
+            })
             const value = await entrance.condition(user)
 
             expect(value).toBeFalsy()
@@ -37,15 +48,14 @@ describe('JourneyEntrance', () => {
 
         test('condition passes with valid not equals rule', async () => {
 
-            const email = 'test@test.com'
-            const user = User.fromJson({ email })
-            const entrance = await JourneyEntrance.create('user', [{
+            const user = await createUser()
+            const entrance = await createGate({
                 type: 'string',
                 group: 'user',
                 path: '$.email',
                 operator: '!=',
                 value: 'notequal@test.com',
-            }])
+            })
             const value = await entrance.condition(user)
 
             expect(value).toBeTruthy()
@@ -53,14 +63,13 @@ describe('JourneyEntrance', () => {
 
         test('condition passes with valid is set rule', async () => {
 
-            const email = 'test@test.com'
-            const user = User.fromJson({ email })
-            const entrance = await JourneyEntrance.create('user', [{
+            const user = await createUser()
+            const entrance = await createGate({
                 type: 'string',
                 group: 'user',
                 path: '$.email',
                 operator: 'is set',
-            }])
+            })
             const value = await entrance.condition(user)
 
             expect(value).toBeTruthy()

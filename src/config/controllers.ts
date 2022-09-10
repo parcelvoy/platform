@@ -6,6 +6,7 @@ import ProjectController from '../projects/ProjectController'
 import CampaignController from '../campaigns/CampaignController'
 import ListController from '../lists/ListController'
 import SubscriptionController from '../subscriptions/SubscriptionController'
+import JourneyController from '../journey/JourneyController'
 
 export default (api: import('../api').default) => {
 
@@ -29,6 +30,8 @@ export default (api: import('../api').default) => {
     admin.use(ListController.routes()).use(ListController.allowedMethods())
 
     admin.use(SubscriptionController.routes()).use(SubscriptionController.allowedMethods())
+
+    admin.use(JourneyController.routes()).use(JourneyController.allowedMethods())
 
     api.use(admin.routes()).use(admin.allowedMethods())
 
