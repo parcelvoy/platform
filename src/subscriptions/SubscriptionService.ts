@@ -21,9 +21,9 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     }
     const previous = await UserSubscription.first(qb => qb.where(condition))
     if (previous) {
-        UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
+        await UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
     } else {
-        UserSubscription.insert({
+        await UserSubscription.insert({
             ...condition,
             state: SubscriptionState.unsubscribed,
         })
