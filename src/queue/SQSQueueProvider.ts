@@ -2,26 +2,25 @@ import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
 import { AWSConfig } from '../config/aws'
 import Job, { EncodedJob } from './Job'
-import Queue, { QueueTypeConfig } from './Queue'
+import Queue from './Queue'
 import QueueProvider from './QueueProvider'
 
-export interface SQSConfig extends QueueTypeConfig, AWSConfig {
-    driver: 'sqs'
+export interface SQSConfig extends AWSConfig {
     queueUrl: string
 }
 
-export default class SQSQueueProvider implements QueueProvider {
-    app: Consumer
-    config: SQSConfig
-    queue: Queue
-    sqs: AWS.SQS
+export default class SQSQueueProvider extends QueueProvider {
 
-    constructor(config: SQSConfig, queue: Queue) {
+    config!: SQSConfig
+    queue!: Queue
+    app!: Consumer
+    sqs!: AWS.SQS
+
+    load(queue: Queue) {
         this.queue = queue
-        this.config = config
-        this.sqs = new AWS.SQS({ region: config.region })
+        this.sqs = new AWS.SQS({ region: this.config.region })
         this.app = Consumer.create({
-            queueUrl: config.queueUrl,
+            queueUrl: this.config.queueUrl,
             handleMessage: async (message) => {
                 await this.queue.dequeue(this.parse(message))
             },

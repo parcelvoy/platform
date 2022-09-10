@@ -1,33 +1,12 @@
-import { DriverConfig } from '../../config/env'
-import { LoggerConfig } from '../../config/logger'
 import { WebhookTemplate } from '../../models/Template'
 import Render, { Variables } from '../../render'
-import LocalWebhookProvider from './LocalWebhookProvider'
-import LoggerWebhookProvider from './LoggerWebhookProvider'
-import { Webhook, WebhookResponse } from './Webhook'
+import { WebhookProvider } from './WebhookProvider'
 
-export type WebhookDriver = 'local' | 'logger'
-export interface WebhookTypeConfig extends DriverConfig {
-    driver: WebhookDriver
-}
-
-export interface LocalConfig extends WebhookTypeConfig {
-    driver: 'local'
-}
-
-export type WebhookConfig = LocalConfig | LoggerConfig
-
-export interface WebhookProvider {
-    send(message: Webhook): Promise<WebhookResponse>
-}
-
-export default class WebhookSender {
+export default class WebhookChannel {
     provider: WebhookProvider
-    constructor(config: WebhookTypeConfig) {
-        if (config?.driver === 'local') {
-            this.provider = new LocalWebhookProvider()
-        } else if (config?.driver === 'logger') {
-            this.provider = new LoggerWebhookProvider()
+    constructor(provider?: WebhookProvider) {
+        if (provider) {
+            this.provider = provider
         } else {
             throw new Error('A valid webhook driver must be defined!')
         }

@@ -1,13 +1,8 @@
 import Ajv, { JSONSchemaType } from 'ajv'
 import { RequestError } from './models/errors'
 import Api from './api'
-import db, { Knex, migrate } from './config/database'
+import db, { Database, migrate } from './config/database'
 import { Env } from './config/env'
-import Queue from './queue'
-import EmailSender from './sender/email/EmailSender'
-import TextSender from './sender/text/TextSender'
-import WebhookSender from './sender/webhook/WebhookSender'
-import configQueue from './config/queue'
 
 export default class App {
     private static $main: App
@@ -28,30 +23,24 @@ export default class App {
         // Setup app
         App.$main = new App(env, database)
 
-        // Register jobs
-        configQueue(App.$main.queue)
-
         return App.$main
     }
 
     api: Api
-    queue: Queue
-    mailer: EmailSender
-    texter: TextSender
-    webhooker: WebhookSender
     validator: Ajv
+    #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
     private constructor(
         public env: Env,
-        public db: Knex,
+        public db: Database,
     ) {
         this.api = new Api(this)
-        this.queue = new Queue(this.env.queue)
-        this.mailer = new EmailSender(this.env.mail)
-        this.texter = new TextSender(this.env.text)
-        this.webhooker = new WebhookSender(this.env.webhook)
         this.validator = new Ajv()
+        this.#registered = {}
+
+        // TODO: Need to somehow pre-warm or boot up queues so jobs
+        // can run without having to first add one
     }
 
     listen() {
@@ -60,7 +49,15 @@ export default class App {
 
     async close() {
         await this.db.destroy()
-        await this.queue.close()
+        // await this.queue.close()
+    }
+
+    get<T>(key: number | string): T {
+        return this.#registered[key] as T
+    }
+
+    set(key: number | string, value: unknown) {
+        this.#registered[key] = value
     }
 
     validate<T>(schema: JSONSchemaType<T>, data: any) {

@@ -1,10 +1,10 @@
 import { Job } from '../queue'
 import { User } from '../models/User'
-import App from '../app'
 import { UserEvent } from '../journey/UserEvent'
 import { EmailTemplate } from '../models/Template'
 import { createEvent } from '../journey/UserEventRepository'
 import { MessageTrigger } from '../models/MessageTrigger'
+import { loadChannel } from '../config/channels'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -24,14 +24,16 @@ export default class EmailJob extends Job {
         if (!user || !template) return
 
         // Send and render email
-        await App.main.mailer.send(template, { user, event })
+        const channel = await loadChannel(user.project_id, 'email')
+        await channel.send(template, { user, event })
 
         // Create an event on the user about the email
         await createEvent({
             project_id: user.project_id,
             user_id: user.id,
             name: 'email_sent',
-            data: { // TODO: Add whatever other attributes
+            data: {
+                template_id,
             },
         })
     }

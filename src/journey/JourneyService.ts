@@ -1,7 +1,18 @@
-import { User } from '../../models/User'
+import { User } from '../models/User'
+import Journey from './Journey'
 import { getJourneyEntrance, getJourneyStep, lastJourneyStep } from './JourneyRepository'
-import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap } from './JourneyStep'
+import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap, JourneyAction } from './JourneyStep'
 import { UserEvent } from './UserEvent'
+
+// TODO: Hate this, should journeys required lists for entrance?
+// TODO: Should there even be a service?
+export const updateJourneys = async (user: User, event?: UserEvent) => {
+    const journeys = await Journey.all(qb => qb.where('project_id', user.project_id))
+    for (const journey of journeys) {
+        const service = new JourneyService(journey.id)
+        await service.run(user, event)
+    }
+}
 
 export default class JourneyService {
 
@@ -37,6 +48,7 @@ export default class JourneyService {
             [JourneyDelay.name]: JourneyDelay,
             [JourneyGate.name]: JourneyGate,
             [JourneyMap.name]: JourneyMap,
+            [JourneyAction.name]: JourneyAction,
         }
         return options[step.type]?.fromJson(step)
     }
