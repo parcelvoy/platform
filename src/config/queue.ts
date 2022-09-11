@@ -1,11 +1,13 @@
-import Queue, { defaultQueueProvider } from '../queue'
+import Queue from '../queue'
 import EmailJob from '../channels/email/EmailJob'
 import EventPostJob from '../client/EventPostJob'
 import TextJob from '../channels/text/TextJob'
 import UserDeleteJob from '../client/UserDeleteJob'
 import UserPatchJob from '../client/UserPatchJob'
 import WebhookJob from '../channels/webhook/WebhookJob'
-import App from '../app'
+import { QueueConfig } from '../queue/Queue'
+import JourneyDelayJob from '../journey/JourneyDelayJob'
+import JourneyProcessJob from '../journey/JourneyProcessJob'
 
 export type Queues = Record<number, Queue>
 
@@ -16,20 +18,12 @@ export const loadJobs = (queue: Queue) => {
     queue.register(UserPatchJob)
     queue.register(UserDeleteJob)
     queue.register(EventPostJob)
+    queue.register(JourneyProcessJob)
+    queue.register(JourneyDelayJob)
 }
 
-export const loadQueue = async (projectId: number, app = App.main): Promise<Queue> => {
-
-    const key = `projects_${projectId}_queue`
-    const cache = app.get<Queue>(key)
-    if (cache) return cache
-
-    const provider = await defaultQueueProvider(projectId)
-    const queue = new Queue(provider)
-
-    // TODO: Not scalable, should be shared handlers
+export default (config: QueueConfig) => {
+    const queue = new Queue(config)
     loadJobs(queue)
-
-    app.set(key, queue)
-    return app.get(key)
+    return queue
 }

@@ -2,22 +2,24 @@ import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
 import { AWSConfig } from '../core/aws'
 import Job, { EncodedJob } from './Job'
-import Queue from './Queue'
+import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
 
-export interface SQSConfig extends AWSConfig {
+export interface SQSConfig extends QueueTypeConfig, AWSConfig {
+    driver: 'sqs'
     queueUrl: string
 }
 
-export default class SQSQueueProvider extends QueueProvider {
+export default class SQSQueueProvider implements QueueProvider {
 
-    config!: SQSConfig
-    queue!: Queue
-    app!: Consumer
-    sqs!: AWS.SQS
+    config: SQSConfig
+    queue: Queue
+    app: Consumer
+    sqs: AWS.SQS
 
-    load(queue: Queue) {
+    constructor(config: SQSConfig, queue: Queue) {
         this.queue = queue
+        this.config = config
         this.sqs = new AWS.SQS({ region: this.config.region })
         this.app = Consumer.create({
             queueUrl: this.config.queueUrl,

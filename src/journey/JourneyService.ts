@@ -1,16 +1,21 @@
 import { User } from '../users/User'
-import Journey from './Journey'
-import { getJourneyEntrance, getJourneyStep, lastJourneyStep } from './JourneyRepository'
+import { getJourneyEntrance, getJourneyStep, getUserJourneyIds, lastJourneyStep } from './JourneyRepository'
 import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap, JourneyAction } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import List from '../lists/List'
 
-// TODO: Hate this, should journeys required lists for entrance?
-// TODO: Should there even be a service?
-export const updateJourneys = async (user: User, event?: UserEvent) => {
-    const journeys = await Journey.all(qb => qb.where('project_id', user.project_id))
-    for (const journey of journeys) {
-        const service = new JourneyService(journey.id)
+/**
+ * Update all journeys that the user is currently in. Admittence to a
+ * journey comes from a list, so we don't have to worry about journeys
+ * the user has not started.
+ *
+ * @param user The user to look up journeys for
+ * @param event An event that will be passed in to update journeys
+ */
+export const updateUserJourneys = async (user: User, event?: UserEvent) => {
+    const journeys = await getUserJourneyIds(user.id)
+    for (const journeyId of journeys) {
+        const service = new JourneyService(journeyId)
         await service.run(user, event)
     }
 }

@@ -3,6 +3,7 @@ import { ClientPatchUser } from './Client'
 import { Job } from '../queue'
 import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
+import { updateUserJourneys } from '../journey/JourneyService'
 
 interface UserPatchTrigger {
     project_id: number
@@ -36,5 +37,8 @@ export default class UserPatchJob extends Job {
 
         // Use updated user to check for list membership
         await updateLists(user)
+
+        // Check all journeys to update progress
+        await updateUserJourneys(user)
     }
 }

@@ -6,7 +6,7 @@ export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
-type Where = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
 
 export interface Page<T, B = number> {
     results: T[]
@@ -16,7 +16,7 @@ export interface Page<T, B = number> {
 export interface PageParams<B> {
     sinceId: B
     limit: number
-    where: Where
+    query: Query
 }
 
 export default class Model {
@@ -50,10 +50,10 @@ export default class Model {
 
     static async first<T extends typeof Model>(
         this: T,
-        where: Where,
+        query: Query,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
-        const record = await where(this.table(db)).first()
+        const record = await query(this.table(db)).first()
         if (!record) return undefined
         return this.fromJson(record)
     }
@@ -61,11 +61,11 @@ export default class Model {
     static async find<T extends typeof Model>(
         this: T,
         id: number | undefined,
-        where: Where = (qb) => qb,
+        query: Query = (qb) => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         if (!id) return undefined
-        const record = await where(this.table(db))
+        const record = await query(this.table(db))
             .where({ id })
             .first()
         if (!record) return undefined
@@ -74,20 +74,20 @@ export default class Model {
 
     static async all<T extends typeof Model>(
         this: T,
-        where: Where = qb => qb,
+        query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T>[]> {
-        const records = await where(this.table(db))
+        const records = await query(this.table(db))
         return records.map((item: any) => this.fromJson(item))
     }
 
     static async page<T extends typeof Model, B = number>(
         this: T,
         params: PageParams<B>,
-        where: Where = qb => qb,
+        query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<Page<InstanceType<T>, B>> {
-        const records = await where(this.table(db))
+        const records = await query(this.table(db))
             .where('id', '<', params.sinceId)
             .limit(params.limit)
         return {
@@ -139,10 +139,10 @@ export default class Model {
 
     static async delete<T extends typeof Model>(
         this: T,
-        where: Where,
+        query: Query,
         db: Database = App.main.db,
     ): Promise<number> {
-        return await where(this.table(db)).delete()
+        return await query(this.table(db)).delete()
     }
 
     static get tableName(): string {

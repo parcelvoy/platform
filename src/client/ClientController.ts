@@ -1,9 +1,8 @@
 import Router from '@koa/router'
-import type App from '../app'
+import App from '../app'
 import UserPatchJob from './UserPatchJob'
 import UserDeleteJob from './UserDeleteJob'
 import EventPostJob from './EventPostJob'
-import { loadQueue } from '../config/queue'
 import { JSONSchemaType, validate } from '../core/validate'
 import { ClientDeleteUsersRequest, ClientPatchUsersRequest, ClientPostEventsRequest } from './Client'
 
@@ -65,9 +64,8 @@ router.patch('/users', async ctx => {
 
     const users = validate(patchUsersRequest, ctx.request.body)
 
-    const queue = await loadQueue(ctx.state.project_id)
     for (const user of users) {
-        await queue.enqueue(UserPatchJob.from({
+        await App.main.queue.enqueue(UserPatchJob.from({
             project_id: ctx.state.project_id,
             user,
         }))
@@ -92,9 +90,8 @@ router.delete('/users', async ctx => {
 
     userIds = validate(deleteUsersRequest, userIds)
 
-    const queue = await loadQueue(ctx.state.project_id)
     for (const externalId of userIds) {
-        await queue.enqueue(UserDeleteJob.from({
+        await App.main.queue.enqueue(UserDeleteJob.from({
             project_id: ctx.state.project_id,
             external_id: externalId,
         }))
@@ -130,9 +127,8 @@ router.post('/events', async ctx => {
 
     const events = validate(postEventsRequest, ctx.request.body)
 
-    const queue = await loadQueue(ctx.state.project_id)
     for (const event of events) {
-        await queue.enqueue(EventPostJob.from({
+        await App.main.queue.enqueue(EventPostJob.from({
             project_id: ctx.state.project_id,
             event,
         }))

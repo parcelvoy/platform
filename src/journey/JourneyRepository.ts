@@ -50,6 +50,13 @@ export const deleteJourneyStep = async (id: number): Promise<number> => {
     return await JourneyStep.delete(qb => qb.where('id', id))
 }
 
+export const getUserJourneyIds = async (userId: number): Promise<number[]> => {
+    return await JourneyUserStep.all(
+        db => db.where('user_id', userId)
+            .select('journey_id'),
+    ).then(items => items.map(item => item.journey_id))
+}
+
 export const getUserJourneyStep = async (userId: number, stepId: number, type = 'completed'): Promise<JourneyUserStep | undefined> => {
     return await JourneyUserStep.first(
         db => db.where('step_id', stepId)
