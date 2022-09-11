@@ -74,7 +74,7 @@ export const recipientQuery = (campaign: Campaign) => {
     return UserList.query()
         .where('list_id', campaign.list_id)
         .leftJoin('user_subscription', qb => {
-            qb.on('lists.user_id', 'user_subscription.user_id')
+            qb.on('user_list.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
         })
         .where(qb => {

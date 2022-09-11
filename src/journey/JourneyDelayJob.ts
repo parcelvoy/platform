@@ -28,7 +28,7 @@ export default class JourneyDelayJob extends Job {
                 for await (const chunk of stream) {
 
                     // TODO: Room for improvement here by not reprocessing
-                    // the entire queue but instead just this step (could
+                    // the entire journey but instead just this step (could
                     // have some downsides through)
                     App.main.queue.enqueue(
                         JourneyProcessJob.from({

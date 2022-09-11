@@ -1,6 +1,6 @@
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 
-class Template extends Model {
+export class Template extends Model {
     project_id!: number
     name!: string
     type!: 'email' | 'text' | 'push_notification' | 'webhook'
@@ -8,6 +8,8 @@ class Template extends Model {
 
     static tableName = 'templates'
 }
+
+export type TemplateParams = Omit<Template, ModelParams>
 
 export class EmailTemplate extends Template {
     to!: string
