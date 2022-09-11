@@ -1,15 +1,15 @@
 import App from '../../app'
 import EmailJob from '../../channels/email/EmailJob'
 import { RequestError } from '../../core/errors'
-import { addUserToList, createList } from '../../lists/ListService'
+// import { addUserToList, createList } from '../../lists/ListService'
 import { createProject } from '../../projects/ProjectService'
 import { createTemplate } from '../../render/TemplateService'
 import { createSubscription } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
-import * as CampaignService from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, sendCampaign } from '../CampaignService'
+// import * as CampaignService from '../CampaignService'
 
 describe('CampaignService', () => {
 
