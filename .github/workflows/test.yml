@@ -38,6 +38,7 @@ jobs:
         image: mysql:8.0.27
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+          MYSQL_DATABASE: 'parcelvoy'
         ports:
           - 3306:3306
         options: >-
@@ -65,11 +66,6 @@ jobs:
 
     - name: Install Dependencies
       run: npm install && npm install --save-dev
-    
-    - name: Set up MySQL
-      run: |
-        sudo /etc/init.d/mysql start
-        mysql -e 'CREATE DATABASE parcelvoy'
 
     - name: 'Run Jest Tests'
       run: npm test
