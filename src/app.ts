@@ -1,6 +1,9 @@
 import Api from './api'
-import db, { Database, migrate } from './config/database'
+import loadDatabase, { Database, migrate } from './config/database'
+import loadQueue from './config/queue'
 import { Env } from './config/env'
+import scheduler from './config/scheduler'
+import Queue from './queue'
 
 export default class App {
     private static $main: App
@@ -13,30 +16,33 @@ export default class App {
 
     static async init(env: Env): Promise<App> {
         // Load database
-        const database = db(env.db)
+        const database = loadDatabase(env.db)
 
         // Migrate to latest version
         await migrate(database)
 
+        // Load queue
+        const queue = loadQueue(env.queue)
+
         // Setup app
-        App.$main = new App(env, database)
+        App.$main = new App(env, database, queue)
 
         return App.$main
     }
 
     api: Api
+    scheduler: any
     #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
     private constructor(
         public env: Env,
         public db: Database,
+        public queue: Queue,
     ) {
         this.api = new Api(this)
+        this.scheduler = scheduler(this)
         this.#registered = {}
-
-        // TODO: Need to somehow pre-warm or boot up queues so jobs
-        // can run without having to first add one
     }
 
     listen() {
@@ -45,7 +51,7 @@ export default class App {
 
     async close() {
         await this.db.destroy()
-        // await this.queue.close()
+        await this.queue.close()
     }
 
     get<T>(key: number | string): T {

@@ -3,6 +3,7 @@ import { getUserFromExternalId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
 import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
+import { updateUserJourneys } from '../journey/JourneyService'
 
 interface EventPostTrigger {
     project_id: number
@@ -31,5 +32,8 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateLists(user, dbEvent)
+
+        // Check all journeys to update progress
+        await updateUserJourneys(user, dbEvent)
     }
 }

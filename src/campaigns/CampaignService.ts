@@ -1,4 +1,3 @@
-import { loadQueue } from '../config/queue'
 import EmailJob from '../channels/email/EmailJob'
 import TextJob from '../channels/text/TextJob'
 import WebhookJob from '../channels/webhook/WebhookJob'
@@ -8,6 +7,7 @@ import Campaign, { CampaignParams } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
+import App from '../app'
 
 export const allCampaigns = async (project_id: number): Promise<Campaign[]> => {
     return await Campaign.all(qb => qb.where('project_id', project_id))
@@ -46,8 +46,7 @@ export async function sendCampaign(campaign: Campaign, user: User | number, even
         webhook: WebhookJob.from(body),
     }
 
-    const queue = await loadQueue(campaign.project_id)
-    await queue.enqueue(channels[campaign.channel])
+    await App.main.queue.enqueue(channels[campaign.channel])
 }
 
 export const sendList = async (campaign: Campaign) => {
