@@ -1,6 +1,18 @@
 import { User } from '../users/User'
 import { combineURLs } from '../utilities'
-import { SubscriptionState, UserSubscription } from './Subscription'
+import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
+
+export const allSubscriptions = async (projectId: number) => {
+    return await Subscription.all(qb => qb.where('project_id', projectId))
+}
+
+export const getSubscription = async (id: number, projectId: number) => {
+    return await Subscription.find(id, qb => qb.where('project_id', projectId))
+}
+
+export const createSubscription = async (params: SubscriptionParams): Promise<Subscription> => {
+    return await Subscription.insertAndFetch(params)
+}
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
     const condition = {
@@ -9,9 +21,9 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     }
     const previous = await UserSubscription.first(qb => qb.where(condition))
     if (previous) {
-        UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
+        await UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
     } else {
-        UserSubscription.insert({
+        await UserSubscription.insert({
             ...condition,
             state: SubscriptionState.unsubscribed,
         })

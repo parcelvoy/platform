@@ -57,11 +57,11 @@ export default class JourneyService {
 
     parse(step: JourneyStep): JourneyStep {
         const options = {
-            [JourneyEntrance.name]: JourneyEntrance,
-            [JourneyDelay.name]: JourneyDelay,
-            [JourneyGate.name]: JourneyGate,
-            [JourneyMap.name]: JourneyMap,
-            [JourneyAction.name]: JourneyAction,
+            [JourneyEntrance.type]: JourneyEntrance,
+            [JourneyDelay.type]: JourneyDelay,
+            [JourneyGate.type]: JourneyGate,
+            [JourneyMap.type]: JourneyMap,
+            [JourneyAction.type]: JourneyAction,
         }
         return options[step.type]?.fromJson(step)
     }

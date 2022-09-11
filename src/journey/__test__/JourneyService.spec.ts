@@ -10,8 +10,10 @@ describe('Run', () => {
     describe('step progression', () => {
         test('an entrance will proceed to map', async () => {
 
-            const journey = await Journey.insertAndFetch()
+            const project = await Project.insertAndFetch()
+            const journey = await Journey.insertAndFetch({ project_id: project.id })
             const list = await List.insertAndFetch({
+                project_id: project.id,
                 rules: [{
                     type: 'string',
                     group: 'user',
@@ -28,7 +30,6 @@ describe('Run', () => {
 
             const service = new JourneyService(journey.id)
 
-            const project = await Project.insertAndFetch()
             const user = await User.insertAndFetch({
                 email: 'test@test.com',
                 project_id: project.id,

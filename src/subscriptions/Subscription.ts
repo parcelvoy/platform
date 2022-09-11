@@ -1,5 +1,5 @@
 import { ChannelType } from '../config/channels'
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 
 export default class Subscription extends Model {
     project_id!: number
@@ -20,3 +20,5 @@ export class UserSubscription extends Model {
 
     static tableName = 'user_subscription'
 }
+
+export type SubscriptionParams = Omit<Subscription, ModelParams>

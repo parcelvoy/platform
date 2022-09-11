@@ -6,6 +6,7 @@ import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
+import { pascalToSnakeCase } from '../utilities'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -20,11 +21,16 @@ export class JourneyStep extends Model {
     type!: string
     journey_id!: number
     child_id?: number // the step that comes after
-    data: any
+    data?: Record<string, unknown>
+
+    // UI variables
+    x = 0
+    y = 0
 
     static tableName = 'journey_steps'
-    get $name(): string { return this.constructor.name }
     static jsonAttributes = ['data']
+
+    static get type() { return pascalToSnakeCase(this.name) }
 
     async step(user: User, type: string) {
         await JourneyUserStep.insert({
@@ -36,7 +42,7 @@ export class JourneyStep extends Model {
     }
 
     async complete(user: User) {
-        this.step(user, 'completed')
+        await this.step(user, 'completed')
     }
 
     async hasCompleted(user: User): Promise<boolean> {
@@ -60,77 +66,10 @@ export class JourneyStep extends Model {
     }
 }
 
-// type Operator = '=' | '!=' | 'is set'
-// interface Rule {
-//     attribute: string
-//     operator: Operator
-//     value?: unknown
-//     arrayOperator?: Operator
-// }
-
-// type NumberOperator = '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set'
-// interface NumberRule {
-
-// }
-
-/*
-{
-    "type": "operator",
-    "operator": "and",
-    "children": [
-        {
-            "type": "string",
-            "path": "$.email",
-            "startsWith": "chris"
-        },
-        {
-            "type": "number",
-            "path": "$.count",
-            "operator": ">",
-            "value": "2"
-        }
-    ]
-}
-
-{
-    email: "chris@twochris.io",
-    count: 2
-}
-*/
-
-// string: is, is not, contains, does not contain, is set, is not set
-// number: =, !=, >, >=, <, <=, is set, is not set
-// boolean: true, false
-// date: ??
-// list: any, all
-
-// [
-//     {
-//         type: 'wrapper',
-//         operator: 'or',
-//         children: [ // could potentially name this `value` to keep with structure
-//             {
-//                 type: 'string',
-//                 path: '$.email',
-//                 operator: '=',
-//                 value: 'email@email.com'
-//             },
-//             {
-//                 type: 'array',
-//                 path: '$.devices.*',
-//                 operator: ''
-//             }
-//         ]
-//     }, // anything not in an `or` wrapper is an `and` by default
-//     {
-//         type: 'number',
-//         path: '$.highScore',
-//         operator: '<',
-//         value: '20'
-//     }
-// ]
+export type JourneyStepParams = Pick<JourneyStep, 'type' | 'child_id' | 'data' | 'x' | 'y'>
 
 export class JourneyEntrance extends JourneyStep {
+    static type = 'entrance'
 
     list_id!: number
 
@@ -141,7 +80,7 @@ export class JourneyEntrance extends JourneyStep {
 
     static async create(listId: number, childId?: number, journeyId?: number): Promise<JourneyEntrance> {
         return await JourneyEntrance.insertAndFetch({
-            type: this.name,
+            type: this.type,
             child_id: childId,
             journey_id: journeyId,
             data: {
@@ -152,6 +91,8 @@ export class JourneyEntrance extends JourneyStep {
 }
 
 export class JourneyDelay extends JourneyStep {
+    static type = 'delay'
+
     seconds = 0
     minutes = 0
     hours = 0
@@ -193,6 +134,7 @@ export class JourneyDelay extends JourneyStep {
 }
 
 export class JourneyAction extends JourneyStep {
+    static type = 'action'
 
     campaign_id!: number
 
@@ -203,7 +145,7 @@ export class JourneyAction extends JourneyStep {
 
     async next(user: User, event?: UserEvent) {
 
-        const campaign = await getCampaign(this.campaign_id)
+        const campaign = await getCampaign(this.campaign_id, user.project_id)
         if (campaign) {
             await sendCampaign(campaign, user, event)
         }
@@ -214,6 +156,8 @@ export class JourneyAction extends JourneyStep {
 
 // Look at a condition tree and evaluate if user passes on to next step
 export class JourneyGate extends JourneyStep {
+    static type = 'gate'
+
     entrance_type!: 'user' | 'event'
     rule!: Rule
 
@@ -224,14 +168,14 @@ export class JourneyGate extends JourneyStep {
         this.rule = json?.data.rule
     }
 
-    static async create(entranceType: string, rules: Rule[], childId?: number, journeyId?: number): Promise<JourneyGate> {
+    static async create(entranceType: string, rule: Rule, childId?: number, journeyId?: number): Promise<JourneyGate> {
         return await JourneyGate.insertAndFetch({
-            type: this.name,
+            type: this.type,
             child_id: childId,
             journey_id: journeyId,
             data: {
                 entrance_type: entranceType,
-                rules,
+                rule,
             },
         })
     }
@@ -247,6 +191,8 @@ export class JourneyGate extends JourneyStep {
 type MapOptions = Record<string, number>
 
 export class JourneyMap extends JourneyStep {
+    static type = 'map'
+
     attribute!: string
     options!: MapOptions
 
@@ -259,7 +205,7 @@ export class JourneyMap extends JourneyStep {
 
     static async create(attribute: string, options: MapOptions, journeyId?: number): Promise<JourneyMap> {
         return await JourneyMap.insertAndFetch({
-            type: this.name,
+            type: this.type,
             journey_id: journeyId,
             data: {
                 attribute,

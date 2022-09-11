@@ -1,4 +1,4 @@
-import { TextTemplate } from '../../models/Template'
+import { TextTemplate } from '../../render/Template'
 import render, { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
 

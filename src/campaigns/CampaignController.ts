@@ -2,17 +2,18 @@ import Router from '@koa/router'
 import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignParams } from './Campaign'
-import { createCampaign, getCampaign, sendList } from './CampaignService'
+import { allCampaigns, createCampaign, getCampaign, sendList } from './CampaignService'
 
 const router = new Router<{
     app: App
     campaign?: Campaign
+    user: { project_id: number }
 }>({
     prefix: '/campaigns',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await Campaign.all()
+    ctx.body = await allCampaigns(ctx.state.user.project_id)
 })
 
 export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
@@ -42,12 +43,11 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(campaignCreateParams, ctx.request.body)
-
     ctx.body = await createCampaign(payload)
 })
 
 router.param('campaignId', async (value, ctx, next) => {
-    ctx.state.campaign = await getCampaign(parseInt(ctx.params.id))
+    ctx.state.campaign = await getCampaign(parseInt(ctx.params.campaignId), ctx.state.user.project_id)
     if (!ctx.state.campaign) {
         ctx.throw(404)
         return

@@ -1,4 +1,4 @@
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 import Rule from '../rules/Rule'
 
 export default class List extends Model {
@@ -17,3 +17,5 @@ export class UserList extends Model {
 
     static tableName = 'user_list'
 }
+
+export type ListParams = Omit<List, ModelParams>

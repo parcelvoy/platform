@@ -1,12 +1,24 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
-import List, { UserList } from './List'
+import List, { ListParams, UserList } from './List'
 import { enterJourneyFromList } from '../journey/JourneyService'
 
 const getUserListIds = async (user_id: number): Promise<number[]> => {
     const relations = await UserList.all(qb => qb.where('user_id', user_id))
     return relations.map(item => item.list_id)
+}
+
+export const allLists = async (projectId: number) => {
+    return await List.all(qb => qb.where('project_id', projectId))
+}
+
+export const getList = async (id: number, projectId: number) => {
+    return await List.find(id, qb => qb.where('project_id', projectId))
+}
+
+export const createList = async (params: ListParams): Promise<List> => {
+    return await List.insertAndFetch(params)
 }
 
 export const updateLists = async (user: User, event?: UserEvent) => {

@@ -1,6 +1,7 @@
 import Handlebars from 'handlebars'
 import * as StrHelpers from './Helpers/String'
 import * as NumHelpers from './Helpers/Number'
+import * as DateHelpers from './Helpers/Date'
 import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
@@ -27,6 +28,7 @@ const loadHelper = (helper: Record<string, any>) => {
 
 loadHelper(StrHelpers)
 loadHelper(NumHelpers)
+loadHelper(DateHelpers)
 loadHelper(UrlHelpers)
 loadHelper(ArrayHelpers)
 

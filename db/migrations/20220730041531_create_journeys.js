@@ -28,6 +28,8 @@ exports.up = function(knex) {
                 .onDelete('SET NULL')
                 .unsigned()
             table.json('data')
+            table.integer('x')
+            table.integer('y')
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())
         })
