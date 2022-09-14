@@ -1,15 +1,19 @@
 import App from '../../app'
 import EmailJob from '../../channels/email/EmailJob'
 import { RequestError } from '../../core/errors'
-// import { addUserToList, createList } from '../../lists/ListService'
+import { addUserToList, createList } from '../../lists/ListService'
 import { createProject } from '../../projects/ProjectService'
 import { createTemplate } from '../../render/TemplateService'
 import { createSubscription } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendCampaign } from '../CampaignService'
-// import * as CampaignService from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
+import * as CampaignService from '../CampaignService'
+
+afterEach(() => {
+    jest.clearAllMocks()
+})
 
 describe('CampaignService', () => {
 
@@ -157,28 +161,66 @@ describe('CampaignService', () => {
         })
     })
 
-    // describe('sendList', () => {
-    //     test('enqueue sends for a list of people', async () => {
-    //         const spy = jest.spyOn(CampaignService, 'sendCampaign')
+    describe('sendList', () => {
+        test('enqueue sends for a list of people', async () => {
+            const spy = jest.spyOn(CampaignService, 'sendCampaign')
 
-    //         const params = await createCampaignDependencies()
-    //         const list = await createList({
-    //             name: uuid(),
-    //             project_id: params.project_id,
-    //             rules: [],
-    //         })
-    //         const campaign = await createTestCampaign(params, {
-    //             list_id: list.id,
-    //         })
+            const params = await createCampaignDependencies()
+            const list = await createList({
+                name: uuid(),
+                project_id: params.project_id,
+                rules: [],
+            })
+            const campaign = await createTestCampaign(params, {
+                list_id: list.id,
+            })
 
-    //         for (let i = 0; i < 20; i++) {
-    //             const user = await createUser(params.project_id)
-    //             await addUserToList(user, list)
-    //         }
+            for (let i = 0; i < 20; i++) {
+                const user = await createUser(params.project_id)
+                await addUserToList(user, list)
+            }
 
-    //         await sendList(campaign)
+            await sendList(campaign)
 
-    //         expect(spy).toHaveBeenCalledTimes(20)
-    //     })
-    // })
+            expect(spy).toHaveBeenCalledTimes(20)
+            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
+        })
+
+        test('users outside of list arent sent the campaign', async () => {
+            const spy = jest.spyOn(CampaignService, 'sendCampaign')
+
+            const params = await createCampaignDependencies()
+            const list = await createList({
+                name: uuid(),
+                project_id: params.project_id,
+                rules: [],
+            })
+            const list2 = await createList({
+                name: uuid(),
+                project_id: params.project_id,
+                rules: [],
+            })
+            const campaign = await createTestCampaign(params, {
+                list_id: list.id,
+            })
+
+            const inclusiveIds = []
+            for (let i = 0; i < 20; i++) {
+                const user = await createUser(params.project_id)
+                await addUserToList(user, list)
+                inclusiveIds.push(user.id)
+            }
+
+            for (let i = 0; i < 20; i++) {
+                const user = await createUser(params.project_id)
+                await addUserToList(user, list2)
+            }
+
+            await sendList(campaign)
+
+            expect(spy).toHaveBeenCalledTimes(20)
+            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
+            expect(spy.mock.calls[0][1]).toEqual(inclusiveIds[0])
+        })
+    })
 })
