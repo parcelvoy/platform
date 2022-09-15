@@ -9,19 +9,19 @@ export interface TemplateUser extends Record<string, any> {
     phone?: string
 }
 
-export interface Device {
-	token: string;
-	os: string;
-	model: string;
-	app_build: string;
-	app_version: string;
-}
-
 export interface UserAttribute {
 	id: number;
 	user_id: number;
 	key: string;
 	value: any;
+}
+
+export class Device extends Model {
+	token!: string
+	os!: string
+	model!: string
+	app_build!: string
+	app_version!: string
 }
 
 export class User extends Model {
