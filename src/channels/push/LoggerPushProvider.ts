@@ -1,19 +1,18 @@
 import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
-import { Webhook, WebhookResponse } from './Webhook'
-import { WebhookProvider } from './WebhookProvider'
-
-export default class LoggerWebhookProvider extends WebhookProvider {
+import { Push, PushResponse } from './Push'
+import { PushProvider } from './PushProvider'
+export default class LoggerPushProvider extends PushProvider {
     addLatency?: boolean
 
-    async send(options: Webhook): Promise<WebhookResponse> {
+    async send(push: Push): Promise<PushResponse> {
 
         // Allow for having random latency to aid in performance testing
         if (this.addLatency) await sleep(randomInt())
 
-        logger.info(options)
+        logger.info(push)
         return {
-            message: options,
+            push,
             success: true,
             response: '',
         }

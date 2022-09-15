@@ -1,9 +1,10 @@
+import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 
 export class Template extends Model {
     project_id!: number
     name!: string
-    type!: 'email' | 'text' | 'push_notification' | 'webhook'
+    type!: ChannelType
     data!: Record<string, any>
 
     static tableName = 'templates'

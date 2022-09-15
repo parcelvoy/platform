@@ -1,6 +1,7 @@
 import { PushProvider } from './PushProvider'
 import PushNotifications from 'node-pushnotifications'
 import { Push, PushResponse } from './Push'
+import PushError from './PushError'
 
 interface APNParams {
     token: {
@@ -15,6 +16,9 @@ interface FCMParams {
     id: string
 }
 
+// TODO: Should we allow for only setting up one or the other?
+// TODO: Should we split Android / iOS providers in two? How will that
+// affect the concept of providers?
 export default class LocalPushProvider extends PushProvider {
     apn!: APNParams
     fcm!: FCMParams
@@ -37,9 +41,18 @@ export default class LocalPushProvider extends PushProvider {
             custom,
         })
 
+        const invalidTokens = []
+        for (const method of response) {
+            if (method.failure <= 0) continue
+            for (const push of method.message) {
+                if (push.error) {
+                    invalidTokens.push(push.regId)
+                }
+            }
+        }
+
         if (response[0].failure > 0) {
-            const error = response[0].message[0].error ?? new Error(response[0].message[0].errorMsg)
-            throw error
+            throw new PushError('local', response[0].message[0].errorMsg, invalidTokens)
         } else {
             return {
                 push,

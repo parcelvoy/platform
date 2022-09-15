@@ -17,11 +17,21 @@ export interface UserAttribute {
 }
 
 export class Device extends Model {
-	token!: string
+	external_id!: string
+	token?: string
+	notifications_enabled!: boolean
 	os!: string
 	model!: string
 	app_build!: string
 	app_version!: string
+
+	get isPushEnabled(): boolean {
+		return this.token != null && this.notifications_enabled
+	}
+}
+
+interface PushEnabledDevice extends Device {
+	token: string
 }
 
 export class User extends Model {
@@ -33,7 +43,7 @@ export class User extends Model {
 	data!: Record<string, any> // first_name, last_name live in data
 	attributes!: UserAttribute[] //???
 
-	static jsonAttributes = ['data']
+	static jsonAttributes = ['data', 'devices']
 
 	flatten(): TemplateUser {
 		return {
@@ -42,5 +52,9 @@ export class User extends Model {
 			phone: this.phone,
 			id: this.external_id,
 		}
+	}
+
+	get pushEnabledDevices(): PushEnabledDevice[] {
+		return this.devices.filter(device => device.isPushEnabled) as PushEnabledDevice[]
 	}
 }

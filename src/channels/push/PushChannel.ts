@@ -13,7 +13,9 @@ export default class PushChannel {
     }
 
     async send(options: PushTemplate, variables: Variables) {
-        const tokens = variables.user.devices.map(device => device.token)
+
+        // Find tokens from active devices with push enabled
+        const tokens = variables.user.pushEnabledDevices.map(device => device.token)
 
         const custom = Object.keys(options.custom).reduce((body, key) => {
             body[key] = Render(options.custom[key], variables)
