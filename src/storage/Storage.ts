@@ -30,7 +30,8 @@ export default class Storage {
 
     async upload(image: ImageStream): Promise<Partial<Image>> {
         const key = uuid()
-        const extension = extname(image.filename)
+        const { fileName, size } = image.metadata
+        const extension = extname(fileName)
         const url = `${key}${extension}`
 
         await this.provider.upload({
@@ -40,9 +41,9 @@ export default class Storage {
 
         return {
             uuid: key,
-            original_name: image.filename,
+            original_name: fileName,
             extension,
-            file_size: image.size,
+            file_size: size,
         }
     }
 }

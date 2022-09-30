@@ -4,11 +4,16 @@ import { Stream } from 'stream'
 import { RequestError } from '../core/errors'
 import StorageError from './StorageError'
 
+export interface ImageMetadata {
+    fieldName: string
+    fileName: string
+    mimeType: string
+    size: number
+}
+
 export interface ImageStream {
     file: Stream
-    fieldname: string
-    filename: string
-    size: number
+    metadata: ImageMetadata
 }
 
 export default function parse(ctx: Context): Promise<ImageStream> {
@@ -36,13 +41,16 @@ export default function parse(ctx: Context): Promise<ImageStream> {
             busboy.removeListener('close', onClose)
         }
 
-        function onFile(fieldname: string, file: Stream, info: { filename: string, mimeType: string }) {
+        function onFile(fieldName: string, file: Stream, info: { filename: string, mimeType: string }) {
             cleanup()
             resolve({
                 file,
-                fieldname,
-                filename: info.filename,
-                size: parseInt(ctx.req.headers['content-length'] ?? '0'),
+                metadata: {
+                    fieldName,
+                    fileName: info.filename,
+                    mimeType: info.mimeType,
+                    size: parseInt(ctx.req.headers['content-length'] ?? '0'),
+                },
             })
         }
 
