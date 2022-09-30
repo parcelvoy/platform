@@ -35,13 +35,11 @@ export class S3StorageProvider implements StorageProvider {
         await promise
     }
 
-    async url(filename: string) {
-        // TODO: Add the S3 bucket base URL
-        return filename
-    }
-
-    async delete(): Promise<void> {
-        // TODO: Allow for deleting files
-        throw new Error()
+    async delete(filename: string): Promise<void> {
+        const s3 = new S3(this.config)
+        await s3.deleteObject({
+            Bucket: this.config.bucket,
+            Key: filename,
+        })
     }
 }

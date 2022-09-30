@@ -9,6 +9,5 @@ export interface ImageUploadTask {
 
 export interface StorageProvider {
     upload(task: ImageUploadTask): Promise<void>
-    url(filename: string): Promise<string>
-    delete(): Promise<void>
+    delete(filename: string): Promise<void>
 }
