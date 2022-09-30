@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv'
-import { StorageConfig } from '../media/Storage'
+import { StorageConfig } from '../storage/Storage'
 import { QueueConfig } from '../queue/Queue'
 import { DatabaseConfig } from './database'
 
