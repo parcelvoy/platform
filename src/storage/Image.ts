@@ -25,3 +25,8 @@ export default class Image extends Model {
         }
     }
 }
+
+export interface ImageParams {
+    name: string
+    alt?: string
+}

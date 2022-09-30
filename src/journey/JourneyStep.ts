@@ -6,7 +6,7 @@ import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
-import { pascalToSnakeCase } from '../utilities'
+import { snakeCase } from '../utilities'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -30,7 +30,7 @@ export class JourneyStep extends Model {
     static tableName = 'journey_steps'
     static jsonAttributes = ['data']
 
-    static get type() { return pascalToSnakeCase(this.name) }
+    static get type() { return snakeCase(this.name) }
 
     async step(user: User, type: string) {
         await JourneyUserStep.insert({

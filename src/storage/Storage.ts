@@ -3,7 +3,7 @@ import { ImageStream } from './ImageStream'
 import Image from './Image'
 import { S3Config, S3StorageProvider } from './S3StorageProvider'
 import { StorageProvider, StorageProviderName } from './StorageProvider'
-import { extname } from 'path'
+import path from 'path'
 import { uuid } from '../utilities'
 import { InternalError } from '../core/errors'
 import StorageError from './StorageError'
@@ -30,8 +30,9 @@ export default class Storage {
 
     async upload(image: ImageStream): Promise<Partial<Image>> {
         const key = uuid()
-        const { fileName, size } = image.metadata
-        const extension = extname(fileName)
+        const originalPath = path.parse(image.metadata.fileName)
+        const extension = originalPath.ext
+        const fileName = originalPath.name
         const url = `${key}${extension}`
 
         await this.provider.upload({
@@ -43,7 +44,7 @@ export default class Storage {
             uuid: key,
             original_name: fileName,
             extension,
-            file_size: size,
+            file_size: image.metadata.size,
         }
     }
 }

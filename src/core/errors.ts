@@ -9,6 +9,7 @@ export class InternalError extends Error {
     readonly errorCode?: number
     readonly statusCode?: number
     constructor(error: ErrorType)
+    constructor(message: string, statusCode?: number, errorCode?: number)
     constructor(
         message: string | ErrorType,
         statusCode?: number,

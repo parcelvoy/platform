@@ -2,10 +2,12 @@ import Router from '@koa/router'
 import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import parse, { ImageMetadata } from './ImageStream'
-import { allImages, uploadImage } from './ImageService'
+import { allImages, getImage, updateImage, uploadImage } from './ImageService'
+import Image, { ImageParams } from './Image'
 
 const router = new Router<{
     app: App
+    image?: Image
     user: { project_id: number }
 }>({
     prefix: '/images',
@@ -44,6 +46,40 @@ router.post('/', async ctx => {
 
 router.get('/', async ctx => {
     ctx.body = await allImages(ctx.state.user.project_id)
+})
+
+router.param('imageId', async (value, ctx, next) => {
+    ctx.state.image = await getImage(parseInt(ctx.params.imageId), ctx.state.user.project_id)
+    if (!ctx.state.image) {
+        ctx.throw(404)
+        return
+    }
+    return await next()
+})
+
+router.get('/:imageId', async ctx => {
+    ctx.body = ctx.state.image
+})
+
+const imageUpdateMetadata: JSONSchemaType<ImageParams> = {
+    $id: 'imageUpdateMetadata',
+    type: 'object',
+    required: ['name'],
+    properties: {
+        name: {
+            type: 'string',
+        },
+        alt: {
+            type: 'string',
+            nullable: true,
+        },
+    },
+    additionalProperties: false,
+}
+
+router.patch('/:imageId', async ctx => {
+    const payload = validate(imageUpdateMetadata, ctx.request.body)
+    ctx.body = await updateImage(ctx.params.imageId, payload)
 })
 
 export default router
