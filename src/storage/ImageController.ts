@@ -79,7 +79,7 @@ const imageUpdateMetadata: JSONSchemaType<ImageParams> = {
 
 router.patch('/:imageId', async ctx => {
     const payload = validate(imageUpdateMetadata, ctx.request.body)
-    ctx.body = await updateImage(ctx.params.imageId, payload)
+    ctx.body = await updateImage(ctx.state.image!.id, payload)
 })
 
 export default router
