@@ -41,4 +41,13 @@ export default class NexmoTextProvider extends TextProvider {
             throw new TextError('nexmo', `Request failed with status ${response.status}`)
         }
     }
+
+    // https://developer.vonage.com/messaging/sms/guides/inbound-sms
+    parseInbound(inbound: any): TextMessage {
+        return {
+            to: inbound.to,
+            from: inbound.msisdn,
+            text: inbound.text || '',
+        }
+    }
 }

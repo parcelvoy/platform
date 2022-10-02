@@ -1,4 +1,4 @@
-import { defaultProvider } from '../../core/Provider'
+import { defaultProvider, getProvider } from '../../core/Provider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
@@ -17,6 +17,12 @@ export const providerMap = (record: { name: TextProviderName }): TextProvider =>
 
 export const loadTextChannel = async (projectId: number): Promise<TextChannel | undefined> => {
     const provider = await defaultProvider('text', projectId, providerMap)
+    if (!provider) return
+    return new TextChannel(provider)
+}
+
+export const loadTextChannelInbound = async (inboundNumber: string): Promise<TextChannel | undefined> => {
+    const provider = await getProvider(inboundNumber, providerMap)
     if (!provider) return
     return new TextChannel(provider)
 }

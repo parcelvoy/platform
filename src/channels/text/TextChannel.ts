@@ -1,9 +1,10 @@
 import { TextTemplate } from '../../render/Template'
 import Render, { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
+import { TextMessage } from './TextMessage'
 
 export default class TextChannel {
-    private provider: TextProvider
+    readonly provider: TextProvider
     constructor(provider?: TextProvider) {
         if (provider) {
             this.provider = provider
@@ -22,5 +23,9 @@ export default class TextChannel {
         }
 
         await this.provider.send(message)
+    }
+
+    parseInbound(body: any): TextMessage {
+        return this.provider.parseInbound(body)
     }
 }

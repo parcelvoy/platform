@@ -3,7 +3,7 @@ import Render, { Variables } from '../../render'
 import { PushProvider } from './PushProvider'
 
 export default class PushChannel {
-    private provider: PushProvider
+    readonly provider: PushProvider
     constructor(provider?: PushProvider) {
         if (provider) {
             this.provider = provider

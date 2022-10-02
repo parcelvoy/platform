@@ -8,6 +8,7 @@ exports.up = function(knex) {
                 .references('id')
                 .inTable('projects')
                 .onDelete('CASCADE')
+            table.string('external_id').index()
             table.string('name', 255).defaultTo('')
             table.string('group', 255).notNullable()
             table.json('data')

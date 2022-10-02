@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import Hashids from 'hashids'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
@@ -18,20 +19,25 @@ export const uuid = (): string => {
     return crypto.randomUUID()
 }
 
-export const encrypt = (str: string): string => {
-    const iv = crypto.randomBytes(16).toString('hex').slice(0, 16)
-    const encrypter = crypto.createCipheriv('aes-256-cbc', process.env.APP_SECRET!, iv)
-    const value = encrypter.update(str, 'utf8', 'hex')
-    encrypter.final('hex')
-    return iv + value
+const hashCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+const hashMinimumLength = 10
+export const encodeHashid = function(value: number): string {
+    const hashids = new Hashids(
+        process.env.APP_SECRET,
+        hashMinimumLength,
+        hashCharacters,
+    )
+    return hashids.encode(value)
 }
 
-export const decrypt = (str: string): string => {
-    const iv = str.slice(0, 16)
-    const decrypter = crypto.createDecipheriv('aes-256-cbc', process.env.APP_SECRET!, iv)
-    const value = decrypter.update(str.slice(16), 'hex', 'utf8')
-    decrypter.final('hex')
-    return value
+export const decodeHashid = function(value?: string): number | bigint | undefined {
+    if (!value) return
+    const hashids = new Hashids(
+        process.env.APP_SECRET,
+        hashMinimumLength,
+        hashCharacters,
+    )
+    return hashids.decode(value)?.[0]
 }
 
 export const combineURLs = (parts: string[], sep = '/'): string => {
