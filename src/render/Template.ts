@@ -1,7 +1,7 @@
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 
-export class Template extends Model {
+export default class Template extends Model {
     project_id!: number
     name!: string
     type!: ChannelType
@@ -13,11 +13,10 @@ export class Template extends Model {
 export type TemplateParams = Omit<Template, ModelParams>
 
 export class EmailTemplate extends Template {
-    to!: string
     from!: string
-    cc!: string
-    bcc!: string
-    reply_to!: string
+    cc?: string
+    bcc?: string
+    reply_to?: string
     subject!: string
     text_body!: string
     html_body!: string
@@ -25,7 +24,6 @@ export class EmailTemplate extends Template {
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.to = json?.data.to
         this.from = json?.data.from
         this.cc = json?.data.cc
         this.bcc = json?.data.bcc
@@ -37,9 +35,6 @@ export class EmailTemplate extends Template {
 }
 
 export class TextTemplate extends Template {
-    // TODO: Should there be a to? It's the only way to customize
-    // using handlebars, which is useful for email, but may not be for
-    // text message. Also could lead to some weird behaviors
     from!: string
     text!: string
 

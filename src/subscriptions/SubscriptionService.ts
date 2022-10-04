@@ -62,5 +62,5 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
 export const unsubscribeLink = (user: User, campaignId: number): string => {
     const hashUserId = encodeHashid(user.id)
     const hashCampaignId = encodeHashid(campaignId)
-    return combineURLs([process.env.BASE_URL!, hashUserId, hashCampaignId])
+    return combineURLs([process.env.BASE_URL!, 'unsubscribe', hashUserId, hashCampaignId])
 }
