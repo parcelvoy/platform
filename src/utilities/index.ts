@@ -6,6 +6,10 @@ export const random = <T>(array: T[]): T => array[Math.floor(Math.random() * arr
 
 export const pascalToSnakeCase = (str: string): string => str.split(/(?=[A-Z])/).join('_').toLowerCase()
 
+export const uuid = (): string => {
+    return crypto.randomUUID()
+}
+
 export const encrypt = (str: string): string => {
     const iv = crypto.randomBytes(16).toString('hex').slice(0, 16)
     const encrypter = crypto.createCipheriv('aes-256-cbc', process.env.APP_SECRET!, iv)

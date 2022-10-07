@@ -1,6 +1,7 @@
-name: Build
-on:
-  pull_request:
+name: Test
+
+on: pull_request
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -21,3 +22,56 @@ jobs:
     - name: Lint
       run: |
         npm run lint
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    services:
+      mysql:
+        image: mysql:8.0.27
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+          MYSQL_DATABASE: 'parcelvoy'
+        ports:
+          - 3306:3306
+        options: >-
+          --tmpfs="/var/lib/mysql"
+          --health-cmd="mysqladmin ping" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Node 16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Cache NPM
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install Dependencies
+      run: npm install && npm install --save-dev
+
+    - name: 'Run Jest Tests'
+      run: npm test
+      env:
+        NODE_ENV: test
+        APP_SECRET: ${{ secrets.APP_SECRET }}
+        DB_CLIENT: mysql2
+        DB_DATABASE: parcelvoy
+        DB_USERNAME: root
+        DB_PORT: 3306
+        APP_BASE_URL: https://parcelvoy.com
+        QUEUE_DRIVER: memory

@@ -28,9 +28,12 @@ export const createCampaign = async (params: CampaignParams): Promise<Campaign> 
     })
 }
 
-export function sendCampaign(campaign: Campaign, user: User, event?: UserEvent): Promise<void>
-export function sendCampaign(campaign: Campaign, userId: number, eventId?: number): Promise<void>
-export async function sendCampaign(campaign: Campaign, user: User | number, event?: UserEvent | number): Promise<void> {
+type SendCampaign = {
+    (campaign: Campaign, user: User, event?: UserEvent): Promise<void>,
+    (campaign: Campaign, userId: number, eventId?: number): Promise<void>,
+}
+
+export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User | number, event?: UserEvent | number): Promise<void> => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
@@ -72,9 +75,10 @@ export const recipientQuery = (campaign: Campaign) => {
     // Merge user subscription state in to filter out anyone
     // who we can't send do
     return UserList.query()
+        .select('user_list.user_id')
         .where('list_id', campaign.list_id)
         .leftJoin('user_subscription', qb => {
-            qb.on('lists.user_id', 'user_subscription.user_id')
+            qb.on('user_list.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
         })
         .where(qb => {
