@@ -4,7 +4,7 @@ import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
 export default class EmailChannel {
-    provider: EmailProvider
+    readonly provider: EmailProvider
     constructor(provider?: EmailProvider) {
         if (provider) {
             this.provider = provider

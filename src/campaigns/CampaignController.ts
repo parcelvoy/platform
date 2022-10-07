@@ -43,6 +43,7 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(campaignCreateParams, ctx.request.body)
+    // TODO: Make sure user actually has access to project
     ctx.body = await createCampaign(payload)
 })
 

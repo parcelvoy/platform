@@ -1,8 +1,19 @@
 import { User } from '../users/User'
 
+export const getUser = async (id: number): Promise<User | undefined> => {
+    return await User.find(id)
+}
+
 export const getUserFromExternalId = async (projectId: number, externalId: string): Promise<User | undefined> => {
     return await User.first(
         qb => qb.where('external_id', externalId)
+            .where('project_id', projectId),
+    )
+}
+
+export const getUserFromPhone = async (projectId: number, phone: string): Promise<User | undefined> => {
+    return await User.first(
+        qb => qb.where('phone', phone)
             .where('project_id', projectId),
     )
 }

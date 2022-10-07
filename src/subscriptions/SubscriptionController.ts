@@ -1,9 +1,121 @@
 import Router from '@koa/router'
-import type App from '../app'
+import App from '../app'
+import { getCampaign } from '../campaigns/CampaignService'
+import { loadTextChannelInbound } from '../channels/text'
+import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
+import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams } from './Subscription'
-import { allSubscriptions, createSubscription, getSubscription } from './SubscriptionService'
+import { allSubscriptions, createSubscription, getSubscription, subscriptionForChannel, unsubscribe } from './SubscriptionService'
+import SubscriptionError from './SubscriptionError'
+import { decodeHashid } from '../utilities'
 
+/**
+ ***
+ * Public routes for webhooks & unsubscribe links
+ ***
+ */
+const publicRouter = new Router<{app: App}>({
+    prefix: '/unsubscribe',
+})
+
+interface EmailUnsubscribeParams {
+    campaign_id: number
+    user_id: number
+}
+
+export const emailUnsubscribeSchema: JSONSchemaType<EmailUnsubscribeParams> = {
+    $id: 'emailUnsubscribe',
+    type: 'object',
+    required: ['campaign_id', 'user_id'],
+    properties: {
+        campaign_id: {
+            type: 'integer',
+        },
+        user_id: {
+            type: 'integer',
+        },
+    },
+    additionalProperties: false,
+}
+
+publicRouter.post('/email/:userId/:campaignId', async ctx => {
+
+    const params = {
+        user_id: decodeHashid(ctx.params.userId),
+        campaign_id: decodeHashid(ctx.params.campaignId),
+    }
+    const payload = validate(emailUnsubscribeSchema, params)
+
+    const user = await getUser(payload.user_id)
+    if (!user) throw new RequestError(SubscriptionError.UnsubscribeFailed)
+
+    const campaign = await getCampaign(payload.campaign_id, user.project_id)
+    if (!campaign) throw new RequestError(SubscriptionError.UnsubscribeFailed)
+
+    await unsubscribe(user.id, campaign?.subscription_id)
+
+    ctx.status = 204
+})
+
+publicRouter.post('/sms', async ctx => {
+
+    // Always return with positive status code
+    ctx.status = 204
+
+    // TODO: Could be worth allowing providers to register a
+    // controller. Each provider would then have a different
+    // endpoint and it would alleviate some of this mess of
+    // figuring out which provider to seek out.
+
+    // Match up to provider based on inbound number
+    const to = ctx.request.body.To || ctx.request.body.to
+    const channel = await loadTextChannelInbound(to)
+    if (!channel) return
+
+    const message = channel.parseInbound(ctx.request.body)
+
+    // Get project ID from the matched channel
+    const projectId = channel.provider.project_id
+
+    // Check if the message includes the word STOP
+    if (message.text.toLowerCase().includes('stop')) {
+
+        // Unsubscribe the user based on inbound SMS
+        const user = await getUserFromPhone(projectId, message.from)
+        const subscription = await subscriptionForChannel('text', projectId)
+        if (user && subscription) {
+            unsubscribe(user.id, subscription.id)
+        }
+    }
+})
+
+export { publicRouter }
+
+/**
+ ***
+ * Client router for things like push which will come direct from
+ * our client side libraries
+ ***
+ */
+const clientRouter = new Router<{app: App}>({
+    prefix: '/unsubscribe',
+})
+clientRouter.post('/push', async ctx => {
+    // TODO: Unsubscribe for push types
+    // Since this is coming from a client it should probably
+    // contain a token and may not belong here. How to
+    // structure project for client endpoints is tricky
+
+    ctx.status = 204
+})
+export { clientRouter }
+
+/**
+ ***
+ * Private admin routes for managing subscription types
+ ***
+ */
 const router = new Router<{
     app: App
     subscription?: Subscription

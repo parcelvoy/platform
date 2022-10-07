@@ -36,4 +36,13 @@ export default class TwilioTextProvider extends TextProvider {
             throw new Error(`${response.status} - ${responseBody.message}`)
         }
     }
+
+    // https://www.twilio.com/docs/messaging/guides/webhook-request
+    parseInbound(inbound: any): TextMessage {
+        return {
+            to: inbound.To,
+            from: inbound.From,
+            text: inbound.Body || '',
+        }
+    }
 }

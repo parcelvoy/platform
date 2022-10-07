@@ -36,4 +36,13 @@ export default class PlivoTextProvider extends TextProvider {
             throw new Error(response.status === 401 ? await response.text() : (await response.json()).error)
         }
     }
+
+    // https://www.plivo.com/docs/sms/use-cases/receive-sms/node
+    parseInbound(inbound: any): TextMessage {
+        return {
+            to: inbound.To,
+            from: inbound.From,
+            text: inbound.Text,
+        }
+    }
 }

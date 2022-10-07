@@ -50,6 +50,7 @@
     "handlebars": "^4.7.7",
     "handlebars-helpers": "^0.10.0",
     "handlebars-utils": "^1.0.6",
+    "hashids": "^2.2.10",
     "jsonpath": "^1.1.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^2.1.0",

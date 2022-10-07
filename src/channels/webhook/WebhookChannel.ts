@@ -3,7 +3,7 @@ import Render, { Variables } from '../../render'
 import { WebhookProvider } from './WebhookProvider'
 
 export default class WebhookChannel {
-    provider: WebhookProvider
+    readonly provider: WebhookProvider
     constructor(provider?: WebhookProvider) {
         if (provider) {
             this.provider = provider
