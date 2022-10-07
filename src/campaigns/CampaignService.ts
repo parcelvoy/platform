@@ -8,6 +8,7 @@ import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
+import PushJob from '../channels/push/PushJob'
 
 export const allCampaigns = async (project_id: number): Promise<Campaign[]> => {
     return await Campaign.all(qb => qb.where('project_id', project_id))
@@ -46,6 +47,7 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
     const channels = {
         email: EmailJob.from(body),
         text: TextJob.from(body),
+        push: PushJob.from(body),
         webhook: WebhookJob.from(body),
     }
 

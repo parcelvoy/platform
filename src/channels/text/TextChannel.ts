@@ -1,5 +1,5 @@
 import { TextTemplate } from '../../render/Template'
-import render, { Variables } from '../../render'
+import Render, { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
 
 export default class TextChannel {
@@ -13,10 +13,12 @@ export default class TextChannel {
     }
 
     async send(options: TextTemplate, variables: Variables) {
+        if (!variables.user.phone) throw new Error('Unable to send a text message to a user with no phone number.')
+
         const message = {
-            to: options.to,
+            to: variables.user.phone,
             from: options.from,
-            text: render(options.text, variables),
+            text: Render(options.text, variables),
         }
 
         await this.provider.send(message)

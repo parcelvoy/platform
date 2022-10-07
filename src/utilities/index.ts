@@ -4,6 +4,12 @@ export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${co
 
 export const random = <T>(array: T[]): T => array[Math.floor(Math.random() * array.length)]
 
+export const randomInt = (min = 0, max = 100): number => {
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 export const pascalToSnakeCase = (str: string): string => str.split(/(?=[A-Z])/).join('_').toLowerCase()
 
 export const uuid = (): string => {
@@ -34,3 +40,5 @@ export const combineURLs = (parts: string[], sep = '/'): string => {
         })
         .join(sep)
 }
+
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))

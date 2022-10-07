@@ -1,9 +1,10 @@
+import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 
 export class Template extends Model {
     project_id!: number
     name!: string
-    type!: 'email' | 'text' | 'push_notification' | 'webhook'
+    type!: ChannelType
     data!: Record<string, any>
 
     static tableName = 'templates'
@@ -36,16 +37,33 @@ export class EmailTemplate extends Template {
 }
 
 export class TextTemplate extends Template {
-    to!: string
+    // TODO: Should there be a to? It's the only way to customize
+    // using handlebars, which is useful for email, but may not be for
+    // text message. Also could lead to some weird behaviors
     from!: string
     text!: string
 
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.to = json?.data.to
         this.from = json?.data.from
         this.text = json?.data.text
+    }
+}
+
+export class PushTemplate extends Template {
+    title!: string
+    topic!: string
+    body!: string
+    custom!: Record<string, any>
+
+    parseJson(json: any) {
+        super.parseJson(json)
+
+        this.title = json?.data.title
+        this.topic = json?.data.topic
+        this.body = json?.data.body
+        this.custom = json?.data.custom
     }
 }
 
