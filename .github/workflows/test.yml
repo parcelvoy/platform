@@ -75,3 +75,4 @@ jobs:
         DB_PORT: 3306
         APP_BASE_URL: https://parcelvoy.com
         QUEUE_DRIVER: memory
+        STORAGE_DRIVER: s3

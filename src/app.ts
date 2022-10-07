@@ -1,9 +1,11 @@
 import Api from './api'
 import loadDatabase, { Database, migrate } from './config/database'
 import loadQueue from './config/queue'
+import loadStorage from './config/storage'
 import { Env } from './config/env'
 import scheduler from './config/scheduler'
 import Queue from './queue'
+import Storage from './storage'
 
 export default class App {
     private static $main: App
@@ -24,8 +26,11 @@ export default class App {
         // Load queue
         const queue = loadQueue(env.queue)
 
+        // Load storage
+        const storage = loadStorage(env.storage)
+
         // Setup app
-        App.$main = new App(env, database, queue)
+        App.$main = new App(env, database, queue, storage)
 
         return App.$main
     }
@@ -39,6 +44,7 @@ export default class App {
         public env: Env,
         public db: Database,
         public queue: Queue,
+        public storage: Storage,
     ) {
         this.api = new Api(this)
         this.scheduler = scheduler(this)

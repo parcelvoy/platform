@@ -1,3 +1,4 @@
+import { snakeCase } from '../../utilities'
 import { isNumber } from './Number'
 import { checkType, isType } from './Util'
 
@@ -129,9 +130,7 @@ export const reverse = function(str: string): string {
  */
 export const snakecase = function(str: string): string {
     if (!isString(str)) return ''
-    return str.replace(/[A-Z]/g, (letter, index) => {
-        return index === 0 ? letter.toLowerCase() : '_' + letter.toLowerCase()
-    })
+    return snakeCase(str)
 }
 
 /**

@@ -1,6 +1,6 @@
 import App from '../app'
 import { Database } from '../config/database'
-import { pascalToSnakeCase, pluralize } from '../utilities'
+import { snakeCase, pluralize } from '../utilities'
 
 export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
@@ -146,7 +146,7 @@ export default class Model {
     }
 
     static get tableName(): string {
-        return pluralize(pascalToSnakeCase(this.name))
+        return pluralize(snakeCase(this.name))
     }
 
     static table(db: Database = App.main.db): Database.QueryBuilder<any> {

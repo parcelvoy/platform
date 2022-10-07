@@ -10,7 +10,9 @@ export const randomInt = (min = 0, max = 100): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-export const pascalToSnakeCase = (str: string): string => str.split(/(?=[A-Z])/).join('_').toLowerCase()
+export const snakeCase = (str: string): string => str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    ?.map(x => x.toLowerCase())
+    .join('_') ?? ''
 
 export const uuid = (): string => {
     return crypto.randomUUID()

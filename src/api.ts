@@ -24,7 +24,7 @@ export default class Api extends Koa {
                 await next()
             } catch (err) {
                 if (err instanceof RequestError) {
-                    return ctx.throw(err.status, err.message)
+                    return ctx.throw(err.message, err.statusCode)
                 }
                 throw err
             }
