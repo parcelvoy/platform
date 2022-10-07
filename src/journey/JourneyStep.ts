@@ -41,7 +41,8 @@ export class JourneyStep extends Model {
         })
     }
 
-    async complete(user: User) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async complete(user: User, event?: UserEvent) {
         await this.step(user, 'completed')
     }
 
@@ -93,7 +94,6 @@ export class JourneyEntrance extends JourneyStep {
 export class JourneyDelay extends JourneyStep {
     static type = 'delay'
 
-    seconds = 0
     minutes = 0
     hours = 0
     days = 0
@@ -101,7 +101,6 @@ export class JourneyDelay extends JourneyStep {
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.seconds = json?.data?.seconds
         this.minutes = json?.data?.minutes
         this.hours = json?.data?.hours
         this.days = json?.data?.days
@@ -128,7 +127,6 @@ export class JourneyDelay extends JourneyStep {
             days: this.days,
             hours: this.hours,
             minutes: this.minutes,
-            seconds: this.seconds,
         })
     }
 }
@@ -143,14 +141,13 @@ export class JourneyAction extends JourneyStep {
         this.campaign_id = json?.data?.campaign_id
     }
 
-    async next(user: User, event?: UserEvent) {
-
+    async complete(user: User, event?: UserEvent) {
         const campaign = await getCampaign(this.campaign_id, user.project_id)
         if (campaign) {
             await sendCampaign(campaign, user, event)
         }
 
-        return super.next(user, event)
+        super.complete(user, event)
     }
 }
 

@@ -11,11 +11,19 @@ export default class LoggerTextProvider extends TextProvider {
         // Allow for having random latency to aid in performance testing
         if (this.addLatency) await sleep(randomInt())
 
-        logger.info(message)
+        logger.info(message, 'provider:text:logger')
         return {
             message,
             success: true,
             response: '',
+        }
+    }
+
+    parseInbound(inbound: any): TextMessage {
+        return {
+            to: inbound.to,
+            from: inbound.from,
+            text: inbound.text,
         }
     }
 }

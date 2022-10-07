@@ -11,7 +11,7 @@ export default class LoggerWebhookProvider extends WebhookProvider {
         // Allow for having random latency to aid in performance testing
         if (this.addLatency) await sleep(randomInt())
 
-        logger.info(options)
+        logger.info(options, 'provider:webhook:logger')
         return {
             message: options,
             success: true,

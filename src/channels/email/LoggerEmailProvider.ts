@@ -11,7 +11,7 @@ export default class LoggerEmailProvider extends EmailProvider {
         // Allow for having random latency to aid in performance testing
         if (this.addLatency) await sleep(randomInt())
 
-        logger.info(message)
+        logger.info(message, 'provider:email:logger')
     }
 
     async verify(): Promise<boolean> {

@@ -10,7 +10,7 @@ export default class LoggerPushProvider extends PushProvider {
         // Allow for having random latency to aid in performance testing
         if (this.addLatency) await sleep(randomInt())
 
-        logger.info(push)
+        logger.info(push, 'provider:push:logger')
         return {
             push,
             success: true,

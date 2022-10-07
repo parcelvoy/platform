@@ -4,6 +4,7 @@ import { updateLists } from '../lists/ListService'
 import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
 import { updateUserJourneys } from '../journey/JourneyService'
+import { logger } from '../config/logger'
 
 interface EventPostTrigger {
     project_id: number
@@ -18,9 +19,11 @@ export default class EventPostJob extends Job {
     }
 
     static async handler({ project_id, event }: EventPostTrigger) {
-
         const user = await getUserFromExternalId(project_id, event.user_id)
-        if (!user) return // TODO: Maybe log an error somewhere?
+        if (!user) {
+            logger.error({ project_id, event }, 'job:event_post:unknown-user')
+            return
+        }
 
         // Create event for given user
         const dbEvent = await createEvent({

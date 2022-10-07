@@ -31,12 +31,12 @@ export default class MemoryQueueProvider implements QueueProvider {
     }
 
     private async process() {
-        let job
+        let job = this.backlog.shift()
         while (job) {
-            job = this.backlog.shift()
             if (job) {
                 await this.queue.dequeue(job)
             }
+            job = this.backlog.shift()
         }
         await this.tick()
         await this.process()
