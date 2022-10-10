@@ -1,3 +1,6 @@
+import Router from '@koa/router'
+import { ProviderParams, ProviderSchema } from '../Provider'
+import { createController } from '../ProviderService'
 import { Webhook, WebhookResponse } from './Webhook'
 import { WebhookProvider } from './WebhookProvider'
 
@@ -20,5 +23,13 @@ export default class LocalWebhookProvider extends WebhookProvider {
         } else {
             throw new Error(`${response.status} - ${responseBody.message}`)
         }
+    }
+
+    static controllers(): Router {
+        const providerParams = ProviderSchema<ProviderParams, any>('localWebhookProviderParams', {
+            type: 'object',
+        })
+
+        return createController('webhook', 'local', providerParams)
     }
 }

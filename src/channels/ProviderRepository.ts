@@ -1,29 +1,6 @@
 import App from '../app'
 import { Database } from '../config/database'
-import Model from './Model'
-
-export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook'
-
-export class Provider extends Model {
-    name!: string
-    project_id!: number
-    external_id!: string
-    group!: ProviderGroup
-    data!: Record<string, any>
-    is_default!: boolean
-
-    static cacheKey(externalId: string) {
-        return `providers_${externalId}`
-    }
-
-    parseJson(json: any): void {
-        super.parseJson(json)
-
-        Object.assign(this, this.data)
-    }
-}
-
-export type ProviderMap<T extends Provider> = (record: any) => T
+import Provider, { ProviderMap, ProviderGroup, ProviderParams, ExternalProviderParams } from './Provider'
 
 export const defaultProvider = async <T extends Provider>(group: ProviderGroup, projectId: number, mapper: ProviderMap<T>, db?: Database): Promise<T | undefined> => {
     const record = await Provider.table(db)
@@ -35,7 +12,11 @@ export const defaultProvider = async <T extends Provider>(group: ProviderGroup, 
     return mapper(record)
 }
 
-export const getProvider = async <T extends Provider>(externalId: string, mapper: ProviderMap<T>, app = App.main): Promise<T | undefined> => {
+export const getProvider = async (id: number, projectId: number) => {
+    return await Provider.find(id, qb => qb.where('project_id', projectId))
+}
+
+export const getProviderByExternalId = async <T extends Provider>(externalId: string, mapper: ProviderMap<T>, app = App.main): Promise<T | undefined> => {
 
     // Check if value is cached in memory
     const cache = app.get<T>(Provider.cacheKey(externalId))
@@ -53,6 +34,16 @@ export const getProvider = async <T extends Provider>(externalId: string, mapper
     return mappedValue
 }
 
+// TODO: Will need to flip all other items to not be default
+export const createProvider = async (params: ProviderParams) => {
+    return Provider.insertAndFetch(params)
+}
+
+export const updateProvider = async (id: number, params: ExternalProviderParams) => {
+    return Provider.updateAndFetch(id, params)
+}
+
 export const cacheProvider = (provider: Provider, app = App.main) => {
+    if (!provider.external_id) return
     app.set(Provider.cacheKey(provider.external_id), provider)
 }

@@ -1,5 +1,17 @@
+import Router from '@koa/router'
+import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { createController } from '../ProviderService'
 import { TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
+
+interface TwilioDataParams {
+    accountSid: string
+    authToken: string
+}
+
+interface TwilioProviderParams extends ExternalProviderParams {
+    data: TwilioDataParams
+}
 
 export default class TwilioTextProvider extends TextProvider {
     accountSid!: string
@@ -44,5 +56,18 @@ export default class TwilioTextProvider extends TextProvider {
             from: inbound.From,
             text: inbound.Body || '',
         }
+    }
+
+    static controllers(): Router {
+        const providerParams = ProviderSchema<TwilioProviderParams, TwilioDataParams>('twilioTextProviderParams', {
+            type: 'object',
+            required: ['accountSid', 'authToken'],
+            properties: {
+                accountSid: { type: 'string' },
+                authToken: { type: 'string' },
+            },
+        })
+
+        return createController('text', 'twilio', providerParams)
     }
 }
