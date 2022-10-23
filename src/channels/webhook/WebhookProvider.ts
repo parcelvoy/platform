@@ -1,4 +1,4 @@
-import { Provider } from '../../core/Provider'
+import Provider from '../Provider'
 import { Webhook, WebhookResponse } from './Webhook'
 
 export type WebhookProviderName = 'local' | 'logger'

@@ -1,4 +1,4 @@
-import { Provider } from '../../core/Provider'
+import Provider from '../Provider'
 import { Push, PushResponse } from './Push'
 
 export type PushProviderName = 'local' | 'logger'

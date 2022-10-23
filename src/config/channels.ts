@@ -8,6 +8,8 @@ import App from '../app'
 import PushChannel from '../channels/push/PushChannel'
 import { loadPushChannel } from '../channels/push'
 
+const cacheKey = (projectId: number, type: string) => `projects_${projectId}_channels_${type}`
+
 export type Channel = EmailChannel | TextChannel | PushChannel | WebhookChannel
 export type ChannelType = 'email' | 'push' | 'text' | 'webhook'
 
@@ -17,7 +19,7 @@ async function loadChannel(projectId: number, type: 'push', app?: App): Promise<
 async function loadChannel(projectId: number, type: 'webhook', app?: App): Promise<WebhookChannel>
 async function loadChannel(projectId: number, type: ChannelType, app = App.main): Promise<Channel> {
 
-    const key = `projects_${projectId}_channels_${type}`
+    const key = cacheKey(projectId, type)
     const cache = app.get<Channel>(key)
     if (cache) return cache
 
@@ -29,6 +31,10 @@ async function loadChannel(projectId: number, type: ChannelType, app = App.main)
     }
     app.set(key, await channels[type](projectId))
     return app.get(key)
+}
+
+export const clearChannel = async (projectId: number, type: ChannelType, app = App.main) => {
+    app.remove(cacheKey(projectId, type))
 }
 
 export { loadChannel }

@@ -8,6 +8,7 @@ import ListController from '../lists/ListController'
 import SubscriptionController, { publicRouter as PublicSubscriptionController } from '../subscriptions/SubscriptionController'
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
+import ProviderController from '../channels/ProviderController'
 import TemplateController from '../render/TemplateController'
 
 const register = (router: Router, routes: Router) => {
@@ -36,6 +37,7 @@ export default (api: import('../api').default) => {
     register(admin, JourneyController)
     register(admin, ImageController)
     register(admin, TemplateController)
+    register(admin, ProviderController)
 
     api.use(admin.routes()).use(admin.allowedMethods())
 

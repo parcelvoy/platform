@@ -21,6 +21,7 @@ export default class MemoryQueueProvider implements QueueProvider {
     }
 
     start(): void {
+        if (process.env.NODE_ENV === 'test') return
         if (this.loop) return
         this.process()
     }
