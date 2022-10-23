@@ -22,8 +22,9 @@ export const updateUserJourneys = async (user: User, event?: UserEvent) => {
 
 export const enterJourneyFromList = async (list: List, user: User, event?: UserEvent) => {
     const steps = await JourneyStep.all(
-        qb => qb.where('project_id', list.project_id)
-            .where('type', JourneyEntrance.name)
+        qb => qb.leftJoin('journeys', 'journeys.id', 'journey_steps.journey_id')
+            .where('journeys.project_id', list.project_id)
+            .where('type', JourneyEntrance.type)
             .whereJsonPath('data', '$.list_id', '=', list.id),
     )
     for (const step of steps) {

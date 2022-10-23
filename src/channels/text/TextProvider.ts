@@ -1,4 +1,4 @@
-import { Provider } from '../../core/Provider'
+import Provider from '../Provider'
 import { TextMessage, TextResponse } from './TextMessage'
 
 export type TextProviderName = 'nexmo' | 'plivo' | 'twilio' | 'logger'

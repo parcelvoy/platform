@@ -32,25 +32,12 @@ loadHelper(DateHelpers)
 loadHelper(UrlHelpers)
 loadHelper(ArrayHelpers)
 
-/**
- * Additional helpers that we should have:
- *
- * lt
- * gt
- * lte
- * gte
- * defaultIfEmpty
- * replace
- * concat (use plus sign)
- * math - addition, subtraction, multiplication
- * ifContains - Check if array contains
- * dateFormat - date, format (full, long, medium, short, string), tz
- * dateMath - date, math string | Operands +1y-1M+3w-17d+7h+1m-50s | "now" corresponds to current date <-- hate this, can we just use math?
- * now - current date
- */
+export const Compile = (template: string, context: Record<string, any> = {}) => {
+    return Handlebars.compile(template)(context)
+}
 
 export default (template: string, { user, event, context }: Variables) => {
-    return Handlebars.compile(template)({
+    return Compile(template, {
         user: user.flatten(),
         event,
         context,

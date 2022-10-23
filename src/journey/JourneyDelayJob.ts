@@ -17,7 +17,7 @@ export default class JourneyDelayJob extends Job {
                 'latest_journey_steps',
                 raw('SELECT j.*, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id DESC) AS rn FROM journey_user_step AS j'),
             )
-            .select('step_id', 'type', 'journey_id', 'project_id')
+            .select('step_id', 'user_id', 'type', 'journey_id', 'project_id')
             .from('latest_journey_steps')
             .leftJoin('journeys', 'journeys.id', '=', 'latest_journey_steps.journey_id')
             .where({
@@ -33,7 +33,7 @@ export default class JourneyDelayJob extends Job {
                     App.main.queue.enqueue(
                         JourneyProcessJob.from({
                             user_id: chunk.user_id,
-                            journey_id: chunk.step_id,
+                            journey_id: chunk.journey_id,
                         }),
                     )
                 }

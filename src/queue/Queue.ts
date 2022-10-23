@@ -1,5 +1,5 @@
 import { DriverConfig } from '../config/env'
-import { LoggerConfig } from '../config/logger'
+import { logger, LoggerConfig } from '../config/logger'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { QueueProviderName } from './QueueProvider'
@@ -33,6 +33,7 @@ export default class Queue {
     }
 
     async enqueue(job: Job): Promise<void> {
+        logger.info(job.toJSON(), 'queue:job:enqueued')
         return await this.provider.enqueue(job)
     }
 
@@ -42,7 +43,7 @@ export default class Queue {
 
     async started(job: EncodedJob) {
         // TODO: Do something about starting
-        console.log('started', job)
+        logger.info(job, 'queue:job:started')
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +53,7 @@ export default class Queue {
 
     async completed(job: EncodedJob) {
         // TODO: Do something about completion
-        console.log('completed', job)
+        logger.info(job, 'queue:job:completed')
     }
 
     async close() {

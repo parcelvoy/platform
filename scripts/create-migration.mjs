@@ -7,13 +7,13 @@ const connection = knex({
         user: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         port: process.env.DB_PORT,
-        database: process.env.DB_DATABASE
-    }
+        database: process.env.DB_DATABASE,
+    },
 })
 
 const migrationConfig = {
     directory: './db/migrations',
-    tableName: 'migrations'
+    tableName: 'migrations',
 }
 
 const name = process.argv[2]

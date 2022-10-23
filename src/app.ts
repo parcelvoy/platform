@@ -67,4 +67,8 @@ export default class App {
     set(key: number | string, value: unknown) {
         this.#registered[key] = value
     }
+
+    remove(key: number | string) {
+        delete this.#registered[key]
+    }
 }

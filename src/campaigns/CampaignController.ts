@@ -95,6 +95,7 @@ router.put('/:campaignId', async ctx => {
 
 router.post('/:campaignId/send', async ctx => {
     await sendList(ctx.state.campaign!)
+    ctx.status = 202
 })
 
 export default router

@@ -44,6 +44,9 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
         event_id: event instanceof UserEvent ? event?.id : event,
     }
 
+    // TODO: Should filter out anyone who has already been through this
+    // campaign before
+
     const channels = {
         email: EmailJob.from(body),
         text: TextJob.from(body),
@@ -61,7 +64,7 @@ export const sendList = async (campaign: Campaign) => {
     }
 
     // Stream results so that we aren't overwhelmed by millions
-    // or potential entries
+    // of potential entries
     await recipientQuery(campaign)
         .stream(async function(stream) {
 

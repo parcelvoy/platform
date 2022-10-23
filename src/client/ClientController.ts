@@ -34,6 +34,7 @@ router.use(async (ctx, next) => {
 })
 
 const patchUsersRequest: JSONSchemaType<ClientPatchUsersRequest> = {
+    $id: 'patchUsers',
     type: 'array',
     items: {
         type: 'object',
@@ -102,6 +103,7 @@ router.delete('/users', async ctx => {
 })
 
 const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
+    $id: 'postEvents',
     type: 'array',
     items: {
         type: 'object',

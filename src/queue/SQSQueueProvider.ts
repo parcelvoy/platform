@@ -1,5 +1,6 @@
 import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
+import { logger } from '../config/logger'
 import { AWSConfig } from '../core/aws'
 import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
@@ -31,13 +32,14 @@ export default class SQSQueueProvider implements QueueProvider {
 
         // Catches errors related to the queue / connection
         this.app.on('error', (error, message) => {
-            console.log(error, message)
+            logger.error({ error, message }, 'sqs:error:connection')
+            this.app.stop()
             // TODO:  this.queue.errored(this.parse(message), error)
         })
 
         // Catches errors related to the job
-        this.app.on('processing_error', (err) => {
-            console.error(err.message)
+        this.app.on('processing_error', (error) => {
+            logger.error({ error }, 'sqs:error:processing')
         })
         this.app.start()
     }
@@ -47,12 +49,16 @@ export default class SQSQueueProvider implements QueueProvider {
     }
 
     async enqueue(job: Job): Promise<void> {
-        const params = {
-            DelaySeconds: job.options.delay,
-            MessageBody: JSON.stringify(job),
-            QueueUrl: this.config.queueUrl,
+        try {
+            const params = {
+                DelaySeconds: job.options.delay,
+                MessageBody: JSON.stringify(job),
+                QueueUrl: this.config.queueUrl,
+            }
+            await this.sqs.sendMessage(params)
+        } catch (error) {
+            logger.error(error, 'sqs:error:enqueue')
         }
-        await this.sqs.sendMessage(params)
     }
 
     start(): void {
