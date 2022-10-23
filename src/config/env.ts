@@ -8,6 +8,7 @@ export interface Env {
     queue: QueueConfig
     storage: StorageConfig
     port: number
+    baseUrl: string
     secret: string
 }
 
@@ -59,5 +60,6 @@ export default (type?: EnvType): Env => {
         }),
         port: parseInt(process.env.PORT!),
         secret: process.env.APP_SECRET!,
+        baseUrl: process.env.BASE_URL!,
     }
 }

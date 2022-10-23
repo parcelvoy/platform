@@ -5,7 +5,8 @@ import * as DateHelpers from './Helpers/Date'
 import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
-import { unsubscribeLink } from '../subscriptions/SubscriptionService'
+import { unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
+import { clickWrapHTML, openWrapHtml } from './LinkService'
 
 export interface RenderContext {
     template_id: number
@@ -37,10 +38,15 @@ export const Compile = (template: string, context: Record<string, any> = {}) => 
 }
 
 export default (template: string, { user, event, context }: Variables) => {
-    return Compile(template, {
+    const trackingParams = { user, campaign: context.campaign_id }
+    let html = Compile(template, {
         user: user.flatten(),
         event,
         context,
-        unsubscribeUrl: unsubscribeLink(user, context?.campaign_id),
+        unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
     })
+
+    html = clickWrapHTML(html, trackingParams)
+    html = openWrapHtml(html, trackingParams)
+    return html
 }

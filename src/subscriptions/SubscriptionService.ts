@@ -1,9 +1,8 @@
 import { TextProvider } from '../channels/text/TextProvider'
 import { ChannelType } from '../config/channels'
-import { User } from '../users/User'
+import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { createEvent } from '../users/UserEventRepository'
 import { getUser, getUserFromPhone } from '../users/UserRepository'
-import { combineURLs, encodeHashid } from '../utilities'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 
 export const allSubscriptions = async (projectId: number) => {
@@ -79,8 +78,6 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     })
 }
 
-export const unsubscribeLink = (user: User, campaignId: number): string => {
-    const hashUserId = encodeHashid(user.id)
-    const hashCampaignId = encodeHashid(campaignId)
-    return combineURLs([process.env.BASE_URL!, 'unsubscribe', hashUserId, hashCampaignId])
+export const unsubscribeEmailLink = (params: TrackedLinkParams): string => {
+    return paramsToEncodedLink({ ...params, path: 'unsubscribe/email' })
 }
