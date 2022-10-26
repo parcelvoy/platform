@@ -1,6 +1,7 @@
 import Router from '@koa/router'
 import jwt from 'koa-jwt'
 import { sign } from 'jsonwebtoken'
+import Api from '../api'
 import client from '../client/ClientController'
 import ProjectController from '../projects/ProjectController'
 import CampaignController from '../campaigns/CampaignController'
@@ -9,14 +10,16 @@ import SubscriptionController, { publicRouter as PublicSubscriptionController } 
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
 import ProviderController from '../channels/ProviderController'
+import LinkController from '../render/LinkController'
 import TemplateController from '../render/TemplateController'
 
-const register = (router: Router, routes: Router) => {
+const register = (router: Router | Api, routes: Router) => {
     router.use(routes.routes(), routes.allowedMethods())
 }
 
 export default (api: import('../api').default) => {
 
+    // Bind admin methods to subrouter
     const admin = new Router({ prefix: '/admin' })
 
     admin.post('/jwt', ctx => {
@@ -39,10 +42,11 @@ export default (api: import('../api').default) => {
     register(admin, TemplateController)
     register(admin, ProviderController)
 
-    api.use(admin.routes()).use(admin.allowedMethods())
+    // Bind subroutes to base API
+    register(api, admin)
+    register(api, client)
 
-    api.use(client.routes()).use(client.allowedMethods())
-
-    api.use(PublicSubscriptionController.routes())
-        .use(PublicSubscriptionController.allowedMethods())
+    // Bind public subroutes to base API
+    register(api, PublicSubscriptionController)
+    register(api, LinkController)
 }
