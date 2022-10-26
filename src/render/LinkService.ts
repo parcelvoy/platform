@@ -104,6 +104,7 @@ export const trackLinkEvent = async (parts: TrackedLinkExport, eventName: string
                 campaign_id: campaign.id,
                 channel: campaign.channel,
                 template_id: campaign.template_id,
+                url: parts.redirect,
             },
         },
     })
