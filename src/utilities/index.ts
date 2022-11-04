@@ -32,14 +32,14 @@ export const encodeHashid = function(value: number): string {
     return hashids.encode(value)
 }
 
-export const decodeHashid = function(value?: string): number | bigint | undefined {
+export const decodeHashid = function(value?: string | null): number | undefined {
     if (!value) return
     const hashids = new Hashids(
         process.env.APP_SECRET,
         hashMinimumLength,
         hashCharacters,
     )
-    return hashids.decode(value)?.[0]
+    return hashids.decode(value)?.[0] as number | undefined
 }
 
 export const combineURLs = (parts: string[], sep = '/'): string => {

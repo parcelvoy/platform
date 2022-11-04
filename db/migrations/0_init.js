@@ -40,18 +40,6 @@ exports.up = function(knex) {
             table.unique(['project_id', 'external_id'])
             table.foreign('project_id').references('projects.id')
         })
-        .createTable('devices', function(table) {
-            table.increments()
-            table.integer('user_id').unsigned().notNullable()
-            table.string('token', 2048).notNullable()
-            table.string('os', 128).notNullable()
-            table.string('model', 255).notNullable()
-            table.string('app_build', 255).notNullable()
-            table.string('app_version', 255).notNullable()
-            table.foreign('user_id')
-                .references('users.id')
-                .onDelete('CASCADE')
-        })
         .createTable('project_api_keys', function(table) {
             table.increments()
             table.integer('project_id').unsigned().notNullable()
@@ -66,7 +54,6 @@ exports.up = function(knex) {
 
 exports.down = function(knex) {
     return knex.schema
-        .dropTable('devices')
         .dropTable('users')
         .dropTable('project_admins')
         .dropTable('admins')

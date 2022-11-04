@@ -15,9 +15,11 @@ export default class EmailChannel {
     }
 
     async send(options: EmailTemplate, variables: Variables) {
+        if (!variables.user.email) throw new Error('Unable to send a text message to a user with no email.')
+
         const message: Email = {
+            to: variables.user.email,
             subject: Render(options.subject, variables),
-            to: Render(options.to, variables),
             from: Render(options.from, variables),
             html: Render(options.html_body, variables),
             text: Render(options.text_body, variables),

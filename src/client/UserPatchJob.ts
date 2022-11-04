@@ -31,7 +31,7 @@ export default class UserPatchJob extends Job {
             : await User.insertAndFetch({
                 project_id,
                 external_id,
-                data,
+                data: data ?? {},
                 ...fields,
             })
 

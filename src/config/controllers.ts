@@ -7,6 +7,9 @@ import SubscriptionController, { publicRouter as PublicSubscriptionController } 
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
 import AuthController from '../auth/AuthController'
+import ProviderController from '../channels/ProviderController'
+import LinkController from '../render/LinkController'
+import TemplateController from '../render/TemplateController'
 
 const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
@@ -17,7 +20,7 @@ const register = (parent: Router, ...routers: Router[]) => {
 
 export default (api: import('../api').default) => {
 
-    // admin (jwt)
+    // Bind admin methods to subrouter
     const admin = new Router({ prefix: '/admin' })
     admin.use(jwt({ secret: api.app.env.auth.secret }))
     register(admin,
@@ -27,6 +30,8 @@ export default (api: import('../api').default) => {
         SubscriptionController,
         JourneyController,
         ImageController,
+        TemplateController,
+        ProviderController,
     )
 
     // client (api key)
@@ -46,5 +51,4 @@ export default (api: import('../api').default) => {
     )
 
     api.use(root.allowedMethods()).use(root.routes())
-
 }

@@ -1,6 +1,18 @@
 import { TextMessage, TextResponse } from './TextMessage'
 import TextError from './TextError'
 import { TextProvider } from './TextProvider'
+import { ProviderParams, ProviderSchema } from '../Provider'
+import Router from '@koa/router'
+import { createController } from '../ProviderService'
+
+interface NexmoDataParams {
+    apiKey: string
+    apiSecret: string
+}
+
+interface NexmoProviderParams extends ProviderParams {
+    data: NexmoDataParams
+}
 
 export default class NexmoTextProvider extends TextProvider {
     apiKey!: string
@@ -49,5 +61,18 @@ export default class NexmoTextProvider extends TextProvider {
             from: inbound.msisdn,
             text: inbound.text || '',
         }
+    }
+
+    static controllers(): Router {
+        const providerParams = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {
+            type: 'object',
+            required: ['apiKey', 'apiSecret'],
+            properties: {
+                apiKey: { type: 'string' },
+                apiSecret: { type: 'string' },
+            },
+        })
+
+        return createController('text', 'nexmo', providerParams)
     }
 }

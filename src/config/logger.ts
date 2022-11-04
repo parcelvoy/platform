@@ -1,6 +1,6 @@
 import pino from 'pino'
 import pretty from 'pino-pretty'
-import { Provider } from '../core/Provider'
+import Provider from '../channels/Provider'
 import { DriverConfig } from './env'
 
 export type LoggerProviderName = 'logger'

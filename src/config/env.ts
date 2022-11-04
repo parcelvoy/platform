@@ -10,6 +10,8 @@ export interface Env {
     storage: StorageConfig
     port: number
     auth: AuthConfig
+    baseUrl: string
+    secret: string
 }
 
 export interface DriverConfig {
@@ -59,11 +61,13 @@ export default (type?: EnvType): Env => {
             }),
         }),
         port: parseInt(process.env.PORT!),
+        secret: process.env.APP_SECRET!,
         auth: {
-            secret: process.env.AUTH_SECRET!,
+            secret: process.env.APP_SECRET!,
             refreshTokenSecret: process.env.AUTH_REFRESH_TOKEN_SECRET!,
             tokenLife: parseInt(process.env.AUTH_TOKEN_LIFE!),
             refreshTokenLife: parseInt(process.env.AUTH_REFRESH_TOKEN_LIFE!),
         },
+        baseUrl: process.env.BASE_URL!,
     }
 }

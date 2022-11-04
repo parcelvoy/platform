@@ -1,14 +1,12 @@
 import Router from '@koa/router'
 import App from '../app'
-import { getCampaign } from '../campaigns/CampaignService'
 import { loadTextChannelInbound } from '../channels/text'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
-import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams } from './Subscription'
-import { allSubscriptions, createSubscription, getSubscription, subscriptionForChannel, unsubscribe } from './SubscriptionService'
+import { allSubscriptions, createSubscription, getSubscription, unsubscribe, unsubscribeSms } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
-import { decodeHashid } from '../utilities'
+import { encodedLinkToParts } from '../render/LinkService'
 
 /**
  ***
@@ -39,21 +37,13 @@ export const emailUnsubscribeSchema: JSONSchemaType<EmailUnsubscribeParams> = {
     additionalProperties: false,
 }
 
-publicRouter.post('/email/:userId/:campaignId', async ctx => {
+publicRouter.post('/email', async ctx => {
 
-    const params = {
-        user_id: decodeHashid(ctx.params.userId),
-        campaign_id: decodeHashid(ctx.params.campaignId),
-    }
-    const payload = validate(emailUnsubscribeSchema, params)
+    const { user, campaign } = await encodedLinkToParts(ctx.URL)
 
-    const user = await getUser(payload.user_id)
-    if (!user) throw new RequestError(SubscriptionError.UnsubscribeFailed)
+    if (!user || !campaign) throw new RequestError(SubscriptionError.UnsubscribeFailed)
 
-    const campaign = await getCampaign(payload.campaign_id, user.project_id)
-    if (!campaign) throw new RequestError(SubscriptionError.UnsubscribeFailed)
-
-    await unsubscribe(user.id, campaign?.subscription_id)
+    await unsubscribe(user.id, campaign.subscription_id)
 
     ctx.status = 204
 })
@@ -63,31 +53,12 @@ publicRouter.post('/sms', async ctx => {
     // Always return with positive status code
     ctx.status = 204
 
-    // TODO: Could be worth allowing providers to register a
-    // controller. Each provider would then have a different
-    // endpoint and it would alleviate some of this mess of
-    // figuring out which provider to seek out.
-
     // Match up to provider based on inbound number
     const to = ctx.request.body.To || ctx.request.body.to
     const channel = await loadTextChannelInbound(to)
     if (!channel) return
 
-    const message = channel.parseInbound(ctx.request.body)
-
-    // Get project ID from the matched channel
-    const projectId = channel.provider.project_id
-
-    // Check if the message includes the word STOP
-    if (message.text.toLowerCase().includes('stop')) {
-
-        // Unsubscribe the user based on inbound SMS
-        const user = await getUserFromPhone(projectId, message.from)
-        const subscription = await subscriptionForChannel('text', projectId)
-        if (user && subscription) {
-            unsubscribe(user.id, subscription.id)
-        }
-    }
+    await unsubscribeSms(channel.provider, ctx.request.body)
 })
 
 export { publicRouter }

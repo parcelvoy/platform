@@ -1,9 +1,23 @@
+import Router from '@koa/router'
+import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { createController } from '../ProviderService'
 import { TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
+
+interface PlivoDataParams {
+    authId: string
+    authToken: string
+    phoneNumber: string
+}
+
+interface PlivoProviderParams extends ExternalProviderParams {
+    data: PlivoDataParams
+}
 
 export default class PlivoTextProvider extends TextProvider {
     authId!: string
     authToken!: string
+    phoneNumber!: string
 
     get apiKey(): string {
         return Buffer.from(`${this.authId}:${this.authToken}`).toString('base64')
@@ -44,5 +58,19 @@ export default class PlivoTextProvider extends TextProvider {
             from: inbound.From,
             text: inbound.Text,
         }
+    }
+
+    static controllers(): Router {
+        const providerParams = ProviderSchema<PlivoProviderParams, PlivoDataParams>('plivoTextProviderParams', {
+            type: 'object',
+            required: ['authId', 'authToken', 'phoneNumber'],
+            properties: {
+                authId: { type: 'string' },
+                authToken: { type: 'string' },
+                phoneNumber: { type: 'string' },
+            },
+        })
+
+        return createController('text', 'plivo', providerParams)
     }
 }

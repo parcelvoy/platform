@@ -2,6 +2,8 @@ import jsonpath from 'jsonpath'
 import { TemplateEvent } from '../users/UserEvent'
 import { TemplateUser } from '../users/User'
 import Rule, { Operator, RuleGroup, RuleType } from './Rule'
+import { isAfter, isBefore, isEqual } from 'date-fns'
+import { Compile } from '../render'
 
 class Registry<T> {
     #registered: { [key: string]: T } = {}
@@ -136,10 +138,59 @@ const BooleanRule: RuleCheck = {
     },
 }
 
+const DateRule: RuleCheck = {
+    check(input: RuleCheckInput, rule: Rule) {
+        const value = queryValue(input, rule, item => new Date(item))
+        if (!value) return false
+
+        if (rule.operator === 'is set') {
+            return value != null
+        }
+
+        if (rule.operator === 'is not set') {
+            return value == null
+        }
+
+        if (!rule.value) {
+            throw new RuleEvalException(rule, 'value required for operator')
+        }
+
+        // Use Handlebars to manipulate date before interpreting
+        const compiledValue = Compile(String(rule.value))
+        const ruleValue = new Date(compiledValue)
+
+        if (rule.operator === '=') {
+            return isEqual(value, ruleValue)
+        }
+
+        if (rule.operator === '!=') {
+            return !isEqual(value, ruleValue)
+        }
+
+        if (rule.operator === '<') {
+            return isBefore(value, ruleValue)
+        }
+
+        if (rule.operator === '<=') {
+            return isBefore(value, ruleValue) || isEqual(value, ruleValue)
+        }
+
+        if (rule.operator === '>') {
+            return isAfter(value, ruleValue)
+        }
+
+        if (rule.operator === '>=') {
+            return isAfter(value, ruleValue) || isEqual(value, ruleValue)
+        }
+
+        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+    },
+}
+
 ruleRegistry.register('number', NumberRule)
 ruleRegistry.register('string', StringRule)
 ruleRegistry.register('boolean', BooleanRule)
-// TODO: Add dates ruleset
+ruleRegistry.register('date', DateRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
 export const check = (value: RuleCheckInput, rules: Rule[]) => {

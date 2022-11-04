@@ -1,8 +1,8 @@
+import { TextProvider } from '../channels/text/TextProvider'
 import { ChannelType } from '../config/channels'
-import { User } from '../users/User'
+import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { createEvent } from '../users/UserEventRepository'
-import { getUser } from '../users/UserRepository'
-import { combineURLs, encodeHashid } from '../utilities'
+import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 
 export const allSubscriptions = async (projectId: number) => {
@@ -19,6 +19,25 @@ export const createSubscription = async (params: SubscriptionParams): Promise<Su
 
 export const subscriptionForChannel = async (channel: ChannelType, projectId: number): Promise<Subscription | undefined> => {
     return await Subscription.first(qb => qb.where('channel', channel).where('project_id', projectId))
+}
+
+export const unsubscribeSms = async (provider: TextProvider, body: Record<string, any>) => {
+
+    const message = provider.parseInbound(body)
+
+    // Get project ID from the matched channel
+    const projectId = provider.project_id
+
+    // Check if the message includes the word STOP
+    if (message.text.toLowerCase().includes('stop')) {
+
+        // Unsubscribe the user based on inbound SMS
+        const user = await getUserFromPhone(projectId, message.from)
+        const subscription = await subscriptionForChannel('text', projectId)
+        if (user && subscription) {
+            unsubscribe(user.id, subscription.id)
+        }
+    }
 }
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
@@ -59,8 +78,6 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     })
 }
 
-export const unsubscribeLink = (user: User, campaignId: number): string => {
-    const hashUserId = encodeHashid(user.id)
-    const hashCampaignId = encodeHashid(campaignId)
-    return combineURLs([process.env.BASE_URL!, hashUserId, hashCampaignId])
+export const unsubscribeEmailLink = (params: TrackedLinkParams): string => {
+    return paramsToEncodedLink({ ...params, path: 'unsubscribe/email' })
 }
