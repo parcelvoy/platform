@@ -1,6 +1,7 @@
 import App from '../app'
 import { Database } from '../config/database'
 import { snakeCase, pluralize } from '../utilities'
+import { SearchParams } from './searchParams'
 
 export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
@@ -17,13 +18,6 @@ export interface PageParams<B> {
     sinceId: B
     limit: number
     query: Query
-}
-
-export interface SearchParams {
-    page: number
-    itemsPerPage: number
-    q?: string
-    sort?: string
 }
 
 export interface SearchResult<T> {
@@ -113,8 +107,8 @@ export default class Model {
     static async search<T extends typeof Model>(
         this: T,
         query: Query = qb => qb,
-        page: number = 0,
-        itemsPerPage: number = 10,
+        page = 0,
+        itemsPerPage = 10,
         db: Database = App.main.db,
     ): Promise<SearchResult<T>> {
         const total = await this.count(query, db)
@@ -123,14 +117,14 @@ export default class Model {
             ? await query(this.table(db)).offset(start).limit(itemsPerPage)
             : []
         const end = Math.min(start + itemsPerPage, start + results.length)
-        return { 
-            results, 
-            start, 
-            end, 
-            total, 
-            page, 
+        return {
+            results,
+            start,
+            end,
+            total,
+            page,
             itemsPerPage,
-            pages: itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) : 1
+            pages: itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) : 1,
         }
     }
 

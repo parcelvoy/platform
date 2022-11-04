@@ -3,11 +3,10 @@ import Project, { ProjectParams } from './Project'
 import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
-import { User } from '../users/User'
-import { SearchParams } from '../core/Model'
 import Journey from '../journey/Journey'
 import Campaign from '../campaigns/Campaign'
 import List from '../lists/List'
+import { searchParamsSchema } from '../core/searchParams'
 
 const router = new Router<{
     app: App
@@ -16,34 +15,12 @@ const router = new Router<{
     prefix: '/projects',
 })
 
-const searchParamsSchema: JSONSchemaType<SearchParams> = {
-    $id: 'searchParams',
-    type: 'object',
-    required: ['page', 'itemsPerPage'],
-    properties: {
-        page: {
-            type: 'number',
-            default: 0,
-            minimum: 0,
-        },
-        itemsPerPage: {
-            type: 'number',
-            default: 10,
-            minimum: -1, //-1 for all
-        },
-        q: {
-            type: 'string',
-            nullable: true,
-        },
-        sort: {
-            type: 'string',
-            nullable: true,
-        }
-    }
-}
-
 router.get('/', async ctx => {
     ctx.body = await Project.searchParams(extractQueryParams(ctx.request.query, searchParamsSchema), ['name'])
+})
+
+router.get('/all', async ctx => {
+    ctx.body = await Project.all()
 })
 
 const projectCreateParams: JSONSchemaType<ProjectParams> = {
@@ -80,6 +57,7 @@ router.get('/:project', async ctx => {
 })
 
 const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
+    $id: 'projectUpdate',
     type: 'object',
     properties: {
         name: {
@@ -98,17 +76,9 @@ router.patch('/:project', async ctx => {
     ctx.body = await Project.updateAndFetch(ctx.state.project!.id, validate(projectUpdateParams, ctx.request.body))
 })
 
-router.get('/:project/users', async ctx => {
-    ctx.body = await User.searchParams(
-        extractQueryParams(ctx.query, searchParamsSchema), 
-        ['external_id', 'email', 'phone'],
-        b => b.where({ project_id: ctx.state.project!.id })
-    )
-})
-
 router.get('/:project/journeys', async ctx => {
     ctx.body = await Journey.searchParams(
-        extractQueryParams(ctx.query, searchParamsSchema), 
+        extractQueryParams(ctx.query, searchParamsSchema),
         ['name'],
         b => b.where({ project_id: ctx.state.project!.id }),
     )

@@ -1,44 +1,50 @@
 import Router from '@koa/router'
 import jwt from 'koa-jwt'
-import { sign } from 'jsonwebtoken'
-import client from '../client/ClientController'
 import ProjectController from '../projects/ProjectController'
 import CampaignController from '../campaigns/CampaignController'
 import ListController from '../lists/ListController'
 import SubscriptionController, { publicRouter as PublicSubscriptionController } from '../subscriptions/SubscriptionController'
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
+import AuthController from '../auth/AuthController'
 
-const register = (router: Router, routes: Router) => {
-    router.use(routes.routes(), routes.allowedMethods())
+const register = (parent: Router, ...routers: Router[]) => {
+    for (const router of routers) {
+        parent.use(router.routes(), router.allowedMethods())
+    }
+    return parent
 }
 
 export default (api: import('../api').default) => {
 
+    // admin (jwt)
     const admin = new Router({ prefix: '/admin' })
+    admin.use(jwt({ secret: api.app.env.auth.secret }))
+    register(admin,
+        ProjectController,
+        CampaignController,
+        ListController,
+        SubscriptionController,
+        JourneyController,
+        ImageController,
+    )
 
-    admin.post('/jwt', ctx => {
-        const { user_id, project_id } = ctx.request.body
-        ctx.body = sign({
-            id: user_id,
-            project_id,
-            exp: Date.now() + 1000 * 24 * 60 * 60,
-        }, api.app.env.secret)
-    })
+    // client (api key)
+    const client = new Router({ prefix: '/client' })
+    register(client,
+        // lower permission endpoint,
+        register(new Router(),
+            // higher permission endpoints
+        ),
+    )
 
-    admin.use(jwt({ secret: api.app.env.secret }))
+    const root = register(new Router(),
+        admin,
+        client,
+        PublicSubscriptionController,
+        AuthController,
+    )
 
-    register(admin, ProjectController)
-    register(admin, CampaignController)
-    register(admin, ListController)
-    register(admin, SubscriptionController)
-    register(admin, JourneyController)
-    register(admin, ImageController)
+    api.use(root.allowedMethods()).use(root.routes())
 
-    api.use(admin.routes()).use(admin.allowedMethods())
-
-    api.use(client.routes()).use(client.allowedMethods())
-
-    api.use(PublicSubscriptionController.routes())
-        .use(PublicSubscriptionController.allowedMethods())
 }

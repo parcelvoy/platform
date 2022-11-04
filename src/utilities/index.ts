@@ -55,7 +55,7 @@ export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve
 
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
     return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
-        let values: string[];
+        let values: string[]
         if (search instanceof URLSearchParams) {
             values = search.getAll(name)
         } else {
@@ -67,17 +67,19 @@ export function extractQueryParams<T extends Record<string, any>>(search: URLSea
         }
         if (values.length) {
             const transformed = values.map(v => {
-                switch (def.type === 'array' ? def.items.type : def.type) {
-                    case 'boolean':
-                        return Boolean(v && 'ty1'.includes(v.charAt(0).toLowerCase()))
-                    case 'number':
-                        const n = parseFloat(v)
-                        return isNaN(n) ? undefined : n
-                    case 'array':
-                    case 'object':
-                        return JSON.parse(v)
-                    default:
-                        return v
+                const type = def.type === 'array' ? def.items.type : def.type
+                if (type === 'boolean') {
+                    return Boolean(v && 'ty1'.includes(v.charAt(0).toLowerCase()))
+                } else if (type === 'integer') {
+                    const i = parseInt(v, 10)
+                    return isNaN(i) ? undefined : i
+                } else if (type === 'number') {
+                    const f = parseFloat(v)
+                    return isNaN(f) ? undefined : f
+                } else if (type === 'array' || type === 'object') {
+                    return JSON.parse(v)
+                } else {
+                    return v
                 }
             })
             if (def.type === 'array') {
