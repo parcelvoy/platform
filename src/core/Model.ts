@@ -1,6 +1,7 @@
 import App from '../app'
 import { Database } from '../config/database'
 import { snakeCase, pluralize } from '../utilities'
+import { SearchParams } from './searchParams'
 
 export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
@@ -17,6 +18,16 @@ export interface PageParams<B> {
     sinceId: B
     limit: number
     query: Query
+}
+
+export interface SearchResult<T> {
+    results: T[]
+    total: number
+    start: number
+    end: number
+    page: number
+    itemsPerPage: number
+    pages: number
 }
 
 export default class Model {
@@ -60,11 +71,15 @@ export default class Model {
 
     static async find<T extends typeof Model>(
         this: T,
-        id: number | undefined,
+        id: number | string | undefined,
         query: Query = (qb) => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         if (!id) return undefined
+        if (typeof id === 'string') {
+            id = parseInt(id, 10)
+            if (isNaN(id)) return undefined
+        }
         const record = await query(this.table(db))
             .where({ id })
             .first()
@@ -79,6 +94,80 @@ export default class Model {
     ): Promise<InstanceType<T>[]> {
         const records = await query(this.table(db))
         return records.map((item: any) => this.fromJson(item))
+    }
+
+    static async count<T extends typeof Model>(
+        this: T,
+        query: Query = qb => qb,
+        db: Database = App.main.db,
+    ): Promise<number> {
+        return await query(this.table(db)).count('id as C').then(r => r[0].C || 0)
+    }
+
+    static async search<T extends typeof Model>(
+        this: T,
+        query: Query = qb => qb,
+        page = 0,
+        itemsPerPage = 10,
+        db: Database = App.main.db,
+    ): Promise<SearchResult<T>> {
+        const total = await this.count(query, db)
+        const start = page * itemsPerPage
+        const results = total > 0
+            ? await query(this.table(db)).offset(start).limit(itemsPerPage)
+            : []
+        const end = Math.min(start + itemsPerPage, start + results.length)
+        return {
+            results,
+            start,
+            end,
+            total,
+            page,
+            itemsPerPage,
+            pages: itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) : 1,
+        }
+    }
+
+    static async searchParams<T extends typeof Model>(
+        this: T,
+        params: SearchParams,
+        fields: Array<keyof InstanceType<T>>,
+        query: Query = qb => qb,
+        db: Database = App.main.db,
+    ) {
+        let { page, itemsPerPage, sort, q } = params
+        return await this.search(
+            b => {
+                b = query(b)
+                if (q) {
+                    const filter = '%' + params.q + '%'
+                    b.where(function() {
+                        fields.reduce((chain, field, index) => {
+                            if (typeof field === 'string') {
+                                if (index === 0) {
+                                    chain = chain.whereILike(field, filter)
+                                } else {
+                                    chain = chain.orWhereILike(field, filter)
+                                }
+                            }
+                            return chain
+                        }, this)
+                    })
+                }
+                if (sort) {
+                    let desc = false
+                    if (sort.charAt(0) === '-') {
+                        desc = true
+                        sort = sort.substring(1)
+                    }
+                    b.orderBy(sort, desc ? 'desc' : 'asc')
+                }
+                return b
+            },
+            page,
+            itemsPerPage,
+            db,
+        )
     }
 
     static async page<T extends typeof Model, B = number>(

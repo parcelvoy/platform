@@ -1,3 +1,5 @@
+import { JSONSchemaType } from 'ajv'
+import { validate } from '../core/validate'
 import crypto from 'crypto'
 import Hashids from 'hashids'
 
@@ -50,3 +52,45 @@ export const combineURLs = (parts: string[], sep = '/'): string => {
 }
 
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
+    return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
+        let values: string[]
+        if (search instanceof URLSearchParams) {
+            values = search.getAll(name)
+        } else {
+            const v = search[name]
+            values = Array.isArray(v) ? v : v ? [v] : []
+        }
+        if (def.type !== 'array' && values.length > 1) {
+            values = values.slice(0, 1)
+        }
+        if (values.length) {
+            const transformed = values.map(v => {
+                const type = def.type === 'array' ? def.items.type : def.type
+                if (type === 'boolean') {
+                    return Boolean(v && 'ty1'.includes(v.charAt(0).toLowerCase()))
+                } else if (type === 'integer') {
+                    const i = parseInt(v, 10)
+                    return isNaN(i) ? undefined : i
+                } else if (type === 'number') {
+                    const f = parseFloat(v)
+                    return isNaN(f) ? undefined : f
+                } else if (type === 'array' || type === 'object') {
+                    return JSON.parse(v)
+                } else {
+                    return v
+                }
+            })
+            if (def.type === 'array') {
+                a[name] = transformed
+            } else {
+                a[name] = transformed.at(0)
+            }
+        }
+        if (a[name] === undefined) {
+            a[name] = def.default
+        }
+        return a
+    }, {} as Record<string, any>))
+}

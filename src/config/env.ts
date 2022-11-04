@@ -2,12 +2,14 @@ import * as dotenv from 'dotenv'
 import { StorageConfig } from '../storage/Storage'
 import { QueueConfig } from '../queue/Queue'
 import { DatabaseConfig } from './database'
+import { AuthConfig } from './auth'
 
 export interface Env {
     db: DatabaseConfig
     queue: QueueConfig
     storage: StorageConfig
     port: number
+    auth: AuthConfig
     baseUrl: string
     secret: string
 }
@@ -60,6 +62,12 @@ export default (type?: EnvType): Env => {
         }),
         port: parseInt(process.env.PORT!),
         secret: process.env.APP_SECRET!,
+        auth: {
+            secret: process.env.APP_SECRET!,
+            refreshTokenSecret: process.env.AUTH_REFRESH_TOKEN_SECRET!,
+            tokenLife: parseInt(process.env.AUTH_TOKEN_LIFE!),
+            refreshTokenLife: parseInt(process.env.AUTH_REFRESH_TOKEN_LIFE!),
+        },
         baseUrl: process.env.BASE_URL!,
     }
 }
