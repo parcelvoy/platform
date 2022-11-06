@@ -2,10 +2,12 @@ import Api from './api'
 import loadDatabase, { Database, migrate } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
+import loadAuth from './config/auth'
 import { Env } from './config/env'
 import scheduler from './config/scheduler'
 import Queue from './queue'
 import Storage from './storage'
+import Auth from './auth/Auth'
 
 export default class App {
     private static $main: App
@@ -29,8 +31,11 @@ export default class App {
         // Load storage
         const storage = loadStorage(env.storage)
 
+        // Load auth
+        const auth = loadAuth(env.auth)
+
         // Setup app
-        App.$main = new App(env, database, queue, storage)
+        App.$main = new App(env, database, queue, auth, storage)
 
         return App.$main
     }
@@ -44,6 +49,7 @@ export default class App {
         public env: Env,
         public db: Database,
         public queue: Queue,
+        public auth: Auth,
         public storage: Storage,
     ) {
         this.api = new Api(this)

@@ -22,7 +22,7 @@ export default (api: import('../api').default) => {
 
     // Bind admin methods to subrouter
     const admin = new Router({ prefix: '/admin' })
-    admin.use(jwt({ secret: api.app.env.auth.secret }))
+    admin.use(jwt({ secret: api.app.env.secret }))
     register(admin,
         ProjectController,
         CampaignController,
@@ -30,6 +30,7 @@ export default (api: import('../api').default) => {
         SubscriptionController,
         JourneyController,
         ImageController,
+        LinkController,
         TemplateController,
         ProviderController,
     )
