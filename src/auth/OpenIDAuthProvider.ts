@@ -1,6 +1,8 @@
 import { addSeconds } from 'date-fns'
 import { Context } from 'koa'
-import { Issuer, generators, BaseClient } from 'openid-client'
+import { Issuer, generators, BaseClient, IdTokenClaims } from 'openid-client'
+import { RequestError } from '../core/errors'
+import AuthError from './AuthError'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
 
@@ -10,14 +12,18 @@ export interface OpenIDConfig extends AuthTypeConfig {
     clientId: string
     cliendSecret: string
     redirectUri: string
+    domainWhitelist: string[]
 }
 
 export default class OpenIDAuthProvider extends AuthProvider {
 
     private config: OpenIDConfig
+    private client!: BaseClient
     constructor(config: OpenIDConfig) {
         super()
         this.config = config
+
+        this.getClient()
     }
 
     async start(ctx: Context): Promise<void> {
@@ -29,7 +35,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
         // it should be httpOnly (not readable by javascript) and encrypted.
 
         ctx.cookies.set('nonce', nonce, {
-            secure: true,
+            secure: process.env.NODE_ENV !== 'development',
             httpOnly: true,
             expires: addSeconds(Date.now(), 3600),
         })
@@ -46,27 +52,52 @@ export default class OpenIDAuthProvider extends AuthProvider {
     async validate(ctx: Context): Promise<void> {
         const client = await this.getClient()
         const nonce = ctx.cookies.get('nonce')
-        console.log('got nonce', nonce)
 
-        const params = client.callbackParams(ctx.req)
-        // TODO: Not sure what URL to use here
+        // Unsafe cast, but Koa and library don't play nicely
+        const params = client.callbackParams(ctx.request as any)
+
         const tokenSet = await client.callback(this.config.redirectUri, params, { nonce })
-        console.log('received and validated tokens %j', tokenSet)
-        console.log('validated ID Token claims %j', tokenSet.claims())
 
-        const userinfo = await client.userinfo(tokenSet)
-        console.log('userinfo %j', userinfo)
+        const claims = tokenSet.claims()
+
+        if (this.isDomainWhitelisted(claims)) {
+            throw new RequestError(AuthError.InvalidDomain)
+        }
+
+        if (!claims.email) {
+            throw new RequestError(AuthError.InvalidEmail)
+        }
+
+        const admin = {
+            email: claims.email,
+            first_name: claims.given_name ?? claims.name,
+            last_name: claims.family_name,
+        }
+
+        await this.login(admin, ctx)
     }
 
     private async getClient(): Promise<BaseClient> {
-        const issuer = await Issuer.discover(this.config.issuerUrl)
-        console.log('Discovered issuer %s %O', issuer.issuer, issuer.metadata)
+        if (this.client) return this.client
 
-        return new issuer.Client({
+        const issuer = await Issuer.discover(this.config.issuerUrl)
+
+        // TODO: Should we validate that we can use the issuer?
+        this.client = new issuer.Client({
             client_id: this.config.clientId,
             client_secret: this.config.cliendSecret,
             redirect_uris: [this.config.redirectUri],
             response_types: ['id_token'],
         })
+        return this.client
+    }
+
+    private isDomainWhitelisted(claims: IdTokenClaims): boolean {
+        if (claims.hd && typeof claims.hd === 'string') {
+            return this.config.domainWhitelist.includes(claims.hd)
+        }
+        return this.config.domainWhitelist.find(
+            domain => claims.email?.endsWith(domain),
+        ) !== undefined
     }
 }

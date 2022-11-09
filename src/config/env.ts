@@ -72,6 +72,13 @@ export default (type?: EnvType): Env => {
                 cert: process.env.AUTH_SAML_CERT,
                 wantAuthnResponseSigned: process.env.AUTH_SAML_IS_AUTHN_SIGNED === 'true',
             }),
+            openid: () => ({
+                tokenLife: 3600,
+                issuerUrl: process.env.AUTH_OPENID_ISSUER_URL,
+                clientId: process.env.AUTH_OPENID_CLIENT_ID,
+                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
+                redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
+            }),
             magic: () => ({
                 tokenLife: 3600,
             }),
