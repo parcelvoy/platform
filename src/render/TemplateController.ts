@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 import { JSONSchemaType, validate } from '../core/validate'
 import Template, { TemplateParams } from './Template'
 import { allTemplates, createTemplate, getTemplate, updateTemplate } from './TemplateService'

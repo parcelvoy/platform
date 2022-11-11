@@ -1,8 +1,15 @@
 import type { User } from '../users/User'
 
-export type ClientPatchUser = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>
+export interface ClientAliasParams {
+    anonymous_id: string
+    external_id: string
+}
 
-export type ClientPatchUsersRequest = ClientPatchUser[]
+export type ClientIdentifyParams = Partial<Pick<User, 'external_id' | 'email' | 'phone' | 'data'>>
+
+export type ClientIdentifyUser = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>
+
+export type ClientPatchUsersRequest = ClientIdentifyUser[]
 
 export type ClientDeleteUsersRequest = string[]
 

@@ -1,13 +1,12 @@
-import { User } from '../users/User'
-import { ClientPatchUser } from './Client'
+import { User, UserParams } from './User'
 import { Job } from '../queue'
-import { getUserFromExternalId } from '../users/UserRepository'
+import { getUserFromClientId } from './UserRepository'
 import { updateLists } from '../lists/ListService'
 import { updateUserJourneys } from '../journey/JourneyService'
 
 interface UserPatchTrigger {
     project_id: number
-    user: ClientPatchUser
+    user: UserParams
 }
 
 export default class UserPatchJob extends Job {
@@ -20,7 +19,7 @@ export default class UserPatchJob extends Job {
     static async handler({ project_id, user: { external_id, data, ...fields } }: UserPatchTrigger) {
 
         // Check for existing user
-        const existing = await getUserFromExternalId(project_id, external_id)
+        const existing = await getUserFromClientId(project_id, external_id)
 
         // If user, update otherwise insert
         const user = existing

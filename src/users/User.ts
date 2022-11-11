@@ -1,5 +1,3 @@
-// Will be re-enabled in API work
-
 import Model from '../core/Model'
 
 export interface TemplateUser extends Record<string, any> {
@@ -35,6 +33,7 @@ interface PushEnabledDevice extends Device {
 
 export class User extends Model {
     project_id!: number
+    uuid!: string
     external_id!: string
     email?: string
     phone?: string
@@ -57,3 +56,5 @@ export class User extends Model {
         return this.devices.filter(device => device.isPushEnabled) as PushEnabledDevice[]
     }
 }
+
+export type UserParams = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>

@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ExternalProviderParams, ProviderGroup } from './Provider'
 import { createProvider, getProvider, updateProvider } from './ProviderRepository'

@@ -1,106 +1,75 @@
 import Router from '@koa/router'
 import App from '../app'
-import UserPatchJob from './UserPatchJob'
-import UserDeleteJob from './UserDeleteJob'
 import EventPostJob from './EventPostJob'
 import { JSONSchemaType, validate } from '../core/validate'
-import { ClientDeleteUsersRequest, ClientPatchUsersRequest, ClientPostEventsRequest } from './Client'
+import { ClientAliasParams, ClientIdentifyParams, ClientPostEventsRequest } from './Client'
+import { aliasUser, createUser } from '../users/UserRepository'
+import { ProjectState } from '../auth/AuthMiddleware'
+import { projectMiddleware } from '../projects/ProjectController'
 
-const router = new Router<{
-    app: App
-    project_id: number
-}>({
-    prefix: '/client',
-})
+const router = new Router<ProjectState>()
 
-router.use(async (ctx, next) => {
+router.use(projectMiddleware)
 
-    let value = ctx.request.headers['x-parcelvoy-api-key']
-    if (Array.isArray(value)) value = value[0]
-    if (!value) {
-        ctx.throw(401, 'missing api key header')
-        return
-    }
-
-    const apiKey = await ctx.state.app.db('project_api_keys').first().where({ value })
-    if (!apiKey || apiKey.deleted_at) {
-        ctx.throw(401, 'invalid api key')
-        return
-    }
-
-    ctx.state.project_id = apiKey.project_id
-
-    return next()
-})
-
-const patchUsersRequest: JSONSchemaType<ClientPatchUsersRequest> = {
-    $id: 'patchUsers',
-    type: 'array',
-    items: {
-        type: 'object',
-        required: ['external_id'],
-        properties: {
-            external_id: {
-                type: 'string',
-            },
-            email: {
-                type: 'string',
-                nullable: true,
-            },
-            phone: {
-                type: 'string',
-                nullable: true,
-            },
-            data: {
-                type: 'object',
-                nullable: true,
-                additionalProperties: true,
-            },
+/**
+ * Alias User
+ * Used by client libraries to associate an anonymous user
+ * to one as identified by their system
+ */
+const aliasParams: JSONSchemaType<ClientAliasParams> = {
+    $id: 'aliasParams',
+    type: 'object',
+    required: ['external_id', 'anonymous_id'],
+    properties: {
+        anonymous_id: {
+            type: 'string',
+        },
+        external_id: {
+            type: 'string',
         },
     },
-    minItems: 1,
 }
-
-router.patch('/users', async ctx => {
-
-    const users = validate(patchUsersRequest, ctx.request.body)
-
-    for (const user of users) {
-        await App.main.queue.enqueue(UserPatchJob.from({
-            project_id: ctx.state.project_id,
-            user,
-        }))
-    }
-
-    ctx.status = 204
-    ctx.body = ''
+router.post('/alias', async ctx => {
+    const payload = validate(aliasParams, ctx.request.body)
+    ctx.body = aliasUser(ctx.state.project.id, payload)
 })
 
-const deleteUsersRequest: JSONSchemaType<ClientDeleteUsersRequest> = {
-    type: 'array',
-    items: {
-        type: 'string',
+/**
+ * Identify User
+ * Used by client libraries to identify and populate a single user
+ * using a provider external ID
+ */
+const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
+    $id: 'identifyParams',
+    type: 'object',
+    properties: {
+        external_id: {
+            type: 'string',
+            nullable: true,
+        },
+        email: {
+            type: 'string',
+            nullable: true,
+        },
+        phone: {
+            type: 'string',
+            nullable: true,
+        },
+        data: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
     },
-    minItems: 1,
 }
-
-router.delete('/users', async ctx => {
-
-    let userIds = ctx.request.query.user_id || []
-    if (!Array.isArray(userIds)) userIds = userIds.length ? [userIds] : []
-
-    userIds = validate(deleteUsersRequest, userIds)
-
-    for (const externalId of userIds) {
-        await App.main.queue.enqueue(UserDeleteJob.from({
-            project_id: ctx.state.project_id,
-            external_id: externalId,
-        }))
-    }
-
-    ctx.status = 204
-    ctx.body = ''
+router.patch('/identify', async ctx => {
+    const payload = validate(identifyParams, ctx.request.body)
+    ctx.body = await createUser(payload)
 })
+
+// router.patch('/users/devices', async ctx => {
+
+// })
 
 const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
     $id: 'postEvents',
@@ -126,12 +95,12 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
 }
 
 router.post('/events', async ctx => {
-
+    console.log('events')
     const events = validate(postEventsRequest, ctx.request.body)
 
     for (const event of events) {
         await App.main.queue.enqueue(EventPostJob.from({
-            project_id: ctx.state.project_id,
+            project_id: ctx.state.project.id,
             event,
         }))
     }

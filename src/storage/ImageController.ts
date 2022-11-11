@@ -3,7 +3,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import parse, { ImageMetadata } from './ImageStream'
 import { allImages, getImage, updateImage, uploadImage } from './ImageService'
 import Image, { ImageParams } from './Image'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 
 const router = new Router<
     ProjectState & { image?: Image }

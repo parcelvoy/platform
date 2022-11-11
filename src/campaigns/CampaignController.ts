@@ -4,7 +4,7 @@ import Campaign, { CampaignParams } from './Campaign'
 import { createCampaign, getCampaign, pagedCampaigns, sendList, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 
 const router = new Router<ProjectState & { campaign?: Campaign }>({
     prefix: '/campaigns',
