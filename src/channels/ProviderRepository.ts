@@ -35,8 +35,11 @@ export const getProviderByExternalId = async <T extends Provider>(externalId: st
     return mappedValue
 }
 
-export const createProvider = async (params: ProviderParams) => {
-    const provider = await Provider.insertAndFetch(params)
+export const createProvider = async (projectId: number, params: ProviderParams) => {
+    const provider = await Provider.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
 
     // Set all existing providers to no longer be default
     if (params.is_default) {

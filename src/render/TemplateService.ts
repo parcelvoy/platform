@@ -8,8 +8,11 @@ export const getTemplate = async (id: number, projectId: number) => {
     return await Template.find(id, qb => qb.where('project_id', projectId))
 }
 
-export const createTemplate = async (params: TemplateParams) => {
-    return await Template.insertAndFetch(params)
+export const createTemplate = async (projectId: number, params: TemplateParams) => {
+    return await Template.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateParams) => {

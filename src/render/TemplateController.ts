@@ -1,30 +1,25 @@
 import Router from '@koa/router'
-import type App from '../app'
+import { ProjectState } from '../config/controllers'
 import { JSONSchemaType, validate } from '../core/validate'
 import Template, { TemplateParams } from './Template'
 import { allTemplates, createTemplate, getTemplate, updateTemplate } from './TemplateService'
 
-const router = new Router<{
-    app: App
-    template?: Template
-    user: { project_id: number }
-}>({
+const router = new Router<
+    ProjectState & { template?: Template }
+>({
     prefix: '/templates',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allTemplates(ctx.state.user.project_id)
+    ctx.body = await allTemplates(ctx.state.project.id)
 })
 
 const templateParams: JSONSchemaType<TemplateParams> = {
     $id: 'templateParams',
     oneOf: [{
         type: 'object',
-        required: ['name', 'project_id', 'type', 'data'],
+        required: ['name', 'type', 'data'],
         properties: {
-            project_id: {
-                type: 'integer',
-            },
             name: {
                 type: 'string',
             },
@@ -59,11 +54,8 @@ const templateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['name', 'project_id', 'type', 'data'],
+        required: ['name', 'type', 'data'],
         properties: {
-            project_id: {
-                type: 'integer',
-            },
             name: {
                 type: 'string',
             },
@@ -84,11 +76,8 @@ const templateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['name', 'project_id', 'type', 'data'],
+        required: ['name', 'type', 'data'],
         properties: {
-            project_id: {
-                type: 'integer',
-            },
             name: {
                 type: 'string',
             },
@@ -117,11 +106,11 @@ const templateParams: JSONSchemaType<TemplateParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(templateParams, ctx.request.body)
-    ctx.body = await createTemplate(payload)
+    ctx.body = await createTemplate(ctx.state.project.id, payload)
 })
 
 router.param('templateId', async (value, ctx, next) => {
-    ctx.state.list = await getTemplate(parseInt(ctx.params.templateId), ctx.state.user.project_id)
+    ctx.state.list = await getTemplate(parseInt(value), ctx.state.project.id)
     if (!ctx.state.template) {
         ctx.throw(404)
         return

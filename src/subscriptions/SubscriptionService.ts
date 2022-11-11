@@ -13,8 +13,11 @@ export const getSubscription = async (id: number, projectId: number) => {
     return await Subscription.find(id, qb => qb.where('project_id', projectId))
 }
 
-export const createSubscription = async (params: SubscriptionParams): Promise<Subscription> => {
-    return await Subscription.insertAndFetch(params)
+export const createSubscription = async (projectId: number, params: SubscriptionParams): Promise<Subscription> => {
+    return await Subscription.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
 }
 
 export const subscriptionForChannel = async (channel: ChannelType, projectId: number): Promise<Subscription | undefined> => {

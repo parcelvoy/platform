@@ -1,30 +1,28 @@
 import Router from '@koa/router'
-import type App from '../app'
+import { ProjectState } from '../config/controllers'
+import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
+import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
-import { allJourneys, createJourney, createJourneyStep, deleteJourney, deleteJourneyStep, getJourney, updateJourney, updateJourneyStep } from './JourneyRepository'
+import { createJourney, createJourneyStep, deleteJourney, deleteJourneyStep, getJourney, pagedJourneys, updateJourney, updateJourneyStep } from './JourneyRepository'
 import { JourneyStepParams } from './JourneyStep'
 
-const router = new Router<{
-    app: App
-    journey?: Journey
-    user: { project_id: number }
-}>({
+const router = new Router<
+    ProjectState & { journey?: Journey }
+>({
     prefix: '/journeys',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allJourneys(ctx.state.user.project_id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedJourneys(params, ctx.state.project.id)
 })
 
 const journeyParams: JSONSchemaType<JourneyParams> = {
     $id: 'journeyParams',
     type: 'object',
-    required: ['project_id', 'name'],
+    required: ['name'],
     properties: {
-        project_id: {
-            type: 'integer',
-        },
         name: {
             type: 'string',
         },
@@ -38,11 +36,11 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(journeyParams, ctx.request.body)
-    ctx.body = await createJourney(payload)
+    ctx.body = await createJourney(ctx.state.project.id, payload)
 })
 
 router.param('journeyId', async (value, ctx, next) => {
-    ctx.state.journey = await getJourney(parseInt(ctx.params.journeyId), ctx.state.user.project_id)
+    ctx.state.journey = await getJourney(parseInt(value), ctx.state.project.id)
     if (!ctx.state.list) {
         ctx.throw(404)
         return

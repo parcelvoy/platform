@@ -79,9 +79,6 @@ export default (type?: EnvType): Env => {
                 clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
                 redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
             }),
-            magic: () => ({
-                tokenLife: 3600,
-            }),
             logger: () => ({
                 tokenLife: 3600,
             }),

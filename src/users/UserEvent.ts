@@ -20,4 +20,4 @@ export class UserEvent extends Model {
     }
 }
 
-export type UserEventParams = Omit<UserEvent, ModelParams | 'flatten'>
+export type UserEventParams = Omit<UserEvent, ModelParams | 'flatten'> & { project_id: number }

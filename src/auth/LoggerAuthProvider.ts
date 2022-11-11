@@ -6,7 +6,7 @@ import AuthProvider from './AuthProvider'
 import { generateAccessToken } from './TokenRepository'
 import App from '../app'
 import { logger } from '../config/logger'
-import MagicLinkAuthProvider from './MagicLinkAuthProvider'
+import { combineURLs } from '../utilities'
 
 export interface LoggerAuthConfig extends AuthTypeConfig {
     driver: 'logger'
@@ -24,7 +24,7 @@ export default class LoggerAuthProvider extends AuthProvider {
         if (!admin) return
 
         const jwt = generateAccessToken(admin.id)
-        const url = MagicLinkAuthProvider.callbackUrl(jwt.token)
+        const url = this.callbackUrl(jwt.token)
 
         logger.info({ url }, 'login link')
         ctx.redirect(url)
@@ -40,5 +40,12 @@ export default class LoggerAuthProvider extends AuthProvider {
         // With the ID, process a new login
         const oauth = await this.login(id, ctx)
         logger.info(oauth, 'login credentials')
+    }
+
+    callbackUrl(token: string): string {
+        const baseUrl = combineURLs([App.main.env.baseUrl, 'auth/login'])
+        const url = new URL(baseUrl)
+        url.searchParams.set('token', token)
+        return url.href
     }
 }
