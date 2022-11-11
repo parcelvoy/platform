@@ -1,3 +1,4 @@
+import { subDays } from 'date-fns'
 import { check, make } from '../RuleEngine'
 
 describe('RuleEngine', () => {
@@ -45,6 +46,51 @@ describe('RuleEngine', () => {
                 make({ type: 'string', path: '$.project', operator: 'is set' }),
             ])
             expect(shouldPass).toBeFalsy()
+        })
+    })
+
+    describe('date', () => {
+        test('is set', () => {
+            const value = {
+                user: {
+                    id: 'abcd',
+                    email: 'test@test.com',
+                    createdAt: Date.now(),
+                },
+            }
+            const shouldPass = check(value, [
+                make({ type: 'date', path: '$.createdAt', operator: 'is set' }),
+            ])
+            expect(shouldPass).toBeTruthy()
+        })
+
+        test('greater than or equals', () => {
+            const now = Date.now()
+            const value = {
+                user: {
+                    id: 'abcd',
+                    email: 'test@test.com',
+                    createdAt: now,
+                },
+            }
+            const shouldPass = check(value, [
+                make({ type: 'date', path: '$.createdAt', operator: '>=', value: now }),
+            ])
+            expect(shouldPass).toBeTruthy()
+        })
+
+        test('compilation', () => {
+            const value = {
+                user: {
+                    id: 'abcd',
+                    email: 'test@test.com',
+                    createdAt: subDays(new Date(), 1).getTime(),
+                },
+            }
+            const shouldPass = check(value, [
+                make({ type: 'date', path: '$.createdAt', operator: '>', value: '{{subDate "now" 1 "months" }}' }),
+            ])
+            expect(shouldPass).toBeTruthy()
         })
     })
 

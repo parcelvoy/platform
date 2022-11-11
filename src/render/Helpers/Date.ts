@@ -26,7 +26,7 @@ const isUnit = (value: DateUnit): boolean => ['years', 'months', 'weeks', 'days'
 /**
  * Perform date math on a given date by adding some unit to the date.
  *
- * i.e. {{ #addDate "1974-01-23" 1 "month" }}
+ * i.e. {{addDate "1974-01-23" 1 "months" }}
  */
 export const addDate = function(date: Date | string, amount: number, unit: DateUnit): Date {
     if (!isUnit(unit)) return baseDate(date)
@@ -37,7 +37,7 @@ export const addDate = function(date: Date | string, amount: number, unit: DateU
 /**
  * Perform date math on a given date by subtracting some unit to the date.
  *
- * i.e. {{ #subDate "1974-01-23" 1 "month" }}
+ * i.e. {{subDate "1974-01-23" 1 "months" }}
  */
 export const subtractDate = function(date: Date | string, amount: number, unit: DateUnit): Date {
     if (!isUnit(unit)) return baseDate(date)
