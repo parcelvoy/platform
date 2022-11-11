@@ -56,25 +56,33 @@ export default class OpenIDAuthProvider extends AuthProvider {
         // Unsafe cast, but Koa and library don't play nicely
         const params = client.callbackParams(ctx.request as any)
 
-        const tokenSet = await client.callback(this.config.redirectUri, params, { nonce })
+        try {
+            const tokenSet = await client.callback(this.config.redirectUri, params, { nonce })
 
-        const claims = tokenSet.claims()
+            if (!tokenSet) {
+                throw new RequestError(AuthError.OpenIdValidationError)
+            }
 
-        if (this.isDomainWhitelisted(claims)) {
-            throw new RequestError(AuthError.InvalidDomain)
+            const claims = tokenSet.claims()
+
+            if (!this.isDomainWhitelisted(claims)) {
+                throw new RequestError(AuthError.InvalidDomain)
+            }
+
+            if (!claims.email) {
+                throw new RequestError(AuthError.InvalidEmail)
+            }
+
+            const admin = {
+                email: claims.email,
+                first_name: claims.given_name ?? claims.name,
+                last_name: claims.family_name,
+            }
+
+            await this.login(admin, ctx)
+        } catch {
+            throw new RequestError(AuthError.OpenIdValidationError)
         }
-
-        if (!claims.email) {
-            throw new RequestError(AuthError.InvalidEmail)
-        }
-
-        const admin = {
-            email: claims.email,
-            first_name: claims.given_name ?? claims.name,
-            last_name: claims.family_name,
-        }
-
-        await this.login(admin, ctx)
     }
 
     private async getClient(): Promise<BaseClient> {

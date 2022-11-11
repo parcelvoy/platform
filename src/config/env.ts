@@ -78,6 +78,7 @@ export default (type?: EnvType): Env => {
                 clientId: process.env.AUTH_OPENID_CLIENT_ID,
                 clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
                 redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
+                domainWhitelist: (process.env.AUTH_OPENID_DOMAIN_WHITELIST || '').split(','),
             }),
             logger: () => ({
                 tokenLife: 3600,
