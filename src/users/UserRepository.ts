@@ -1,5 +1,6 @@
 import { ClientAliasParams, ClientIdentifyParams } from '../client/Client'
-import { User } from '../users/User'
+import { Device, DeviceParams, User } from '../users/User'
+import { uuid } from '../utilities'
 
 export const getUser = async (id: number): Promise<User | undefined> => {
     return await User.find(id)
@@ -29,6 +30,22 @@ export const aliasUser = async (projectId: number, alias: ClientAliasParams): Pr
     const user = await getUserFromClientId(projectId, alias.anonymous_id)
     if (!user) return
     return await User.updateAndFetch(user.id, { external_id: alias.external_id })
+}
+
+export const saveDevice = async (user: User, { user_id, ...params }: DeviceParams): Promise<Device> => {
+    let device = user.devices.find(
+        device => device.external_id === params.external_id,
+    )
+    if (device) {
+        Object.assign(device, params)
+    } else {
+        device = Device.fromJson({
+            ...params,
+            external_id: uuid(),
+        })
+    }
+    await User.updateAndFetch(user.id, { devices: user.devices })
+    return device
 }
 
 export const disableNotifications = async (userId: number, tokens: string[]): Promise<boolean> => {

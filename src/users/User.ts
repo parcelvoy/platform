@@ -1,4 +1,4 @@
-import Model from '../core/Model'
+import Model, { ModelParams } from '../core/Model'
 
 export interface TemplateUser extends Record<string, any> {
     id: string
@@ -26,6 +26,8 @@ export class Device extends Model {
         return this.token != null && this.notifications_enabled
     }
 }
+
+export type DeviceParams = Omit<Device, ModelParams | 'notifications_enabled' | 'isPushEnabled'> & { user_id: string }
 
 interface PushEnabledDevice extends Device {
     token: string
