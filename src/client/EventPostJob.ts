@@ -19,7 +19,7 @@ export default class EventPostJob extends Job {
     }
 
     static async handler({ project_id, event }: EventPostTrigger) {
-        const user = await getUserFromClientId(project_id, event.user_id)
+        const user = await getUserFromClientId(project_id, event.external_id)
         if (!user) {
             logger.error({ project_id, event }, 'job:event_post:unknown-user')
             return

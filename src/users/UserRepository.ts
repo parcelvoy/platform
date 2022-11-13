@@ -1,17 +1,20 @@
-import { ClientAliasParams, ClientIdentifyParams } from '../client/Client'
+import { ClientAliasParams, ClientIdentifyParams, ClientIdentity } from '../client/Client'
 import { Device, DeviceParams, User } from '../users/User'
-import { uuid } from '../utilities'
 
 export const getUser = async (id: number): Promise<User | undefined> => {
     return await User.find(id)
 }
 
-export const getUserFromClientId = async (projectId: number, id: string): Promise<User | undefined> => {
+export const getUserFromClientId = async (projectId: number, identity: Partial<ClientIdentity>): Promise<User | undefined> => {
     return await User.first(
-        qb => qb.where(
-            sqb => sqb.where('external_id', id)
-                .orWhere('uuid', id),
-        ).where('project_id', projectId),
+        qb => qb.where(sqb => {
+            if (identity.external_id) {
+                sqb.where('external_id', identity.external_id)
+            }
+            if (identity.anonymous_id) {
+                sqb.orWhere('anonymous_id', identity.anonymous_id)
+            }
+        }).where('project_id', projectId),
     )
 }
 
@@ -22,27 +25,27 @@ export const getUserFromPhone = async (projectId: number, phone: string): Promis
     )
 }
 
-export const createUser = async (params: ClientIdentifyParams) => {
-    return await User.insertAndFetch(params)
-}
-
 export const aliasUser = async (projectId: number, alias: ClientAliasParams): Promise<User | undefined> => {
-    const user = await getUserFromClientId(projectId, alias.anonymous_id)
+    const user = await getUserFromClientId(projectId, alias)
     if (!user) return
     return await User.updateAndFetch(user.id, { external_id: alias.external_id })
 }
 
-export const saveDevice = async (user: User, { user_id, ...params }: DeviceParams): Promise<Device> => {
-    let device = user.devices.find(
-        device => device.external_id === params.external_id,
+export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {
+
+    const user = await getUserFromClientId(projectId, { external_id, anonymous_id })
+    if (!user) return
+
+    const device = user.devices.find(
+        device => device.device_id === params.device_id,
     )
     if (device) {
         Object.assign(device, params)
     } else {
-        device = Device.fromJson({
+        user.devices.push(Device.fromJson({
             ...params,
-            external_id: uuid(),
-        })
+            device_id: params.device_id,
+        }))
     }
     await User.updateAndFetch(user.id, { devices: user.devices })
     return device

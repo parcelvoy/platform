@@ -3,10 +3,11 @@ import App from '../app'
 import EventPostJob from './EventPostJob'
 import { JSONSchemaType, validate } from '../core/validate'
 import { ClientAliasParams, ClientIdentifyParams, ClientPostEventsRequest } from './Client'
-import { aliasUser, createUser, getUserFromClientId, saveDevice } from '../users/UserRepository'
+import { aliasUser, saveDevice } from '../users/UserRepository'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import { DeviceParams } from '../users/User'
+import UserPatchJob from '../users/UserPatchJob'
 
 const router = new Router<ProjectState>()
 
@@ -32,7 +33,8 @@ const aliasParams: JSONSchemaType<ClientAliasParams> = {
 }
 router.post('/alias', async ctx => {
     const payload = validate(aliasParams, ctx.request.body)
-    ctx.body = aliasUser(ctx.state.project.id, payload)
+    // const user = aliasUser(ctx.state.project.id, payload)
+    // ctx.body =
 })
 
 /**
@@ -43,7 +45,12 @@ router.post('/alias', async ctx => {
 const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
     $id: 'identifyParams',
     type: 'object',
+    required: [],
     properties: {
+        anonymous_id: {
+            type: 'string',
+            nullable: true,
+        },
         external_id: {
             type: 'string',
             nullable: true,
@@ -62,10 +69,25 @@ const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
             additionalProperties: true,
         },
     },
+    anyOf: [
+        {
+            required: ['anonymous_id'],
+        },
+        {
+            required: ['external_id'],
+        },
+    ],
+    additionalProperties: false,
 }
-router.patch('/identify', async ctx => {
-    const payload = validate(identifyParams, ctx.request.body)
-    ctx.body = await createUser(payload)
+router.post('/identify', async ctx => {
+    const user = validate(identifyParams, ctx.request.body)
+    await App.main.queue.enqueue(UserPatchJob.from({
+        project_id: ctx.state.project.id,
+        user,
+    }))
+
+    ctx.status = 204
+    ctx.body = ''
 })
 
 /**
@@ -76,12 +98,17 @@ router.patch('/identify', async ctx => {
 const deviceParams: JSONSchemaType<DeviceParams> = {
     $id: 'deviceParams',
     type: 'object',
-    required: ['user_id', 'external_id', 'os', 'model', 'app_build', 'app_version'],
+    required: ['device_id', 'os', 'model', 'app_build', 'app_version'],
     properties: {
-        user_id: {
+        anonymous_id: {
             type: 'string',
+            nullable: true,
         },
         external_id: {
+            type: 'string',
+            nullable: true,
+        },
+        device_id: {
             type: 'string',
         },
         token: {
@@ -101,15 +128,21 @@ const deviceParams: JSONSchemaType<DeviceParams> = {
             type: 'string',
         },
     },
+    anyOf: [
+        {
+            required: ['anonymous_id'],
+        },
+        {
+            required: ['external_id'],
+        },
+    ],
 }
-router.patch('/devices', async ctx => {
+router.post('/devices', async ctx => {
     const payload = validate(deviceParams, ctx.request.body)
-    const user = await getUserFromClientId(ctx.state.project.id, payload.user_id)
-    if (!user) {
-        ctx.throw(404)
-        return
-    }
-    ctx.body = await saveDevice(user, payload)
+    await saveDevice(ctx.state.project.id, payload)
+
+    ctx.status = 204
+    ctx.body = ''
 })
 
 /**
@@ -122,13 +155,18 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
     type: 'array',
     items: {
         type: 'object',
-        required: ['name', 'user_id'],
+        required: ['name'],
         properties: {
             name: {
                 type: 'string',
             },
-            user_id: {
+            anonymous_id: {
                 type: 'string',
+                nullable: true,
+            },
+            external_id: {
+                type: 'string',
+                nullable: true,
             },
             data: {
                 type: 'object',
@@ -136,11 +174,18 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
                 additionalProperties: true,
             },
         },
+        anyOf: [
+            {
+                required: ['anonymous_id'],
+            },
+            {
+                required: ['external_id'],
+            },
+        ],
     },
     minItems: 1,
 }
 router.post('/events', async ctx => {
-    console.log('events')
     const events = validate(postEventsRequest, ctx.request.body)
 
     for (const event of events) {
