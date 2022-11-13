@@ -22,11 +22,13 @@ export default class Api extends Koa {
         this.use(async (ctx, next) => {
             try {
                 await next()
-            } catch (err) {
-                if (err instanceof RequestError) {
-                    return ctx.throw(err.message, err.statusCode)
+            } catch (error) {
+                if (error instanceof RequestError) {
+                    ctx.status = error.statusCode ?? 400
+                    ctx.body = error
+                } else {
+                    throw error
                 }
-                throw err
             }
         })
 

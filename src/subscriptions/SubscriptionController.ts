@@ -7,6 +7,7 @@ import Subscription, { SubscriptionParams } from './Subscription'
 import { allSubscriptions, createSubscription, getSubscription, unsubscribe, unsubscribeSms } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
+import { ProjectState } from '../config/controllers'
 
 /**
  ***
@@ -87,26 +88,21 @@ export { clientRouter }
  * Private admin routes for managing subscription types
  ***
  */
-const router = new Router<{
-    app: App
-    subscription?: Subscription
-    user: { project_id: number }
-}>({
+const router = new Router<
+    ProjectState & { subscription?: Subscription }
+>({
     prefix: '/subscriptions',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allSubscriptions(ctx.state.user.project_id)
+    ctx.body = await allSubscriptions(ctx.state.project.id)
 })
 
 export const subscriptionCreateSchema: JSONSchemaType<SubscriptionParams> = {
     $id: 'subscriptionCreate',
     type: 'object',
-    required: ['project_id', 'name', 'channel'],
+    required: ['name', 'channel'],
     properties: {
-        project_id: {
-            type: 'integer',
-        },
         name: {
             type: 'string',
         },
@@ -120,11 +116,11 @@ export const subscriptionCreateSchema: JSONSchemaType<SubscriptionParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(subscriptionCreateSchema, ctx.request.body)
-    ctx.body = await createSubscription(payload)
+    ctx.body = await createSubscription(ctx.state.project.id, payload)
 })
 
 router.param('subscriptionId', async (value, ctx, next) => {
-    ctx.state.subscription = await getSubscription(parseInt(ctx.params.subscriptionId), ctx.state.user.project_id)
+    ctx.state.subscription = await getSubscription(parseInt(value), ctx.state.project.id)
     if (!ctx.state.campaign) {
         ctx.throw(404)
         return

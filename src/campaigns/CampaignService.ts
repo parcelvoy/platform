@@ -9,16 +9,25 @@ import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
 import PushJob from '../channels/push/PushJob'
+import { SearchParams } from '../core/searchParams'
 
-export const allCampaigns = async (project_id: number): Promise<Campaign[]> => {
-    return await Campaign.all(qb => qb.where('project_id', project_id))
+export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
+    return await Campaign.searchParams(
+        params,
+        ['name'],
+        b => b.where({ project_id: projectId }),
+    )
+}
+
+export const allCampaigns = async (projectId: number): Promise<Campaign[]> => {
+    return await Campaign.all(qb => qb.where('project_id', projectId))
 }
 
 export const getCampaign = async (id: number, projectId: number): Promise<Campaign | undefined> => {
     return await Campaign.find(id, qb => qb.where('project_id', projectId))
 }
 
-export const createCampaign = async (params: CampaignParams): Promise<Campaign> => {
+export const createCampaign = async (projectId: number, params: CampaignParams): Promise<Campaign> => {
     const subscription = await Subscription.find(params.subscription_id)
     if (!subscription) {
         throw new RequestError('Unable to find associated subscription', 404)
@@ -26,7 +35,12 @@ export const createCampaign = async (params: CampaignParams): Promise<Campaign> 
     return await Campaign.insertAndFetch({
         ...params,
         channel: subscription.channel,
+        project_id: projectId,
     })
+}
+
+export const updateCampaign = async (id: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
+    return await Campaign.updateAndFetch(id, params)
 }
 
 type SendCampaign = {

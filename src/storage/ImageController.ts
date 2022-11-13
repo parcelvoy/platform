@@ -1,15 +1,13 @@
 import Router from '@koa/router'
-import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import parse, { ImageMetadata } from './ImageStream'
 import { allImages, getImage, updateImage, uploadImage } from './ImageService'
 import Image, { ImageParams } from './Image'
+import { ProjectState } from '../config/controllers'
 
-const router = new Router<{
-    app: App
-    image?: Image
-    user: { project_id: number }
-}>({
+const router = new Router<
+    ProjectState & { image?: Image }
+>({
     prefix: '/images',
 })
 
@@ -41,15 +39,15 @@ router.post('/', async ctx => {
     // Validate but we don't need the response since we already have it
     validate(uploadMetadata, stream.metadata)
 
-    ctx.body = await uploadImage(ctx.state.user.project_id, stream)
+    ctx.body = await uploadImage(ctx.state.project.id, stream)
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allImages(ctx.state.user.project_id)
+    ctx.body = await allImages(ctx.state.project.id)
 })
 
 router.param('imageId', async (value, ctx, next) => {
-    ctx.state.image = await getImage(parseInt(ctx.params.imageId), ctx.state.user.project_id)
+    ctx.state.image = await getImage(parseInt(value), ctx.state.project.id)
     if (!ctx.state.image) {
         ctx.throw(404)
         return

@@ -2,16 +2,16 @@ import * as dotenv from 'dotenv'
 import { StorageConfig } from '../storage/Storage'
 import { QueueConfig } from '../queue/Queue'
 import { DatabaseConfig } from './database'
-import { AuthConfig } from './auth'
+import { AuthConfig } from '../auth/Auth'
 
 export interface Env {
     db: DatabaseConfig
     queue: QueueConfig
     storage: StorageConfig
-    port: number
-    auth: AuthConfig
     baseUrl: string
+    port: number
     secret: string
+    auth: AuthConfig
 }
 
 export interface DriverConfig {
@@ -60,14 +60,29 @@ export default (type?: EnvType): Env => {
                 },
             }),
         }),
+        baseUrl: process.env.BASE_URL!,
         port: parseInt(process.env.PORT!),
         secret: process.env.APP_SECRET!,
-        auth: {
-            secret: process.env.APP_SECRET!,
-            refreshTokenSecret: process.env.AUTH_REFRESH_TOKEN_SECRET!,
-            tokenLife: parseInt(process.env.AUTH_TOKEN_LIFE!),
-            refreshTokenLife: parseInt(process.env.AUTH_REFRESH_TOKEN_LIFE!),
-        },
-        baseUrl: process.env.BASE_URL!,
+        auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {
+            saml: () => ({
+                tokenLife: 3600,
+                callbackUrl: process.env.AUTH_SAML_CALLBACK_URL,
+                entryPoint: process.env.AUTH_SAML_ENTRY_POINT_URL,
+                issuer: process.env.AUTH_SAML_ISSUER,
+                cert: process.env.AUTH_SAML_CERT,
+                wantAuthnResponseSigned: process.env.AUTH_SAML_IS_AUTHN_SIGNED === 'true',
+            }),
+            openid: () => ({
+                tokenLife: 3600,
+                issuerUrl: process.env.AUTH_OPENID_ISSUER_URL,
+                clientId: process.env.AUTH_OPENID_CLIENT_ID,
+                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
+                redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
+                domainWhitelist: (process.env.AUTH_OPENID_DOMAIN_WHITELIST || '').split(','),
+            }),
+            logger: () => ({
+                tokenLife: 3600,
+            }),
+        }),
     }
 }

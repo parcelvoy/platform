@@ -1,25 +1,26 @@
 import Router from '@koa/router'
-import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
+import { extractQueryParams } from '../utilities'
 import List, { ListParams } from './List'
-import { allLists, createList, getList } from './ListService'
+import { createList, getList, pagedLists } from './ListService'
+import { searchParamsSchema } from '../core/searchParams'
+import { ProjectState } from '../config/controllers'
 
-const router = new Router<{
-    app: App
-    list?: List
-    user: { project_id: number }
-}>({
+const router = new Router<
+    ProjectState & { list?: List }
+>({
     prefix: '/lists',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allLists(ctx.state.user.project_id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedLists(params, ctx.state.project.id)
 })
 
 const listParams: JSONSchemaType<ListParams> = {
     $id: 'listParams',
     type: 'object',
-    required: ['name', 'project_id', 'rules'],
+    required: ['name', 'rules'],
     definitions: {
         rule: {
             type: 'object',
@@ -46,9 +47,6 @@ const listParams: JSONSchemaType<ListParams> = {
         },
     },
     properties: {
-        project_id: {
-            type: 'integer',
-        },
         name: {
             type: 'string',
         },
@@ -63,11 +61,11 @@ const listParams: JSONSchemaType<ListParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(listParams, ctx.request.body)
-    ctx.body = await createList(payload)
+    ctx.body = await createList(ctx.state.project.id, payload)
 })
 
 router.param('listId', async (value, ctx, next) => {
-    ctx.state.list = await getList(parseInt(ctx.params.listId), ctx.state.user.project_id)
+    ctx.state.list = await getList(parseInt(value, 10), ctx.state.project.id)
     if (!ctx.state.list) {
         ctx.throw(404)
         return

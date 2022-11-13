@@ -25,13 +25,11 @@ describe('CampaignService', () => {
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
         const project = await createProject({ name: uuid() })
-        const subscription = await createSubscription({
-            project_id: project.id,
+        const subscription = await createSubscription(project.id, {
             name: uuid(),
             channel: 'email',
         })
-        const template = await createTemplate({
-            project_id: project.id,
+        const template = await createTemplate(project.id, {
             name: uuid(),
             type: 'email',
             data: {},
@@ -46,7 +44,7 @@ describe('CampaignService', () => {
     const createTestCampaign = async (params?: CampaignRefs, extras?: Partial<Campaign>) => {
         params = params || await createCampaignDependencies()
 
-        const campaign = await createCampaign({
+        const campaign = await createCampaign(params.project_id, {
             name: uuid(),
             ...params,
             ...extras,
@@ -123,7 +121,7 @@ describe('CampaignService', () => {
         test('create a single campaign', async () => {
             const params = await createCampaignDependencies()
             const name = uuid()
-            const campaign = await createCampaign({
+            const campaign = await createCampaign(params.project_id, {
                 ...params,
                 name,
             })
@@ -137,8 +135,7 @@ describe('CampaignService', () => {
         test('fail to create a campaign with a bad subscription', async () => {
             const params = await createCampaignDependencies()
             const name = uuid()
-            const promise = createCampaign({
-                project_id: params.project_id,
+            const promise = createCampaign(params.project_id, {
                 template_id: params.template_id,
                 subscription_id: 0,
                 name,
@@ -166,9 +163,8 @@ describe('CampaignService', () => {
             const spy = jest.spyOn(CampaignService, 'sendCampaign')
 
             const params = await createCampaignDependencies()
-            const list = await createList({
+            const list = await createList(params.project_id, {
                 name: uuid(),
-                project_id: params.project_id,
                 rules: [],
             })
             const campaign = await createTestCampaign(params, {
@@ -190,14 +186,12 @@ describe('CampaignService', () => {
             const spy = jest.spyOn(CampaignService, 'sendCampaign')
 
             const params = await createCampaignDependencies()
-            const list = await createList({
+            const list = await createList(params.project_id, {
                 name: uuid(),
-                project_id: params.project_id,
                 rules: [],
             })
-            const list2 = await createList({
+            const list2 = await createList(params.project_id, {
                 name: uuid(),
-                project_id: params.project_id,
                 rules: [],
             })
             const campaign = await createTestCampaign(params, {

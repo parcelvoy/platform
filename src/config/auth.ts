@@ -1,6 +1,6 @@
-export interface AuthConfig {
-    secret: string
-    refreshTokenSecret: string
-    tokenLife: number
-    refreshTokenLife: number
+
+import Auth, { AuthConfig } from '../auth/Auth'
+
+export default (config: AuthConfig) => {
+    return new Auth(config)
 }

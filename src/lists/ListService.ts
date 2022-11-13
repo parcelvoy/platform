@@ -3,10 +3,19 @@ import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
 import List, { ListParams, UserList } from './List'
 import { enterJourneyFromList } from '../journey/JourneyService'
+import { SearchParams } from '../core/searchParams'
 
 const getUserListIds = async (user_id: number): Promise<number[]> => {
     const relations = await UserList.all(qb => qb.where('user_id', user_id))
     return relations.map(item => item.list_id)
+}
+
+export const pagedLists = async (params: SearchParams, projectId: number) => {
+    return await List.searchParams(
+        params,
+        ['name'],
+        b => b.where({ project_id: projectId }),
+    )
 }
 
 export const allLists = async (projectId: number) => {
@@ -17,8 +26,11 @@ export const getList = async (id: number, projectId: number) => {
     return await List.find(id, qb => qb.where('project_id', projectId))
 }
 
-export const createList = async (params: ListParams): Promise<List> => {
-    return await List.insertAndFetch(params)
+export const createList = async (projectId: number, params: ListParams): Promise<List> => {
+    return await List.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
 }
 
 export const addUserToList = async (user: User, list: List, event?: UserEvent) => {

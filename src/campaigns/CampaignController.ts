@@ -1,29 +1,25 @@
 import Router from '@koa/router'
-import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignParams } from './Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendList } from './CampaignService'
+import { createCampaign, getCampaign, pagedCampaigns, sendList, updateCampaign } from './CampaignService'
+import { searchParamsSchema } from '../core/searchParams'
+import { extractQueryParams } from '../utilities'
+import { ProjectState } from '../config/controllers'
 
-const router = new Router<{
-    app: App
-    campaign?: Campaign
-    user: { project_id: number }
-}>({
+const router = new Router<ProjectState & { campaign?: Campaign }>({
     prefix: '/campaigns',
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allCampaigns(ctx.state.user.project_id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedCampaigns(params, ctx.state.project.id)
 })
 
 export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
     $id: 'campaignCreate',
     type: 'object',
-    required: ['project_id', 'subscription_id', 'template_id'],
+    required: ['subscription_id', 'template_id'],
     properties: {
-        project_id: {
-            type: 'integer',
-        },
         name: {
             type: 'string',
         },
@@ -43,12 +39,11 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(campaignCreateParams, ctx.request.body)
-    // TODO: Make sure user actually has access to project
-    ctx.body = await createCampaign(payload)
+    ctx.body = await createCampaign(ctx.state.project.id, payload)
 })
 
 router.param('campaignId', async (value, ctx, next) => {
-    ctx.state.campaign = await getCampaign(parseInt(ctx.params.campaignId), ctx.state.user.project_id)
+    ctx.state.campaign = await getCampaign(parseInt(value, 10), ctx.state.project.id)
     if (!ctx.state.campaign) {
         ctx.throw(404)
         return
@@ -64,10 +59,6 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
     $id: 'campaignUpdate',
     type: 'object',
     properties: {
-        project_id: {
-            type: 'integer',
-            nullable: true,
-        },
         name: {
             type: 'string',
             nullable: true,
@@ -88,9 +79,9 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
     additionalProperties: false,
 }
 
-router.put('/:campaignId', async ctx => {
+router.patch('/:campaignId', async ctx => {
     const payload = validate(campaignUpdateParams, ctx.request.body)
-    ctx.body = await Campaign.updateAndFetch(ctx.state.campaign!.id, payload)
+    ctx.body = await updateCampaign(ctx.state.campaign!.id, payload)
 })
 
 router.post('/:campaignId/send', async ctx => {

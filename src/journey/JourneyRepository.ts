@@ -1,13 +1,25 @@
 import { RequestError } from '../core/errors'
+import { SearchParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepParams } from './JourneyStep'
+
+export const pagedJourneys = async (params: SearchParams, projectId: number) => {
+    return await Journey.searchParams(
+        params,
+        ['name'],
+        b => b.where({ project_id: projectId }),
+    )
+}
 
 export const allJourneys = async (projectId: number): Promise<Journey[]> => {
     return await Journey.all(qb => qb.where('project_id', projectId))
 }
 
-export const createJourney = async (params: JourneyParams): Promise<Journey> => {
-    return await Journey.insertAndFetch(params)
+export const createJourney = async (projectId: number, params: JourneyParams): Promise<Journey> => {
+    return await Journey.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
 
     // TODO: Should we create an entrance automatically here?
 }

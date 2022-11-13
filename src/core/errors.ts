@@ -25,6 +25,17 @@ export class InternalError extends Error {
             this.errorCode = message.code
         }
     }
+
+    toJSON() {
+        const body: { [key: string]: any } = {
+            status: 'error',
+            error: this.message || '',
+        }
+        if (this.errorCode) {
+            body.code = this.errorCode
+        }
+        return body
+    }
 }
 
 export class RequestError extends InternalError { }

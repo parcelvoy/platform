@@ -1,28 +1,33 @@
 import Router from '@koa/router'
 import { JSONSchemaType } from 'ajv'
+import App from '../app'
+import { RequestError } from '../core/errors'
+import AuthError from './AuthError'
 import { validate } from '../core/validate'
-import { sign, verify } from 'jsonwebtoken'
-
-const AuthController = new Router<{
+import { generateAccessToken, getOauth, getRefreshToken, setTokenCookies } from './TokenRepository'
+const router = new Router<{
     app: import('../app').default
         }>({
             prefix: '/auth',
         })
 
-interface LoginParams {
-    id: number // TODO username/password
-}
+router.get('/login', async ctx => {
+    await App.main.auth.start(ctx)
+})
 
-const loginParamsSchema: JSONSchemaType<LoginParams> = {
-    $id: 'loginParams',
-    type: 'object',
-    required: ['id'],
-    properties: {
-        id: {
-            type: 'integer',
-        },
-    },
-}
+router.post('/login', async ctx => {
+    await App.main.auth.start(ctx)
+})
+
+router.post('/login/callback', async ctx => {
+    ctx.status = 204
+    await App.main.auth.validate(ctx)
+})
+
+router.get('/login/callback', async ctx => {
+    ctx.status = 204
+    await App.main.auth.validate(ctx)
+})
 
 interface RefreshParams {
     refreshToken: string
@@ -40,50 +45,23 @@ const refreshParamsSchema: JSONSchemaType<RefreshParams> = {
     },
 }
 
-AuthController
-    .post('/login', async ctx => {
-        const { id } = validate(loginParamsSchema, ctx.request.body)
+router.post('/refresh', async ctx => {
+    const { refreshToken: token } = validate(refreshParamsSchema, ctx.request.body)
 
-        const {
-            secret,
-            refreshTokenSecret,
-            tokenLife,
-            refreshTokenLife,
-        } = ctx.state.app.env.auth
+    const refreshToken = await getRefreshToken(token)
+    if (!refreshToken) {
+        throw new RequestError(AuthError.InvalidRefreshToken)
+    }
 
-        const claims = {
-            id,
-        }
+    const accessToken = generateAccessToken(refreshToken)
+    const oauth = getOauth(refreshToken, accessToken)
+    ctx.body = setTokenCookies(ctx, oauth)
+})
 
-        const token = sign(claims, secret, { expiresIn: tokenLife })
-        const refreshToken = sign(claims, refreshTokenSecret, { expiresIn: refreshTokenLife })
+router.post('/logout', async ctx => {
 
-        // TODO persist refresh token until expired
+    // TODO mark refresh token in db as expired
+    ctx.body = {}
+})
 
-        ctx.body = { token, refreshToken }
-    })
-    .post('/refresh', async ctx => {
-        const { refreshToken } = validate(refreshParamsSchema, ctx.request.body)
-
-        // TODO make sure refresh token hasn't been forcibly expired (in db)
-
-        const {
-            secret,
-            refreshTokenSecret,
-            tokenLife,
-        } = ctx.state.app.env.auth
-
-        const { id } = verify(refreshToken, refreshTokenSecret) as { id: number }
-
-        ctx.body = {
-            token: sign({ id }, secret, { expiresIn: tokenLife }),
-            // TODO rotate refresh token
-        }
-    })
-    .post('/logout', async ctx => {
-
-        // TODO mark refresh token in db as expired
-        ctx.body = {}
-    })
-
-export default AuthController
+export default router
