@@ -35,8 +35,6 @@ exports.up = function(knex) {
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())
             table.timestamp('deleted_at').nullable()
-            table.foreign('project_id').references('projects.id')
-            table.foreign('admin_id').references('admins.id')
         })
         .createTable('users', function(table) {
             table.increments()
@@ -55,7 +53,7 @@ exports.up = function(knex) {
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())
             table.unique(['project_id', 'external_id'])
-            table.unique(['project_id', 'uuid'])
+            table.unique(['project_id', 'anonymous_id'])
         })
         .createTable('project_api_keys', function(table) {
             table.increments()
