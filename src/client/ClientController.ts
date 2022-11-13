@@ -33,8 +33,9 @@ const aliasParams: JSONSchemaType<ClientAliasParams> = {
 }
 router.post('/alias', async ctx => {
     const payload = validate(aliasParams, ctx.request.body)
-    // const user = aliasUser(ctx.state.project.id, payload)
-    // ctx.body =
+    await aliasUser(ctx.state.project.id, payload)
+    ctx.status = 204
+    ctx.body = ''
 })
 
 /**

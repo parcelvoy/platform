@@ -15,10 +15,15 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
     type: 'array',
     items: {
         type: 'object',
-        required: ['external_id'],
+        required: [],
         properties: {
+            anonymous_id: {
+                type: 'string',
+                nullable: true,
+            },
             external_id: {
                 type: 'string',
+                nullable: true,
             },
             email: {
                 type: 'string',
@@ -34,12 +39,18 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
                 additionalProperties: true,
             },
         },
+        anyOf: [
+            {
+                required: ['anonymous_id'],
+            },
+            {
+                required: ['external_id'],
+            },
+        ],
     },
     minItems: 1,
 }
-
 router.patch('/', async ctx => {
-
     const users = validate(patchUsersRequest, ctx.request.body)
 
     for (const user of users) {
@@ -60,7 +71,6 @@ const deleteUsersRequest: JSONSchemaType<string[]> = {
     },
     minItems: 1,
 }
-
 router.delete('/users', async ctx => {
 
     let userIds = ctx.request.query.user_id || []

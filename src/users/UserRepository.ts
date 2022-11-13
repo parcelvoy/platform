@@ -1,4 +1,4 @@
-import { ClientAliasParams, ClientIdentifyParams, ClientIdentity } from '../client/Client'
+import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { Device, DeviceParams, User } from '../users/User'
 
 export const getUser = async (id: number): Promise<User | undefined> => {

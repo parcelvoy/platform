@@ -12,7 +12,10 @@ export interface IdentifiedClientIdentity {
 
 export type ClientIdentity = AnonymousClientIdentity | IdentifiedClientIdentity
 
-export type ClientAliasParams = ClientIdentity
+export type ClientAliasParams = {
+    anonymous_id: string
+    external_id: string
+}
 
 export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'data'>> & ClientIdentity
 
