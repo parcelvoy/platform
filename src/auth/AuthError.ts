@@ -1,26 +1,38 @@
+import { ErrorType } from '../core/errors'
+
 export default {
+    AuthorizationError: {
+        message: 'Authorization error.',
+        code: 1000,
+        statusCode: 401,
+    },
     InvalidRefreshToken: {
         message: 'The refresh token provided is invalid.',
-        code: 1000,
+        code: 1001,
     },
     SAMLValidationError: {
         message: 'Unable to parse response from SSO.',
-        code: 1001,
+        code: 1002,
     },
     AdminNotFound: {
         message: 'The admin user matching the provided criteria does not exist.',
-        code: 1002,
+        code: 1003,
     },
     InvalidDomain: {
         message: 'The provided email does not have access to access this site.',
-        code: 1003,
+        code: 1004,
     },
     InvalidEmail: {
         message: 'The email address provided is invalid or not present.',
-        code: 1004,
-    },
-    OpenIdValidationError: {
-        message: 'Unable to parse response from OpenID',
         code: 1005,
     },
-}
+    OpenIdValidationError: {
+        message: 'Unable to parse response from OpenID.',
+        code: 1006,
+    },
+    AccessDenied: {
+        message: 'Access denied.',
+        code: 1007,
+        statusCode: 403,
+    },
+} as Record<string, ErrorType>

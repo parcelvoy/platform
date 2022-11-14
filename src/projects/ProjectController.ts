@@ -1,21 +1,20 @@
 import Router from '@koa/router'
 import Project, { ProjectParams } from './Project'
-import type App from '../app'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { Context } from 'koa'
-import { getProject } from './ProjectService'
-import { AuthState } from '../config/controllers'
+import { createProjectApiKey, getProject, revokeProjectApiKey } from './ProjectService'
+import { AuthState, ProjectState } from '../auth/AuthMiddleware'
+import { ProjectApiKeyParams } from './ProjectApiKey'
 
 export async function projectMiddleware(ctx: Context, next: () => void) {
     ctx.state.project = await getProject(
-        ctx.params.project,
-        ctx.state.admin.id,
+        ctx.params.project ?? ctx.state.key.project_id,
+        ctx.state.admin?.id,
     )
     if (!ctx.state.project) {
         ctx.throw(404)
-        return
     }
     return await next()
 }
@@ -52,10 +51,7 @@ router.post('/', async ctx => {
 
 export default router
 
-const subrouter = new Router<{
-    app: App
-    project?: Project
-}>()
+const subrouter = new Router<ProjectState>()
 
 subrouter.get('/', async ctx => {
     ctx.body = ctx.state.project
@@ -79,6 +75,34 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
 
 subrouter.patch('/', async ctx => {
     ctx.body = await Project.updateAndFetch(ctx.state.project!.id, validate(projectUpdateParams, ctx.request.body))
+})
+
+const projectKeyCreateParams: JSONSchemaType<ProjectApiKeyParams> = {
+    $id: 'projectKeyCreate',
+    type: 'object',
+    required: ['name'],
+    properties: {
+        scope: {
+            type: 'string',
+            enum: ['public', 'secret'],
+        },
+        name: {
+            type: 'string',
+        },
+        description: {
+            type: 'string',
+            nullable: true,
+        },
+    },
+    additionalProperties: false,
+}
+subrouter.post('/keys', async ctx => {
+    const payload = await validate(projectKeyCreateParams, ctx.request.body)
+    ctx.body = await createProjectApiKey(ctx.state.project.id, payload)
+})
+
+subrouter.delete('/keys/:keyId', async ctx => {
+    ctx.body = revokeProjectApiKey(parseInt(ctx.params.keyId, 10))
 })
 
 export { subrouter as ProjectSubrouter }

@@ -4,7 +4,7 @@ import { extractQueryParams } from '../utilities'
 import List, { ListParams } from './List'
 import { createList, getList, pagedLists } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 
 const router = new Router<
     ProjectState & { list?: List }

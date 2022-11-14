@@ -1,6 +1,5 @@
-// Will be re-enabled in API work
-
-import Model from '../core/Model'
+import { ClientIdentity } from '../client/Client'
+import Model, { ModelParams } from '../core/Model'
 
 export interface TemplateUser extends Record<string, any> {
     id: string
@@ -16,7 +15,7 @@ export interface UserAttribute {
 }
 
 export class Device extends Model {
-    external_id!: string
+    device_id!: string
     token?: string
     notifications_enabled!: boolean
     os!: string
@@ -29,12 +28,15 @@ export class Device extends Model {
     }
 }
 
+export type DeviceParams = Omit<Device, ModelParams | 'notifications_enabled' | 'isPushEnabled'> & ClientIdentity
+
 interface PushEnabledDevice extends Device {
     token: string
 }
 
 export class User extends Model {
     project_id!: number
+    anonymous_id!: string
     external_id!: string
     email?: string
     phone?: string
@@ -57,3 +59,5 @@ export class User extends Model {
         return this.devices.filter(device => device.isPushEnabled) as PushEnabledDevice[]
     }
 }
+
+export type UserParams = Partial<Pick<User, 'email' | 'phone' | 'data'>> & ClientIdentity

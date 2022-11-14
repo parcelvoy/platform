@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'

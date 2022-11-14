@@ -1,13 +1,20 @@
-import { User } from '../users/User'
+import { ClientAliasParams, ClientIdentity } from '../client/Client'
+import { Device, DeviceParams, User } from '../users/User'
 
 export const getUser = async (id: number): Promise<User | undefined> => {
     return await User.find(id)
 }
 
-export const getUserFromExternalId = async (projectId: number, externalId: string): Promise<User | undefined> => {
+export const getUserFromClientId = async (projectId: number, identity: Partial<ClientIdentity>): Promise<User | undefined> => {
     return await User.first(
-        qb => qb.where('external_id', externalId)
-            .where('project_id', projectId),
+        qb => qb.where(sqb => {
+            if (identity.external_id) {
+                sqb.where('external_id', identity.external_id)
+            }
+            if (identity.anonymous_id) {
+                sqb.orWhere('anonymous_id', identity.anonymous_id)
+            }
+        }).where('project_id', projectId),
     )
 }
 
@@ -16,6 +23,32 @@ export const getUserFromPhone = async (projectId: number, phone: string): Promis
         qb => qb.where('phone', phone)
             .where('project_id', projectId),
     )
+}
+
+export const aliasUser = async (projectId: number, alias: ClientAliasParams): Promise<User | undefined> => {
+    const user = await getUserFromClientId(projectId, alias)
+    if (!user) return
+    return await User.updateAndFetch(user.id, { external_id: alias.external_id })
+}
+
+export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {
+
+    const user = await getUserFromClientId(projectId, { external_id, anonymous_id })
+    if (!user) return
+
+    const device = user.devices.find(
+        device => device.device_id === params.device_id,
+    )
+    if (device) {
+        Object.assign(device, params)
+    } else {
+        user.devices.push(Device.fromJson({
+            ...params,
+            device_id: params.device_id,
+        }))
+    }
+    await User.updateAndFetch(user.id, { devices: user.devices })
+    return device
 }
 
 export const disableNotifications = async (userId: number, tokens: string[]): Promise<boolean> => {

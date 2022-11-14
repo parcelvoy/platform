@@ -30,7 +30,8 @@
         "@typescript-eslint/comma-dangle": ["error", "always-multiline"],
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
-        "operator-linebreak": ["error", "before"]
+        "operator-linebreak": ["error", "before"],
+        "@typescript-eslint/no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": true }]
     },
     "globals": {
         "NodeJS": true

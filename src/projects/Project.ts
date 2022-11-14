@@ -8,12 +8,3 @@ export default class Project extends Model {
 }
 
 export type ProjectParams = Omit<Project, ModelParams | 'deleted_at'>
-
-export class ProjectApiKey extends Model {
-
-    project_id!: number
-    value!: string
-    name!: string
-    description?: string
-    deleted_at?: Date
-}

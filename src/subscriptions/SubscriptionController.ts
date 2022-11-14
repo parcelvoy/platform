@@ -7,7 +7,7 @@ import Subscription, { SubscriptionParams } from './Subscription'
 import { allSubscriptions, createSubscription, getSubscription, unsubscribe, unsubscribeSms } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
-import { ProjectState } from '../config/controllers'
+import { ProjectState } from '../auth/AuthMiddleware'
 
 /**
  ***

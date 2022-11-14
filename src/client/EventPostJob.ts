@@ -1,5 +1,5 @@
 import { createEvent } from '../users/UserEventRepository'
-import { getUserFromExternalId } from '../users/UserRepository'
+import { getUserFromClientId } from '../users/UserRepository'
 import { updateLists } from '../lists/ListService'
 import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
@@ -19,7 +19,7 @@ export default class EventPostJob extends Job {
     }
 
     static async handler({ project_id, event }: EventPostTrigger) {
-        const user = await getUserFromExternalId(project_id, event.user_id)
+        const user = await getUserFromClientId(project_id, event.external_id)
         if (!user) {
             logger.error({ project_id, event }, 'job:event_post:unknown-user')
             return
