@@ -6,6 +6,7 @@ import Project from '../projects/Project'
 import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
+import { OAuthResponse } from './TokenRepository'
 
 export interface JwtAdmin {
     id: number
@@ -54,9 +55,14 @@ const parseAuth = async (ctx: Context) => {
 }
 
 export async function authMiddleware(ctx: Context, next: () => void) {
-    const state = await parseAuth(ctx)
-    ctx.state = { ...ctx.state, ...state }
-    return await next()
+    try {
+        const state = await parseAuth(ctx)
+        ctx.state = { ...ctx.state, ...state }
+    } catch (error) {
+        ctx.status = 401
+        return
+    }
+    return next()
 }
 
 export const scopeMiddleware = (scope: string) => {
@@ -64,7 +70,7 @@ export const scopeMiddleware = (scope: string) => {
         if (ctx.state.scope !== scope) {
             throw new RequestError(AuthError.AccessDenied)
         }
-        return await next()
+        return next()
     }
 }
 
@@ -80,5 +86,14 @@ const getBearerToken = (request: Request): string | undefined => {
     const authHeader = String(request.headers.authorization || '')
     if (authHeader.startsWith('Bearer ')) {
         return authHeader.substring(7, authHeader.length)
+    }
+    const cookie = request.ctx.cookies.get('oauth')
+    if (cookie) {
+        try {
+            const { access_token } = JSON.parse(cookie) as OAuthResponse
+            if (access_token) {
+                return access_token
+            }
+        } catch {}
     }
 }

@@ -23,7 +23,7 @@ const register = (parent: Router, ...routers: Router[]) => {
 export default (api: import('../api').default) => {
 
     // Register the three main levels of routers
-    const root = register(new Router(),
+    const root = register(new Router({ prefix: '/api' }),
         adminRouter(),
         clientRouter(),
         publicRouter(),

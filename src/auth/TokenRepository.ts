@@ -68,7 +68,7 @@ export const getOauth = (refreshToken: RefreshToken, accessToken: AccessToken): 
 export const setTokenCookies = (ctx: Context, oauth: OAuthResponse): OAuthResponse => {
 
     ctx.cookies.set('oauth', JSON.stringify(oauth), {
-        secure: process.env.NODE_ENV !== 'development',
+        secure: ctx.request.secure,
         httpOnly: true,
         expires: oauth.refresh_expires_at,
     })
