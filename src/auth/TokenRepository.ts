@@ -10,6 +10,10 @@ export interface OAuthResponse {
     expires_at: Date
 }
 
+export async function isAccessTokenRevoked(token: string) {
+    return (await RevokedAccessToken.count(qb => qb.where({ token }))) === 0
+}
+
 export async function revokeAccessToken(token: string, expires_at: Date) {
     await RevokedAccessToken.insert({ token, expires_at })
 }

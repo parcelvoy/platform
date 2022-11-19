@@ -6,7 +6,7 @@ import Project from '../projects/Project'
 import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
-import { OAuthResponse } from './TokenRepository'
+import { isAccessTokenRevoked, OAuthResponse } from './TokenRepository'
 
 export interface JwtAdmin {
     id: number
@@ -46,10 +46,14 @@ const parseAuth = async (ctx: Context) => {
             key: await getProjectApiKey(token),
         }
     } else {
+        const admin = await verify(token) as JwtAdmin
+        if (await isAccessTokenRevoked(token)) {
+            throw new RequestError(AuthError.AccessDenied)
+        }
         // user jwt
         return {
             scope: 'admin',
-            admin: await verify(token) as JwtAdmin,
+            admin,
         }
     }
 }
