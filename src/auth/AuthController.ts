@@ -1,10 +1,7 @@
 import Router from '@koa/router'
-import { JSONSchemaType } from 'ajv'
 import App from '../app'
-import { RequestError } from '../core/errors'
-import AuthError from './AuthError'
-import { validate } from '../core/validate'
-import { generateAccessToken, getOauth, getRefreshToken, setTokenCookies } from './TokenRepository'
+import { getTokenCookies, revokeAccessToken } from './TokenRepository'
+
 const router = new Router<{
     app: import('../app').default
         }>({
@@ -29,39 +26,12 @@ router.get('/login/callback', async ctx => {
     await App.main.auth.validate(ctx)
 })
 
-interface RefreshParams {
-    refreshToken: string
-}
-
-const refreshParamsSchema: JSONSchemaType<RefreshParams> = {
-    $id: 'refreshParams',
-    type: 'object',
-    required: ['refreshToken'],
-    properties: {
-        refreshToken: {
-            type: 'string',
-            minLength: 1,
-        },
-    },
-}
-
-router.post('/refresh', async ctx => {
-    const { refreshToken: token } = validate(refreshParamsSchema, ctx.request.body)
-
-    const refreshToken = await getRefreshToken(token)
-    if (!refreshToken) {
-        throw new RequestError(AuthError.InvalidRefreshToken)
-    }
-
-    const accessToken = generateAccessToken(refreshToken)
-    const oauth = getOauth(refreshToken, accessToken)
-    ctx.body = setTokenCookies(ctx, oauth)
-})
-
 router.post('/logout', async ctx => {
-
-    // TODO mark refresh token in db as expired
-    ctx.body = {}
+    const oauth = getTokenCookies(ctx)
+    if (oauth) {
+        await revokeAccessToken(oauth.access_token, oauth.expires_at)
+    }
+    ctx.body = {} // logout redirect env property?
 })
 
 export default router

@@ -40,7 +40,6 @@ export default (api: import('../api').default) => {
 /**
  * Admin Router
  * All endpoints for use with admin UI control plane
- * @param api Instance of API for access to secrets
  * @returns Router
  */
 export const adminRouter = () => {

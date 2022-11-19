@@ -24,7 +24,7 @@ export default class LoggerAuthProvider extends AuthProvider {
         if (!admin) return
 
         const jwt = generateAccessToken(admin.id)
-        const url = this.callbackUrl(jwt.token)
+        const url = this.callbackUrl(jwt.access_token)
 
         logger.info({ url }, 'login link')
         ctx.redirect(url)

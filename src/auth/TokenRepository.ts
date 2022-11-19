@@ -1,67 +1,40 @@
-import { addDays, addSeconds } from 'date-fns'
+import { addSeconds } from 'date-fns'
 import { Context } from 'koa'
-import { uuid } from '../utilities'
 import { sign } from 'jsonwebtoken'
-import { RefreshToken } from './RefreshToken'
+import { RevokedAccessToken } from './RevokedAccessToken'
 import App from '../app'
 import { Admin } from './Admin'
 
-export interface AccessToken {
-    token: string
-    expires_at: Date
-}
-
 export interface OAuthResponse {
-    refresh_token: string
     access_token: string
     expires_at: Date
-    refresh_expires_at: Date
 }
 
-export const getRefreshToken = async (token: string): Promise<RefreshToken | undefined> => {
-    return RefreshToken.first(qb => qb.where('token', token).where('revoked', false))
-}
-
-export const revokeRefreshToken = async (token: string): Promise<void> => {
-    await RefreshToken.update(qb => qb.where('token', token), { revoked: true })
-}
-
-export const generateRefreshToken = async (adminId: number): Promise<RefreshToken> => {
-    return await RefreshToken.insertAndFetch({
-        admin_id: adminId,
-        token: uuid(),
-        expires_at: addDays(new Date(), 30),
-    })
+export async function revokeAccessToken(token: string, expires_at: Date) {
+    await RevokedAccessToken.insert({ token, expires_at })
 }
 
 type GenerateAccessToken = {
-    (admin: Admin): AccessToken,
-    (adminId: number): AccessToken,
-    (refreshToken: RefreshToken): AccessToken,
+    (admin: Admin): OAuthResponse,
+    (adminId: number): OAuthResponse,
 }
 
-export const generateAccessToken: GenerateAccessToken = (input: Admin | number | RefreshToken): AccessToken => {
-    const id = typeof input === 'number'
-        ? input
-        : input instanceof RefreshToken ? input.admin_id : input.id
-    const expiration = addSeconds(Date.now(), App.main.env.auth.tokenLife)
-    const token = sign({
-        id,
-        exp: Math.floor(expiration.getTime() / 1000),
-    }, App.main.env.secret)
-
+export const generateAccessToken: GenerateAccessToken = (input: Admin | number) => {
+    const id = typeof input === 'number' ? input : input.id
+    const expires_at = addSeconds(Date.now(), App.main.env.auth.tokenLife)
     return {
-        token,
-        expires_at: expiration,
+        access_token: sign({
+            id,
+            exp: Math.floor(expires_at.getTime() / 1000),
+        }, App.main.env.secret),
+        expires_at,
     }
 }
 
-export const getOauth = (refreshToken: RefreshToken, accessToken: AccessToken): OAuthResponse => {
-    return {
-        refresh_token: refreshToken.token,
-        access_token: accessToken.token,
-        expires_at: accessToken.expires_at,
-        refresh_expires_at: refreshToken.expires_at,
+export const getTokenCookies = (ctx: Context) => {
+    const cookie = ctx.cookies.get('oauth')
+    if (cookie) {
+        return JSON.parse(cookie) as OAuthResponse
     }
 }
 
@@ -70,7 +43,7 @@ export const setTokenCookies = (ctx: Context, oauth: OAuthResponse): OAuthRespon
     ctx.cookies.set('oauth', JSON.stringify(oauth), {
         secure: ctx.request.secure,
         httpOnly: true,
-        expires: oauth.refresh_expires_at,
+        expires: oauth.expires_at,
     })
 
     return oauth

@@ -4,7 +4,7 @@ import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 import { AdminParams } from './Admin'
 import { createOrUpdateAdmin, getAdmin } from './AdminRepository'
-import { generateAccessToken, generateRefreshToken, getOauth, OAuthResponse, setTokenCookies } from './TokenRepository'
+import { generateAccessToken, OAuthResponse, setTokenCookies } from './TokenRepository'
 
 export default abstract class AuthProvider {
 
@@ -22,10 +22,7 @@ export default abstract class AuthProvider {
 
         if (!admin) throw new RequestError(AuthError.AdminNotFound)
 
-        const refreshToken = await generateRefreshToken(admin.id)
-        const accessToken = generateAccessToken(admin.id)
-
-        const oauth = getOauth(refreshToken, accessToken)
+        const oauth = generateAccessToken(admin)
 
         if (ctx) {
             setTokenCookies(ctx, oauth)
