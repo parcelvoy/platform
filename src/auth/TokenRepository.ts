@@ -14,6 +14,10 @@ export async function revokeAccessToken(token: string, expires_at: Date) {
     await RevokedAccessToken.insert({ token, expires_at })
 }
 
+export async function cleanupExpiredRevokedTokens(until: Date) {
+    await RevokedAccessToken.delete(qb => qb.where('expired_at', '<=', until))
+}
+
 type GenerateAccessToken = {
     (admin: Admin): OAuthResponse,
     (adminId: number): OAuthResponse,
