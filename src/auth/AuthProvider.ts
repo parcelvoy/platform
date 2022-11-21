@@ -22,7 +22,7 @@ export default abstract class AuthProvider {
 
         if (!admin) throw new RequestError(AuthError.AdminNotFound)
 
-        const oauth = generateAccessToken(admin)
+        const oauth = generateAccessToken(admin, ctx)
 
         if (ctx) {
             setTokenCookies(ctx, oauth)

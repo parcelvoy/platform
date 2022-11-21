@@ -23,7 +23,7 @@ export default class LoggerAuthProvider extends AuthProvider {
         const admin = await getAdminByEmail(email)
         if (!admin) return
 
-        const jwt = generateAccessToken(admin.id)
+        const jwt = generateAccessToken(admin.id, ctx)
         const url = this.callbackUrl(jwt.access_token)
 
         logger.info({ url }, 'login link')

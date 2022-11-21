@@ -29,7 +29,7 @@ router.get('/login/callback', async ctx => {
 router.post('/logout', async ctx => {
     const oauth = getTokenCookies(ctx)
     if (oauth) {
-        await revokeAccessToken(oauth.access_token, oauth.expires_at)
+        await revokeAccessToken(oauth.access_token)
     }
     ctx.body = {} // logout redirect env property?
 })
