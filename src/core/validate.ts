@@ -1,7 +1,9 @@
 import Ajv, { JSONSchemaType } from 'ajv'
+import addFormats from 'ajv-formats'
 import { RequestError } from './errors'
 
 const validator = new Ajv()
+addFormats(validator)
 
 export { JSONSchemaType }
 

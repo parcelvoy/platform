@@ -37,6 +37,7 @@ export default class Model {
     updated_at: Date = new Date()
 
     static jsonAttributes: string[] = []
+    static virtualAttributes: string[] = []
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
@@ -46,6 +47,19 @@ export default class Model {
 
     parseJson(json: any) {
         Object.assign(this, json)
+    }
+
+    toJSON() {
+        return (this.constructor as any).toJson(this)
+    }
+
+    static toJson<T extends typeof Model>(this: T, model: any) {
+        const json: any = {}
+        const keys = [...Object.keys(model), ...this.virtualAttributes]
+        for (const key of keys) {
+            json[snakeCase(key)] = model[key]
+        }
+        return json
     }
 
     static formatJson(json: any): Record<string, unknown> {
@@ -221,7 +235,6 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
-        console.log(formattedData)
         await this.table(db).where('id', id).update(formattedData)
         return await this.find(id) as InstanceType<T>
     }

@@ -63,3 +63,7 @@ export const updateLists = async (user: User, event?: UserEvent) => {
         }
     }
 }
+
+export const listUserCount = async (listId: number): Promise<number> => {
+    return await UserList.count(qb => qb.where('list_id', listId))
+}

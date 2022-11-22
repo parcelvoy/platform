@@ -33,6 +33,11 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
         template_id: {
             type: 'integer',
         },
+        send_at: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }
@@ -73,6 +78,11 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
         },
         template_id: {
             type: 'integer',
+            nullable: true,
+        },
+        send_at: {
+            type: 'string',
+            format: 'date-time',
             nullable: true,
         },
     },
