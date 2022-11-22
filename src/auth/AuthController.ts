@@ -29,9 +29,17 @@ router.get('/login/callback', async ctx => {
 router.post('/logout', async ctx => {
     const oauth = getTokenCookies(ctx)
     if (oauth) {
-        await revokeAccessToken(oauth.access_token)
+        await revokeAccessToken(oauth.access_token, ctx)
     }
     ctx.body = {} // logout redirect env property?
+})
+
+router.get('/logout', async ctx => {
+    const oauth = getTokenCookies(ctx)
+    if (oauth) {
+        await revokeAccessToken(oauth.access_token, ctx)
+    }
+    ctx.body = '<html><body>bye!</body></html>' // TODO redirect?
 })
 
 export default router
