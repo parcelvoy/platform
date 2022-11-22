@@ -30,7 +30,7 @@ export default class Template extends Model {
     }
 }
 
-export type TemplateParams = Omit<Template, ModelParams | 'map'>
+export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl'>
 
 export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 

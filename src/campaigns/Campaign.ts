@@ -27,4 +27,4 @@ export default class Campaign extends Model {
     }
 }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery'> & { send_at: string }
+export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery' | 'screenshotUrl'>

@@ -258,4 +258,4 @@ export default class Model {
     static raw = raw
 }
 
-export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson' | 'project_id'
+export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson' | 'project_id' | 'toJSON'
