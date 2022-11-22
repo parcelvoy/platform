@@ -11,6 +11,7 @@ import ProviderController from '../channels/ProviderController'
 import LinkController from '../render/LinkController'
 import TemplateController from '../render/TemplateController'
 import UserController from '../users/UserController'
+import ProfileController from '../profile/ProfileController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 
 const register = (parent: Router, ...routers: Router[]) => {
@@ -49,6 +50,7 @@ export const adminRouter = () => {
     return register(admin,
         ProjectController,
         projectRouter(),
+        ProfileController,
     )
 }
 

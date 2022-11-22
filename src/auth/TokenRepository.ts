@@ -11,7 +11,7 @@ export interface OAuthResponse {
 }
 
 export async function isAccessTokenRevoked(token: string) {
-    return (await AccessToken.count(qb => qb.where({ token, revoked: true }))) === 0
+    return (await AccessToken.count(qb => qb.where({ token, revoked: true }))) > 0
 }
 
 export async function revokeAccessToken(token: string) {

@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken'
-import { Context, Request } from 'koa'
+import { Context } from 'koa'
 import App from '../app'
 import { RequestError } from '../core/errors'
 import Project from '../projects/Project'
 import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
-import { isAccessTokenRevoked, OAuthResponse } from './TokenRepository'
+import { getTokenCookies, isAccessTokenRevoked } from './TokenRepository'
 
 export interface JwtAdmin {
     id: number
@@ -28,7 +28,7 @@ export interface ProjectState extends AuthState {
 }
 
 const parseAuth = async (ctx: Context) => {
-    const token = getBearerToken(ctx.request)
+    const token = getBearerToken(ctx)
     if (!token) {
         throw new RequestError(AuthError.AuthorizationError)
     }
@@ -63,6 +63,7 @@ export async function authMiddleware(ctx: Context, next: () => void) {
         const state = await parseAuth(ctx)
         ctx.state = { ...ctx.state, ...state }
     } catch (error) {
+        console.error(error)
         ctx.status = 401
         return
     }
@@ -86,18 +87,10 @@ const verify = async (token: string) => {
     })
 }
 
-const getBearerToken = (request: Request): string | undefined => {
-    const authHeader = String(request.headers.authorization || '')
+const getBearerToken = (ctx: Context): string | undefined => {
+    const authHeader = String(ctx.request.headers.authorization || '')
     if (authHeader.startsWith('Bearer ')) {
         return authHeader.substring(7, authHeader.length)
     }
-    const cookie = request.ctx.cookies.get('oauth')
-    if (cookie) {
-        try {
-            const { access_token } = JSON.parse(cookie) as OAuthResponse
-            if (access_token) {
-                return access_token
-            }
-        } catch {}
-    }
+    return getTokenCookies(ctx)?.access_token
 }
