@@ -132,7 +132,7 @@ export default class Model {
             : []
         const end = Math.min(start + itemsPerPage, start + results.length)
         return {
-            results,
+            results: results.map((item: any) => this.fromJson(item)),
             start,
             end,
             total,
