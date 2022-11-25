@@ -94,3 +94,7 @@ export function extractQueryParams<T extends Record<string, any>>(search: URLSea
         return a
     }, {} as Record<string, any>))
 }
+
+export function firstQueryParam(value: string | string[] | undefined) {
+    return Array.isArray(value) ? value[0] : value
+}

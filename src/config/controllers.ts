@@ -11,6 +11,7 @@ import ProviderController from '../channels/ProviderController'
 import LinkController from '../render/LinkController'
 import TemplateController from '../render/TemplateController'
 import UserController from '../users/UserController'
+import ProfileController from '../profile/ProfileController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 
 const register = (parent: Router, ...routers: Router[]) => {
@@ -23,7 +24,7 @@ const register = (parent: Router, ...routers: Router[]) => {
 export default (api: import('../api').default) => {
 
     // Register the three main levels of routers
-    const root = register(new Router(),
+    const root = register(new Router({ prefix: '/api' }),
         adminRouter(),
         clientRouter(),
         publicRouter(),
@@ -40,7 +41,6 @@ export default (api: import('../api').default) => {
 /**
  * Admin Router
  * All endpoints for use with admin UI control plane
- * @param api Instance of API for access to secrets
  * @returns Router
  */
 export const adminRouter = () => {
@@ -50,6 +50,7 @@ export const adminRouter = () => {
     return register(admin,
         ProjectController,
         projectRouter(),
+        ProfileController,
     )
 }
 

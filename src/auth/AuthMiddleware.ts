@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken'
-import { Context, Request } from 'koa'
+import { Context } from 'koa'
 import App from '../app'
 import { RequestError } from '../core/errors'
 import Project from '../projects/Project'
 import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
+import { getTokenCookies, isAccessTokenRevoked } from './TokenRepository'
 
 export interface JwtAdmin {
     id: number
@@ -27,7 +28,7 @@ export interface ProjectState extends AuthState {
 }
 
 const parseAuth = async (ctx: Context) => {
-    const token = getBearerToken(ctx.request)
+    const token = getBearerToken(ctx)
     if (!token) {
         throw new RequestError(AuthError.AuthorizationError)
     }
@@ -45,18 +46,26 @@ const parseAuth = async (ctx: Context) => {
             key: await getProjectApiKey(token),
         }
     } else {
+        const admin = await verify(token) as JwtAdmin
+        if (await isAccessTokenRevoked(token)) {
+            throw new RequestError(AuthError.AccessDenied)
+        }
         // user jwt
         return {
             scope: 'admin',
-            admin: await verify(token) as JwtAdmin,
+            admin,
         }
     }
 }
 
 export async function authMiddleware(ctx: Context, next: () => void) {
-    const state = await parseAuth(ctx)
-    ctx.state = { ...ctx.state, ...state }
-    return await next()
+    try {
+        const state = await parseAuth(ctx)
+        ctx.state = { ...ctx.state, ...state }
+    } catch (error) {
+        throw new RequestError(AuthError.AuthorizationError)
+    }
+    return next()
 }
 
 export const scopeMiddleware = (scope: string) => {
@@ -64,7 +73,7 @@ export const scopeMiddleware = (scope: string) => {
         if (ctx.state.scope !== scope) {
             throw new RequestError(AuthError.AccessDenied)
         }
-        return await next()
+        return next()
     }
 }
 
@@ -76,9 +85,10 @@ const verify = async (token: string) => {
     })
 }
 
-const getBearerToken = (request: Request): string | undefined => {
-    const authHeader = String(request.headers.authorization || '')
+const getBearerToken = (ctx: Context): string | undefined => {
+    const authHeader = String(ctx.request.headers.authorization || '')
     if (authHeader.startsWith('Bearer ')) {
         return authHeader.substring(7, authHeader.length)
     }
+    return getTokenCookies(ctx)?.access_token
 }

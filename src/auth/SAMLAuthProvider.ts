@@ -6,6 +6,7 @@ import { RequestError } from '../core/errors'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
 import AuthError from './AuthError'
+import { firstQueryParam } from '../utilities'
 
 export interface SAMLConfig extends AuthTypeConfig {
     driver: 'saml'
@@ -58,7 +59,9 @@ export default class SAMLAuthProvider extends AuthProvider {
 
     async start(ctx: Context) {
         const host = ctx.request.headers?.host
-        const relayState = ctx.request.query?.RelayState || ctx.request.body.RelayState
+
+        const { r } = ctx.request.query
+        const relayState = (Array.isArray(r) ? r[0] : r) || ''
 
         const url = await this.saml.getAuthorizeUrlAsync(relayState, host, {})
 
@@ -66,8 +69,10 @@ export default class SAMLAuthProvider extends AuthProvider {
     }
 
     async validate(ctx: Context) {
-        const response = await this.parseValidation(ctx)
-        if (!response) throw new RequestError(AuthError.SAMLValidationError)
+        const result = await this.parseValidation(ctx)
+        if (!result) throw new RequestError(AuthError.SAMLValidationError)
+
+        const [response, state] = result
 
         // If there is no profile we take no action
         if (!response.profile) return
@@ -78,18 +83,28 @@ export default class SAMLAuthProvider extends AuthProvider {
 
         // If we are logging in, grab profile and create tokens
         const { first_name, last_name, nameID: email } = response.profile
-        await this.login({ first_name, last_name, email }, ctx)
+        await this.login({ first_name, last_name, email }, ctx, state)
     }
 
-    private async parseValidation(ctx: Context): Promise<ValidatedSAMLResponse | undefined> {
+    private async parseValidation(ctx: Context): Promise<[ValidatedSAMLResponse, string?] | undefined> {
         const { query, body, href } = ctx.request
         if (query?.SAMLResponse || query?.SAMLRequest) {
             const originalQuery = new URL(href).href
-            return await this.saml.validateRedirectAsync(query, originalQuery)
+            const { RelayState } = query
+            return [
+                await this.saml.validateRedirectAsync(query, originalQuery),
+                firstQueryParam(RelayState),
+            ]
         } else if (body?.SAMLResponse) {
-            return await this.saml.validatePostResponseAsync(body)
+            return [
+                await this.saml.validatePostResponseAsync(body),
+                body.RelayState,
+            ]
         } else if (body?.SAMLRequest) {
-            return await this.saml.validatePostRequestAsync(body)
+            return [
+                await this.saml.validatePostRequestAsync(body),
+                body.RelayState,
+            ]
         }
     }
 }

@@ -25,6 +25,9 @@ const driver = <T extends DriverConfig>(driver: string | undefined, loaders: Dri
     return { ...loadedDriver, driver: driverKey } as T
 }
 
+// 24 hours?
+const defaultTokenLife = 24 * 60 * 60
+
 type EnvType = 'production' | 'test'
 export default (type?: EnvType): Env => {
     dotenv.config({ path: `.env${type === 'test' ? '.test' : ''}` })
@@ -65,7 +68,7 @@ export default (type?: EnvType): Env => {
         secret: process.env.APP_SECRET!,
         auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {
             saml: () => ({
-                tokenLife: 3600,
+                tokenLife: defaultTokenLife,
                 callbackUrl: process.env.AUTH_SAML_CALLBACK_URL,
                 entryPoint: process.env.AUTH_SAML_ENTRY_POINT_URL,
                 issuer: process.env.AUTH_SAML_ISSUER,
@@ -73,7 +76,7 @@ export default (type?: EnvType): Env => {
                 wantAuthnResponseSigned: process.env.AUTH_SAML_IS_AUTHN_SIGNED === 'true',
             }),
             openid: () => ({
-                tokenLife: 3600,
+                tokenLife: defaultTokenLife,
                 issuerUrl: process.env.AUTH_OPENID_ISSUER_URL,
                 clientId: process.env.AUTH_OPENID_CLIENT_ID,
                 clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
@@ -81,7 +84,7 @@ export default (type?: EnvType): Env => {
                 domainWhitelist: (process.env.AUTH_OPENID_DOMAIN_WHITELIST || '').split(','),
             }),
             logger: () => ({
-                tokenLife: 3600,
+                tokenLife: defaultTokenLife,
             }),
         }),
     }

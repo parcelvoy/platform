@@ -5,6 +5,8 @@ import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
+import { firstQueryParam } from '../utilities'
+import { logger } from '../config/logger'
 
 export interface OpenIDConfig extends AuthTypeConfig {
     driver: 'openid'
@@ -35,7 +37,15 @@ export default class OpenIDAuthProvider extends AuthProvider {
         // it should be httpOnly (not readable by javascript) and encrypted.
 
         ctx.cookies.set('nonce', nonce, {
-            secure: process.env.NODE_ENV !== 'development',
+            secure: ctx.request.secure,
+            httpOnly: true,
+            expires: addSeconds(Date.now(), 3600),
+        })
+
+        const state = firstQueryParam(ctx.request.query.r)
+
+        ctx.cookies.set('relaystate', state, {
+            secure: ctx.request.secure,
             httpOnly: true,
             expires: addSeconds(Date.now(), 3600),
         })
@@ -44,6 +54,8 @@ export default class OpenIDAuthProvider extends AuthProvider {
             scope: 'openid email profile',
             response_mode: 'form_post',
             nonce,
+            redirect_uri: this.config.redirectUri,
+            state,
         })
 
         ctx.redirect(url)
@@ -52,12 +64,13 @@ export default class OpenIDAuthProvider extends AuthProvider {
     async validate(ctx: Context): Promise<void> {
         const client = await this.getClient()
         const nonce = ctx.cookies.get('nonce')
+        const state = ctx.cookies.get('relaystate')
 
         // Unsafe cast, but Koa and library don't play nicely
         const params = client.callbackParams(ctx.request as any)
 
         try {
-            const tokenSet = await client.callback(this.config.redirectUri, params, { nonce })
+            const tokenSet = await client.callback(this.config.redirectUri, params, { nonce, state })
 
             if (!tokenSet) {
                 throw new RequestError(AuthError.OpenIdValidationError)
@@ -79,8 +92,9 @@ export default class OpenIDAuthProvider extends AuthProvider {
                 last_name: claims.family_name,
             }
 
-            await this.login(admin, ctx)
-        } catch {
+            await this.login(admin, ctx, state)
+        } catch (x) {
+            logger.warn(x)
             throw new RequestError(AuthError.OpenIdValidationError)
         }
     }
