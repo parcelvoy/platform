@@ -5,6 +5,8 @@ import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
+import { firstQueryParam } from '../utilities'
+import { logger } from '../config/logger'
 
 export interface OpenIDConfig extends AuthTypeConfig {
     driver: 'openid'
@@ -40,9 +42,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
             expires: addSeconds(Date.now(), 3600),
         })
 
-        const { r } = ctx.request.query
-
-        const state = (Array.isArray(r) ? r[0] : r) || undefined
+        const state = firstQueryParam(ctx.request.query.r)
 
         ctx.cookies.set('relaystate', state, {
             secure: ctx.request.secure,
@@ -94,7 +94,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
 
             await this.login(admin, ctx, state)
         } catch (x) {
-            console.error(x)
+            logger.warn(x)
             throw new RequestError(AuthError.OpenIdValidationError)
         }
     }

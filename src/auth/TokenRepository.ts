@@ -14,8 +14,11 @@ export async function isAccessTokenRevoked(token: string) {
     return (await AccessToken.count(qb => qb.where({ token, revoked: true }))) > 0
 }
 
-export async function revokeAccessToken(token: string) {
+export async function revokeAccessToken(token: string, ctx?: Context) {
     await AccessToken.update(qb => qb.where({ token }), { revoked: true })
+    if (ctx) {
+        ctx.cookies.set('oauth')
+    }
 }
 
 export async function cleanupExpiredRevokedTokens(until: Date) {

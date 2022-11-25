@@ -6,6 +6,7 @@ import { RequestError } from '../core/errors'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
 import AuthError from './AuthError'
+import { firstQueryParam } from '../utilities'
 
 export interface SAMLConfig extends AuthTypeConfig {
     driver: 'saml'
@@ -92,7 +93,7 @@ export default class SAMLAuthProvider extends AuthProvider {
             const { RelayState } = query
             return [
                 await this.saml.validateRedirectAsync(query, originalQuery),
-                (Array.isArray(RelayState) ? RelayState[0] : RelayState),
+                firstQueryParam(RelayState),
             ]
         } else if (body?.SAMLResponse) {
             return [

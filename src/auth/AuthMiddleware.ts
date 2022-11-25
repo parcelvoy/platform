@@ -63,9 +63,7 @@ export async function authMiddleware(ctx: Context, next: () => void) {
         const state = await parseAuth(ctx)
         ctx.state = { ...ctx.state, ...state }
     } catch (error) {
-        console.error(error)
-        ctx.status = 401
-        return
+        throw new RequestError(AuthError.AuthorizationError)
     }
     return next()
 }

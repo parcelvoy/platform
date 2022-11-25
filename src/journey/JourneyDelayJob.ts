@@ -1,8 +1,8 @@
 import { Job } from '../queue'
-// import { JourneyUserStep } from './JourneyStep'
-// import { raw } from '../core/Model'
-// import JourneyProcessJob from './JourneyProcessJob'
-// import App from '../app'
+import { JourneyUserStep } from './JourneyStep'
+import { raw } from '../core/Model'
+import JourneyProcessJob from './JourneyProcessJob'
+import App from '../app'
 
 /**
  * A job to be run on a schedule to queue up all journeys that need
@@ -12,7 +12,6 @@ export default class JourneyDelayJob extends Job {
     static $name = 'journey_delay_job'
 
     static async handler() {
-        /*
         await JourneyUserStep.query()
             .with(
                 'latest_journey_steps',
@@ -39,6 +38,5 @@ export default class JourneyDelayJob extends Job {
                     )
                 }
             })
-            */
     }
 }
