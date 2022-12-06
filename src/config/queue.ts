@@ -8,6 +8,8 @@ import WebhookJob from '../channels/webhook/WebhookJob'
 import { QueueConfig } from '../queue/Queue'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
+import TemplateSnapshotJob from '../render/TemplateSnapshotJob'
+import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 
 export type Queues = Record<number, Queue>
 
@@ -20,6 +22,8 @@ export const loadJobs = (queue: Queue) => {
     queue.register(EventPostJob)
     queue.register(JourneyProcessJob)
     queue.register(JourneyDelayJob)
+    queue.register(CampaignTriggerJob)
+    queue.register(TemplateSnapshotJob)
 }
 
 export default (config: QueueConfig) => {

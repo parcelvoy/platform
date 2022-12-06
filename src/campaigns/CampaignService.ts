@@ -10,6 +10,7 @@ import { RequestError } from '../core/errors'
 import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
+import { listUserCount } from '../lists/ListService'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
@@ -32,8 +33,16 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
     if (!subscription) {
         throw new RequestError('Unable to find associated subscription', 404)
     }
+
+    const delivery = { sent: 0, total: 0 }
+    if (params.list_id) {
+        delivery.total = await listUserCount(params.list_id)
+    }
+
     return await Campaign.insertAndFetch({
         ...params,
+        state: 'ready',
+        delivery,
         channel: subscription.channel,
         project_id: projectId,
     })
@@ -73,9 +82,23 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
 
 export const sendList = async (campaign: Campaign) => {
 
+    const updateProgress = async (params: Partial<Campaign>) => {
+        await Campaign.update(qb => qb.where('id', campaign.id), params)
+    }
+
     if (!campaign.list_id) {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
+
+    const delivery = {
+        sent: 0,
+        total: await listUserCount(campaign.list_id),
+    }
+
+    await updateProgress({
+        state: 'running',
+        delivery,
+    })
 
     // Stream results so that we aren't overwhelmed by millions
     // of potential entries
@@ -85,8 +108,22 @@ export const sendList = async (campaign: Campaign) => {
             // For each result streamed back, process campaign send
             for await (const chunk of stream) {
                 await sendCampaign(campaign, chunk.user_id)
+                delivery.sent++
+
+                if (delivery.sent % 20) {
+                    await updateProgress({ delivery })
+                }
             }
+
+            // Once send is exhausted, update total to match send
+            // Total may not match because list could have grown during send
+            delivery.total = delivery.sent
         })
+
+    await updateProgress({
+        state: 'finished',
+        delivery,
+    })
 }
 
 export const recipientQuery = (campaign: Campaign) => {

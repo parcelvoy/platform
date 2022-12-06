@@ -1,8 +1,10 @@
 import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { JSONSchemaType, validate } from '../core/validate'
+import { searchParamsSchema } from '../core/searchParams'
+import { extractQueryParams } from '../utilities'
 import Template, { TemplateParams } from './Template'
-import { allTemplates, createTemplate, getTemplate, updateTemplate } from './TemplateService'
+import { createTemplate, getTemplate, pagedTemplates, renderTemplate, updateTemplate } from './TemplateService'
 
 const router = new Router<
     ProjectState & { template?: Template }
@@ -11,7 +13,8 @@ const router = new Router<
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allTemplates(ctx.state.project.id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedTemplates(params, ctx.state.project.id)
 })
 
 const templateParams: JSONSchemaType<TemplateParams> = {
@@ -103,14 +106,13 @@ const templateParams: JSONSchemaType<TemplateParams> = {
         additionalProperties: false,
     }],
 }
-
 router.post('/', async ctx => {
     const payload = validate(templateParams, ctx.request.body)
     ctx.body = await createTemplate(ctx.state.project.id, payload)
 })
 
 router.param('templateId', async (value, ctx, next) => {
-    ctx.state.list = await getTemplate(parseInt(value), ctx.state.project.id)
+    ctx.state.template = await getTemplate(parseInt(value), ctx.state.project.id)
     if (!ctx.state.template) {
         ctx.throw(404)
         return
@@ -125,6 +127,11 @@ router.get('/:templateId', async ctx => {
 router.patch('/:templateId', async ctx => {
     const payload = validate(templateParams, ctx.request.body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
+})
+
+router.get('/:templateId/preview', async ctx => {
+    const template = ctx.state.template!.map()
+    ctx.body = renderTemplate(template)
 })
 
 export default router

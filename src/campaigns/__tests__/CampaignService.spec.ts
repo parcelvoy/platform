@@ -147,10 +147,10 @@ describe('CampaignService', () => {
     describe('sendCampaign', () => {
         test('enqueue an email job', async () => {
 
-            const spy = jest.spyOn(App.main.queue, 'enqueue')
-
             const campaign = await createTestCampaign()
             const user = await createUser(campaign.project_id)
+
+            const spy = jest.spyOn(App.main.queue, 'enqueue')
             await sendCampaign(campaign, user)
 
             expect(spy).toHaveBeenCalledTimes(1)
@@ -178,8 +178,12 @@ describe('CampaignService', () => {
 
             await sendList(campaign)
 
+            const updatedCampaign = await Campaign.find(campaign.id)
+
             expect(spy).toHaveBeenCalledTimes(20)
             expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
+            expect(updatedCampaign?.state).toEqual('finished')
+            expect(updatedCampaign?.delivery.sent).toEqual(20)
         })
 
         test('users outside of list arent sent the campaign', async () => {

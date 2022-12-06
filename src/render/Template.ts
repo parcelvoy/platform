@@ -1,5 +1,6 @@
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
+import { templateScreenshotUrl } from './TemplateService'
 
 export default class Template extends Model {
     project_id!: number
@@ -8,11 +9,33 @@ export default class Template extends Model {
     data!: Record<string, any>
 
     static tableName = 'templates'
+
+    static jsonAttributes = ['data']
+    static virtualAttributes = ['screenshotUrl']
+
+    map(): TemplateType {
+        const json = this as any
+        if (this.type === 'email') {
+            return EmailTemplate.fromJson(json)
+        } else if (this.type === 'text') {
+            return TextTemplate.fromJson(json)
+        } else if (this.type === 'push') {
+            return PushTemplate.fromJson(json)
+        }
+        return WebhookTemplate.fromJson(json)
+    }
+
+    get screenshotUrl() {
+        return templateScreenshotUrl(this.id)
+    }
 }
 
-export type TemplateParams = Omit<Template, ModelParams>
+export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl'>
+
+export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 
 export class EmailTemplate extends Template {
+    declare type: 'email'
     from!: string
     cc?: string
     bcc?: string
@@ -35,6 +58,7 @@ export class EmailTemplate extends Template {
 }
 
 export class TextTemplate extends Template {
+    declare type: 'text'
     from!: string
     text!: string
 
@@ -47,6 +71,7 @@ export class TextTemplate extends Template {
 }
 
 export class PushTemplate extends Template {
+    declare type: 'push'
     title!: string
     topic!: string
     body!: string
@@ -63,6 +88,7 @@ export class PushTemplate extends Template {
 }
 
 export class WebhookTemplate extends Template {
+    declare type: 'webhook'
     method!: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT'
     endpoint!: string
     body!: Record<string, any>
