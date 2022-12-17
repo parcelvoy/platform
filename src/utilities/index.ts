@@ -13,6 +13,14 @@ export const randomInt = (min = 0, max = 100): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+export const prune = (obj: Record<string, any>): Record<string, any> => {
+    return Object.fromEntries(
+        Object.entries(obj)
+            .filter(([_, v]) => v != null && v !== '')
+            .map(([k, v]) => [k, v === Object(v) ? prune(v) : v]),
+    )
+}
+
 export const snakeCase = (str: string): string => str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
     ?.map(x => x.toLowerCase())
     .join('_') ?? ''

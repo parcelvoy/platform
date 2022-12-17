@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { ExternalProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
-import { TextMessage, TextResponse } from './TextMessage'
+import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
 interface PlivoDataParams {
@@ -24,7 +24,7 @@ export default class PlivoTextProvider extends TextProvider {
     }
 
     async send(message: TextMessage): Promise<TextResponse> {
-        const { from, to, text } = message
+        const { to, text } = message
         const response = await fetch(`https://api.plivo.com/v1/Account/${this.authId}/Message/`, {
             method: 'POST',
             headers: {
@@ -33,7 +33,7 @@ export default class PlivoTextProvider extends TextProvider {
                 'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
             body: JSON.stringify({
-                src: from,
+                src: this.phoneNumber,
                 dst: to,
                 text,
             }),
@@ -52,7 +52,7 @@ export default class PlivoTextProvider extends TextProvider {
     }
 
     // https://www.plivo.com/docs/sms/use-cases/receive-sms/node
-    parseInbound(inbound: any): TextMessage {
+    parseInbound(inbound: any): InboundTextMessage {
         return {
             to: inbound.To,
             from: inbound.From,

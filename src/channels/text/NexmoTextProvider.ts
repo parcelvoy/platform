@@ -1,4 +1,4 @@
-import { TextMessage, TextResponse } from './TextMessage'
+import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import TextError from './TextError'
 import { TextProvider } from './TextProvider'
 import { ProviderParams, ProviderSchema } from '../Provider'
@@ -8,6 +8,7 @@ import { createController } from '../ProviderService'
 interface NexmoDataParams {
     apiKey: string
     apiSecret: string
+    phoneNumber: string
 }
 
 interface NexmoProviderParams extends ProviderParams {
@@ -17,9 +18,10 @@ interface NexmoProviderParams extends ProviderParams {
 export default class NexmoTextProvider extends TextProvider {
     apiKey!: string
     apiSecret!: string
+    phoneNumber!: string
 
     async send(message: TextMessage): Promise<TextResponse> {
-        const { from, to, text } = message
+        const { to, text } = message
         const response = await fetch('https://rest.nexmo.com/sms/json', {
             method: 'POST',
             headers: {
@@ -29,7 +31,7 @@ export default class NexmoTextProvider extends TextProvider {
             body: JSON.stringify({
                 api_key: this.apiKey,
                 api_secret: this.apiSecret,
-                from,
+                from: this.phoneNumber,
                 to,
                 text,
             }),
@@ -55,7 +57,7 @@ export default class NexmoTextProvider extends TextProvider {
     }
 
     // https://developer.vonage.com/messaging/sms/guides/inbound-sms
-    parseInbound(inbound: any): TextMessage {
+    parseInbound(inbound: any): InboundTextMessage {
         return {
             to: inbound.to,
             from: inbound.msisdn,
@@ -66,10 +68,11 @@ export default class NexmoTextProvider extends TextProvider {
     static controllers(): Router {
         const providerParams = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {
             type: 'object',
-            required: ['apiKey', 'apiSecret'],
+            required: ['apiKey', 'apiSecret', 'phoneNumber'],
             properties: {
                 apiKey: { type: 'string' },
                 apiSecret: { type: 'string' },
+                phoneNumber: { type: 'string' },
             },
         })
 
