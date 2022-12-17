@@ -1,7 +1,10 @@
 export interface TextMessage {
     to: string
-    from: string
     text: string
+}
+
+export interface InboundTextMessage extends TextMessage {
+    from: string
 }
 
 export interface TextResponse {

@@ -4,6 +4,7 @@ import Template, { TemplateParams, TemplateType } from './Template'
 import nodeHtmlToImage from 'node-html-to-image'
 import App from '../app'
 import TemplateSnapshotJob from './TemplateSnapshotJob'
+import { prune } from '../utilities'
 
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
@@ -35,7 +36,7 @@ export const createTemplate = async (projectId: number, params: TemplateParams) 
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateParams) => {
-    const template = await Template.updateAndFetch(templateId, params)
+    const template = await Template.updateAndFetch(templateId, prune(params))
 
     App.main.queue.enqueue(
         TemplateSnapshotJob.from({ project_id: template.project_id, template_id: template.id }),
@@ -46,7 +47,7 @@ export const updateTemplate = async (templateId: number, params: TemplateParams)
 
 export const renderTemplate = (template: TemplateType) => {
     if (template.type === 'email') {
-        return template.html_body
+        return template.html
     } else if (template.type === 'text') {
         return template.text
     } else if (template.type === 'push') {

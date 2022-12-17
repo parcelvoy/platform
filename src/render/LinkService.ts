@@ -8,8 +8,8 @@ import { getUser } from '../users/UserRepository'
 import { combineURLs, decodeHashid, encodeHashid } from '../utilities'
 
 export interface TrackedLinkParams {
-    user: User | number
-    campaign: Campaign | number
+    userId: number
+    campaignId: number
 }
 
 interface TrackedLinkParts extends TrackedLinkParams {
@@ -18,10 +18,8 @@ interface TrackedLinkParts extends TrackedLinkParams {
 }
 
 export const paramsToEncodedLink = (params: TrackedLinkParts): string => {
-    const userId = params.user instanceof User ? params.user.id : params.user
-    const campaignId = params.campaign instanceof Campaign ? params.campaign.id : params.campaign
-    const hashUserId = encodeHashid(userId)
-    const hashCampaignId = encodeHashid(campaignId)
+    const hashUserId = encodeHashid(params.userId)
+    const hashCampaignId = encodeHashid(params.campaignId)
 
     const baseUrl = combineURLs([App.main.env.baseUrl, params.path])
     const url = new URL(baseUrl)
@@ -98,7 +96,7 @@ export const trackLinkEvent = async (parts: TrackedLinkExport, eventName: string
     const job = EventPostJob.from({
         project_id: user.project_id,
         event: {
-            user_id: user.external_id,
+            external_id: user.external_id,
             name: eventName,
             data: {
                 campaign_id: campaign.id,

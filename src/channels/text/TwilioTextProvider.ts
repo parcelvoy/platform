@@ -1,12 +1,13 @@
 import Router from '@koa/router'
 import { ExternalProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
-import { TextMessage, TextResponse } from './TextMessage'
+import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
 interface TwilioDataParams {
     accountSid: string
     authToken: string
+    phoneNumber: string
 }
 
 interface TwilioProviderParams extends ExternalProviderParams {
@@ -16,15 +17,16 @@ interface TwilioProviderParams extends ExternalProviderParams {
 export default class TwilioTextProvider extends TextProvider {
     accountSid!: string
     authToken!: string
+    phoneNumber!: string
 
     get apiKey(): string {
         return Buffer.from(`${this.accountSid}:${this.authToken}`).toString('base64')
     }
 
     async send(message: TextMessage): Promise<TextResponse> {
-        const { from, to, text } = message
+        const { to, text } = message
         const form = new FormData()
-        form.append('From', from)
+        form.append('From', this.phoneNumber)
         form.append('To', to)
         form.append('Body', text)
 
@@ -50,7 +52,7 @@ export default class TwilioTextProvider extends TextProvider {
     }
 
     // https://www.twilio.com/docs/messaging/guides/webhook-request
-    parseInbound(inbound: any): TextMessage {
+    parseInbound(inbound: any): InboundTextMessage {
         return {
             to: inbound.To,
             from: inbound.From,
@@ -61,10 +63,11 @@ export default class TwilioTextProvider extends TextProvider {
     static controllers(): Router {
         const providerParams = ProviderSchema<TwilioProviderParams, TwilioDataParams>('twilioTextProviderParams', {
             type: 'object',
-            required: ['accountSid', 'authToken'],
+            required: ['accountSid', 'authToken', 'phoneNumber'],
             properties: {
                 accountSid: { type: 'string' },
                 authToken: { type: 'string' },
+                phoneNumber: { type: 'string' },
             },
         })
 

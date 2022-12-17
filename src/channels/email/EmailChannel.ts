@@ -1,6 +1,5 @@
-import Render, { Variables } from '../../render'
+import { Variables, Wrap } from '../../render'
 import { EmailTemplate } from '../../render/Template'
-import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
 export default class EmailChannel {
@@ -14,21 +13,16 @@ export default class EmailChannel {
         }
     }
 
-    async send(options: EmailTemplate, variables: Variables) {
+    async send(template: EmailTemplate, variables: Variables) {
         if (!variables.user.email) throw new Error('Unable to send a text message to a user with no email.')
 
-        const message: Email = {
+        const compiled = template.compile(variables)
+        const email = {
+            ...compiled,
             to: variables.user.email,
-            subject: Render(options.subject, variables),
-            from: Render(options.from, variables),
-            html: Render(options.html_body, variables),
-            text: Render(options.text_body, variables),
+            html: Wrap(compiled.html, variables), // Add link and open tracking
         }
-        if (options.reply_to) message.reply_to = Render(options.reply_to, variables)
-        if (options.cc) message.cc = Render(options.cc, variables)
-        if (options.bcc) message.bcc = Render(options.bcc, variables)
-
-        await this.provider.send(message)
+        await this.provider.send(email)
     }
 
     async verify(): Promise<boolean> {

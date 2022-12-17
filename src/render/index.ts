@@ -19,6 +19,11 @@ export interface Variables {
     event?: Record<string, any>
 }
 
+export interface TrackingParams {
+    user: User
+    campaign: number
+}
+
 const loadHelper = (helper: Record<string, any>) => {
     const keys = Object.keys(helper)
     const values = Object.values(helper)
@@ -37,16 +42,25 @@ export const Compile = (template: string, context: Record<string, any> = {}) => 
     return Handlebars.compile(template)(context)
 }
 
+export const Wrap = (html: string, { user, context }: Variables) => {
+    const trackingParams = { userId: user.id, campaignId: context.campaign_id }
+    html = clickWrapHTML(html, trackingParams)
+    html = openWrapHtml(html, trackingParams)
+    return html
+}
+
 export default (template: string, { user, event, context }: Variables) => {
-    const trackingParams = { user, campaign: context.campaign_id }
-    let html = Compile(template, {
+    const trackingParams = { userId: user.id, campaignId: context?.campaign_id }
+    console.log('context', {
         user: user.flatten(),
         event,
         context,
         unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
     })
-
-    html = clickWrapHTML(html, trackingParams)
-    html = openWrapHtml(html, trackingParams)
-    return html
+    return Compile(template, {
+        user: user.flatten(),
+        event,
+        context,
+        unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
+    })
 }

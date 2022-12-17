@@ -4,7 +4,10 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import Template, { TemplateParams } from './Template'
-import { createTemplate, getTemplate, pagedTemplates, renderTemplate, updateTemplate } from './TemplateService'
+import { createTemplate, getTemplate, pagedTemplates, updateTemplate } from './TemplateService'
+import { Variables } from '.'
+import { User } from '../users/User'
+import { UserEvent } from '../users/UserEvent'
 
 const router = new Router<
     ProjectState & { template?: Template }
@@ -32,7 +35,7 @@ const templateParams: JSONSchemaType<TemplateParams> = {
             },
             data: {
                 type: 'object',
-                required: ['from', 'subject', 'text_body', 'html_body'],
+                required: ['from', 'subject', 'text', 'html'],
                 properties: {
                     from: { type: 'string' },
                     cc: {
@@ -48,8 +51,8 @@ const templateParams: JSONSchemaType<TemplateParams> = {
                         nullable: true,
                     },
                     subject: { type: 'string' },
-                    text_body: { type: 'string' },
-                    html_body: { type: 'string' },
+                    text: { type: 'string' },
+                    html: { type: 'string' },
                 },
             } as any,
         },
@@ -68,9 +71,8 @@ const templateParams: JSONSchemaType<TemplateParams> = {
             },
             data: {
                 type: 'object',
-                required: ['from', 'text'],
+                required: ['text'],
                 properties: {
-                    from: { type: 'string' },
                     text: { type: 'string' },
                 },
             } as any,
@@ -129,9 +131,15 @@ router.patch('/:templateId', async ctx => {
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
 })
 
-router.get('/:templateId/preview', async ctx => {
+router.post('/:templateId/preview', async ctx => {
+    const payload = ctx.request.body as Variables
     const template = ctx.state.template!.map()
-    ctx.body = renderTemplate(template)
+
+    ctx.body = template.compile({
+        user: User.fromJson({ ...payload.user, data: payload.user }),
+        event: UserEvent.fromJson(payload.event || {}),
+        context: payload.context || {},
+    })
 })
 
 export default router
