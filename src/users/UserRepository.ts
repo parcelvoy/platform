@@ -1,4 +1,5 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
+import { SearchParams } from '../core/searchParams'
 import { Device, DeviceParams, User } from '../users/User'
 
 export const getUser = async (id: number): Promise<User | undefined> => {
@@ -22,6 +23,14 @@ export const getUserFromPhone = async (projectId: number, phone: string): Promis
     return await User.first(
         qb => qb.where('phone', phone)
             .where('project_id', projectId),
+    )
+}
+
+export const pagedUsers = async (params: SearchParams, projectId: number) => {
+    return await User.searchParams(
+        params,
+        ['email', 'phone'],
+        b => b.where({ project_id: projectId }),
     )
 }
 

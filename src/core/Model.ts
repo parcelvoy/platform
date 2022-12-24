@@ -201,7 +201,7 @@ export default class Model {
 
     static async insert<T extends typeof Model>(
         this: T,
-        data: Partial<InstanceType<T>> = {},
+        data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)

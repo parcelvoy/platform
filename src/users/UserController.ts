@@ -5,9 +5,17 @@ import UserDeleteJob from './UserDeleteJob'
 import UserPatchJob from './UserPatchJob'
 import { JSONSchemaType, validate } from '../core/validate'
 import { UserParams } from './User'
+import { extractQueryParams } from '../utilities'
+import { searchParamsSchema } from '../core/searchParams'
+import { pagedUsers } from './UserRepository'
 
 const router = new Router<ProjectState>({
     prefix: '/users',
+})
+
+router.get('/', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedUsers(params, ctx.state.project.id)
 })
 
 const patchUsersRequest: JSONSchemaType<UserParams[]> = {

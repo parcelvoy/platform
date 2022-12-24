@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListParams } from './List'
-import { createList, getList, pagedLists } from './ListService'
+import { createList, getList, getListUsers, pagedLists } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 
@@ -44,7 +44,7 @@ const listParams: JSONSchemaType<ListParams> = {
                 },
             },
             additionalProperties: false,
-        },
+        } as any,
     },
     properties: {
         name: {
@@ -80,6 +80,11 @@ router.get('/:listId', async ctx => {
 router.patch('/:listId', async ctx => {
     const payload = validate(listParams, ctx.request.body)
     ctx.body = await List.updateAndFetch(ctx.state.list!.id, payload)
+})
+
+router.get('/:listId/users', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await getListUsers(ctx.state.list!.id, params, ctx.state.project.id)
 })
 
 export default router
