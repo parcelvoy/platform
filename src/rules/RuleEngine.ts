@@ -52,9 +52,9 @@ ruleRegistry.register('date', DateRule)
 ruleRegistry.register('array', ArrayRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
-export const check = (value: RuleCheckInput, rules: Rule[]) => {
-    const baseRule = make({ type: 'wrapper', operator: 'and', children: rules })
-    return ruleRegistry.get('wrapper').check(value, baseRule, ruleRegistry)
+export const check = (value: RuleCheckInput, rule: Rule) => {
+    return ruleRegistry.get('wrapper')
+        .check(value, rule, ruleRegistry)
 }
 
 export const query = (rule: Rule) => {

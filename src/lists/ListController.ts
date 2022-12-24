@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListParams } from './List'
-import { createList, getList, getListUsers, pagedLists } from './ListService'
+import { createList, getList, getListUsers, pagedLists, updateList } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 
@@ -20,7 +20,7 @@ router.get('/', async ctx => {
 const listParams: JSONSchemaType<ListParams> = {
     $id: 'listParams',
     type: 'object',
-    required: ['name', 'rules'],
+    required: ['name', 'rule'],
     definitions: {
         rule: {
             type: 'object',
@@ -50,11 +50,11 @@ const listParams: JSONSchemaType<ListParams> = {
         name: {
             type: 'string',
         },
-        rules: {
-            type: 'array',
-            minItems: 1,
-            items: ({ $ref: '#/definitions/rule' } as any),
+        type: {
+            type: 'string',
+            enum: ['static', 'dynamic'],
         },
+        rule: ({ $ref: '#/definitions/rule' } as any),
     },
     additionalProperties: false,
 }
@@ -79,7 +79,7 @@ router.get('/:listId', async ctx => {
 
 router.patch('/:listId', async ctx => {
     const payload = validate(listParams, ctx.request.body)
-    ctx.body = await List.updateAndFetch(ctx.state.list!.id, payload)
+    ctx.body = updateList(ctx.state.list!.id, payload)
 })
 
 router.get('/:listId/users', async ctx => {

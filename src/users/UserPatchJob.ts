@@ -1,8 +1,8 @@
 import { User, UserParams } from './User'
 import { Job } from '../queue'
 import { getUserFromClientId } from './UserRepository'
-import { updateLists } from '../lists/ListService'
-import { updateUserJourneys } from '../journey/JourneyService'
+import { updateUsersLists } from '../lists/ListService'
+import { updateUsersJourneys } from '../journey/JourneyService'
 
 interface UserPatchTrigger {
     project_id: number
@@ -18,12 +18,8 @@ export default class UserPatchJob extends Job {
 
     static async handler({ project_id, user: { external_id, anonymous_id, data, ...fields } }: UserPatchTrigger) {
 
-        console.log('looking for existing', external_id, anonymous_id)
-
         // Check for existing user
         const existing = await getUserFromClientId(project_id, { external_id, anonymous_id })
-
-        console.log('found existing', existing)
 
         // If user, update otherwise insert
         const user = existing
@@ -40,9 +36,9 @@ export default class UserPatchJob extends Job {
             })
 
         // Use updated user to check for list membership
-        await updateLists(user)
+        await updateUsersLists(user)
 
         // Check all journeys to update progress
-        await updateUserJourneys(user)
+        await updateUsersJourneys(user)
     }
 }

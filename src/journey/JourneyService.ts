@@ -12,7 +12,7 @@ import List from '../lists/List'
  * @param user The user to look up journeys for
  * @param event An event that will be passed in to update journeys
  */
-export const updateUserJourneys = async (user: User, event?: UserEvent) => {
+export const updateUsersJourneys = async (user: User, event?: UserEvent) => {
     const journeys = await getUserJourneyIds(user.id)
     for (const journeyId of journeys) {
         const service = new JourneyService(journeyId)

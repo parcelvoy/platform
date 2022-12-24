@@ -10,20 +10,26 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
 import TemplateSnapshotJob from '../render/TemplateSnapshotJob'
 import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
+import ListPopulateJob from '../lists/ListPopulateJob'
+import ListStatsJob from '../lists/ListStatsJob'
+import ProcessListsJob from '../lists/ProcessListsJob'
 
 export type Queues = Record<number, Queue>
 
 export const loadJobs = (queue: Queue) => {
+    queue.register(CampaignTriggerJob)
     queue.register(EmailJob)
-    queue.register(TextJob)
-    queue.register(WebhookJob)
-    queue.register(UserPatchJob)
-    queue.register(UserDeleteJob)
     queue.register(EventPostJob)
     queue.register(JourneyProcessJob)
     queue.register(JourneyDelayJob)
-    queue.register(CampaignTriggerJob)
+    queue.register(ListPopulateJob)
+    queue.register(ListStatsJob)
+    queue.register(ProcessListsJob)
     queue.register(TemplateSnapshotJob)
+    queue.register(TextJob)
+    queue.register(UserPatchJob)
+    queue.register(UserDeleteJob)
+    queue.register(WebhookJob)
 }
 
 export default (config: QueueConfig) => {

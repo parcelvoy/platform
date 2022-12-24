@@ -1,9 +1,9 @@
 import { createEvent } from '../users/UserEventRepository'
 import { getUserFromClientId } from '../users/UserRepository'
-import { updateLists } from '../lists/ListService'
+import { updateUsersLists } from '../lists/ListService'
 import { ClientPostEvent } from './Client'
 import { Job } from '../queue'
-import { updateUserJourneys } from '../journey/JourneyService'
+import { updateUsersJourneys } from '../journey/JourneyService'
 import { logger } from '../config/logger'
 
 interface EventPostTrigger {
@@ -35,9 +35,9 @@ export default class EventPostJob extends Job {
         })
 
         // Check to see if a user has any lists
-        await updateLists(user, dbEvent)
+        await updateUsersLists(user, dbEvent)
 
         // Check all journeys to update progress
-        await updateUserJourneys(user, dbEvent)
+        await updateUsersJourneys(user, dbEvent)
     }
 }
