@@ -115,7 +115,9 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<number> {
-        return await query(this.table(db)).count('id as C').then(r => r[0].C || 0)
+        return await query(this.table(db))
+            .count(`${this.tableName}.id as C`)
+            .then(r => r[0].C || 0)
     }
 
     static async search<T extends typeof Model>(
