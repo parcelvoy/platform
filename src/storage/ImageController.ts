@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
-import parse, { ImageMetadata } from './ImageStream'
+import parse, { FileMetadata } from './FileStream'
 import { allImages, getImage, updateImage, uploadImage } from './ImageService'
 import Image, { ImageParams } from './Image'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -11,7 +11,7 @@ const router = new Router<
     prefix: '/images',
 })
 
-const uploadMetadata: JSONSchemaType<ImageMetadata> = {
+const uploadMetadata: JSONSchemaType<FileMetadata> = {
     $id: 'uploadMetadata',
     type: 'object',
     required: ['fieldName', 'fileName', 'mimeType'],

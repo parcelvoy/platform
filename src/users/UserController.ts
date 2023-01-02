@@ -28,39 +28,58 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
     $id: 'patchUsers',
     type: 'array',
     items: {
-        type: 'object',
-        required: [],
-        properties: {
-            anonymous_id: {
-                type: 'string',
-                nullable: true,
-            },
-            external_id: {
-                type: 'string',
-                nullable: true,
-            },
-            email: {
-                type: 'string',
-                nullable: true,
-            },
-            phone: {
-                type: 'string',
-                nullable: true,
-            },
-            data: {
-                type: 'object',
-                nullable: true,
-                additionalProperties: true,
+        anyOf: [{
+            type: 'object',
+            required: ['anonymous_id'],
+            properties: {
+                anonymous_id: {
+                    type: 'string',
+                },
+                external_id: {
+                    type: 'string',
+                    nullable: true,
+                },
+                email: {
+                    type: 'string',
+                    nullable: true,
+                },
+                phone: {
+                    type: 'string',
+                    nullable: true,
+                },
+                data: {
+                    type: 'object',
+                    nullable: true,
+                    additionalProperties: true,
+                },
             },
         },
-        anyOf: [
-            {
-                required: ['anonymous_id'],
+        {
+            type: 'object',
+            required: ['external_id'],
+            properties: {
+                anonymous_id: {
+                    type: 'string',
+                    nullable: true,
+                },
+                external_id: {
+                    type: 'string',
+                },
+                email: {
+                    type: 'string',
+                    nullable: true,
+                },
+                phone: {
+                    type: 'string',
+                    nullable: true,
+                },
+                data: {
+                    type: 'object',
+                    nullable: true,
+                    additionalProperties: true,
+                },
             },
-            {
-                required: ['external_id'],
-            },
-        ],
+        }],
     },
     minItems: 1,
 }

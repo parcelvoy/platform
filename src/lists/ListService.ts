@@ -30,7 +30,8 @@ export const getListUsers = async (id: number, params: SearchParams, projectId: 
         ['email', 'phone'],
         b => b.rightJoin('user_list', 'user_list.user_id', 'users.id')
             .where('project_id', projectId)
-            .where('list_id', id),
+            .where('list_id', id)
+            .select('users.*'),
     )
 }
 
@@ -74,11 +75,14 @@ export const updateList = async (id: number, params: Partial<List>): Promise<Lis
 export const addUserToList = async (user: User | number, list: List | number, event?: UserEvent) => {
     const userId = user instanceof User ? user.id : user
     const listId = list instanceof List ? list.id : list
-    return await UserList.insert({
-        user_id: userId,
-        list_id: listId,
-        event_id: event?.id ?? undefined,
-    })
+    return await UserList.query()
+        .insert({
+            user_id: userId,
+            list_id: listId,
+            event_id: event?.id ?? undefined,
+        })
+        .onConflict(['user_id', 'list_id'])
+        .ignore()
 }
 
 export const populateList = async (id: number, rule: Rule) => {

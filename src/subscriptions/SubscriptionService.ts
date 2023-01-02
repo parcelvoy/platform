@@ -38,7 +38,7 @@ export const allSubscriptions = async (projectId: number, channels?: ChannelType
     return await Subscription.all(
         qb => {
             if (channels) {
-                qb.whereIn('channels', channels)
+                qb.whereIn('channel', channels)
             }
             return qb.where('project_id', projectId)
         },

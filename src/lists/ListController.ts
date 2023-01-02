@@ -5,6 +5,8 @@ import List, { ListCreateParams, ListUpdateParams } from './List'
 import { createList, getList, getListUsers, pagedLists, updateList } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
+import parse from '../storage/FileStream'
+import { importUsers } from '../users/UserImport'
 
 const router = new Router<
     ProjectState & { list?: List }
@@ -119,6 +121,18 @@ router.patch('/:listId', async ctx => {
 router.get('/:listId/users', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await getListUsers(ctx.state.list!.id, params, ctx.state.project.id)
+})
+
+router.post('/:listId/users', async ctx => {
+    const stream = await parse(ctx)
+
+    await importUsers({
+        project_id: ctx.state.project.id,
+        list_id: ctx.state.list!.id,
+        stream,
+    })
+
+    ctx.status = 204
 })
 
 export default router

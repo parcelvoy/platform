@@ -63,10 +63,11 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
 
 export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {
 
-    const user = await getUserFromClientId(projectId, { external_id, anonymous_id })
+    const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity)
     if (!user) return
 
-    const device = user.devices.find(
+    if (!user.devices) user.devices = []
+    const device = user.devices?.find(
         device => device.device_id === params.device_id,
     )
     if (device) {
@@ -84,7 +85,7 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
 export const disableNotifications = async (userId: number, tokens: string[]): Promise<boolean> => {
     const user = await User.find(userId)
     if (!user) return false
-    const device = user.devices.find(device => device.token && tokens.includes(device.token))
+    const device = user.devices?.find(device => device.token && tokens.includes(device.token))
     if (device) device.notifications_enabled = false
     await User.update(qb => qb.where('id', userId), {
         devices: user.devices,

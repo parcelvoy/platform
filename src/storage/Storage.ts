@@ -1,5 +1,5 @@
 import { DriverConfig } from '../config/env'
-import { ImageStream } from './ImageStream'
+import { FileStream } from './FileStream'
 import Image from './Image'
 import { S3Config, S3StorageProvider } from './S3StorageProvider'
 import { ImageUploadTask, StorageProvider, StorageProviderName } from './StorageProvider'
@@ -29,7 +29,7 @@ export default class Storage {
         }
     }
 
-    async save(image: ImageStream): Promise<Partial<Image>> {
+    async save(image: FileStream): Promise<Partial<Image>> {
         const key = uuid()
         const originalPath = path.parse(image.metadata.fileName)
         const extension = originalPath.ext

@@ -40,7 +40,7 @@ export class User extends Model {
     external_id!: string
     email?: string
     phone?: string
-    devices!: Device[]
+    devices?: Device[]
     data!: Record<string, any> // first_name, last_name live in data
     attributes!: UserAttribute[] // ???
 
@@ -56,7 +56,7 @@ export class User extends Model {
     }
 
     get pushEnabledDevices(): PushEnabledDevice[] {
-        return this.devices.filter(device => device.isPushEnabled) as PushEnabledDevice[]
+        return this.devices?.filter(device => device.isPushEnabled) as PushEnabledDevice[]
     }
 }
 
