@@ -13,6 +13,7 @@ import TemplateController from '../render/TemplateController'
 import UserController from '../users/UserController'
 import ProfileController from '../profile/ProfileController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
+import ProjectAdminController from '../projects/ProjectAdminController'
 
 const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
@@ -72,6 +73,7 @@ export const projectRouter = (prefix = '/projects/:project') => {
         ImageController,
         TemplateController,
         ProviderController,
+        ProjectAdminController,
         UserController,
     )
 }

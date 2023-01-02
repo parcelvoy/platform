@@ -1,7 +1,7 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import { check, query as ruleQuery } from '../rules/RuleEngine'
-import List, { ListParams, UserList } from './List'
+import List, { ListCreateParams, UserList } from './List'
 import Rule from '../rules/Rule'
 import { enterJourneyFromList } from '../journey/JourneyService'
 import { SearchParams } from '../core/searchParams'
@@ -34,15 +34,27 @@ export const getListUsers = async (id: number, params: SearchParams, projectId: 
     )
 }
 
-export const createList = async (projectId: number, params: ListParams): Promise<List> => {
+export const getUserLists = async (id: number, params: SearchParams, projectId: number) => {
+    return await List.searchParams(
+        params,
+        [],
+        b => b.rightJoin('user_list', 'user_list.list_id', 'lists.id')
+            .where('project_id', projectId)
+            .where('user_id', id),
+    )
+}
+
+export const createList = async (projectId: number, params: ListCreateParams): Promise<List> => {
     const list = await List.insertAndFetch({
         ...params,
         project_id: projectId,
     })
 
-    App.main.queue.enqueue(
-        ListPopulateJob.from(list.id, list.project_id),
-    )
+    if (list.type === 'dynamic') {
+        App.main.queue.enqueue(
+            ListPopulateJob.from(list.id, list.project_id),
+        )
+    }
 
     return list
 }
@@ -113,6 +125,8 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
     const existingLists = await getUsersListIds(user.id)
 
     for (const list of lists) {
+
+        if (!list.rule) continue
 
         // Check to see if user condition matches list requirements
         const result = check({

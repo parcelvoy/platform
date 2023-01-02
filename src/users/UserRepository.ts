@@ -1,12 +1,18 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { SearchParams } from '../core/searchParams'
-import { Device, DeviceParams, User } from '../users/User'
+import { subscribeAll } from '../subscriptions/SubscriptionService'
+import { Device, DeviceParams, User, UserParams } from '../users/User'
 
-export const getUser = async (id: number): Promise<User | undefined> => {
-    return await User.find(id)
+export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
+    return await User.find(id, qb => {
+        if (projectId) {
+            qb.where('project_id', projectId)
+        }
+        return qb
+    })
 }
 
-export const getUserFromClientId = async (projectId: number, identity: Partial<ClientIdentity>): Promise<User | undefined> => {
+export const getUserFromClientId = async (projectId: number, identity: ClientIdentity): Promise<User | undefined> => {
     return await User.first(
         qb => qb.where(sqb => {
             if (identity.external_id) {
@@ -38,6 +44,21 @@ export const aliasUser = async (projectId: number, alias: ClientAliasParams): Pr
     const user = await getUserFromClientId(projectId, alias)
     if (!user) return
     return await User.updateAndFetch(user.id, { external_id: alias.external_id })
+}
+
+export const createUser = async (projectId: number, { external_id, anonymous_id, data, ...fields }: UserParams) => {
+    const user = await User.insertAndFetch({
+        project_id: projectId,
+        anonymous_id,
+        external_id,
+        data: data ?? {},
+        ...fields,
+    })
+
+    // Subscribe the user to all channels the user has available
+    await subscribeAll(user)
+
+    return user
 }
 
 export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {

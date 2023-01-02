@@ -1,5 +1,6 @@
 import App from '../app'
 import { Job } from '../queue'
+import { DynamicList } from './List'
 import { getList, populateList } from './ListService'
 import ListStatsJob from './ListStatsJob'
 
@@ -17,7 +18,7 @@ export default class ListPopulateJob extends Job {
 
     static async handler({ listId, projectId }: ListPopulateParams) {
 
-        const list = await getList(listId, projectId)
+        const list = await getList(listId, projectId) as DynamicList
         if (!list) return
 
         await populateList(list.id, list.rule)

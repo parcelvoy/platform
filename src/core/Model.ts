@@ -7,7 +7,7 @@ export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
-type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
 
 export interface Page<T, B = number> {
     results: T[]
@@ -116,6 +116,8 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<number> {
         return await query(this.table(db))
+            .clone()
+            .clearSelect()
             .count(`${this.tableName}.id as C`)
             .then(r => r[0].C || 0)
     }
