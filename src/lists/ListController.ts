@@ -2,11 +2,10 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListCreateParams, ListUpdateParams } from './List'
-import { createList, getList, getListUsers, pagedLists, updateList } from './ListService'
+import { createList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
-import { importUsers } from '../users/UserImport'
 
 const router = new Router<
     ProjectState & { list?: List }
@@ -126,11 +125,7 @@ router.get('/:listId/users', async ctx => {
 router.post('/:listId/users', async ctx => {
     const stream = await parse(ctx)
 
-    await importUsers({
-        project_id: ctx.state.project.id,
-        list_id: ctx.state.list!.id,
-        stream,
-    })
+    await importUsersToList(ctx.state.list!, stream)
 
     ctx.status = 204
 })

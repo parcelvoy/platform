@@ -7,6 +7,8 @@ import { enterJourneyFromList } from '../journey/JourneyService'
 import { SearchParams } from '../core/searchParams'
 import App from '../app'
 import ListPopulateJob from './ListPopulateJob'
+import { importUsers } from '../users/UserImport'
+import { FileStream } from '../storage/FileStream'
 
 export const pagedLists = async (params: SearchParams, projectId: number) => {
     return await List.searchParams(
@@ -83,6 +85,18 @@ export const addUserToList = async (user: User | number, list: List | number, ev
         })
         .onConflict(['user_id', 'list_id'])
         .ignore()
+}
+
+export const importUsersToList = async (list: List, stream: FileStream) => {
+    await updateList(list.id, { state: 'loading' })
+
+    await importUsers({
+        project_id: list.project_id,
+        list_id: list!.id,
+        stream,
+    })
+
+    await updateList(list.id, { state: 'ready' })
 }
 
 export const populateList = async (id: number, rule: Rule) => {

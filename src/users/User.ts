@@ -45,6 +45,7 @@ export class User extends Model {
     attributes!: UserAttribute[] // ???
 
     static jsonAttributes = ['data', 'devices']
+    static virtualAttributes = ['firstName', 'lastName', 'fullName']
 
     flatten(): TemplateUser {
         return {
@@ -57,6 +58,25 @@ export class User extends Model {
 
     get pushEnabledDevices(): PushEnabledDevice[] {
         return this.devices?.filter(device => device.isPushEnabled) as PushEnabledDevice[]
+    }
+
+    get fullName() {
+        const parts = []
+        if (this.firstName) {
+            parts.push(this.firstName)
+        }
+        if (this.lastName) {
+            parts.push(this.lastName)
+        }
+        return parts.join(' ') || null
+    }
+
+    get firstName() {
+        return this.data.first_name ?? this.data.firstName ?? this.data.name
+    }
+
+    get lastName() {
+        return this.data.last_name ?? this.data.lastName
     }
 }
 
