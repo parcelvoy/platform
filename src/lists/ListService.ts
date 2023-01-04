@@ -43,7 +43,8 @@ export const getUserLists = async (id: number, params: SearchParams, projectId: 
         [],
         b => b.rightJoin('user_list', 'user_list.list_id', 'lists.id')
             .where('project_id', projectId)
-            .where('user_id', id),
+            .where('user_id', id)
+            .select('lists.*'),
     )
 }
 
