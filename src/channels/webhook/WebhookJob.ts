@@ -6,6 +6,7 @@ import { UserEvent } from '../../users/UserEvent'
 import { createEvent } from '../../users/UserEventRepository'
 import { loadChannel } from '../../config/channels'
 import Campaign from '../../campaigns/Campaign'
+import { updateSendState } from '../../campaigns/CampaignService'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'
@@ -32,6 +33,9 @@ export default class WebhookJob extends Job {
         // Send and render webhook
         const channel = await loadChannel(user.project_id, 'webhook')
         await channel.send(template, { user, event, context })
+
+        // Update send record
+        await updateSendState(campaign, user)
 
         // Create an event on the user about the email
         createEvent({

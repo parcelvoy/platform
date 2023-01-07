@@ -8,6 +8,7 @@ import { loadChannel } from '../../config/channels'
 import Campaign from '../../campaigns/Campaign'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
+import { updateSendState } from '../../campaigns/CampaignService'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -37,6 +38,9 @@ export default class PushJob extends Job {
             const channel = await loadChannel(user.project_id, 'push')
             await channel.send(template, { user, event, context })
 
+            // Update send record
+            await updateSendState(campaign, user)
+
             // Create an event on the user about the push
             await createEvent({
                 project_id: user.project_id,
@@ -51,6 +55,9 @@ export default class PushJob extends Job {
                 // If the push is unable to send, find invalidated tokens
                 // and disable those devices
                 await disableNotifications(user.id, error.invalidTokens)
+
+                // Update send record
+                await updateSendState(campaign, user, 'failed')
 
                 // Create an event about the disabling
                 await createEvent({

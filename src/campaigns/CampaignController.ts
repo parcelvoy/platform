@@ -57,7 +57,7 @@ router.param('campaignId', async (value, ctx, next) => {
 })
 
 router.get('/:campaignId', async ctx => {
-    ctx.body = ctx.state.campaign
+    ctx.body = ctx.state.campaign!
 })
 
 const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
