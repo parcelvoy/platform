@@ -41,6 +41,13 @@ export default class Model {
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
+
+        // Remove any value that could conflict with a virtual key
+        for (const attribute of this.virtualAttributes) {
+            delete (json as any)[attribute]
+        }
+
+        // Parse values into the model
         model.parseJson(json)
         return model as InstanceType<T>
     }
