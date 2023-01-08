@@ -33,6 +33,10 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
         template_id: {
             type: 'integer',
         },
+        send_in_user_timezone: {
+            type: 'boolean',
+            nullable: true,
+        },
         send_at: {
             type: 'string',
             format: 'date-time',
@@ -78,6 +82,10 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
         },
         template_id: {
             type: 'integer',
+            nullable: true,
+        },
+        send_in_user_timezone: {
+            type: 'boolean',
             nullable: true,
         },
         send_at: {

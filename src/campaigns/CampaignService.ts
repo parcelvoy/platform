@@ -89,9 +89,10 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
     await App.main.queue.enqueue(channels[campaign.channel])
 }
 
-export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState) => {
+export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState = 'sent') => {
     const userId = user instanceof User ? user.id : user
     const campaignId = campaign instanceof Campaign ? campaign.id : campaign
+
     return await CampaignSend.query()
         .insert({
             user_id: userId,
@@ -139,7 +140,9 @@ export const sendList = async (campaign: SentCampaign) => {
                     user_id: id,
                     campaign_id: campaign.id,
                     state: 'pending',
-                    send_at: utcToZonedTime(campaign.send_at, timezone),
+                    send_at: campaign.send_in_user_timezone
+                        ? utcToZonedTime(campaign.send_at, timezone)
+                        : campaign.send_at,
                 })
                 i++
                 if (i % chunkSize === 0) {

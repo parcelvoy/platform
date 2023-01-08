@@ -22,9 +22,8 @@ export default class Campaign extends Model {
     state!: CampaignState
     delivery!: CampaignDelivery
 
-    send_in_user_timezone!: boolean
+    send_in_user_timezone?: boolean
     send_at?: string | Date
-    send_finished_at?: string | Date
 
     static jsonAttributes = ['delivery']
     static virtualAttributes = ['screenshotUrl']
@@ -38,11 +37,11 @@ export type SentCampaign = Campaign & { send_at: Date }
 
 export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery' | 'screenshotUrl' | 'template' | 'list'>
 
-export type CampaignSendStatus = 'pending' | 'sent' | 'failed'
+export type CampaignSendState = 'pending' | 'sent' | 'failed'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number
-    state!: CampaignSendStatus
+    state!: CampaignSendState
     send_at!: string | Date
 }
 
