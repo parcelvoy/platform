@@ -7,6 +7,7 @@ import { MessageTrigger } from '../MessageTrigger'
 import { loadChannel } from '../../config/channels'
 import Campaign from '../../campaigns/Campaign'
 import { updateSendState } from '../../campaigns/CampaignService'
+import Project from '../../projects/Project'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -21,10 +22,17 @@ export default class EmailJob extends Job {
         const user = await User.find(user_id)
         const event = await UserEvent.find(event_id)
         const campaign = await Campaign.find(campaign_id)
-        const template = await EmailTemplate.find(campaign?.template_id)
+        const project = await Project.find(campaign?.project_id)
 
-        // If user or template has been deleted since, abort
-        if (!user || !template || !campaign) return
+        // If user or campaign has been deleted since, abort
+        if (!user || !campaign || !project) return
+
+        const template = await EmailTemplate.first(
+            qb => qb.where('campaign_id', campaign.id).where('locale', user.locale),
+        )
+
+        // If not available template, abort
+        if (!template) return
 
         const context = {
             campaign_id: campaign?.id,

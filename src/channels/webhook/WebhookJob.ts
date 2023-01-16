@@ -7,6 +7,7 @@ import { createEvent } from '../../users/UserEventRepository'
 import { loadChannel } from '../../config/channels'
 import Campaign from '../../campaigns/Campaign'
 import { updateSendState } from '../../campaigns/CampaignService'
+import Project from '../../projects/Project'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'
@@ -16,14 +17,22 @@ export default class WebhookJob extends Job {
     }
 
     static async handler({ campaign_id, user_id, event_id }: MessageTrigger) {
+
         // Pull user & event details
         const user = await User.find(user_id)
         const event = await UserEvent.find(event_id)
         const campaign = await Campaign.find(campaign_id)
-        const template = await WebhookTemplate.find(campaign?.id)
+        const project = await Project.find(campaign?.project_id)
 
-        // If user or template has been deleted since, abort
-        if (!user || !template || !campaign) return
+        // If user or campaign has been deleted since, abort
+        if (!user || !campaign || !project) return
+
+        const template = await WebhookTemplate.first(
+            qb => qb.where('campaign_id', campaign.id).where('locale', user.locale),
+        )
+
+        // If not available template, abort
+        if (!template) return
 
         const context = {
             campaign_id: campaign?.id,

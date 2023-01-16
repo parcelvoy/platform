@@ -11,7 +11,7 @@ import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
 import { getList, listUserCount } from '../lists/ListService'
-import { getTemplate } from '../render/TemplateService'
+import { allTemplates } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
@@ -30,7 +30,7 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
     const campaign = await Campaign.find(id, qb => qb.where('project_id', projectId))
 
     if (campaign) {
-        campaign.template = await getTemplate(campaign.template_id, projectId)
+        campaign.templates = await allTemplates(projectId, campaign.id)
         campaign.list = campaign.list_id ? await getList(campaign.list_id, projectId) : undefined
     }
 
@@ -59,6 +59,17 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
 
 export const updateCampaign = async (id: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
     return await Campaign.updateAndFetch(id, params)
+}
+
+export const getCampaignUsers = async (id: number, params: SearchParams, projectId: number) => {
+    return await User.searchParams(
+        params,
+        ['email', 'phone'],
+        b => b.rightJoin('campaign_sends', 'campaign_sends.user_id', 'users.id')
+            .where('project_id', projectId)
+            .where('campaign_id', id)
+            .select('users.*', 'state', 'send_at'),
+    )
 }
 
 type SendCampaign = {

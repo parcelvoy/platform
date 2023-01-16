@@ -2,18 +2,18 @@ import Render, { Variables } from '.'
 import { Webhook } from '../channels/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
-import { templateScreenshotUrl } from './TemplateService'
 
 export default class Template extends Model {
     project_id!: number
+    campaign_id!: number
     name!: string
     type!: ChannelType
     data!: Record<string, any>
+    locale!: string
 
     static tableName = 'templates'
 
     static jsonAttributes = ['data']
-    static virtualAttributes = ['screenshotUrl']
 
     map(): TemplateType {
         const json = this as any
@@ -25,10 +25,6 @@ export default class Template extends Model {
             return PushTemplate.fromJson(json)
         }
         return WebhookTemplate.fromJson(json)
-    }
-
-    get screenshotUrl() {
-        return templateScreenshotUrl(this.id)
     }
 }
 

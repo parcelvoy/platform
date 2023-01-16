@@ -42,6 +42,10 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             type: 'string',
             nullable: true,
         },
+        locale: {
+            type: 'string',
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }
@@ -72,6 +76,10 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
             nullable: true,
         },
         description: {
+            type: 'string',
+            nullable: true,
+        },
+        locale: {
             type: 'string',
             nullable: true,
         },

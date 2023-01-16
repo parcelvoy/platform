@@ -24,6 +24,19 @@ exports.up = function(knex) {
             table.boolean('send_in_user_timezone')
                 .defaultTo(0)
                 .after('send_at')
+            table.dropColumn('template_id')
+        })
+        .table('projects', function(table) {
+            table.string('locale', 50)
+        })
+        .table('templates', function(table) {
+            table.string('locale', 50)
+            table.integer('campaign_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('campaigns')
+                .onDelete('CASCADE')
         })
 }
 
@@ -32,5 +45,18 @@ exports.down = function(knex) {
         .dropTable('campaign_sends')
         .table('campaigns', function(table) {
             table.dropColumn('send_in_user_timezone')
+            table.integer('template_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('templates')
+                .onDelete('CASCADE')
+        })
+        .table('projects', function(table) {
+            table.dropColumn('locale')
+        })
+        .table('templates', function(table) {
+            table.dropColumn('locale')
+            table.dropColumn('campaign_id')
         })
 }

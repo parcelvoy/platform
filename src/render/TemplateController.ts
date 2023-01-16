@@ -24,14 +24,17 @@ const templateParams: JSONSchemaType<TemplateParams> = {
     $id: 'templateParams',
     oneOf: [{
         type: 'object',
-        required: ['name', 'type', 'data'],
+        required: ['type', 'campaign_id', 'locale', 'data'],
         properties: {
-            name: {
-                type: 'string',
-            },
             type: {
                 type: 'string',
                 enum: ['email'],
+            },
+            campaign_id: {
+                type: 'integer',
+            },
+            locale: {
+                type: 'string',
             },
             data: {
                 type: 'object',
@@ -60,14 +63,17 @@ const templateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['name', 'type', 'data'],
+        required: ['type', 'campaign_id', 'locale', 'data'],
         properties: {
-            name: {
-                type: 'string',
-            },
             type: {
                 type: 'string',
                 enum: ['text'],
+            },
+            campaign_id: {
+                type: 'integer',
+            },
+            locale: {
+                type: 'string',
             },
             data: {
                 type: 'object',
@@ -81,14 +87,17 @@ const templateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['name', 'type', 'data'],
+        required: ['type', 'campaign_id', 'locale', 'data'],
         properties: {
-            name: {
-                type: 'string',
-            },
             type: {
                 type: 'string',
                 enum: ['push'],
+            },
+            campaign_id: {
+                type: 'integer',
+            },
+            locale: {
+                type: 'string',
             },
             data: {
                 type: 'object',

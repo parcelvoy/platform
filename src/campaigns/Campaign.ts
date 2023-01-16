@@ -2,7 +2,6 @@ import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
-import { templateScreenshotUrl } from '../render/TemplateService'
 
 type CampaignState = 'ready' | 'running' | 'finished' | 'aborted'
 interface CampaignDelivery {
@@ -17,8 +16,8 @@ export default class Campaign extends Model {
     list?: List
     channel!: ChannelType
     subscription_id!: number
-    template_id!: number
-    template?: Template
+    provider_id!: number
+    templates!: Template[]
     state!: CampaignState
     delivery!: CampaignDelivery
 
@@ -26,16 +25,11 @@ export default class Campaign extends Model {
     send_at?: string | Date
 
     static jsonAttributes = ['delivery']
-    static virtualAttributes = ['screenshotUrl']
-
-    get screenshotUrl() {
-        return templateScreenshotUrl(this.template_id)
-    }
 }
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery' | 'screenshotUrl' | 'template' | 'list'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list'>
 
 export type CampaignSendState = 'pending' | 'sent' | 'failed'
 export class CampaignSend extends Model {

@@ -9,13 +9,18 @@ import { prune } from '../utilities'
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
         params,
-        ['name'],
+        [],
         b => b.where({ project_id: projectId }),
     )
 }
 
-export const allTemplates = async (projectId: number): Promise<Template[]> => {
-    return await Template.all(qb => qb.where('project_id', projectId))
+export const allTemplates = async (projectId: number, campaignId?: number): Promise<Template[]> => {
+    return await Template.all(qb => {
+        if (campaignId) {
+            qb.where('campaign_id', campaignId)
+        }
+        return qb.where('project_id', projectId)
+    })
 }
 
 export const getTemplate = async (id: number, projectId: number) => {

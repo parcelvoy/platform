@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignParams } from './Campaign'
-import { createCampaign, getCampaign, pagedCampaigns, sendList, updateCampaign } from './CampaignService'
+import { createCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -18,20 +18,20 @@ router.get('/', async ctx => {
 export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
     $id: 'campaignCreate',
     type: 'object',
-    required: ['subscription_id', 'template_id'],
+    required: ['subscription_id', 'provider_id'],
     properties: {
         name: {
             type: 'string',
         },
-        list_id: {
-            type: 'integer',
-            nullable: true,
-        },
         subscription_id: {
             type: 'integer',
         },
-        template_id: {
+        provider_id: {
             type: 'integer',
+        },
+        list_id: {
+            type: 'integer',
+            nullable: true,
         },
         send_in_user_timezone: {
             type: 'boolean',
@@ -72,15 +72,15 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
             type: 'string',
             nullable: true,
         },
-        list_id: {
-            type: 'integer',
-            nullable: true,
-        },
         subscription_id: {
             type: 'integer',
             nullable: true,
         },
-        template_id: {
+        provider_id: {
+            type: 'integer',
+            nullable: true,
+        },
+        list_id: {
             type: 'integer',
             nullable: true,
         },
@@ -103,8 +103,13 @@ router.patch('/:campaignId', async ctx => {
 })
 
 router.post('/:campaignId/send', async ctx => {
-    await sendList(ctx.state.campaign!)
+    // await sendList(ctx.state.campaign!)
     ctx.status = 202
+})
+
+router.get('/:campaignId/users', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await getCampaignUsers(ctx.state.campaign!.id, params, ctx.state.project.id)
 })
 
 export default router
