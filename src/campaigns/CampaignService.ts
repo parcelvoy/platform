@@ -11,12 +11,17 @@ import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
 import { listUserCount } from '../lists/ListService'
+import { createTagSubquery } from '../tags/TagService'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
         params,
         ['name'],
-        b => b.where({ project_id: projectId }),
+        b => {
+            b.where({ project_id: projectId })
+            params?.tags?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tags))
+            return b
+        },
     )
 }
 

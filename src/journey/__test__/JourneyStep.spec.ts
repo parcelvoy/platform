@@ -13,7 +13,7 @@ describe('JourneyGate', () => {
 
     describe('user gate', () => {
         const createGate = async (rule: Rule) => {
-            return await JourneyGate.create('user', rule)
+            return await JourneyGate.create(rule)
         }
 
         test('condition passes with valid equals rule', async () => {

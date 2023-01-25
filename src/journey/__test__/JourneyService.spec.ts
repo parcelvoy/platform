@@ -26,7 +26,7 @@ describe('Run', () => {
                 US: 43,
                 ES: 34,
             }, journey.id)
-            await JourneyEntrance.create(list.id, step2.id, journey.id)
+            await JourneyEntrance.create(journey.id, list.id)
 
             const service = new JourneyService(journey.id)
 

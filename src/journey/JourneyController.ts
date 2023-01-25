@@ -3,9 +3,9 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
-import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
-import { createJourney, createJourneyStep, deleteJourney, deleteJourneyStep, getJourney, pagedJourneys, updateJourney, updateJourneyStep } from './JourneyRepository'
-import { JourneyStepParams } from './JourneyStep'
+import Journey, { JourneyParams } from './Journey'
+import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
+import { JourneyStepMap } from './JourneyStep'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -30,6 +30,50 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
             type: 'string',
             nullable: true,
         },
+        steps: {
+            type: 'object',
+            required: [],
+            additionalProperties: {
+                type: 'object',
+                required: ['type', 'x', 'y'],
+                properties: {
+                    type: {
+                        type: 'string',
+                        enum: ['entrance', 'delay', 'action', 'gate', 'map'],
+                    },
+                    data: {
+                        type: 'object', // TODO: Could validate further based on sub types
+                        nullable: true,
+                        additionalProperties: true,
+                    },
+                    x: {
+                        type: 'integer',
+                    },
+                    y: {
+                        type: 'integer',
+                    },
+                    children: {
+                        type: 'array',
+                        nullable: true,
+                        items: {
+                            type: 'object',
+                            required: ['uuid'],
+                            properties: {
+                                uuid: {
+                                    type: 'string',
+                                },
+                                data: {
+                                    type: 'object', // TODO: this is also specific to the parent node's type
+                                    nullable: true,
+                                    additionalProperties: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                additionalProperties: false,
+            },
+        },
     },
     additionalProperties: false,
 }
@@ -41,7 +85,7 @@ router.post('/', async ctx => {
 
 router.param('journeyId', async (value, ctx, next) => {
     ctx.state.journey = await getJourney(parseInt(value), ctx.state.project.id)
-    if (!ctx.state.list) {
+    if (!ctx.state.journey) {
         ctx.throw(404)
         return
     }
@@ -52,25 +96,8 @@ router.get('/:journeyId', async ctx => {
     ctx.body = ctx.state.journey
 })
 
-const updateJourneyParams: JSONSchemaType<UpdateJourneyParams> = {
-    $id: 'updateJourneyParams',
-    type: 'object',
-    required: ['name'],
-    properties: {
-        name: {
-            type: 'string',
-        },
-        description: {
-            type: 'string',
-            nullable: true,
-        },
-    },
-    additionalProperties: false,
-}
-
 router.patch('/:journeyId', async ctx => {
-    const payload = validate(updateJourneyParams, ctx.request.body)
-    ctx.body = await updateJourney(ctx.state.journey!.id, payload)
+    ctx.body = await updateJourney(ctx.state.journey!.id, validate(journeyParams, ctx.request.body))
 })
 
 router.delete('/:journeyId', async ctx => {
@@ -78,47 +105,58 @@ router.delete('/:journeyId', async ctx => {
     ctx.body = true
 })
 
-const journeyStepParams: JSONSchemaType<JourneyStepParams> = {
-    $id: 'journeyStepParams',
+const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
+    $id: 'journeyStepsParams',
     type: 'object',
-    required: ['type'],
-    properties: {
-        type: {
-            type: 'string',
-            enum: ['entrance', 'delay', 'action', 'gate', 'map'],
+    required: [],
+    additionalProperties: {
+        type: 'object',
+        required: ['type', 'x', 'y'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['entrance', 'delay', 'action', 'gate', 'map'],
+            },
+            data: {
+                type: 'object', // TODO: Could validate further based on sub types
+                nullable: true,
+                additionalProperties: true,
+            },
+            x: {
+                type: 'integer',
+            },
+            y: {
+                type: 'integer',
+            },
+            children: {
+                type: 'array',
+                nullable: true,
+                items: {
+                    type: 'object',
+                    required: ['uuid'],
+                    properties: {
+                        uuid: {
+                            type: 'string',
+                        },
+                        data: {
+                            type: 'object', // TODO: this is also specific to the parent node's type
+                            nullable: true,
+                            additionalProperties: true,
+                        },
+                    },
+                },
+            },
         },
-        child_id: {
-            type: 'integer',
-            nullable: true,
-        },
-        data: {
-            type: 'object', // TODO: Could validate further based on sub types
-            nullable: true,
-            additionalProperties: true,
-        },
-        x: {
-            type: 'integer',
-        },
-        y: {
-            type: 'integer',
-        },
+        additionalProperties: false,
     },
-    additionalProperties: false,
 }
 
-router.post('/:journeyId/steps', async ctx => {
-    const payload = validate(journeyStepParams, ctx.request.body)
-    ctx.body = await createJourneyStep(ctx.state.journey!.id, payload)
+router.get('/:journeyId/steps', async ctx => {
+    ctx.body = await getJourneyStepMap(ctx.state.journey!.id)
 })
 
-router.patch('/:journeyId/steps/:stepId', async ctx => {
-    const payload = validate(journeyStepParams, ctx.request.body)
-    ctx.body = await updateJourneyStep(parseInt(ctx.params.id), payload)
-})
-
-router.delete('/:journeyId/steps/:stepId', async ctx => {
-    await deleteJourneyStep(parseInt(ctx.params.stepId))
-    ctx.body = true
+router.put('/:journeyId/steps', async ctx => {
+    ctx.body = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
 })
 
 export default router

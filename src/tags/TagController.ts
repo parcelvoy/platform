@@ -1,0 +1,62 @@
+import Router from '@koa/router'
+import { JSONSchemaType } from 'ajv'
+import { searchParamsSchema } from '../core/searchParams'
+import { validate } from '../core/validate'
+import { extractQueryParams } from '../utilities'
+import { ProjectState } from '../auth/AuthMiddleware'
+import { Tag, TagParams } from './Tag'
+
+const router = new Router<
+    ProjectState & {
+        tag?: Tag
+    }
+>({
+    prefix: '/tags',
+})
+
+router.get('/', async ctx => {
+    ctx.body = await Tag.searchParams(
+        extractQueryParams(ctx.request.query, searchParamsSchema),
+        ['name'],
+    )
+})
+
+const tagParams: JSONSchemaType<TagParams> = {
+    type: 'object',
+    required: ['name'],
+    properties: {
+        name: {
+            type: 'string',
+        },
+    },
+}
+
+router.post('/', async ctx => {
+    ctx.body = await Tag.insertAndFetch(validate(tagParams, ctx.request.body))
+})
+
+router.param('tagId', async (value, ctx, next) => {
+    ctx.state.tag = await Tag.first(b => b.where({
+        project_id: ctx.state.project.id,
+        id: value,
+    }))
+    if (!ctx.state.tag) {
+        return ctx.throw(404)
+    }
+    return await next()
+})
+
+router.get('/:tagId', async ctx => {
+    ctx.body = ctx.state.tag!
+})
+
+router.patch('/:tagId', async ctx => {
+    ctx.body = await Tag.updateAndFetch(ctx.state.tag!.id, validate(tagParams, ctx.request.body))
+})
+
+router.delete('/:tagId', async ctx => {
+    await Tag.delete(b => b.where('id', ctx.state.tag!.id))
+    ctx.body = true
+})
+
+export default router
