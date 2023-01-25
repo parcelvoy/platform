@@ -17,12 +17,17 @@ import { getSubscription } from '../subscriptions/SubscriptionService'
 import { getProvider } from '../channels/ProviderRepository'
 import { isFuture } from 'date-fns'
 import { pick } from '../utilities'
+import { createTagSubquery } from '../tags/TagService'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
         params,
         ['name'],
-        b => b.where({ project_id: projectId }).whereNull('deleted_at'),
+        b => {
+            b.where({ project_id: projectId })
+            params?.tags?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tags))
+            return b
+        },
     )
 }
 
