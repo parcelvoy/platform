@@ -44,6 +44,7 @@ export class User extends Model {
     data!: Record<string, any> // first_name, last_name live in data
     attributes!: UserAttribute[] // ???
     timezone!: string
+    locale!: string
 
     static jsonAttributes = ['data', 'devices']
     static virtualAttributes = ['firstName', 'lastName', 'fullName']

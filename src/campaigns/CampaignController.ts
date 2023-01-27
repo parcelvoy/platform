@@ -99,7 +99,7 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
 
 router.patch('/:campaignId', async ctx => {
     const payload = validate(campaignUpdateParams, ctx.request.body)
-    ctx.body = await updateCampaign(ctx.state.campaign!.id, payload)
+    ctx.body = await updateCampaign(ctx.state.campaign!.id, ctx.state.project.id, payload)
 })
 
 router.post('/:campaignId/send', async ctx => {

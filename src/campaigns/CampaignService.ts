@@ -57,8 +57,9 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
     })
 }
 
-export const updateCampaign = async (id: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
-    return await Campaign.updateAndFetch(id, params)
+export const updateCampaign = async (id: number, projectId: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
+    await Campaign.update(qb => qb.where('id', id), params)
+    return getCampaign(id, projectId)
 }
 
 export const getCampaignUsers = async (id: number, params: SearchParams, projectId: number) => {

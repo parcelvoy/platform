@@ -1,6 +1,6 @@
 import { Readable } from 'stream'
 import { SearchParams } from '../core/searchParams'
-import Template, { TemplateParams, TemplateType } from './Template'
+import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
 import nodeHtmlToImage from 'node-html-to-image'
 import App from '../app'
 import TemplateSnapshotJob from './TemplateSnapshotJob'
@@ -40,7 +40,7 @@ export const createTemplate = async (projectId: number, params: TemplateParams) 
     return template
 }
 
-export const updateTemplate = async (templateId: number, params: TemplateParams) => {
+export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
     const template = await Template.updateAndFetch(templateId, prune(params))
 
     App.main.queue.enqueue(

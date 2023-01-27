@@ -3,7 +3,7 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { JSONSchemaType, validate } from '../core/validate'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
-import Template, { TemplateParams } from './Template'
+import Template, { TemplateParams, TemplateUpdateParams } from './Template'
 import { createTemplate, getTemplate, pagedTemplates, updateTemplate } from './TemplateService'
 import { Variables } from '.'
 import { User } from '../users/User'
@@ -20,8 +20,54 @@ router.get('/', async ctx => {
     ctx.body = await pagedTemplates(params, ctx.state.project.id)
 })
 
-const templateParams: JSONSchemaType<TemplateParams> = {
-    $id: 'templateParams',
+const templateDataEmailParams = {
+    type: 'object',
+    required: ['from', 'subject', 'text', 'html'],
+    properties: {
+        from: { type: 'string' },
+        cc: {
+            type: 'string',
+            nullable: true,
+        },
+        bcc: {
+            type: 'string',
+            nullable: true,
+        },
+        reply_to: {
+            type: 'string',
+            nullable: true,
+        },
+        subject: { type: 'string' },
+        text: { type: 'string' },
+        html: { type: 'string' },
+    },
+}
+
+const templateDataTextParams = {
+    type: 'object',
+    required: ['text'],
+    properties: {
+        text: { type: 'string' },
+    },
+}
+
+const templateDataPushParams = {
+    type: 'object',
+    required: ['title', 'topic', 'body'],
+    properties: {
+        title: { type: 'string' },
+        topic: { type: 'string' },
+        body: { type: 'string' },
+        custom: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
+    },
+}
+
+const templateCreateParams: JSONSchemaType<TemplateParams> = {
+    $id: 'templateCreateParams',
     oneOf: [{
         type: 'object',
         required: ['type', 'campaign_id', 'locale', 'data'],
@@ -36,28 +82,7 @@ const templateParams: JSONSchemaType<TemplateParams> = {
             locale: {
                 type: 'string',
             },
-            data: {
-                type: 'object',
-                required: ['from', 'subject', 'text', 'html'],
-                properties: {
-                    from: { type: 'string' },
-                    cc: {
-                        type: 'string',
-                        nullable: true,
-                    },
-                    bcc: {
-                        type: 'string',
-                        nullable: true,
-                    },
-                    reply_to: {
-                        type: 'string',
-                        nullable: true,
-                    },
-                    subject: { type: 'string' },
-                    text: { type: 'string' },
-                    html: { type: 'string' },
-                },
-            } as any,
+            data: templateDataEmailParams as any,
         },
         additionalProperties: false,
     },
@@ -75,13 +100,7 @@ const templateParams: JSONSchemaType<TemplateParams> = {
             locale: {
                 type: 'string',
             },
-            data: {
-                type: 'object',
-                required: ['text'],
-                properties: {
-                    text: { type: 'string' },
-                },
-            } as any,
+            data: templateDataTextParams as any,
         },
         additionalProperties: false,
     },
@@ -99,26 +118,13 @@ const templateParams: JSONSchemaType<TemplateParams> = {
             locale: {
                 type: 'string',
             },
-            data: {
-                type: 'object',
-                required: ['title', 'topic', 'body'],
-                properties: {
-                    title: { type: 'string' },
-                    topic: { type: 'string' },
-                    body: { type: 'string' },
-                    custom: {
-                        type: 'object',
-                        nullable: true,
-                        additionalProperties: true,
-                    },
-                },
-            } as any,
+            data: templateDataPushParams as any,
         },
         additionalProperties: false,
     }],
 }
 router.post('/', async ctx => {
-    const payload = validate(templateParams, ctx.request.body)
+    const payload = validate(templateCreateParams, ctx.request.body)
     ctx.body = await createTemplate(ctx.state.project.id, payload)
 })
 
@@ -135,8 +141,47 @@ router.get('/:templateId', async ctx => {
     ctx.body = ctx.state.template
 })
 
+const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
+    $id: 'templateUpdateParams',
+    oneOf: [{
+        type: 'object',
+        required: ['type', 'data'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['email'],
+            },
+            data: templateDataEmailParams as any,
+        },
+        additionalProperties: false,
+    },
+    {
+        type: 'object',
+        required: ['type', 'data'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['text'],
+            },
+            data: templateDataTextParams as any,
+        },
+        additionalProperties: false,
+    },
+    {
+        type: 'object',
+        required: ['type', 'data'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['push'],
+            },
+            data: templateDataPushParams as any,
+        },
+        additionalProperties: false,
+    }],
+}
 router.patch('/:templateId', async ctx => {
-    const payload = validate(templateParams, ctx.request.body)
+    const payload = validate(templateUpdateParams, ctx.request.body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
 })
 

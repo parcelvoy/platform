@@ -6,7 +6,6 @@ import Model, { ModelParams } from '../core/Model'
 export default class Template extends Model {
     project_id!: number
     campaign_id!: number
-    name!: string
     type!: ChannelType
     data!: Record<string, any>
     locale!: string
@@ -29,6 +28,7 @@ export default class Template extends Model {
 }
 
 export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl'>
+export type TemplateUpdateParams = Pick<Template, 'type' | 'data'>
 export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 
 export interface CompiledEmail {
