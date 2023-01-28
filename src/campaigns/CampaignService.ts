@@ -76,7 +76,7 @@ export const updateCampaign = async (id: number, projectId: number, params: Part
     }
 
     await Campaign.update(qb => qb.where('id', id), {
-        ...params,
+        ...data,
     })
 
     return getCampaign(id, projectId)
