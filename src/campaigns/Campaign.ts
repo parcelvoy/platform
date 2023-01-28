@@ -1,9 +1,11 @@
+import Provider from '../channels/Provider'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
+import Subscription from '../subscriptions/Subscription'
 
-type CampaignState = 'ready' | 'running' | 'finished' | 'aborted'
+type CampaignState = 'ready' | 'scheduled' | 'running' | 'finished' | 'aborted'
 interface CampaignDelivery {
     sent: number
     total: number
@@ -16,7 +18,9 @@ export default class Campaign extends Model {
     list?: List
     channel!: ChannelType
     subscription_id!: number
+    subscription?: Subscription
     provider_id!: number
+    provider?: Provider
     templates!: Template[]
     state!: CampaignState
     delivery!: CampaignDelivery
@@ -29,7 +33,8 @@ export default class Campaign extends Model {
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'channel' | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list' | 'subscription' | 'provider'>
+export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
 
 export type CampaignSendState = 'pending' | 'sent' | 'failed'
 export class CampaignSend extends Model {

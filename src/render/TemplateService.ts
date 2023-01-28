@@ -30,6 +30,7 @@ export const getTemplate = async (id: number, projectId: number) => {
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
     const template = await Template.insertAndFetch({
         ...params,
+        data: params.data ?? {},
         project_id: projectId,
     })
 

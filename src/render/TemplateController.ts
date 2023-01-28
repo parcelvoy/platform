@@ -41,6 +41,7 @@ const templateDataEmailParams = {
         text: { type: 'string' },
         html: { type: 'string' },
     },
+    nullable: true,
 }
 
 const templateDataTextParams = {
@@ -49,6 +50,7 @@ const templateDataTextParams = {
     properties: {
         text: { type: 'string' },
     },
+    nullable: true,
 }
 
 const templateDataPushParams = {
@@ -64,13 +66,14 @@ const templateDataPushParams = {
             additionalProperties: true,
         },
     },
+    nullable: true,
 }
 
 const templateCreateParams: JSONSchemaType<TemplateParams> = {
     $id: 'templateCreateParams',
     oneOf: [{
         type: 'object',
-        required: ['type', 'campaign_id', 'locale', 'data'],
+        required: ['type', 'campaign_id', 'locale'],
         properties: {
             type: {
                 type: 'string',
@@ -88,7 +91,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['type', 'campaign_id', 'locale', 'data'],
+        required: ['type', 'campaign_id', 'locale'],
         properties: {
             type: {
                 type: 'string',
@@ -106,7 +109,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
     },
     {
         type: 'object',
-        required: ['type', 'campaign_id', 'locale', 'data'],
+        required: ['type', 'campaign_id', 'locale'],
         properties: {
             type: {
                 type: 'string',

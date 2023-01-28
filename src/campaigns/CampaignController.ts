@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
-import Campaign, { CampaignParams } from './Campaign'
+import Campaign, { CampaignParams, CampaignUpdateParams } from './Campaign'
 import { createCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
@@ -22,6 +22,10 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
     properties: {
         name: {
             type: 'string',
+        },
+        channel: {
+            type: 'string',
+            enum: ['email', 'text', 'push', 'webhook'],
         },
         subscription_id: {
             type: 'integer',
@@ -64,7 +68,7 @@ router.get('/:campaignId', async ctx => {
     ctx.body = ctx.state.campaign!
 })
 
-const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
+const campaignUpdateParams: JSONSchemaType<Partial<CampaignUpdateParams>> = {
     $id: 'campaignUpdate',
     type: 'object',
     properties: {
@@ -100,11 +104,6 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
 router.patch('/:campaignId', async ctx => {
     const payload = validate(campaignUpdateParams, ctx.request.body)
     ctx.body = await updateCampaign(ctx.state.campaign!.id, ctx.state.project.id, payload)
-})
-
-router.post('/:campaignId/send', async ctx => {
-    // await sendList(ctx.state.campaign!)
-    ctx.status = 202
 })
 
 router.get('/:campaignId/users', async ctx => {

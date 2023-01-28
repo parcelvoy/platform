@@ -13,6 +13,9 @@ import { SearchParams } from '../core/searchParams'
 import { getList, listUserCount } from '../lists/ListService'
 import { allTemplates } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
+import { getSubscription } from '../subscriptions/SubscriptionService'
+import { getProvider } from '../channels/ProviderRepository'
+import { isFuture } from 'date-fns'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
@@ -32,6 +35,8 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
     if (campaign) {
         campaign.templates = await allTemplates(projectId, campaign.id)
         campaign.list = campaign.list_id ? await getList(campaign.list_id, projectId) : undefined
+        campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
+        campaign.provider = await getProvider(campaign.provider_id, projectId)
     }
 
     return campaign
@@ -48,17 +53,32 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
         delivery.total = await listUserCount(params.list_id)
     }
 
-    return await Campaign.insertAndFetch({
+    const id = await Campaign.insert({
         ...params,
-        state: 'ready',
+        state: 'draft',
         delivery,
         channel: subscription.channel,
         project_id: projectId,
     })
+
+    return await getCampaign(id, projectId) as Campaign
 }
 
 export const updateCampaign = async (id: number, projectId: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
-    await Campaign.update(qb => qb.where('id', id), params)
+
+    const data: Partial<Campaign> = { ...params }
+
+    // Calculate current state based on past properties
+    if (params.send_at && data.state !== 'finished') {
+        data.state = isFuture(new Date(params.send_at)) ? 'scheduled' : 'running'
+    } else {
+        data.state = data.state === 'running' ? 'aborted' : 'draft'
+    }
+
+    await Campaign.update(qb => qb.where('id', id), {
+        ...params,
+    })
+
     return getCampaign(id, projectId)
 }
 

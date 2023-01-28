@@ -7,7 +7,7 @@ export default class CampaignTriggerJob extends Job {
 
     static async handler() {
         const campaigns = await Campaign.query()
-            .where('state', 'ready')
+            .whereIn('state', ['draft', 'scheduled'])
             .whereNotNull('send_at')
             .where('send_at', '<', new Date())
         for (const campaign of campaigns) {

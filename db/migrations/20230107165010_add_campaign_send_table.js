@@ -21,6 +21,13 @@ exports.up = function(knex) {
             table.unique(['user_id', 'campaign_id'])
         })
         .table('campaigns', function(table) {
+            table.integer('provider_id')
+                .unsigned()
+                .notNullable()
+                .references('id')
+                .inTable('providers')
+                .onDelete('CASCADE')
+                .after('channel')
             table.boolean('send_in_user_timezone')
                 .defaultTo(0)
                 .after('send_at')
