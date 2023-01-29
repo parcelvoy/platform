@@ -54,7 +54,8 @@ ruleRegistry.register('wrapper', WrapperRule)
 
 export const check = (value: RuleCheckInput, rule: Rule | Rule[]) => {
     if (Array.isArray(rule)) {
-        return ruleRegistry.get('wrapper').check(value, rule, ruleRegistry)
+        const baseRule = make({ type: 'wrapper', operator: 'and', children: rule })
+        return ruleRegistry.get('wrapper').check(value, baseRule, ruleRegistry)
     }
     return ruleRegistry.get(rule.type).check(value, rule, ruleRegistry)
 }
