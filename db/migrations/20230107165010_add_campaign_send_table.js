@@ -31,6 +31,7 @@ exports.up = function(knex) {
             table.boolean('send_in_user_timezone')
                 .defaultTo(0)
                 .after('send_at')
+            table.dropForeign('template_id')
             table.dropColumn('template_id')
             table.timestamp('deleted_at').nullable()
         })
