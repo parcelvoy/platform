@@ -28,12 +28,14 @@ export default class Campaign extends Model {
     send_in_user_timezone?: boolean
     send_at?: string | Date
 
+    deleted_at?: Date
+
     static jsonAttributes = ['delivery']
 }
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list' | 'subscription' | 'provider'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list' | 'subscription' | 'provider' | 'deleted_at'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
 
 export type CampaignSendState = 'pending' | 'sent' | 'failed'

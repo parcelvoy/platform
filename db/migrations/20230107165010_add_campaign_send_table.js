@@ -32,6 +32,7 @@ exports.up = function(knex) {
                 .defaultTo(0)
                 .after('send_at')
             table.dropColumn('template_id')
+            table.timestamp('deleted_at').nullable()
         })
         .table('projects', function(table) {
             table.string('locale', 50)
@@ -58,6 +59,8 @@ exports.down = function(knex) {
                 .references('id')
                 .inTable('templates')
                 .onDelete('CASCADE')
+            table.dropColumn('provider_id')
+            table.dropColumn('deleted_at')
         })
         .table('projects', function(table) {
             table.dropColumn('locale')

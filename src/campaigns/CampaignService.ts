@@ -22,7 +22,7 @@ export const pagedCampaigns = async (params: SearchParams, projectId: number) =>
     return await Campaign.searchParams(
         params,
         ['name'],
-        b => b.where({ project_id: projectId }),
+        b => b.where({ project_id: projectId }).whereNull('deleted_at'),
     )
 }
 
@@ -81,6 +81,19 @@ export const updateCampaign = async (id: number, projectId: number, params: Part
     })
 
     return getCampaign(id, projectId)
+}
+
+export const archiveCampaign = async (id: number, projectId: number) => {
+    await Campaign.update(qb =>
+        qb.where('id', id)
+            .where('project_id', projectId),
+    { deleted_at: new Date() },
+    )
+    return getCampaign(id, projectId)
+}
+
+export const deleteCampaign = async (id: number, projectId: number) => {
+    return await Campaign.delete(qb => qb.where('id', id).where('project_id', projectId))
 }
 
 export const getCampaignUsers = async (id: number, params: SearchParams, projectId: number) => {
