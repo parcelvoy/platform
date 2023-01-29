@@ -7,6 +7,14 @@ export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${co
 
 export const random = <T>(array: T[]): T => array[Math.floor(Math.random() * array.length)]
 
+export const pick = <T extends object, K extends keyof T> (obj: T, keys: K[]): Pick<T, K> => {
+    const ret: any = {}
+    keys.forEach(key => {
+        ret[key] = obj[key]
+    })
+    return ret
+}
+
 export const randomInt = (min = 0, max = 100): number => {
     min = Math.ceil(min)
     max = Math.floor(max)

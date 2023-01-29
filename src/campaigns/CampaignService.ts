@@ -11,11 +11,12 @@ import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
 import { getList, listUserCount } from '../lists/ListService'
-import { allTemplates } from '../render/TemplateService'
+import { allTemplates, duplicateTemplate } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { getProvider } from '../channels/ProviderRepository'
 import { isFuture } from 'date-fns'
+import { pick } from '../utilities'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
@@ -212,4 +213,15 @@ export const recipientQuery = (campaign: Campaign) => {
             qb.whereNull('user_subscription.id')
                 .orWhere('user_subscription.state', '>', 0)
         })
+}
+
+export const duplicateCampaign = async (campaign: Campaign) => {
+    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_id', 'provider_id', 'subscription_id', 'channel', 'name'])
+    params.name = `Copy of ${params.name}`
+    params.state = 'draft'
+    const cloneId = await Campaign.insert(params)
+    for (const template of campaign.templates) {
+        await duplicateTemplate(template, cloneId)
+    }
+    return await getCampaign(cloneId, campaign.project_id)
 }

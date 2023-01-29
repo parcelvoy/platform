@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignParams, CampaignUpdateParams } from './Campaign'
-import { createCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
+import { createCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -109,6 +109,10 @@ router.patch('/:campaignId', async ctx => {
 router.get('/:campaignId/users', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await getCampaignUsers(ctx.state.campaign!.id, params, ctx.state.project.id)
+})
+
+router.post('/:campaignId/duplicate', async ctx => {
+    ctx.body = await duplicateCampaign(ctx.state.campaign!)
 })
 
 export default router

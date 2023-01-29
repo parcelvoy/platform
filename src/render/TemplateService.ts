@@ -4,7 +4,7 @@ import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './
 import nodeHtmlToImage from 'node-html-to-image'
 import App from '../app'
 import TemplateSnapshotJob from './TemplateSnapshotJob'
-import { prune } from '../utilities'
+import { pick, prune } from '../utilities'
 
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
@@ -78,4 +78,10 @@ const screenshotPath = (templateId: number) => {
 
 export const templateScreenshotUrl = (templateId: number) => {
     return App.main.storage.url(screenshotPath(templateId))
+}
+
+export const duplicateTemplate = async (template: Template, campaignId: number) => {
+    const params: Partial<Template> = pick(template, ['project_id', 'locale', 'type', 'data'])
+    params.campaign_id = campaignId
+    return await Template.insert(params)
 }

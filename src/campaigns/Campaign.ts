@@ -5,7 +5,7 @@ import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
 
-type CampaignState = 'ready' | 'scheduled' | 'running' | 'finished' | 'aborted'
+type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
 interface CampaignDelivery {
     sent: number
     total: number
