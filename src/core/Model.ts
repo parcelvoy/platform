@@ -7,7 +7,7 @@ export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
-type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
 
 export interface Page<T, B = number> {
     results: T[]
@@ -115,7 +115,11 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<number> {
-        return await query(this.table(db)).count('id as C').then(r => r[0].C || 0)
+        return await query(this.table(db))
+            .clone()
+            .clearSelect()
+            .count(`${this.tableName}.id as C`)
+            .then(r => r[0].C || 0)
     }
 
     static async search<T extends typeof Model>(
@@ -201,7 +205,7 @@ export default class Model {
 
     static async insert<T extends typeof Model>(
         this: T,
-        data: Partial<InstanceType<T>> = {},
+        data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)

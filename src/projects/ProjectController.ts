@@ -4,7 +4,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { Context } from 'koa'
-import { createProjectApiKey, getProject, revokeProjectApiKey } from './ProjectService'
+import { createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { ProjectApiKeyParams } from './ProjectApiKey'
 import ProjectAdmin from './ProjectAdmins'
@@ -81,6 +81,11 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
 
 subrouter.patch('/', async ctx => {
     ctx.body = await Project.updateAndFetch(ctx.state.project!.id, validate(projectUpdateParams, ctx.request.body))
+})
+
+subrouter.get('/keys', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedApiKeys(params, ctx.state.project.id)
 })
 
 const projectKeyCreateParams: JSONSchemaType<ProjectApiKeyParams> = {

@@ -181,7 +181,7 @@ export class JourneyGate extends JourneyStep {
         return check({
             user: user.flatten(),
             event: event?.flatten(),
-        }, [this.rule])
+        }, this.rule)
     }
 }
 

@@ -165,7 +165,7 @@ describe('CampaignService', () => {
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const campaign = await createTestCampaign(params, {
                 list_id: list.id,
@@ -192,11 +192,11 @@ describe('CampaignService', () => {
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const list2 = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const campaign = await createTestCampaign(params, {
                 list_id: list.id,

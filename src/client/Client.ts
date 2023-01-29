@@ -1,21 +1,17 @@
 import type { User } from '../users/User'
 
-export interface AnonymousClientIdentity {
-    anonymous_id: string
-    external_id?: string
-}
-
-export interface IdentifiedClientIdentity {
-    anonymous_id?: string
-    external_id: string
-}
-
-export type ClientIdentity = AnonymousClientIdentity | IdentifiedClientIdentity
+type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
+    Pick<T, Exclude<keyof T, Keys>>
+    & {
+        [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
+    }[Keys]
 
 export type ClientAliasParams = {
     anonymous_id: string
     external_id: string
 }
+
+export type ClientIdentity = RequireAtLeastOne<ClientAliasParams, 'anonymous_id' | 'external_id'>
 
 export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'data'>> & ClientIdentity
 

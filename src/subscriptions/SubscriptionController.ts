@@ -4,10 +4,12 @@ import { loadTextChannelInbound } from '../channels/text'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
 import Subscription, { SubscriptionParams } from './Subscription'
-import { allSubscriptions, createSubscription, getSubscription, unsubscribe, unsubscribeSms } from './SubscriptionService'
+import { createSubscription, getSubscription, pagedSubscriptions, unsubscribe, unsubscribeSms } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
 import { ProjectState } from '../auth/AuthMiddleware'
+import { extractQueryParams } from '../utilities'
+import { searchParamsSchema } from '../core/searchParams'
 
 /**
  ***
@@ -95,7 +97,8 @@ const router = new Router<
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allSubscriptions(ctx.state.project.id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedSubscriptions(params, ctx.state.project.id)
 })
 
 export const subscriptionCreateSchema: JSONSchemaType<SubscriptionParams> = {
