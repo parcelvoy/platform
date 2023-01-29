@@ -53,8 +53,7 @@ ruleRegistry.register('array', ArrayRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
 export const check = (value: RuleCheckInput, rule: Rule) => {
-    return ruleRegistry.get('wrapper')
-        .check(value, rule, ruleRegistry)
+    return ruleRegistry.get(rule.type).check(value, rule, ruleRegistry)
 }
 
 export const query = (rule: Rule) => {
