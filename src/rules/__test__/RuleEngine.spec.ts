@@ -28,9 +28,9 @@ describe('RuleEngine', () => {
                     name: 'Name',
                 },
             }
-            const shouldPass = check(value, [
+            const shouldPass = check(value,
                 make({ type: 'string', path: '$.email', operator: '!=', value: email }),
-            ])
+            )
             expect(shouldPass).toBeFalsy()
         })
 
@@ -42,9 +42,8 @@ describe('RuleEngine', () => {
                     name: 'Name',
                 },
             }
-            const shouldPass = check(value, [
-                make({ type: 'string', path: '$.project', operator: 'is set' }),
-            ])
+            const shouldPass = check(value, make({ type: 'string', path: '$.project', operator: 'is set' }),
+            )
             expect(shouldPass).toBeFalsy()
         })
     })

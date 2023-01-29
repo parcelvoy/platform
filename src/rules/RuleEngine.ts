@@ -52,7 +52,10 @@ ruleRegistry.register('date', DateRule)
 ruleRegistry.register('array', ArrayRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
-export const check = (value: RuleCheckInput, rule: Rule) => {
+export const check = (value: RuleCheckInput, rule: Rule | Rule[]) => {
+    if (Array.isArray(rule)) {
+        return ruleRegistry.get('wrapper').check(value, rule, ruleRegistry)
+    }
     return ruleRegistry.get(rule.type).check(value, rule, ruleRegistry)
 }
 
