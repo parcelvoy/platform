@@ -47,6 +47,9 @@ exports.up = function(knex) {
                 .inTable('campaigns')
                 .onDelete('CASCADE')
         })
+        .table('users', function(table) {
+            table.string('timezone', 50).after('devices')
+        })
 }
 
 exports.down = function(knex) {
