@@ -173,17 +173,17 @@ export const sendList = async (campaign: SentCampaign) => {
 
     // Stream results so that we aren't overwhelmed by millions
     // of potential entries
+    let chunk: CampaignSendParams[] = []
     await recipientQuery(campaign)
         .stream(async function(stream) {
 
             // Create records of the send in a pending state
             // Once sent, each record will be updated accordingly
             const chunkSize = 100
-            let chunk: CampaignSendParams[] = []
             let i = 0
-            for await (const { id, timezone } of stream) {
+            for await (const { user_id, timezone } of stream) {
                 chunk.push({
-                    user_id: id,
+                    user_id,
                     campaign_id: campaign.id,
                     state: 'pending',
                     send_at: campaign.send_in_user_timezone
@@ -196,7 +196,8 @@ export const sendList = async (campaign: SentCampaign) => {
                     chunk = []
                 }
             }
-
+        })
+        .then(async function() {
             // Insert remaining items
             await insertChunk(chunk)
         })

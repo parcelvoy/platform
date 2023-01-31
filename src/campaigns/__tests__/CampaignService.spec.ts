@@ -3,12 +3,11 @@ import EmailJob from '../../channels/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
 import { createProject } from '../../projects/ProjectService'
-import { createSubscription } from '../../subscriptions/SubscriptionService'
+import { createSubscription, subscribe } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
-import Campaign, { SentCampaign } from '../Campaign'
+import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
 import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
-import * as CampaignService from '../CampaignService'
 import { createProvider } from '../../channels/ProviderRepository'
 
 afterEach(() => {
@@ -164,8 +163,6 @@ describe('CampaignService', () => {
 
     describe('sendList', () => {
         test('enqueue sends for a list of people', async () => {
-            const spy = jest.spyOn(CampaignService, 'sendCampaign')
-
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
                 name: uuid(),
@@ -179,20 +176,20 @@ describe('CampaignService', () => {
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list)
+                await subscribe(user.id, params.subscription_id)
             }
 
             await sendList(campaign)
 
+            const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
+
             const updatedCampaign = await Campaign.find(campaign.id)
 
-            expect(spy).toHaveBeenCalledTimes(20)
-            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
-            expect(updatedCampaign?.state).toEqual('finished')
-            expect(updatedCampaign?.delivery.sent).toEqual(20)
+            expect(sends.length).toEqual(20)
+            expect(updatedCampaign?.state).toEqual('running')
         })
 
         test('users outside of list arent sent the campaign', async () => {
-            const spy = jest.spyOn(CampaignService, 'sendCampaign')
 
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
@@ -212,19 +209,23 @@ describe('CampaignService', () => {
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list)
+                await subscribe(user.id, params.subscription_id)
                 inclusiveIds.push(user.id)
             }
 
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list2)
+                await subscribe(user.id, params.subscription_id)
             }
 
             await sendList(campaign)
 
-            expect(spy).toHaveBeenCalledTimes(20)
-            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
-            expect(spy.mock.calls[0][1]).toEqual(inclusiveIds[0])
+            const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
+            const updatedCampaign = await Campaign.find(campaign.id)
+
+            expect(sends.length).toEqual(20)
+            expect(updatedCampaign?.state).toEqual('running')
         })
     })
 })

@@ -69,7 +69,13 @@ export default class Model {
         return json
     }
 
+    // Format JSON before inserting into DB
     static formatJson(json: any): Record<string, unknown> {
+
+        // All models have an updated timestamp, trigger value
+        json.updated_at = new Date()
+
+        // Take JSON attributes and stringify before insertion
         for (const attribute of this.jsonAttributes) {
             json[attribute] = JSON.stringify(json[attribute])
         }
