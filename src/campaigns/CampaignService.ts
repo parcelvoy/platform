@@ -146,7 +146,7 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
             state,
         })
         .onConflict(['user_id', 'list_id'])
-        .ignore()
+        .merge(['state'])
 }
 
 export const sendList = async (campaign: SentCampaign) => {
@@ -205,8 +205,8 @@ export const sendList = async (campaign: SentCampaign) => {
 
 export const campaignSendReadyQuery = () => {
     return CampaignSend.query()
-        .where('send_at', '<', Date.now())
-        .where('state', 'pending')
+        .where('campaign_sends.send_at', '<', CampaignSend.raw('NOW()'))
+        .where('campaign_sends.state', 'pending')
         .leftJoin('campaigns', 'campaigns.id', '=', 'campaign_sends.campaign_id')
         .select('user_id', 'campaigns.*')
 }

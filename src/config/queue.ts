@@ -13,11 +13,13 @@ import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 import ListPopulateJob from '../lists/ListPopulateJob'
 import ListStatsJob from '../lists/ListStatsJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
+import CampaignSendJob from '../campaigns/CampaignSendJob'
 
 export type Queues = Record<number, Queue>
 
 export const loadJobs = (queue: Queue) => {
     queue.register(CampaignTriggerJob)
+    queue.register(CampaignSendJob)
     queue.register(EmailJob)
     queue.register(EventPostJob)
     queue.register(JourneyProcessJob)

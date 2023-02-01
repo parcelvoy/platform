@@ -31,6 +31,7 @@ export default class EmailJob extends Job {
             qb => qb.where('campaign_id', campaign.id).where('locale', user.locale),
         )
 
+        // TODO: This is bad, need a fallback template for sending
         // If not available template, abort
         if (!template) return
 
@@ -38,6 +39,8 @@ export default class EmailJob extends Job {
             campaign_id: campaign?.id,
             template_id: template?.id,
         }
+
+        // TODO: Use the providers attached to the campaign
 
         // Send and render email
         const channel = await loadChannel(user.project_id, 'email')
