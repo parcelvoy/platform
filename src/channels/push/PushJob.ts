@@ -1,15 +1,12 @@
 import { Job } from '../../queue'
-import { User } from '../../users/User'
-import { UserEvent } from '../../users/UserEvent'
 import { PushTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
-import { loadChannel } from '../../config/channels'
-import Campaign from '../../campaigns/Campaign'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import Project from '../../projects/Project'
+import { loadSendJob } from '../MessageTriggerService'
+import { loadPushChannel } from '.'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -18,24 +15,11 @@ export default class PushJob extends Job {
         return new this(data)
     }
 
-    static async handler({ campaign_id, user_id, event_id }: MessageTrigger) {
+    static async handler(trigger: MessageTrigger) {
+        const data = await loadSendJob<PushTemplate>(trigger)
+        if (!data) return
 
-        // Pull user & event details
-        const user = await User.find(user_id)
-        const event = await UserEvent.find(event_id)
-        const campaign = await Campaign.find(campaign_id)
-        const project = await Project.find(campaign?.project_id)
-
-        // If user or campaign has been deleted since, abort
-        if (!user || !campaign || !project) return
-
-        const template = await PushTemplate.first(
-            qb => qb.where('campaign_id', campaign.id).where('locale', user.locale),
-        )
-
-        // If not available template, abort
-        if (!template) return
-
+        const { campaign, template, user, project, event } = data
         const context = {
             campaign_id: campaign?.id,
             template_id: template?.id,
@@ -43,7 +27,11 @@ export default class PushJob extends Job {
 
         try {
             // Send and render push
-            const channel = await loadChannel(user.project_id, 'push')
+            const channel = await loadPushChannel(campaign.provider_id, project.id)
+            if (!channel) {
+                await updateSendState(campaign, user, 'failed')
+                return
+            }
             await channel.send(template, { user, event, context })
 
             // Update send record

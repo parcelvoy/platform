@@ -3,7 +3,7 @@ import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
 import { ProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
-import { TextMessage, TextResponse } from './TextMessage'
+import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
 export default class LoggerTextProvider extends TextProvider {
@@ -22,7 +22,7 @@ export default class LoggerTextProvider extends TextProvider {
         }
     }
 
-    parseInbound(inbound: any): TextMessage {
+    parseInbound(inbound: any): InboundTextMessage {
         return {
             to: inbound.to,
             from: inbound.from,
