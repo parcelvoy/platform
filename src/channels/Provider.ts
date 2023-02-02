@@ -11,7 +11,18 @@ export default class Provider extends Model {
     data!: Record<string, any>
     is_default!: boolean
 
-    static cacheKey(externalId: string) {
+    static get cacheKey() {
+        return {
+            external(externalId: string) {
+                return `providers_external_${externalId}`
+            },
+            internal(id: number) {
+                return `providers_${id}`
+            },
+        }
+    }
+
+    static externalCacheKey(externalId: string) {
         return `providers_${externalId}`
     }
 

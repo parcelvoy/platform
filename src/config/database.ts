@@ -16,7 +16,19 @@ export interface DatabaseConfig {
 }
 
 export default (config: DatabaseConfig) => {
-    return knex({ ...config, asyncStackTraces: true })
+    return knex({
+        client: config.client,
+        connection: {
+            ...config.connection,
+            typeCast(field: any, next: any) {
+                if (field.type === 'TINY' && field.length === 1) {
+                    return field.string() === '1'
+                }
+                return next()
+            },
+        },
+        asyncStackTraces: true,
+    })
 }
 
 export const migrate = async (db: Database) => {

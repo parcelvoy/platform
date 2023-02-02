@@ -1,21 +1,26 @@
 import { Readable } from 'stream'
 import { SearchParams } from '../core/searchParams'
-import Template, { TemplateParams, TemplateType } from './Template'
+import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
 import nodeHtmlToImage from 'node-html-to-image'
 import App from '../app'
 import TemplateSnapshotJob from './TemplateSnapshotJob'
-import { prune } from '../utilities'
+import { pick, prune } from '../utilities'
 
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
         params,
-        ['name'],
+        [],
         b => b.where({ project_id: projectId }),
     )
 }
 
-export const allTemplates = async (projectId: number): Promise<Template[]> => {
-    return await Template.all(qb => qb.where('project_id', projectId))
+export const allTemplates = async (projectId: number, campaignId?: number): Promise<Template[]> => {
+    return await Template.all(qb => {
+        if (campaignId) {
+            qb.where('campaign_id', campaignId)
+        }
+        return qb.where('project_id', projectId)
+    })
 }
 
 export const getTemplate = async (id: number, projectId: number) => {
@@ -25,6 +30,7 @@ export const getTemplate = async (id: number, projectId: number) => {
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
     const template = await Template.insertAndFetch({
         ...params,
+        data: params.data ?? {},
         project_id: projectId,
     })
 
@@ -35,7 +41,7 @@ export const createTemplate = async (projectId: number, params: TemplateParams) 
     return template
 }
 
-export const updateTemplate = async (templateId: number, params: TemplateParams) => {
+export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
     const template = await Template.updateAndFetch(templateId, prune(params))
 
     App.main.queue.enqueue(
@@ -72,4 +78,10 @@ const screenshotPath = (templateId: number) => {
 
 export const templateScreenshotUrl = (templateId: number) => {
     return App.main.storage.url(screenshotPath(templateId))
+}
+
+export const duplicateTemplate = async (template: Template, campaignId: number) => {
+    const params: Partial<Template> = pick(template, ['project_id', 'locale', 'type', 'data'])
+    params.campaign_id = campaignId
+    return await Template.insert(params)
 }

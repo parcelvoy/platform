@@ -41,6 +41,13 @@ export default class Model {
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
+
+        // Remove any value that could conflict with a virtual key
+        for (const attribute of this.virtualAttributes) {
+            delete (json as any)[attribute]
+        }
+
+        // Parse values into the model
         model.parseJson(json)
         return model as InstanceType<T>
     }
@@ -62,7 +69,13 @@ export default class Model {
         return json
     }
 
+    // Format JSON before inserting into DB
     static formatJson(json: any): Record<string, unknown> {
+
+        // All models have an updated timestamp, trigger value
+        json.updated_at = new Date()
+
+        // Take JSON attributes and stringify before insertion
         for (const attribute of this.jsonAttributes) {
             json[attribute] = JSON.stringify(json[attribute])
         }

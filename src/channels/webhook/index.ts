@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { defaultProvider } from '../ProviderRepository'
+import { loadProvider } from '../ProviderRepository'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
 import WebhookChannel from './WebhookChannel'
@@ -14,8 +14,8 @@ export const providerMap = (record: { name: WebhookProviderName }): WebhookProvi
     return typeMap[record.name].fromJson(record)
 }
 
-export const loadWebhookChannel = async (projectId: number): Promise<WebhookChannel | undefined> => {
-    const provider = await defaultProvider('webhook', projectId, providerMap)
+export const loadWebhookChannel = async (providerId: number, projectId: number): Promise<WebhookChannel | undefined> => {
+    const provider = await loadProvider(providerId, projectId, providerMap)
     if (!provider) return
     return new WebhookChannel(provider)
 }

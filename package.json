@@ -41,6 +41,7 @@
     "@aws-sdk/lib-storage": "^3.171.0",
     "@koa/cors": "^3.3.0",
     "@koa/router": "^11.0.1",
+    "@ladjs/country-language": "^1.0.3",
     "@node-saml/node-saml": "github:node-saml/node-saml",
     "@rxfork/sqs-consumer": "^6.0.0",
     "ajv": "^8.11.0",

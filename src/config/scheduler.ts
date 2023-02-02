@@ -5,6 +5,7 @@ import App from '../app'
 import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
+import CampaignSendJob from '../campaigns/CampaignSendJob'
 
 export default async (app: App) => {
     schedule.scheduleJob('* * * * *', function() {
@@ -16,6 +17,9 @@ export default async (app: App) => {
     })
     schedule.scheduleJob('0 * * * *', function() {
         cleanupExpiredRevokedTokens(subDays(new Date(), 1))
+    })
+    schedule.scheduleJob('* * * * *', function() {
+        app.queue.enqueue(CampaignSendJob.from())
     })
     return schedule
 }
