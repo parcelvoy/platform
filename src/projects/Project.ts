@@ -2,9 +2,10 @@ import Model, { ModelParams } from '../core/Model'
 
 export default class Project extends Model {
 
-    public name!: string
-    public description?: string
-    public deleted_at?: Date
+    name!: string
+    description?: string
+    deleted_at?: Date
+    locale?: string
 }
 
 export type ProjectParams = Omit<Project, ModelParams | 'deleted_at'>

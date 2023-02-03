@@ -1,13 +1,12 @@
 import { Job } from '../../queue'
-import { User } from '../../users/User'
-import { UserEvent } from '../../users/UserEvent'
 import { PushTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
-import { loadChannel } from '../../config/channels'
-import Campaign from '../../campaigns/Campaign'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
+import { updateSendState } from '../../campaigns/CampaignService'
+import { loadSendJob } from '../MessageTriggerService'
+import { loadPushChannel } from '.'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -16,17 +15,11 @@ export default class PushJob extends Job {
         return new this(data)
     }
 
-    static async handler({ campaign_id, user_id, event_id }: MessageTrigger) {
+    static async handler(trigger: MessageTrigger) {
+        const data = await loadSendJob<PushTemplate>(trigger)
+        if (!data) return
 
-        // Pull user & event details
-        const user = await User.find(user_id)
-        const event = await UserEvent.find(event_id)
-        const campaign = await Campaign.find(campaign_id)
-        const template = await PushTemplate.find(campaign?.template_id)
-
-        // If user or template has been deleted since, abort
-        if (!user || !template || !campaign) return
-
+        const { campaign, template, user, project, event } = data
         const context = {
             campaign_id: campaign?.id,
             template_id: template?.id,
@@ -34,8 +27,15 @@ export default class PushJob extends Job {
 
         try {
             // Send and render push
-            const channel = await loadChannel(user.project_id, 'push')
+            const channel = await loadPushChannel(campaign.provider_id, project.id)
+            if (!channel) {
+                await updateSendState(campaign, user, 'failed')
+                return
+            }
             await channel.send(template, { user, event, context })
+
+            // Update send record
+            await updateSendState(campaign, user)
 
             // Create an event on the user about the push
             await createEvent({
@@ -51,6 +51,9 @@ export default class PushJob extends Job {
                 // If the push is unable to send, find invalidated tokens
                 // and disable those devices
                 await disableNotifications(user.id, error.invalidTokens)
+
+                // Update send record
+                await updateSendState(campaign, user, 'failed')
 
                 // Create an event about the disabling
                 await createEvent({

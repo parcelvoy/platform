@@ -3,25 +3,26 @@ import TextJob from '../channels/text/TextJob'
 import WebhookJob from '../channels/webhook/WebhookJob'
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
-import Campaign, { CampaignParams } from './Campaign'
+import Campaign, { CampaignParams, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
-import { listUserCount } from '../lists/ListService'
-import { createTagSubquery } from '../tags/TagService'
+import { getList, listUserCount } from '../lists/ListService'
+import { allTemplates, duplicateTemplate } from '../render/TemplateService'
+import { utcToZonedTime } from 'date-fns-tz'
+import { getSubscription } from '../subscriptions/SubscriptionService'
+import { getProvider } from '../channels/ProviderRepository'
+import { isFuture } from 'date-fns'
+import { pick } from '../utilities'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
         params,
         ['name'],
-        b => {
-            b.where({ project_id: projectId })
-            params?.tags?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tags))
-            return b
-        },
+        b => b.where({ project_id: projectId }).whereNull('deleted_at'),
     )
 }
 
@@ -30,7 +31,16 @@ export const allCampaigns = async (projectId: number): Promise<Campaign[]> => {
 }
 
 export const getCampaign = async (id: number, projectId: number): Promise<Campaign | undefined> => {
-    return await Campaign.find(id, qb => qb.where('project_id', projectId))
+    const campaign = await Campaign.find(id, qb => qb.where('project_id', projectId))
+
+    if (campaign) {
+        campaign.templates = await allTemplates(projectId, campaign.id)
+        campaign.list = campaign.list_id ? await getList(campaign.list_id, projectId) : undefined
+        campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
+        campaign.provider = await getProvider(campaign.provider_id, projectId)
+    }
+
+    return campaign
 }
 
 export const createCampaign = async (projectId: number, params: CampaignParams): Promise<Campaign> => {
@@ -44,17 +54,57 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
         delivery.total = await listUserCount(params.list_id)
     }
 
-    return await Campaign.insertAndFetch({
+    const id = await Campaign.insert({
         ...params,
-        state: 'ready',
+        state: 'draft',
         delivery,
         channel: subscription.channel,
         project_id: projectId,
     })
+
+    return await getCampaign(id, projectId) as Campaign
 }
 
-export const updateCampaign = async (id: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
-    return await Campaign.updateAndFetch(id, params)
+export const updateCampaign = async (id: number, projectId: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
+
+    const data: Partial<Campaign> = { ...params }
+
+    // Calculate current state based on past properties
+    if (params.send_at && data.state !== 'finished') {
+        data.state = isFuture(new Date(params.send_at)) ? 'scheduled' : 'running'
+    } else {
+        data.state = data.state === 'running' ? 'aborted' : 'draft'
+    }
+
+    await Campaign.update(qb => qb.where('id', id), {
+        ...data,
+    })
+
+    return getCampaign(id, projectId)
+}
+
+export const archiveCampaign = async (id: number, projectId: number) => {
+    await Campaign.update(qb =>
+        qb.where('id', id)
+            .where('project_id', projectId),
+    { deleted_at: new Date() },
+    )
+    return getCampaign(id, projectId)
+}
+
+export const deleteCampaign = async (id: number, projectId: number) => {
+    return await Campaign.delete(qb => qb.where('id', id).where('project_id', projectId))
+}
+
+export const getCampaignUsers = async (id: number, params: SearchParams, projectId: number) => {
+    return await User.searchParams(
+        params,
+        ['email', 'phone'],
+        b => b.rightJoin('campaign_sends', 'campaign_sends.user_id', 'users.id')
+            .where('project_id', projectId)
+            .where('campaign_id', id)
+            .select('users.*', 'state', 'send_at'),
+    )
 }
 
 type SendCampaign = {
@@ -85,50 +135,80 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
     await App.main.queue.enqueue(channels[campaign.channel])
 }
 
-export const sendList = async (campaign: Campaign) => {
+export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState = 'sent') => {
+    const userId = user instanceof User ? user.id : user
+    const campaignId = campaign instanceof Campaign ? campaign.id : campaign
 
-    const updateProgress = async (params: Partial<Campaign>) => {
-        await Campaign.update(qb => qb.where('id', campaign.id), params)
-    }
+    return await CampaignSend.query()
+        .insert({
+            user_id: userId,
+            campaign_id: campaignId,
+            state,
+        })
+        .onConflict(['user_id', 'list_id'])
+        .merge(['state'])
+}
+
+export const sendList = async (campaign: SentCampaign) => {
 
     if (!campaign.list_id) {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
-    const delivery = {
-        sent: 0,
-        total: await listUserCount(campaign.list_id),
-    }
-
-    await updateProgress({
+    // Update campaign state to show it's processing
+    await Campaign.update(qb => qb.where('id', campaign.id), {
         state: 'running',
-        delivery,
+        delivery: {
+            sent: 0,
+            total: await listUserCount(campaign.list_id),
+        },
     })
+
+    const insertChunk = async (chunk: CampaignSendParams[]) => {
+        return await CampaignSend.query()
+            .insert(chunk)
+            .onConflict(['user_id', 'list_id'])
+            .ignore()
+    }
 
     // Stream results so that we aren't overwhelmed by millions
     // of potential entries
+    let chunk: CampaignSendParams[] = []
     await recipientQuery(campaign)
         .stream(async function(stream) {
 
-            // For each result streamed back, process campaign send
-            for await (const chunk of stream) {
-                await sendCampaign(campaign, chunk.user_id)
-                delivery.sent++
-
-                if (delivery.sent % 20) {
-                    await updateProgress({ delivery })
+            // Create records of the send in a pending state
+            // Once sent, each record will be updated accordingly
+            const chunkSize = 100
+            let i = 0
+            for await (const { user_id, timezone } of stream) {
+                chunk.push({
+                    user_id,
+                    campaign_id: campaign.id,
+                    state: 'pending',
+                    send_at: campaign.send_in_user_timezone
+                        ? utcToZonedTime(campaign.send_at, timezone)
+                        : campaign.send_at,
+                })
+                i++
+                if (i % chunkSize === 0) {
+                    await insertChunk(chunk)
+                    chunk = []
                 }
             }
-
-            // Once send is exhausted, update total to match send
-            // Total may not match because list could have grown during send
-            delivery.total = delivery.sent
         })
+        .then(async function() {
+            // Insert remaining items
+            await insertChunk(chunk)
+        })
+}
 
-    await updateProgress({
-        state: 'finished',
-        delivery,
-    })
+export const campaignSendReadyQuery = () => {
+    return CampaignSend.query()
+        .where('campaign_sends.send_at', '<', CampaignSend.raw('NOW()'))
+        .where('campaign_sends.state', 'pending')
+        .leftJoin('campaigns', 'campaigns.id', '=', 'campaign_sends.campaign_id')
+        .select('user_id', 'campaigns.*')
 }
 
 export const recipientQuery = (campaign: Campaign) => {
@@ -136,14 +216,26 @@ export const recipientQuery = (campaign: Campaign) => {
     // Merge user subscription state in to filter out anyone
     // who we can't send do
     return UserList.query()
-        .select('user_list.user_id')
+        .select('user_list.user_id', 'users.timezone')
         .where('list_id', campaign.list_id)
         .leftJoin('user_subscription', qb => {
             qb.on('user_list.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
         })
+        .leftJoin('users', 'users.id', '=', 'user_list.user_id')
         .where(qb => {
             qb.whereNull('user_subscription.id')
                 .orWhere('user_subscription.state', '>', 0)
         })
+}
+
+export const duplicateCampaign = async (campaign: Campaign) => {
+    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_id', 'provider_id', 'subscription_id', 'channel', 'name'])
+    params.name = `Copy of ${params.name}`
+    params.state = 'draft'
+    const cloneId = await Campaign.insert(params)
+    for (const template of campaign.templates) {
+        await duplicateTemplate(template, cloneId)
+    }
+    return await getCampaign(cloneId, campaign.project_id)
 }

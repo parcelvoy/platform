@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
-import Campaign, { CampaignParams } from './Campaign'
-import { createCampaign, getCampaign, pagedCampaigns, sendList, updateCampaign } from './CampaignService'
+import Campaign, { CampaignParams, CampaignUpdateParams } from './Campaign'
+import { archiveCampaign, createCampaign, deleteCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -18,20 +18,28 @@ router.get('/', async ctx => {
 export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
     $id: 'campaignCreate',
     type: 'object',
-    required: ['subscription_id', 'template_id'],
+    required: ['subscription_id', 'provider_id'],
     properties: {
         name: {
             type: 'string',
+        },
+        channel: {
+            type: 'string',
+            enum: ['email', 'text', 'push', 'webhook'],
+        },
+        subscription_id: {
+            type: 'integer',
+        },
+        provider_id: {
+            type: 'integer',
         },
         list_id: {
             type: 'integer',
             nullable: true,
         },
-        subscription_id: {
-            type: 'integer',
-        },
-        template_id: {
-            type: 'integer',
+        send_in_user_timezone: {
+            type: 'boolean',
+            nullable: true,
         },
         send_at: {
             type: 'string',
@@ -57,10 +65,10 @@ router.param('campaignId', async (value, ctx, next) => {
 })
 
 router.get('/:campaignId', async ctx => {
-    ctx.body = ctx.state.campaign
+    ctx.body = ctx.state.campaign!
 })
 
-const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
+const campaignUpdateParams: JSONSchemaType<Partial<CampaignUpdateParams>> = {
     $id: 'campaignUpdate',
     type: 'object',
     properties: {
@@ -68,16 +76,20 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
             type: 'string',
             nullable: true,
         },
-        list_id: {
-            type: 'integer',
-            nullable: true,
-        },
         subscription_id: {
             type: 'integer',
             nullable: true,
         },
-        template_id: {
+        provider_id: {
             type: 'integer',
+            nullable: true,
+        },
+        list_id: {
+            type: 'integer',
+            nullable: true,
+        },
+        send_in_user_timezone: {
+            type: 'boolean',
             nullable: true,
         },
         send_at: {
@@ -91,12 +103,26 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignParams>> = {
 
 router.patch('/:campaignId', async ctx => {
     const payload = validate(campaignUpdateParams, ctx.request.body)
-    ctx.body = await updateCampaign(ctx.state.campaign!.id, payload)
+    ctx.body = await updateCampaign(ctx.state.campaign!.id, ctx.state.project.id, payload)
 })
 
-router.post('/:campaignId/send', async ctx => {
-    await sendList(ctx.state.campaign!)
-    ctx.status = 202
+router.get('/:campaignId/users', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await getCampaignUsers(ctx.state.campaign!.id, params, ctx.state.project.id)
+})
+
+router.delete('/:campaignId', async ctx => {
+    const campaign = ctx.state.campaign!
+    const { id, project_id, deleted_at } = campaign
+    if (deleted_at) {
+        ctx.body = await deleteCampaign(id, project_id)
+    } else {
+        ctx.body = await archiveCampaign(id, project_id)
+    }
+})
+
+router.post('/:campaignId/duplicate', async ctx => {
+    ctx.body = await duplicateCampaign(ctx.state.campaign!)
 })
 
 export default router

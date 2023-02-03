@@ -4,19 +4,19 @@ import { Stream } from 'stream'
 import { RequestError } from '../core/errors'
 import StorageError from './StorageError'
 
-export interface ImageMetadata {
+export interface FileMetadata {
     fieldName: string
     fileName: string
     mimeType: string
     size: number
 }
 
-export interface ImageStream {
+export interface FileStream {
     file: Stream
-    metadata: ImageMetadata
+    metadata: FileMetadata
 }
 
-export default function parse(ctx: Context): Promise<ImageStream> {
+export default function parse(ctx: Context): Promise<FileStream> {
     return new Promise((resolve, reject) => {
         if (!ctx.is('multipart')) {
             reject(new RequestError(StorageError.BadFormType))

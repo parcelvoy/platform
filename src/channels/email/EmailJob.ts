@@ -1,11 +1,10 @@
 import { Job } from '../../queue'
-import { User } from '../../users/User'
-import { UserEvent } from '../../users/UserEvent'
-import { EmailTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
-import { loadChannel } from '../../config/channels'
-import Campaign from '../../campaigns/Campaign'
+import { updateSendState } from '../../campaigns/CampaignService'
+import { loadEmailChannel } from '.'
+import { loadSendJob } from '../MessageTriggerService'
+import { EmailTemplate } from '../../render/Template'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -14,25 +13,26 @@ export default class EmailJob extends Job {
         return new this(data)
     }
 
-    static async handler({ campaign_id, user_id, event_id }: MessageTrigger) {
+    static async handler(trigger: MessageTrigger) {
+        const data = await loadSendJob<EmailTemplate>(trigger)
+        if (!data) return
 
-        // Pull user & event details
-        const user = await User.find(user_id)
-        const event = await UserEvent.find(event_id)
-        const campaign = await Campaign.find(campaign_id)
-        const template = await EmailTemplate.find(campaign?.template_id)
-
-        // If user or template has been deleted since, abort
-        if (!user || !template || !campaign) return
-
+        const { campaign, template, user, project, event } = data
         const context = {
             campaign_id: campaign?.id,
             template_id: template?.id,
         }
 
         // Send and render email
-        const channel = await loadChannel(user.project_id, 'email')
+        const channel = await loadEmailChannel(campaign.provider_id, project.id)
+        if (!channel) {
+            await updateSendState(campaign, user, 'failed')
+            return
+        }
         await channel.send(template, { user, event, context })
+
+        // Update send record
+        await updateSendState(campaign, user)
 
         // Create an event on the user about the email
         await createEvent({

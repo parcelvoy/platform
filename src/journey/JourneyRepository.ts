@@ -109,15 +109,9 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             i++
         }
 
-        console.log('steps after modified:', steps)
-
-        console.log('existing children', children)
-
         for (const step of steps) {
             const list = stepMap[step.uuid]?.children ?? []
             const childIds: number[] = []
-
-            console.log('children', step, list)
 
             for (const { uuid, data = {} } of list) {
                 const child = steps.find(s => s.uuid === uuid)

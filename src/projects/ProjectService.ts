@@ -1,3 +1,4 @@
+import { SearchParams } from '../core/searchParams'
 import { uuid } from '../utilities'
 import Project, { ProjectParams } from './Project'
 import ProjectAdmin from './ProjectAdmins'
@@ -22,6 +23,14 @@ export const getProject = async (id: number, adminId?: number) => {
             }
             return qb
         })
+}
+
+export const pagedApiKeys = async (params: SearchParams, projectId: number) => {
+    return await ProjectApiKey.searchParams(
+        params,
+        ['name', 'description'],
+        qb => qb.where('project_id', projectId),
+    )
 }
 
 export const getProjectApiKey = async (key: string) => {

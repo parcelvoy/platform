@@ -4,6 +4,10 @@ import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ExternalProviderParams, ProviderGroup } from './Provider'
 import { createProvider, getProvider, updateProvider } from './ProviderRepository'
 
+export const allProviders = async (projectId: number) => {
+    return await Provider.all(qb => qb.where('project_id', projectId))
+}
+
 export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, name: string, schema: JSONSchemaType<T>): Router => {
     const router = new Router<
         ProjectState & { provider?: Provider }

@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { defaultProvider } from '../ProviderRepository'
+import { loadProvider } from '../ProviderRepository'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
 import LoggerEmailProvider from './LoggerEmailProvider'
@@ -16,8 +16,8 @@ export const providerMap = (record: { name: EmailProviderName }): EmailProvider 
     return typeMap[record.name].fromJson(record)
 }
 
-export const loadEmailChannel = async (projectId: number): Promise<EmailChannel | undefined> => {
-    const provider = await defaultProvider('email', projectId, providerMap)
+export const loadEmailChannel = async (providerId: number, projectId: number): Promise<EmailChannel | undefined> => {
+    const provider = await loadProvider(providerId, projectId, providerMap)
     if (!provider) return
     return new EmailChannel(provider)
 }

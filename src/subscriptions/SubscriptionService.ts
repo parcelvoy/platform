@@ -1,12 +1,48 @@
 import { TextProvider } from '../channels/text/TextProvider'
 import { ChannelType } from '../config/channels'
+import { SearchParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
+import { User } from '../users/User'
 import { createEvent } from '../users/UserEventRepository'
 import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 
-export const allSubscriptions = async (projectId: number) => {
-    return await Subscription.all(qb => qb.where('project_id', projectId))
+export const pagedSubscriptions = async (params: SearchParams, projectId: number) => {
+    return await Subscription.searchParams(
+        params,
+        ['name', 'channel'],
+        qb => qb.where('project_id', projectId),
+    )
+}
+
+export const getUserSubscriptions = async (id: number, params: SearchParams, projectId: number) => {
+    return await UserSubscription.searchParams(
+        params,
+        ['name', 'channel'],
+        b => b.leftJoin('subscriptions', 'subscriptions.id', 'user_subscription.subscription_id')
+            .where('project_id', projectId)
+            .where('user_id', id)
+            .select(
+                'user_subscription.id',
+                'user_subscription.subscription_id',
+                'subscriptions.name',
+                'subscriptions.channel',
+                'user_subscription.state',
+                'user_subscription.created_at',
+                'user_subscription.updated_at',
+            ),
+    )
+}
+
+export const allSubscriptions = async (projectId: number, channels?: ChannelType[]) => {
+    return await Subscription.all(
+        qb => {
+            if (channels) {
+                qb.whereIn('channel', channels)
+            }
+            return qb.where('project_id', projectId)
+        },
+    )
 }
 
 export const getSubscription = async (id: number, projectId: number) => {
@@ -43,7 +79,7 @@ export const unsubscribeSms = async (provider: TextProvider, body: Record<string
     }
 }
 
-export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
+export const toggleSubscription = async (userId: number, subscriptionId: number, state = SubscriptionState.unsubscribed): Promise<void> => {
 
     // Ensure both user and subscription exist
     const user = await getUser(userId)
@@ -60,11 +96,11 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
     // If subscription exists, unsubscribe, otherwise subscribe
     const previous = await UserSubscription.first(qb => qb.where(condition))
     if (previous) {
-        await UserSubscription.update(qb => qb.where('id', previous.id), { state: SubscriptionState.unsubscribed })
+        await UserSubscription.update(qb => qb.where('id', previous.id), { state })
     } else {
         await UserSubscription.insert({
             ...condition,
-            state: SubscriptionState.unsubscribed,
+            state,
         })
     }
 
@@ -79,6 +115,31 @@ export const unsubscribe = async (userId: number, subscriptionId: number): Promi
             channel: subscription.channel,
         },
     })
+}
+
+export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
+    toggleSubscription(userId, subscriptionId)
+}
+
+export const subscribe = async (userId: number, subscriptionId: number): Promise<void> => {
+    toggleSubscription(userId, subscriptionId, SubscriptionState.subscribed)
+}
+
+export const subscribeAll = async (user: User): Promise<void> => {
+    const channels: ChannelType[] = []
+    if (user.email) {
+        channels.push('email')
+    }
+    if (user.phone) {
+        channels.push('text')
+    }
+    if (user.pushEnabledDevices) {
+        channels.push('push')
+    }
+    const subscriptions = await allSubscriptions(user.project_id, channels)
+    for (const subscription of subscriptions) {
+        await subscribe(user.id, subscription.id)
+    }
 }
 
 export const unsubscribeEmailLink = (params: TrackedLinkParams): string => {

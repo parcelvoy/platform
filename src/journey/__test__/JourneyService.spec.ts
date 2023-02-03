@@ -14,13 +14,13 @@ describe('Run', () => {
             const journey = await Journey.insertAndFetch({ project_id: project.id })
             const list = await List.insertAndFetch({
                 project_id: project.id,
-                rules: [{
+                rule: {
                     type: 'string',
                     group: 'user',
                     path: '$.language',
                     operator: '=',
                     value: 'en',
-                }],
+                },
             })
             const step2 = await JourneyMap.create('country', {
                 US: 43,

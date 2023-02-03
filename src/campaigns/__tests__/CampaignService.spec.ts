@@ -3,13 +3,12 @@ import EmailJob from '../../channels/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
 import { createProject } from '../../projects/ProjectService'
-import { createTemplate } from '../../render/TemplateService'
-import { createSubscription } from '../../subscriptions/SubscriptionService'
+import { createSubscription, subscribe } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
-import Campaign from '../Campaign'
+import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
 import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
-import * as CampaignService from '../CampaignService'
+import { createProvider } from '../../channels/ProviderRepository'
 
 afterEach(() => {
     jest.clearAllMocks()
@@ -19,7 +18,7 @@ describe('CampaignService', () => {
 
     interface CampaignRefs {
         project_id: number
-        template_id: number
+        provider_id: number
         subscription_id: number
     }
 
@@ -29,15 +28,16 @@ describe('CampaignService', () => {
             name: uuid(),
             channel: 'email',
         })
-        const template = await createTemplate(project.id, {
-            name: uuid(),
-            type: 'email',
+        const provider = await createProvider(project.id, {
+            group: 'email',
             data: {},
+            name: uuid(),
+            is_default: false,
         })
         return {
             project_id: project.id,
+            provider_id: provider.id,
             subscription_id: subscription.id,
-            template_id: template.id,
         }
     }
 
@@ -46,6 +46,7 @@ describe('CampaignService', () => {
 
         const campaign = await createCampaign(params.project_id, {
             name: uuid(),
+            channel: 'email',
             ...params,
             ...extras,
         })
@@ -73,7 +74,7 @@ describe('CampaignService', () => {
             const campaigns = await allCampaigns(params.project_id)
 
             expect(campaigns.length).toEqual(20)
-            expect(campaigns[0].template_id).toEqual(params.template_id)
+            expect(campaigns[0].provider_id).toEqual(params.provider_id)
             expect(campaigns[0].subscription_id).toEqual(params.subscription_id)
         })
 
@@ -93,7 +94,7 @@ describe('CampaignService', () => {
             const campaigns = await allCampaigns(params1.project_id)
 
             expect(campaigns.length).toEqual(10)
-            expect(campaigns[0].template_id).toEqual(params1.template_id)
+            expect(campaigns[0].provider_id).toEqual(params1.provider_id)
             expect(campaigns[0].subscription_id).toEqual(params1.subscription_id)
         })
     })
@@ -123,21 +124,23 @@ describe('CampaignService', () => {
             const name = uuid()
             const campaign = await createCampaign(params.project_id, {
                 ...params,
+                channel: 'email',
                 name,
             })
 
             expect(campaign.name).toEqual(name)
             expect(campaign.subscription_id).toEqual(params.subscription_id)
             expect(campaign.project_id).toEqual(params.project_id)
-            expect(campaign.template_id).toEqual(params.template_id)
+            expect(campaign.provider_id).toEqual(params.provider_id)
         })
 
         test('fail to create a campaign with a bad subscription', async () => {
             const params = await createCampaignDependencies()
             const name = uuid()
             const promise = createCampaign(params.project_id, {
-                template_id: params.template_id,
+                channel: 'email',
                 subscription_id: 0,
+                provider_id: params.provider_id,
                 name,
             })
             await expect(promise).rejects.toThrowError(RequestError)
@@ -160,65 +163,69 @@ describe('CampaignService', () => {
 
     describe('sendList', () => {
         test('enqueue sends for a list of people', async () => {
-            const spy = jest.spyOn(CampaignService, 'sendCampaign')
-
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const campaign = await createTestCampaign(params, {
                 list_id: list.id,
-            })
+                send_at: new Date(),
+            }) as SentCampaign
 
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list)
+                await subscribe(user.id, params.subscription_id)
             }
 
             await sendList(campaign)
 
+            const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
+
             const updatedCampaign = await Campaign.find(campaign.id)
 
-            expect(spy).toHaveBeenCalledTimes(20)
-            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
-            expect(updatedCampaign?.state).toEqual('finished')
-            expect(updatedCampaign?.delivery.sent).toEqual(20)
+            expect(sends.length).toEqual(20)
+            expect(updatedCampaign?.state).toEqual('running')
         })
 
         test('users outside of list arent sent the campaign', async () => {
-            const spy = jest.spyOn(CampaignService, 'sendCampaign')
 
             const params = await createCampaignDependencies()
             const list = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const list2 = await createList(params.project_id, {
                 name: uuid(),
-                rules: [],
+                type: 'static',
             })
             const campaign = await createTestCampaign(params, {
                 list_id: list.id,
-            })
+                send_at: new Date(),
+            }) as SentCampaign
 
             const inclusiveIds = []
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list)
+                await subscribe(user.id, params.subscription_id)
                 inclusiveIds.push(user.id)
             }
 
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list2)
+                await subscribe(user.id, params.subscription_id)
             }
 
             await sendList(campaign)
 
-            expect(spy).toHaveBeenCalledTimes(20)
-            expect(spy.mock.calls[0][0].id).toEqual(campaign.id)
-            expect(spy.mock.calls[0][1]).toEqual(inclusiveIds[0])
+            const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
+            const updatedCampaign = await Campaign.find(campaign.id)
+
+            expect(sends.length).toEqual(20)
+            expect(updatedCampaign?.state).toEqual('running')
         })
     })
 })

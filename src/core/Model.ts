@@ -7,7 +7,7 @@ export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
-type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
 
 export interface Page<T, B = number> {
     results: T[]
@@ -41,6 +41,13 @@ export default class Model {
 
     static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
+
+        // Remove any value that could conflict with a virtual key
+        for (const attribute of this.virtualAttributes) {
+            delete (json as any)[attribute]
+        }
+
+        // Parse values into the model
         model.parseJson(json)
         return model as InstanceType<T>
     }
@@ -62,7 +69,13 @@ export default class Model {
         return json
     }
 
+    // Format JSON before inserting into DB
     static formatJson(json: any): Record<string, unknown> {
+
+        // All models have an updated timestamp, trigger value
+        json.updated_at = new Date()
+
+        // Take JSON attributes and stringify before insertion
         for (const attribute of this.jsonAttributes) {
             json[attribute] = JSON.stringify(json[attribute])
         }
@@ -115,7 +128,11 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<number> {
-        return await query(this.table(db)).count('id as C').then(r => r[0].C || 0)
+        return await query(this.table(db))
+            .clone()
+            .clearSelect()
+            .count(`${this.tableName}.id as C`)
+            .then(r => r[0].C || 0)
     }
 
     static async search<T extends typeof Model>(
@@ -124,7 +141,7 @@ export default class Model {
         page = 0,
         itemsPerPage = 10,
         db: Database = App.main.db,
-    ): Promise<SearchResult<T>> {
+    ): Promise<SearchResult<InstanceType<T>>> {
         const total = await this.count(query, db)
         const start = page * itemsPerPage
         const results: T[] = total > 0
@@ -201,7 +218,7 @@ export default class Model {
 
     static async insert<T extends typeof Model>(
         this: T,
-        data: Partial<InstanceType<T>> = {},
+        data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)

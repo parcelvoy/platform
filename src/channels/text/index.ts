@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { defaultProvider, getProviderByExternalId } from '../ProviderRepository'
+import { getProviderByExternalId, loadProvider } from '../ProviderRepository'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
@@ -18,8 +18,8 @@ export const providerMap = (record: { name: TextProviderName }): TextProvider =>
     return typeMap[record.name].fromJson(record)
 }
 
-export const loadTextChannel = async (projectId: number): Promise<TextChannel | undefined> => {
-    const provider = await defaultProvider('text', projectId, providerMap)
+export const loadTextChannel = async (providerId: number, projectId: number): Promise<TextChannel | undefined> => {
+    const provider = await loadProvider(providerId, projectId, providerMap)
     if (!provider) return
     return new TextChannel(provider)
 }

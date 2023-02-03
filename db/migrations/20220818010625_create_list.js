@@ -2,14 +2,15 @@ exports.up = function(knex) {
     return knex.schema
         .createTable('lists', function(table) {
             table.increments()
-            table.string('name', 255).defaultTo('')
             table.integer('project_id')
                 .unsigned()
                 .notNullable()
                 .references('id')
                 .inTable('projects')
                 .onDelete('CASCADE')
+            table.string('name', 255).defaultTo('')
             table.json('rules')
+            table.integer('users_count')
             table.timestamp('created_at').defaultTo(knex.fn.now())
             table.timestamp('updated_at').defaultTo(knex.fn.now())
         })

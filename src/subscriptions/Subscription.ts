@@ -17,6 +17,8 @@ export class UserSubscription extends Model {
     subscription_id!: number
     user_id!: number
     state!: SubscriptionState
+    name?: string
+    channel?: string
 
     static tableName = 'user_subscription'
 }
