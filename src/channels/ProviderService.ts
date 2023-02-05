@@ -43,7 +43,7 @@ export const createController = <T extends ExternalProviderParams>(group: Provid
         ctx.body = ctx.state.provider
     })
 
-    router.put('/:providerId', async ctx => {
+    router.patch('/:providerId', async ctx => {
         const payload = validate(schema, ctx.request.body)
         ctx.body = updateProvider(ctx.state.provider!.id, payload)
     })

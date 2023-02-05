@@ -6,6 +6,7 @@ export interface ProviderMeta {
     name: string
     description?: string
     url?: string
+    icon?: string
     type: string
     channel: string
     schema?: any
@@ -38,6 +39,8 @@ export default class Provider extends Model {
     external_id?: string
     group!: ProviderGroup
     data!: Record<string, any>
+
+    static jsonAttributes = ['data']
 
     static namespace = this.name
     static meta: Omit<ProviderMeta, 'channel' | 'type'> = {
