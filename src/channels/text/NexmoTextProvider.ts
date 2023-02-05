@@ -23,8 +23,8 @@ export default class NexmoTextProvider extends TextProvider {
     static namespace = 'nexmo'
     static meta = {
         name: 'Nexmo',
-        description: '',
         url: 'https://nexmo.com',
+        icon: 'https://parcelvoy.com/images/vonage.svg',
     }
 
     static schema = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {

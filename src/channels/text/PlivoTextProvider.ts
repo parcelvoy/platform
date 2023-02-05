@@ -22,8 +22,8 @@ export default class PlivoTextProvider extends TextProvider {
     static namespace = 'plivo'
     static meta = {
         name: 'Plivo',
-        description: '',
         url: 'https://plivo.com',
+        icon: 'https://parcelvoy.com/images/plivo.svg',
     }
 
     static schema = ProviderSchema<PlivoProviderParams, PlivoDataParams>('plivoTextProviderParams', {

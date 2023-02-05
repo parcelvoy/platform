@@ -1,8 +1,10 @@
 import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
+import { searchParamsSchema } from '../core/searchParams'
+import { extractQueryParams } from '../utilities'
 import { loadEmailControllers } from './email'
 import { ProviderMeta } from './Provider'
-import { allProviders } from './ProviderService'
+import { allProviders, pagedProviders } from './ProviderService'
 import { loadPushControllers } from './push'
 import { loadTextControllers } from './text'
 import { loadWebhookControllers } from './webhook'
@@ -19,6 +21,11 @@ loadWebhookControllers(router, providers)
 loadPushControllers(router, providers)
 
 router.get('/', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedProviders(params, ctx.state.project.id)
+})
+
+router.get('/all', async ctx => {
     ctx.body = await allProviders(ctx.state.project.id)
 })
 

@@ -10,10 +10,7 @@ export default class LoggerWebhookProvider extends WebhookProvider {
     addLatency?: boolean
 
     static namespace = 'logger'
-    static meta = {
-        name: 'Webhook Logger',
-        description: '',
-    }
+    static meta = { name: 'Logger' }
 
     static schema = ProviderSchema<ProviderParams, any>('loggerWebhookProviderParams', {
         type: 'object',

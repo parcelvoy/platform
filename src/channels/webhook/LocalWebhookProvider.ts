@@ -7,8 +7,8 @@ import { WebhookProvider } from './WebhookProvider'
 export default class LocalWebhookProvider extends WebhookProvider {
     static namespace = 'local'
     static meta = {
-        name: 'Webhook',
-        description: '',
+        name: 'Local',
+        icon: 'https://parcelvoy.com/images/webhook.svg',
     }
 
     static schema = ProviderSchema<ProviderParams, any>('localWebhookProviderParams', {

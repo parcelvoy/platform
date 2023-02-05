@@ -36,8 +36,8 @@ export default class LocalPushProvider extends PushProvider {
 
     static namespace = 'local'
     static meta = {
-        name: 'Push Notifications',
-        description: '',
+        name: 'Local',
+        icon: 'https://parcelvoy.com/images/notification.svg',
     }
 
     static schema = ProviderSchema<PushProviderParams, PushDataParams>('localPushProviderParams', {

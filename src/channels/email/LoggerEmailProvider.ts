@@ -10,10 +10,7 @@ export default class LoggerEmailProvider extends EmailProvider {
     addLatency?: boolean
 
     static namespace = 'logger'
-    static meta = {
-        name: 'Email Logger',
-        description: '',
-    }
+    static meta = { name: 'Logger' }
 
     static schema = ProviderSchema<ExternalProviderParams, any>('loggerEmailProviderParams', {
         type: 'object',

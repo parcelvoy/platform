@@ -28,6 +28,7 @@ export default class TwilioTextProvider extends TextProvider {
         name: 'Twilio',
         description: '',
         url: 'https://twilio.com',
+        icon: 'https://parcelvoy.com/images/twilio.svg',
     }
 
     static schema = ProviderSchema<TwilioProviderParams, TwilioDataParams>('twilioTextProviderParams', {

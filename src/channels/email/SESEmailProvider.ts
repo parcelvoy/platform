@@ -18,8 +18,8 @@ export default class SESEmailProvider extends EmailProvider {
     static namespace = 'ses'
     static meta = {
         name: 'Amazon SES',
-        description: '',
         url: 'https://aws.amazon.com/ses',
+        icon: 'https://parcelvoy.com/images/ses.svg',
     }
 
     static schema = ProviderSchema<SESEmailProviderParams, SESDataParams>('sesProviderParams', {

@@ -9,10 +9,7 @@ export default class LoggerPushProvider extends PushProvider {
     addLatency?: boolean
 
     static namespace = 'logger'
-    static meta = {
-        name: 'Push Notification Logger',
-        description: '',
-    }
+    static meta = { name: 'Logger' }
 
     static schema = ProviderSchema<ExternalProviderParams, any>('loggerPushProviderParams', {
         type: 'object',

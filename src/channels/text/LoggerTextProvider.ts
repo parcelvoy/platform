@@ -10,10 +10,7 @@ export default class LoggerTextProvider extends TextProvider {
     addLatency?: boolean
 
     static namespace = 'logger'
-    static meta = {
-        name: 'Text Logger',
-        description: '',
-    }
+    static meta = { name: 'Logger' }
 
     static schema = ProviderSchema<ProviderParams, any>('loggerTextProviderParams', {
         type: 'object',
