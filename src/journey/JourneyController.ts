@@ -5,7 +5,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
 import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
-import { JourneyStepMap } from './JourneyStep'
+import { JourneyStepMap, journeyStepTypes } from './JourneyStep'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -29,50 +29,6 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
         description: {
             type: 'string',
             nullable: true,
-        },
-        steps: {
-            type: 'object',
-            required: [],
-            additionalProperties: {
-                type: 'object',
-                required: ['type', 'x', 'y'],
-                properties: {
-                    type: {
-                        type: 'string',
-                        enum: ['entrance', 'delay', 'action', 'gate', 'map'],
-                    },
-                    data: {
-                        type: 'object', // TODO: Could validate further based on sub types
-                        nullable: true,
-                        additionalProperties: true,
-                    },
-                    x: {
-                        type: 'integer',
-                    },
-                    y: {
-                        type: 'integer',
-                    },
-                    children: {
-                        type: 'array',
-                        nullable: true,
-                        items: {
-                            type: 'object',
-                            required: ['uuid'],
-                            properties: {
-                                uuid: {
-                                    type: 'string',
-                                },
-                                data: {
-                                    type: 'object', // TODO: this is also specific to the parent node's type
-                                    nullable: true,
-                                    additionalProperties: true,
-                                },
-                            },
-                        },
-                    },
-                },
-                additionalProperties: false,
-            },
         },
     },
     additionalProperties: false,
@@ -115,7 +71,7 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
         properties: {
             type: {
                 type: 'string',
-                enum: ['entrance', 'delay', 'action', 'gate', 'map'],
+                enum: Object.keys(journeyStepTypes),
             },
             data: {
                 type: 'object', // TODO: Could validate further based on sub types
@@ -123,10 +79,10 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
                 additionalProperties: true,
             },
             x: {
-                type: 'integer',
+                type: 'number',
             },
             y: {
-                type: 'integer',
+                type: 'number',
             },
             children: {
                 type: 'array',

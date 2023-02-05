@@ -50,7 +50,11 @@ export const getJourneySteps = async (journeyId: number, db?: Database): Promise
     return await JourneyStep.all(qb => qb.where('journey_id', journeyId), db)
 }
 
-const getJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
+export const getJourneyStepChildren = async (stepId: number) => {
+    return await JourneyStepChild.all(q => q.where('step_id', stepId))
+}
+
+const getAllJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
     return await JourneyStepChild.all(
         q => q.whereIn('step_id', JourneyStep.query(db).select('id').where('journey_id', journeyId)),
         db,
@@ -60,7 +64,7 @@ const getJourneyStepChildren = async (journeyId: number, db?: Database): Promise
 export const getJourneyStepMap = async (journeyId: number) => {
     const [steps, children] = await Promise.all([
         getJourneySteps(journeyId),
-        getJourneyStepChildren(journeyId),
+        getAllJourneyStepChildren(journeyId),
     ])
     return toJourneyStepMap(steps, children)
 }
@@ -70,7 +74,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
 
         const [steps, children] = await Promise.all([
             getJourneySteps(journeyId, trx),
-            getJourneyStepChildren(journeyId, trx),
+            getAllJourneyStepChildren(journeyId, trx),
         ])
 
         // Create or update steps

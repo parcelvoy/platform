@@ -3,10 +3,12 @@ import Model from '../core/Model'
 import { User } from '../users/User'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
-import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
+import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
-import { snakeCase, uuid } from '../utilities'
+import { random, snakeCase, uuid } from '../utilities'
+import App from '../app'
+import JourneyProcessJob from './JourneyProcessJob'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -224,7 +226,7 @@ export class JourneyMap extends JourneyStep {
 
     async next(user: User) {
 
-        const children = await JourneyStepChild.all(q => q.where('step_id', this.id))
+        const children = await getJourneyStepChildren(this.id)
 
         // When comparing the user expects comparison
         // to be between the UI model user vs core user
@@ -249,13 +251,74 @@ export class JourneyMap extends JourneyStep {
     }
 }
 
+/**
+ * randomly distribute users to different branches
+ */
+export class JourneyExperiment extends JourneyStep {
+    static type = 'experiment'
+
+    async next() {
+
+        let children = await getJourneyStepChildren(this.id)
+
+        if (!children.length) return undefined
+
+        children = children.reduce<JourneyStepChild[]>((a, c) => {
+            const proportion = Number(c.data?.value)
+            if (!isNaN(proportion) && proportion > 0) {
+                for (let i = 0; i < proportion; i++) {
+                    a.push(c)
+                }
+            }
+            return a
+        }, [])
+
+        if (!children) return undefined
+
+        return await getJourneyStep(random(children).child_id)
+    }
+
+}
+
+/**
+ * add user to another journey
+ */
+export class JourneyLink extends JourneyStep {
+    static type = 'link'
+
+    target_id!: number
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.target_id = json.data?.journey_id
+    }
+
+    async complete(user: User, event?: UserEvent | undefined): Promise<void> {
+
+        if (!isNaN(this.journey_id)) {
+            await App.main.queue.enqueue(JourneyProcessJob.from({
+                journey_id: this.target_id,
+                user_id: user.id,
+                event_id: event?.id,
+            }))
+        }
+
+        return super.complete(user, event)
+    }
+}
+
 export const journeyStepTypes = [
     JourneyEntrance,
     JourneyDelay,
     JourneyAction,
     JourneyGate,
     JourneyMap,
-]
+    JourneyExperiment,
+    JourneyLink,
+].reduce<Record<string, typeof JourneyStep>>((a, c) => {
+    a[c.type] = c
+    return a
+}, {})
 
 export type JourneyStepMap = Record<
     string,
