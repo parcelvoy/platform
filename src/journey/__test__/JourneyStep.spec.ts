@@ -1,7 +1,7 @@
 import { createProject } from '../../projects/ProjectService'
 import Rule from '../../rules/Rule'
 import { User } from '../../users/User'
-import { JourneyStep, JourneyMap, JourneyGate } from '../JourneyStep'
+import { JourneyStep, JourneyMap, JourneyGate, JourneyStepChild } from '../JourneyStep'
 
 describe('JourneyGate', () => {
 
@@ -90,6 +90,17 @@ describe('Journey Map', () => {
             20: step2.id,
             30: step3.id,
         })
+
+        await Promise.all(([
+            [10, step1],
+            [20, step2],
+            [30, step3],
+        ] as const).map(([value, { id: child_id }]) => JourneyStepChild.insert({
+            step_id: map.id,
+            child_id,
+            data: { value },
+        })))
+
         const value1 = await map.next(user)
         expect(value1?.id).toEqual(step2.id)
 

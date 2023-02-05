@@ -4,7 +4,7 @@ import { User } from '../../users/User'
 import Journey from '../Journey'
 import { lastJourneyStep } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
-import { JourneyEntrance, JourneyMap } from '../JourneyStep'
+import { JourneyEntrance, JourneyMap, JourneyStepChild } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {
@@ -26,7 +26,12 @@ describe('Run', () => {
                 US: 43,
                 ES: 34,
             }, journey.id)
-            await JourneyEntrance.create(journey.id, list.id)
+            const entrance = await JourneyEntrance.create(journey.id, list.id)
+            await JourneyStepChild.insertAndFetch({
+                step_id: entrance.id,
+                child_id: step2.id,
+                data: {},
+            })
 
             const service = new JourneyService(journey.id)
 
