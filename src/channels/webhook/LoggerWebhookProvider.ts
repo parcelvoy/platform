@@ -10,7 +10,10 @@ export default class LoggerWebhookProvider extends WebhookProvider {
     addLatency?: boolean
 
     static namespace = 'logger'
-    static meta = { name: 'Logger' }
+    static meta = {
+        name: 'Logger',
+        icon: 'https://parcelvoy.com/images/logger.svg',
+    }
 
     static schema = ProviderSchema<ProviderParams, any>('loggerWebhookProviderParams', {
         type: 'object',

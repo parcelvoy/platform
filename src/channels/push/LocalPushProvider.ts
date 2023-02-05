@@ -36,7 +36,7 @@ export default class LocalPushProvider extends PushProvider {
 
     static namespace = 'local'
     static meta = {
-        name: 'Local',
+        name: 'APN & Firebase',
         icon: 'https://parcelvoy.com/images/notification.svg',
     }
 
