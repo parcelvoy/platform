@@ -7,8 +7,7 @@
     "serve": "nodemon",
     "lint": "eslint --ext .ts --max-warnings 0 src/",
     "test": "jest --forceExit --testTimeout 10000",
-    "migration:create": "node ./scripts/create-migration.mjs",
-    "migration:down": "node ./scripts/migrate-down.mjs"
+    "migration:create": "node ./scripts/create-migration.mjs"
   },
   "author": "",
   "license": "ISC",
