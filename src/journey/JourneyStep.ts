@@ -78,7 +78,7 @@ export class JourneyStep extends Model {
     async next(user: User, event?: UserEvent): Promise<JourneyStep | undefined> {
         const child = await JourneyStepChild.first(q => q.where('step_id', this.id))
         if (!child) return undefined
-        return await getJourneyStep(child.id)
+        return await getJourneyStep(child.child_id)
     }
 }
 
@@ -234,8 +234,8 @@ export class JourneyMap extends JourneyStep {
 
         // Based on an attribute match, pick a child step
         const value = templateUser[this.attribute]
-        for (const { child_id, data } of children) {
-            if (data?.value === value) {
+        for (const { child_id, data = {} } of children) {
+            if (data.value === value) {
                 return await getJourneyStep(child_id)
             }
         }

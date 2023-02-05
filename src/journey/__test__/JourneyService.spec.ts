@@ -27,7 +27,7 @@ describe('Run', () => {
                 ES: 34,
             }, journey.id)
             const entrance = await JourneyEntrance.create(journey.id, list.id)
-            await JourneyStepChild.insertAndFetch({
+            await JourneyStepChild.insert({
                 step_id: entrance.id,
                 child_id: step2.id,
                 data: {},

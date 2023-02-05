@@ -80,7 +80,7 @@ describe('JourneyGate', () => {
 describe('Journey Map', () => {
     test('different options pick different paths', async () => {
 
-        const user = User.fromJson({ data: { progress: '20' } })
+        const user = User.fromJson({ data: { progress: 20 } })
         const step1 = await JourneyStep.insertAndFetch()
         const step2 = await JourneyStep.insertAndFetch()
         const step3 = await JourneyStep.insertAndFetch()
@@ -104,7 +104,7 @@ describe('Journey Map', () => {
         const value1 = await map.next(user)
         expect(value1?.id).toEqual(step2.id)
 
-        user.data.progress = '30'
+        user.data.progress = 30
         const value2 = await map.next(user)
         expect(value2?.id).toEqual(step3.id)
     })
