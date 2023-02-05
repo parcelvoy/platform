@@ -51,6 +51,8 @@ export const getUserLists = async (id: number, params: SearchParams, projectId: 
 export const createList = async (projectId: number, params: ListCreateParams): Promise<List> => {
     const list = await List.insertAndFetch({
         ...params,
+        state: 'ready',
+        users_count: 0,
         project_id: projectId,
     })
 

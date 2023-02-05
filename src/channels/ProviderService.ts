@@ -8,17 +8,17 @@ export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
 }
 
-export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, name: string, schema: JSONSchemaType<T>): Router => {
+export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, type: string, schema: JSONSchemaType<T>): Router => {
     const router = new Router<
         ProjectState & { provider?: Provider }
     >({
-        prefix: `/${group}/${name}`,
+        prefix: `/${group}/${type}`,
     })
 
     router.post('/', async ctx => {
         const payload = validate(schema, ctx.request.body)
 
-        ctx.body = await createProvider(ctx.state.project.id, { ...payload, name, group })
+        ctx.body = await createProvider(ctx.state.project.id, { ...payload, type, group })
     })
 
     router.param('providerId', async (value, ctx, next) => {

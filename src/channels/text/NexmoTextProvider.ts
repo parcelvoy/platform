@@ -6,9 +6,9 @@ import Router from '@koa/router'
 import { createController } from '../ProviderService'
 
 interface NexmoDataParams {
-    apiKey: string
-    apiSecret: string
-    phoneNumber: string
+    api_key: string
+    api_secret: string
+    phone_number: string
 }
 
 interface NexmoProviderParams extends ProviderParams {
@@ -16,12 +16,30 @@ interface NexmoProviderParams extends ProviderParams {
 }
 
 export default class NexmoTextProvider extends TextProvider {
-    apiKey!: string
-    apiSecret!: string
-    phoneNumber!: string
+    api_key!: string
+    api_secret!: string
+    phone_number!: string
+
+    static namespace = 'nexmo'
+    static meta = {
+        name: 'Nexmo',
+        description: '',
+        url: 'https://nexmo.com',
+    }
+
+    static schema = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {
+        type: 'object',
+        required: ['api_key', 'api_secret', 'phone_number'],
+        properties: {
+            api_key: { type: 'string' },
+            api_secret: { type: 'string' },
+            phone_number: { type: 'string' },
+        },
+    })
 
     async send(message: TextMessage): Promise<TextResponse> {
         const { to, text } = message
+        const { api_key, api_secret, phone_number: from } = this
         const response = await fetch('https://rest.nexmo.com/sms/json', {
             method: 'POST',
             headers: {
@@ -29,9 +47,9 @@ export default class NexmoTextProvider extends TextProvider {
                 'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
             body: JSON.stringify({
-                api_key: this.apiKey,
-                api_secret: this.apiSecret,
-                from: this.phoneNumber,
+                api_key,
+                api_secret,
+                from,
                 to,
                 text,
             }),
@@ -66,16 +84,6 @@ export default class NexmoTextProvider extends TextProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {
-            type: 'object',
-            required: ['apiKey', 'apiSecret', 'phoneNumber'],
-            properties: {
-                apiKey: { type: 'string' },
-                apiSecret: { type: 'string' },
-                phoneNumber: { type: 'string' },
-            },
-        })
-
-        return createController('text', 'nexmo', providerParams)
+        return createController('text', this.namespace, this.schema)
     }
 }

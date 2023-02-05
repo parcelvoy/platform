@@ -1,4 +1,5 @@
 import Router from '@koa/router'
+import { ProviderMeta } from '../Provider'
 import { getProviderByExternalId, loadProvider } from '../ProviderRepository'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
@@ -30,12 +31,18 @@ export const loadTextChannelInbound = async (inboundNumber: string): Promise<Tex
     return new TextChannel(provider)
 }
 
-export const loadTextControllers = async (router: Router) => {
+export const loadTextControllers = async (router: Router, providers: ProviderMeta[]) => {
     for (const type of Object.values(typeMap)) {
         const controllers = type.controllers()
         router.use(
             controllers.routes(),
             controllers.allowedMethods(),
         )
+        providers.push({
+            ...type.meta,
+            type: type.namespace,
+            channel: 'text',
+            schema: type.schema,
+        })
     }
 }

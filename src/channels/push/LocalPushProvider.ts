@@ -34,6 +34,46 @@ export default class LocalPushProvider extends PushProvider {
 
     transport!: PushNotifications
 
+    static namespace = 'local'
+    static meta = {
+        name: 'Push Notifications',
+        description: '',
+    }
+
+    static schema = ProviderSchema<PushProviderParams, PushDataParams>('localPushProviderParams', {
+        type: 'object',
+        properties: {
+            apn: {
+                type: 'object',
+                nullable: true,
+                required: ['production', 'token'],
+                properties: {
+                    production: {
+                        type: 'boolean',
+                    },
+                    token: {
+                        type: 'object',
+                        required: ['key', 'keyId', 'teamId'],
+                        properties: {
+                            key: { type: 'string' },
+                            keyId: { type: 'string' },
+                            teamId: { type: 'string' },
+                        },
+                    },
+                },
+            },
+            fcm: {
+                type: 'object',
+                nullable: true,
+                required: ['id'],
+                properties: {
+                    id: { type: 'string' },
+                },
+            },
+        },
+        additionalProperties: false,
+    })
+
     boot() {
         this.transport = new PushNotifications({
             apn: this.apn,
@@ -72,40 +112,6 @@ export default class LocalPushProvider extends PushProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<PushProviderParams, PushDataParams>('localPushProviderParams', {
-            type: 'object',
-            properties: {
-                apn: {
-                    type: 'object',
-                    nullable: true,
-                    required: ['production', 'token'],
-                    properties: {
-                        production: {
-                            type: 'boolean',
-                        },
-                        token: {
-                            type: 'object',
-                            required: ['key', 'keyId', 'teamId'],
-                            properties: {
-                                key: { type: 'string' },
-                                keyId: { type: 'string' },
-                                teamId: { type: 'string' },
-                            },
-                        },
-                    },
-                },
-                fcm: {
-                    type: 'object',
-                    nullable: true,
-                    required: ['id'],
-                    properties: {
-                        id: { type: 'string' },
-                    },
-                },
-            },
-            additionalProperties: false,
-        })
-
-        return createController('push', 'local', providerParams)
+        return createController('push', this.namespace, this.schema)
     }
 }

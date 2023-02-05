@@ -5,9 +5,9 @@ import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
 interface PlivoDataParams {
-    authId: string
-    authToken: string
-    phoneNumber: string
+    auth_id: string
+    auth_token: string
+    phone_number: string
 }
 
 interface PlivoProviderParams extends ExternalProviderParams {
@@ -15,17 +15,34 @@ interface PlivoProviderParams extends ExternalProviderParams {
 }
 
 export default class PlivoTextProvider extends TextProvider {
-    authId!: string
-    authToken!: string
-    phoneNumber!: string
+    auth_id!: string
+    auth_token!: string
+    phone_number!: string
+
+    static namespace = 'plivo'
+    static meta = {
+        name: 'Plivo',
+        description: '',
+        url: 'https://plivo.com',
+    }
+
+    static schema = ProviderSchema<PlivoProviderParams, PlivoDataParams>('plivoTextProviderParams', {
+        type: 'object',
+        required: ['auth_id', 'auth_token', 'phone_number'],
+        properties: {
+            auth_id: { type: 'string' },
+            auth_token: { type: 'string' },
+            phone_number: { type: 'string' },
+        },
+    })
 
     get apiKey(): string {
-        return Buffer.from(`${this.authId}:${this.authToken}`).toString('base64')
+        return Buffer.from(`${this.auth_id}:${this.auth_token}`).toString('base64')
     }
 
     async send(message: TextMessage): Promise<TextResponse> {
         const { to, text } = message
-        const response = await fetch(`https://api.plivo.com/v1/Account/${this.authId}/Message/`, {
+        const response = await fetch(`https://api.plivo.com/v1/Account/${this.auth_id}/Message/`, {
             method: 'POST',
             headers: {
                 Authorization: `Basic ${this.apiKey}`,
@@ -33,7 +50,7 @@ export default class PlivoTextProvider extends TextProvider {
                 'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
             body: JSON.stringify({
-                src: this.phoneNumber,
+                src: this.phone_number,
                 dst: to,
                 text,
             }),
@@ -61,16 +78,6 @@ export default class PlivoTextProvider extends TextProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<PlivoProviderParams, PlivoDataParams>('plivoTextProviderParams', {
-            type: 'object',
-            required: ['authId', 'authToken', 'phoneNumber'],
-            properties: {
-                authId: { type: 'string' },
-                authToken: { type: 'string' },
-                phoneNumber: { type: 'string' },
-            },
-        })
-
-        return createController('text', 'plivo', providerParams)
+        return createController('text', this.namespace, this.schema)
     }
 }

@@ -8,6 +8,16 @@ import { PushProvider } from './PushProvider'
 export default class LoggerPushProvider extends PushProvider {
     addLatency?: boolean
 
+    static namespace = 'logger'
+    static meta = {
+        name: 'Push Notification Logger',
+        description: '',
+    }
+
+    static schema = ProviderSchema<ExternalProviderParams, any>('loggerPushProviderParams', {
+        type: 'object',
+    })
+
     async send(push: Push): Promise<PushResponse> {
 
         // Allow for having random latency to aid in performance testing
@@ -22,10 +32,6 @@ export default class LoggerPushProvider extends PushProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<ExternalProviderParams, any>('loggerPushProviderParams', {
-            type: 'object',
-        })
-
-        return createController('email', 'push', providerParams)
+        return createController('email', 'push', this.schema)
     }
 }
