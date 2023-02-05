@@ -1,5 +1,4 @@
 import Model, { ModelParams } from '../core/Model'
-import { JourneyStep } from './JourneyStep'
 
 export default class Journey extends Model {
     name!: string
@@ -7,8 +6,8 @@ export default class Journey extends Model {
     description?: string
     deleted_at?: Date
 
-    steps: JourneyStep[] = []
+    static virtualAttributes: string[] = ['steps']
 }
 
-export type JourneyParams = Omit<Journey, ModelParams | 'steps' | 'deleted_at'>
+export type JourneyParams = Omit<Journey, ModelParams | 'deleted_at'>
 export type UpdateJourneyParams = Omit<JourneyParams, 'project_id' | 'deleted_at'>

@@ -1,7 +1,7 @@
 import { createProject } from '../../projects/ProjectService'
 import Rule from '../../rules/Rule'
 import { User } from '../../users/User'
-import { JourneyStep, JourneyMap, JourneyGate } from '../JourneyStep'
+import { JourneyStep, JourneyMap, JourneyGate, JourneyStepChild } from '../JourneyStep'
 
 describe('JourneyGate', () => {
 
@@ -13,7 +13,7 @@ describe('JourneyGate', () => {
 
     describe('user gate', () => {
         const createGate = async (rule: Rule) => {
-            return await JourneyGate.create('user', rule)
+            return await JourneyGate.create(rule)
         }
 
         test('condition passes with valid equals rule', async () => {
@@ -80,7 +80,7 @@ describe('JourneyGate', () => {
 describe('Journey Map', () => {
     test('different options pick different paths', async () => {
 
-        const user = User.fromJson({ data: { progress: '20' } })
+        const user = User.fromJson({ data: { progress: 20 } })
         const step1 = await JourneyStep.insertAndFetch()
         const step2 = await JourneyStep.insertAndFetch()
         const step3 = await JourneyStep.insertAndFetch()
@@ -90,10 +90,21 @@ describe('Journey Map', () => {
             20: step2.id,
             30: step3.id,
         })
+
+        await Promise.all(([
+            [10, step1],
+            [20, step2],
+            [30, step3],
+        ] as const).map(([value, { id: child_id }]) => JourneyStepChild.insert({
+            step_id: map.id,
+            child_id,
+            data: { value },
+        })))
+
         const value1 = await map.next(user)
         expect(value1?.id).toEqual(step2.id)
 
-        user.data.progress = '30'
+        user.data.progress = 30
         const value2 = await map.next(user)
         expect(value2?.id).toEqual(step3.id)
     })

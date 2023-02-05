@@ -3,10 +3,12 @@ import Model from '../core/Model'
 import { User } from '../users/User'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
-import { getJourneyStep, getUserJourneyStep } from './JourneyRepository'
+import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
-import { snakeCase } from '../utilities'
+import { random, snakeCase, uuid } from '../utilities'
+import App from '../app'
+import JourneyProcessJob from './JourneyProcessJob'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -17,11 +19,22 @@ export class JourneyUserStep extends Model {
     static tableName = 'journey_user_step'
 }
 
+export class JourneyStepChild extends Model {
+
+    step_id!: number
+    child_id!: number
+    data?: Record<string, unknown>
+
+    static tableName = 'journey_step_child'
+    static jsonAttributes: string[] = ['data']
+
+}
+
 export class JourneyStep extends Model {
     type!: string
     journey_id!: number
-    child_id?: number // the step that comes after
     data?: Record<string, unknown>
+    uuid!: string
 
     // UI variables
     x = 0
@@ -63,11 +76,11 @@ export class JourneyStep extends Model {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async next(user: User, event?: UserEvent): Promise<JourneyStep | undefined> {
-        return await getJourneyStep(this.child_id)
+        const child = await JourneyStepChild.first(q => q.where('step_id', this.id))
+        if (!child) return undefined
+        return await getJourneyStep(child.child_id)
     }
 }
-
-export type JourneyStepParams = Pick<JourneyStep, 'type' | 'child_id' | 'data' | 'x' | 'y'>
 
 export class JourneyEntrance extends JourneyStep {
     static type = 'entrance'
@@ -79,14 +92,16 @@ export class JourneyEntrance extends JourneyStep {
         this.list_id = json?.data.list_id
     }
 
-    static async create(listId: number, childId?: number, journeyId?: number): Promise<JourneyEntrance> {
+    static async create(journeyId: number, listId?: number): Promise<JourneyEntrance> {
         return await JourneyEntrance.insertAndFetch({
             type: this.type,
-            child_id: childId,
+            uuid: uuid(),
             journey_id: journeyId,
             data: {
                 list_id: listId,
             },
+            x: 0,
+            y: 0,
         })
     }
 }
@@ -155,23 +170,19 @@ export class JourneyAction extends JourneyStep {
 export class JourneyGate extends JourneyStep {
     static type = 'gate'
 
-    entrance_type!: 'user' | 'event'
     rule!: Rule
 
     parseJson(json: any) {
         super.parseJson(json)
 
-        this.entrance_type = json?.data?.entrance_type
         this.rule = json?.data.rule
     }
 
-    static async create(entranceType: string, rule: Rule, childId?: number, journeyId?: number): Promise<JourneyGate> {
+    static async create(rule: Rule, journeyId?: number): Promise<JourneyGate> {
         return await JourneyGate.insertAndFetch({
             type: this.type,
-            child_id: childId,
             journey_id: journeyId,
             data: {
-                entrance_type: entranceType,
                 rule,
             },
         })
@@ -191,13 +202,11 @@ export class JourneyMap extends JourneyStep {
     static type = 'map'
 
     attribute!: string
-    options!: MapOptions
 
     parseJson(json: any) {
         super.parseJson(json)
 
         this.attribute = json?.data?.attribute
-        this.options = json?.data.options
     }
 
     static async create(attribute: string, options: MapOptions, journeyId?: number): Promise<JourneyMap> {
@@ -217,13 +226,138 @@ export class JourneyMap extends JourneyStep {
 
     async next(user: User) {
 
+        const children = await getJourneyStepChildren(this.id)
+
         // When comparing the user expects comparison
         // to be between the UI model user vs core user
         const templateUser = user.flatten()
 
         // Based on an attribute match, pick a child step
         const value = templateUser[this.attribute]
-        const childId = this.options[value]
-        return await getJourneyStep(childId)
+        for (const { child_id, data = {} } of children) {
+            if (data.value === value) {
+                return await getJourneyStep(child_id)
+            }
+        }
+
+        // Fallback
+        for (const { child_id, data } of children) {
+            if (data?.fallback) {
+                return await getJourneyStep(child_id)
+            }
+        }
+
+        return undefined
     }
+}
+
+/**
+ * randomly distribute users to different branches
+ */
+export class JourneyExperiment extends JourneyStep {
+    static type = 'experiment'
+
+    async next() {
+
+        let children = await getJourneyStepChildren(this.id)
+
+        if (!children.length) return undefined
+
+        children = children.reduce<JourneyStepChild[]>((a, c) => {
+            const proportion = Number(c.data?.value)
+            if (!isNaN(proportion) && proportion > 0) {
+                for (let i = 0; i < proportion; i++) {
+                    a.push(c)
+                }
+            }
+            return a
+        }, [])
+
+        if (!children) return undefined
+
+        return await getJourneyStep(random(children).child_id)
+    }
+
+}
+
+/**
+ * add user to another journey
+ */
+export class JourneyLink extends JourneyStep {
+    static type = 'link'
+
+    target_id!: number
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.target_id = json.data?.journey_id
+    }
+
+    async complete(user: User, event?: UserEvent | undefined): Promise<void> {
+
+        if (!isNaN(this.journey_id)) {
+            await App.main.queue.enqueue(JourneyProcessJob.from({
+                journey_id: this.target_id,
+                user_id: user.id,
+                event_id: event?.id,
+            }))
+        }
+
+        return super.complete(user, event)
+    }
+}
+
+export const journeyStepTypes = [
+    JourneyEntrance,
+    JourneyDelay,
+    JourneyAction,
+    JourneyGate,
+    JourneyMap,
+    JourneyExperiment,
+    JourneyLink,
+].reduce<Record<string, typeof JourneyStep>>((a, c) => {
+    a[c.type] = c
+    return a
+}, {})
+
+export type JourneyStepMap = Record<
+    string,
+    {
+        type: string
+        data?: Record<string, unknown>
+        x: number
+        y: number
+        children?: Array<{
+            uuid: string
+            data?: Record<string, unknown>
+        }>
+    }
+>
+
+// This is async in case we ever want to fetch stats here
+export async function toJourneyStepMap(steps: JourneyStep[], children: JourneyStepChild[]) {
+    const editData: JourneyStepMap = {}
+
+    for (const step of steps) {
+        editData[step.uuid] = {
+            type: step.type,
+            data: step.data ?? {},
+            x: step.x ?? 0,
+            y: step.y ?? 0,
+            children: children.reduce<JourneyStepMap[string]['children']>((a, { step_id, child_id, data }) => {
+                if (step_id === step.id) {
+                    const child = steps.find(s => s.id === child_id)
+                    if (child) {
+                        a!.push({
+                            uuid: child.uuid,
+                            data,
+                        })
+                    }
+                }
+                return a
+            }, []),
+        }
+    }
+
+    return editData
 }

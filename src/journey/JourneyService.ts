@@ -1,6 +1,6 @@
 import { User } from '../users/User'
 import { getJourneyEntrance, getJourneyStep, getUserJourneyIds, lastJourneyStep } from './JourneyRepository'
-import { JourneyEntrance, JourneyDelay, JourneyGate, JourneyStep, JourneyMap, JourneyAction } from './JourneyStep'
+import { JourneyEntrance, JourneyStep, journeyStepTypes } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import List from '../lists/List'
 
@@ -42,19 +42,26 @@ export default class JourneyService {
 
     async run(user: User, event?: UserEvent): Promise<void> {
 
+        const processed: number[] = []
+
         // Loop through all possible next steps until we get an empty next
         // which signifies that the journey is in a pending state
 
         let nextStep: JourneyStep | undefined | null = await this.nextStep(user)
         while (nextStep) {
-            const parsedStep = this.parse(nextStep)
+            if (processed.includes(nextStep.id)) {
+                // Avoid infinite loop in single run
+                break
+            }
+            processed.push(nextStep.id)
+            nextStep = this.parse(nextStep)
 
             // If completed, jump to next otherwise validate condition
-            if (await parsedStep.hasCompleted(user)) {
-                nextStep = await parsedStep.next(user)
-            } else if (await parsedStep.condition(user, event)) {
-                await parsedStep.complete(user)
-                nextStep = await parsedStep.next(user)
+            if (await nextStep.hasCompleted(user)) {
+                nextStep = await nextStep.next(user)
+            } else if (await nextStep.condition(user, event)) {
+                await nextStep.complete(user)
+                nextStep = await nextStep.next(user)
             } else {
                 nextStep = null
             }
@@ -62,14 +69,7 @@ export default class JourneyService {
     }
 
     parse(step: JourneyStep): JourneyStep {
-        const options = {
-            [JourneyEntrance.type]: JourneyEntrance,
-            [JourneyDelay.type]: JourneyDelay,
-            [JourneyGate.type]: JourneyGate,
-            [JourneyMap.type]: JourneyMap,
-            [JourneyAction.type]: JourneyAction,
-        }
-        return options[step.type]?.fromJson(step)
+        return journeyStepTypes[step.type]?.fromJson(step)
     }
 
     async nextStep(user: User): Promise<JourneyStep | undefined> {

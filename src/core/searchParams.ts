@@ -5,6 +5,7 @@ export interface SearchParams {
     itemsPerPage: number
     q?: string
     sort?: string
+    tags?: string[]
 }
 
 export const searchParamsSchema: JSONSchemaType<SearchParams> = {
@@ -28,6 +29,13 @@ export const searchParamsSchema: JSONSchemaType<SearchParams> = {
         },
         sort: {
             type: 'string',
+            nullable: true,
+        },
+        tags: {
+            type: 'array',
+            items: {
+                type: 'string',
+            },
             nullable: true,
         },
     },

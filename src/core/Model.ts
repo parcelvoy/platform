@@ -141,10 +141,10 @@ export default class Model {
         page = 0,
         itemsPerPage = 10,
         db: Database = App.main.db,
-    ): Promise<SearchResult<T>> {
+    ): Promise<SearchResult<InstanceType<T>>> {
         const total = await this.count(query, db)
         const start = page * itemsPerPage
-        const results = total > 0
+        const results: T[] = total > 0
             ? await query(this.table(db)).offset(start).limit(itemsPerPage)
             : []
         const end = Math.min(start + itemsPerPage, start + results.length)
@@ -232,7 +232,7 @@ export default class Model {
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
         const id: number = await this.table(db).insert(formattedData)
-        return await this.find(id) as InstanceType<T>
+        return await this.find(id, b => b, db) as InstanceType<T>
     }
 
     static async update<T extends typeof Model>(
@@ -253,7 +253,7 @@ export default class Model {
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
         await this.table(db).where('id', id).update(formattedData)
-        return await this.find(id) as InstanceType<T>
+        return await this.find(id, b => b, db) as InstanceType<T>
     }
 
     static async delete<T extends typeof Model>(
