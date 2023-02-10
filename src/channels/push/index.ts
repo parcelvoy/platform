@@ -11,8 +11,8 @@ const typeMap = {
     logger: LoggerPushProvider,
 }
 
-export const providerMap = (record: { name: PushProviderName }): PushProvider => {
-    return typeMap[record.name].fromJson(record)
+export const providerMap = (record: { type: PushProviderName }): PushProvider => {
+    return typeMap[record.type].fromJson(record)
 }
 
 export const loadPushChannel = async (providerId: number, projectId: number): Promise<PushChannel | undefined> => {

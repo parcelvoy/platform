@@ -15,8 +15,8 @@ const typeMap = {
     logger: LoggerTextProvider,
 }
 
-export const providerMap = (record: { name: TextProviderName }): TextProvider => {
-    return typeMap[record.name].fromJson(record)
+export const providerMap = (record: { type: TextProviderName }): TextProvider => {
+    return typeMap[record.type].fromJson(record)
 }
 
 export const loadTextChannel = async (providerId: number, projectId: number): Promise<TextChannel | undefined> => {

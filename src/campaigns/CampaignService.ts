@@ -3,7 +3,7 @@ import TextJob from '../channels/text/TextJob'
 import WebhookJob from '../channels/webhook/WebhookJob'
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
-import Campaign, { CampaignParams, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
+import Campaign, { CampaignDelivery, CampaignParams, CampaignSend, CampaignSendParams, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
@@ -15,9 +15,9 @@ import { allTemplates, duplicateTemplate } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { getProvider } from '../channels/ProviderRepository'
-import { isFuture } from 'date-fns'
 import { pick } from '../utilities'
 import { createTagSubquery } from '../tags/TagService'
+import { getProject } from '../projects/ProjectService'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     return await Campaign.searchParams(
@@ -76,7 +76,7 @@ export const updateCampaign = async (id: number, projectId: number, params: Part
 
     // Calculate current state based on past properties
     if (params.send_at && data.state !== 'finished') {
-        data.state = isFuture(new Date(params.send_at)) ? 'scheduled' : 'running'
+        data.state = 'scheduled'
     } else {
         data.state = data.state === 'running' ? 'aborted' : 'draft'
     }
@@ -156,7 +156,8 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
 
 export const sendList = async (campaign: SentCampaign) => {
 
-    if (!campaign.list_id) {
+    const project = await getProject(campaign.project_id)
+    if (!campaign.list_id || !project) {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
@@ -192,7 +193,7 @@ export const sendList = async (campaign: SentCampaign) => {
                     campaign_id: campaign.id,
                     state: 'pending',
                     send_at: campaign.send_in_user_timezone
-                        ? utcToZonedTime(campaign.send_at, timezone)
+                        ? utcToZonedTime(campaign.send_at, timezone ?? project.timezone)
                         : campaign.send_at,
                 })
                 i++
@@ -243,4 +244,24 @@ export const duplicateCampaign = async (campaign: Campaign) => {
         await duplicateTemplate(template, cloneId)
     }
     return await getCampaign(cloneId, campaign.project_id)
+}
+
+export const campaignProgress = async (campaign: Campaign): Promise<CampaignDelivery> => {
+    const progress = await CampaignSend.first(
+        qb => qb.where('campaign_id', campaign.id)
+            .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total")),
+    ) as any
+    return {
+        sent: parseInt(progress.sent),
+        total: parseInt(progress.total),
+    }
+}
+
+export const updateCampaignProgress = async (
+    id: number,
+    projectId: number,
+    state: CampaignState,
+    delivery: CampaignDelivery,
+): Promise<void> => {
+    await Campaign.update(qb => qb.where('id', id).where('project_id', projectId), { state, delivery })
 }

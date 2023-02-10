@@ -13,8 +13,8 @@ const typeMap = {
     logger: LoggerEmailProvider,
 }
 
-export const providerMap = (record: { name: EmailProviderName }): EmailProvider => {
-    return typeMap[record.name].fromJson(record)
+export const providerMap = (record: { type: EmailProviderName }): EmailProvider => {
+    return typeMap[record.type].fromJson(record)
 }
 
 export const loadEmailChannel = async (providerId: number, projectId: number): Promise<EmailChannel | undefined> => {
