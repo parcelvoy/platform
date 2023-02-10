@@ -9,6 +9,16 @@ import EmailProvider from './EmailProvider'
 export default class LoggerEmailProvider extends EmailProvider {
     addLatency?: boolean
 
+    static namespace = 'logger'
+    static meta = {
+        name: 'Logger',
+        icon: 'https://parcelvoy.com/images/logger.svg',
+    }
+
+    static schema = ProviderSchema<ExternalProviderParams, any>('loggerEmailProviderParams', {
+        type: 'object',
+    })
+
     async send(message: Email): Promise<any> {
 
         // Allow for having random latency to aid in performance testing
@@ -22,10 +32,6 @@ export default class LoggerEmailProvider extends EmailProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<ExternalProviderParams, any>('loggerEmailProviderParams', {
-            type: 'object',
-        })
-
-        return createController('email', 'logger', providerParams)
+        return createController('email', this.namespace, this.schema)
     }
 }

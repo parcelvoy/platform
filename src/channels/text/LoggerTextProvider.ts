@@ -9,6 +9,16 @@ import { TextProvider } from './TextProvider'
 export default class LoggerTextProvider extends TextProvider {
     addLatency?: boolean
 
+    static namespace = 'logger'
+    static meta = {
+        name: 'Logger',
+        icon: 'https://parcelvoy.com/images/logger.svg',
+    }
+
+    static schema = ProviderSchema<ProviderParams, any>('loggerTextProviderParams', {
+        type: 'object',
+    })
+
     async send(message: TextMessage): Promise<TextResponse> {
 
         // Allow for having random latency to aid in performance testing
@@ -31,10 +41,6 @@ export default class LoggerTextProvider extends TextProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<ProviderParams, any>('loggerTextProviderParams', {
-            type: 'object',
-        })
-
-        return createController('text', 'logger', providerParams)
+        return createController('text', this.namespace, this.schema)
     }
 }

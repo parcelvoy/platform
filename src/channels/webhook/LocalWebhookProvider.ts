@@ -5,6 +5,18 @@ import { Webhook, WebhookResponse } from './Webhook'
 import { WebhookProvider } from './WebhookProvider'
 
 export default class LocalWebhookProvider extends WebhookProvider {
+    static namespace = 'local'
+    static meta = {
+        name: 'Local',
+        icon: 'https://parcelvoy.com/images/webhook.svg',
+    }
+
+    static schema = ProviderSchema<ProviderParams, any>('localWebhookProviderParams', {
+        type: 'object',
+        nullable: true,
+        additionalProperties: true,
+    })
+
     async send(options: Webhook): Promise<WebhookResponse> {
         const { method, endpoint, headers, body } = options
         const response = await fetch(endpoint, {
@@ -26,10 +38,6 @@ export default class LocalWebhookProvider extends WebhookProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<ProviderParams, any>('localWebhookProviderParams', {
-            type: 'object',
-        })
-
-        return createController('webhook', 'local', providerParams)
+        return createController('webhook', this.namespace, this.schema)
     }
 }

@@ -20,7 +20,7 @@ export const searchParamsSchema: JSONSchemaType<SearchParams> = {
         },
         itemsPerPage: {
             type: 'integer',
-            default: 10,
+            default: 25,
             minimum: -1, // -1 for all
         },
         q: {

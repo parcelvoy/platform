@@ -15,6 +15,36 @@ type SESEmailProviderParams = Pick<SESEmailProvider, keyof ExternalProviderParam
 export default class SESEmailProvider extends EmailProvider {
     config!: AWSConfig
 
+    static namespace = 'ses'
+    static meta = {
+        name: 'Amazon SES',
+        url: 'https://aws.amazon.com/ses',
+        icon: 'https://parcelvoy.com/images/ses.svg',
+    }
+
+    static schema = ProviderSchema<SESEmailProviderParams, SESDataParams>('sesProviderParams', {
+        type: 'object',
+        required: ['config'],
+        properties: {
+            config: {
+                type: 'object',
+                required: ['region', 'credentials'],
+                properties: {
+                    region: { type: 'string' },
+                    credentials: {
+                        type: 'object',
+                        required: ['accessKeyId', 'secretAccessKey'],
+                        properties: {
+                            accessKeyId: { type: 'string' },
+                            secretAccessKey: { type: 'string' },
+                        },
+                    },
+                },
+            },
+        },
+        additionalProperties: false,
+    })
+
     boot() {
         const ses = new aws.SES({
             region: this.config.region,
@@ -29,29 +59,6 @@ export default class SESEmailProvider extends EmailProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<SESEmailProviderParams, SESDataParams>('sesProviderParams', {
-            type: 'object',
-            required: ['config'],
-            properties: {
-                config: {
-                    type: 'object',
-                    required: ['region', 'credentials'],
-                    properties: {
-                        region: { type: 'string' },
-                        credentials: {
-                            type: 'object',
-                            required: ['accessKeyId', 'secretAccessKey'],
-                            properties: {
-                                accessKeyId: { type: 'string' },
-                                secretAccessKey: { type: 'string' },
-                            },
-                        },
-                    },
-                },
-            },
-            additionalProperties: false,
-        })
-
-        return createController('email', 'ses', providerParams)
+        return createController('email', this.namespace, this.schema)
     }
 }

@@ -9,6 +9,16 @@ import { WebhookProvider } from './WebhookProvider'
 export default class LoggerWebhookProvider extends WebhookProvider {
     addLatency?: boolean
 
+    static namespace = 'logger'
+    static meta = {
+        name: 'Logger',
+        icon: 'https://parcelvoy.com/images/logger.svg',
+    }
+
+    static schema = ProviderSchema<ProviderParams, any>('loggerWebhookProviderParams', {
+        type: 'object',
+    })
+
     async send(options: Webhook): Promise<WebhookResponse> {
 
         // Allow for having random latency to aid in performance testing
@@ -23,10 +33,6 @@ export default class LoggerWebhookProvider extends WebhookProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<ProviderParams, any>('loggerWebhookProviderParams', {
-            type: 'object',
-        })
-
-        return createController('webhook', 'logger', providerParams)
+        return createController('webhook', this.namespace, this.schema)
     }
 }

@@ -21,6 +21,31 @@ export default class SMTPEmailProvider extends EmailProvider {
 
     declare data: SMTPDataParams
 
+    static namespace = 'smtp'
+    static meta = {
+        name: 'SMTP',
+        icon: 'https://parcelvoy.com/images/smtp.svg',
+    }
+
+    static schema = ProviderSchema<SMTPEmailProviderParams, SMTPDataParams>('smtpProviderParams', {
+        type: 'object',
+        required: ['host', 'port', 'secure', 'auth'],
+        properties: {
+            host: { type: 'string' },
+            port: { type: 'number' },
+            secure: { type: 'boolean' },
+            auth: {
+                type: 'object',
+                required: ['user', 'pass'],
+                properties: {
+                    user: { type: 'string' },
+                    pass: { type: 'string' },
+                },
+            },
+        },
+        additionalProperties: false,
+    })
+
     boot() {
         this.transport = nodemailer.createTransport({
             host: this.host,
@@ -31,25 +56,6 @@ export default class SMTPEmailProvider extends EmailProvider {
     }
 
     static controllers(): Router {
-        const providerParams = ProviderSchema<SMTPEmailProviderParams, SMTPDataParams>('smtpProviderParams', {
-            type: 'object',
-            required: ['host', 'port', 'secure', 'auth'],
-            properties: {
-                host: { type: 'string' },
-                port: { type: 'number' },
-                secure: { type: 'boolean' },
-                auth: {
-                    type: 'object',
-                    required: ['user', 'pass'],
-                    properties: {
-                        user: { type: 'string' },
-                        pass: { type: 'string' },
-                    },
-                },
-            },
-            additionalProperties: false,
-        })
-
-        return createController('email', 'smtp', providerParams)
+        return createController('email', this.namespace, this.schema)
     }
 }

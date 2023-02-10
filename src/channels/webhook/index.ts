@@ -1,4 +1,5 @@
 import Router from '@koa/router'
+import { ProviderMeta } from '../Provider'
 import { loadProvider } from '../ProviderRepository'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
@@ -20,12 +21,18 @@ export const loadWebhookChannel = async (providerId: number, projectId: number):
     return new WebhookChannel(provider)
 }
 
-export const loadWebhookControllers = async (router: Router) => {
+export const loadWebhookControllers = async (router: Router, providers: ProviderMeta[]) => {
     for (const type of Object.values(typeMap)) {
         const controllers = type.controllers()
         router.use(
             controllers.routes(),
             controllers.allowedMethods(),
         )
+        providers.push({
+            ...type.meta,
+            type: type.namespace,
+            channel: 'webhook',
+            schema: type.schema,
+        })
     }
 }
