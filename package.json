@@ -1,5 +1,5 @@
 {
-  "name": "root",
+  "name": "parcelvoy",
   "private": true,
   "workspaces": [
     "apps/*"
@@ -10,6 +10,7 @@
   "scripts": {
     "start": "lerna run start",
     "build": "lerna run build",
+    "lint": "lerna run lint",
     "test": "lerna run test"
   }
 }

@@ -1,4 +1,4 @@
-{
+export default [{
     "env": {
         "browser": true,
         "es2021": true
@@ -12,7 +12,7 @@
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module",
-        "project": "tsconfig.json"
+        "project": path.join(__dirname, "tsconfig.eslint.json"),
     },
     "plugins": [
         "react"
@@ -55,4 +55,4 @@
         "react/prop-types": "off",
         "react/react-in-jsx-scope": "off"
     }
-}
+}]

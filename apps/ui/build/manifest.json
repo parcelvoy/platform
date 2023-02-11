@@ -1,9 +1,0 @@
-{
-  "short_name": "Multi Send Thing!",
-  "name": "Send so many things",
-  "icons": [],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
-}
