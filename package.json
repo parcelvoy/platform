@@ -8,8 +8,8 @@
     "lerna": "^6.0.3"
   },
   "scripts": {
-    "start": "nx serve",
-    "build": "nx build",
-    "test": "nx test"
+    "start": "lerna run start",
+    "build": "lerna run build",
+    "test": "lerna run test"
   }
 }
