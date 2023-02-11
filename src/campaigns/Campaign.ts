@@ -5,8 +5,8 @@ import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
 
-type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
-interface CampaignDelivery {
+export type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
+export interface CampaignDelivery {
     sent: number
     total: number
 }

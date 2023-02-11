@@ -11,8 +11,8 @@ const typeMap = {
     logger: LoggerWebhookProvider,
 }
 
-export const providerMap = (record: { name: WebhookProviderName }): WebhookProvider => {
-    return typeMap[record.name].fromJson(record)
+export const providerMap = (record: { type: WebhookProviderName }): WebhookProvider => {
+    return typeMap[record.type].fromJson(record)
 }
 
 export const loadWebhookChannel = async (providerId: number, projectId: number): Promise<WebhookChannel | undefined> => {
