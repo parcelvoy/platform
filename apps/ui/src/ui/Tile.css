@@ -1,0 +1,25 @@
+.ui-tile-grid {
+    display: grid;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.ui-tile {
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    transition: box-shadow ease-in .1s;
+    cursor: pointer;
+}
+
+.ui-tile:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.ui-tile.selected {
+    border: 1px solid var(--color-primary);
+}
+
+.ui-tile p {
+    margin: 5px 0;
+}

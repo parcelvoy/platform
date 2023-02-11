@@ -1,0 +1,39 @@
+.ui-alert {
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 5px;
+    background: var(--color-grey-soft);
+    color: var(--color-primary);
+}
+
+.ui-alert h4 {
+    margin: 0;
+}
+
+.ui-alert p {
+    margin: 5px 0;
+}
+
+.ui-alert .alert-actions {
+    margin-top: 10px;
+}
+
+.ui-alert.info {
+    background: var(--color-blue-soft);
+    color: var(--color-blue-hard);
+}
+
+.ui-alert.success {
+    background: var(--color-green-soft);
+    color: var(--color-green-hard);
+}
+
+.ui-alert.error {
+    background: var(--color-red-soft);
+    color: var(--color-red-hard);
+}
+
+.ui-alert.warn {
+    background: var(--color-yellow-soft);
+    color: var(--color-yellow-hard);
+}

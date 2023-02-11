@@ -1,0 +1,14 @@
+.ui-stack {
+    --spacing: 20px;
+    display: flex;
+    flex-direction: row;
+    margin: calc(var(--spacing) / -2);
+}
+
+.ui-stack > * {
+    padding: calc(var(--spacing) / 2);
+}
+
+.ui-stack.ui-stack-vertical {
+    flex-direction: column;
+}

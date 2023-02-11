@@ -1,0 +1,21 @@
+.provider-tile {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.provider-tile img {
+    width: 100%;
+    max-width: 40px;
+    border-radius: var(--border-radius);
+}
+
+.provider-tile h5 {
+    margin: 0;
+}
+
+.provider-tile p {
+    font-size: 13px;
+    color: var(--color-primary-soft);
+    margin: 0;
+}

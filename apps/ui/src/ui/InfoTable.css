@@ -1,0 +1,65 @@
+.ui-info-table {
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+}
+
+.ui-info-table .info-row {
+    display: block;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-grey);
+    gap: 20px;
+}
+
+.ui-info-table .info-label {
+    min-width: 25%;
+}
+
+.ui-info-table .info-value {
+    text-align: right;
+    position: relative;
+}
+
+.ui-info-table .info-value .ui-tag {
+    margin-top: -5px;
+    margin-bottom: -5px;
+}
+
+.ui-info-table .info-row:last-child {
+    border-bottom-width: 0px;
+}
+
+.ui-info-table.horizontal {
+    display: flex;
+    border: 0;
+    gap: 20px;
+    margin-bottom: 0;
+}
+
+.ui-info-table.horizontal .info-row {
+    border-bottom: 0px;
+    padding: 5px 0;
+    gap: 10px;
+    align-items: center;
+}
+
+.ui-info-table.horizontal .info-row:not(:last-child):after {
+    content: "";
+    border-right: 1px solid var(--color-grey-hard);
+    align-self: stretch;
+    padding-left: 10px;
+}
+
+.ui-info-table.horizontal .info-row:last-child {
+    border-right-width: 0px;
+}
+
+.ui-info-table.horizontal .info-row .info-label {
+    min-width: auto;
+}
+
+.ui-info-table.horizontal .info-row .info-value {
+    font-weight: 500;
+}

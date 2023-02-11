@@ -1,0 +1,76 @@
+.ui-table {
+    width: 100%;
+    display: table;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-grey);
+    overflow: hidden;
+}
+
+.ui-table .table-row, .ui-table .table-header {
+    display: table-row;
+}
+
+.ui-table .table-header {
+    background: var(--color-background-soft);
+}
+
+.ui-table .table-row:hover .table-cell {
+    background: var(--color-background-soft);
+}
+
+.ui-table .table-row.table-row-selected .table-cell {
+    background: var(--color-grey-soft);
+}
+
+.ui-table .table-row-interactive {
+    cursor: pointer;
+}
+
+.ui-table .table-cell, .ui-table .table-header-cell {
+    display: table-cell;
+    padding:  10px 15px;
+    border-bottom: 1px solid var(--color-grey);
+}
+
+.ui-table .table-cell {
+    padding: 15px;
+}
+
+.ui-table .table-cell:first-child, .ui-table .table-header-cell:first-child {
+    padding-left: 15px;
+}
+
+.ui-table .table-row:last-child .table-cell {
+    border-bottom: 0px;
+}
+
+.ui-table .table-header-cell {
+    font-weight: 500;
+}
+
+.ui-table .table-cell {
+    vertical-align: middle;
+}
+
+.ui-table .table-cell .multi-cell {
+    display: grid;
+    grid-template-areas: "image text";
+    grid-template-columns: 75px auto;
+    align-items: center;
+    column-gap: 10px;
+}
+
+.ui-table .table-cell .multi-cell .title {
+    grid-area: text;
+    font-weight: 500;
+}
+
+.ui-table .table-cell .multi-cell img {
+    background-color: var(--color-background-soft);
+    grid-area: image;
+    width: 75px;
+    height: 50px;
+    object-fit: cover;
+    object-position: 0px 0px;
+    border-radius: var(--border-radius-inner);
+}

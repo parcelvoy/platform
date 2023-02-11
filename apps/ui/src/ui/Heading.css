@@ -1,0 +1,43 @@
+.heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.heading-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.heading.heading-h3 {
+    margin: 20px 0 10px;
+}
+
+.heading.heading-h4 {
+    margin: 10px 0;
+}
+
+.heading.heading-h4 h4 {
+    padding: 5px 0;
+}
+
+.heading h2, .heading h3, .heading h4 {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.heading .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.heading .desc {
+    grid-area: desc;
+    margin: 5px 0 0;
+}
+
+.heading label, .heading input {
+    margin: 0;
+}

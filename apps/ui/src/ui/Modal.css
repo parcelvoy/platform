@@ -1,0 +1,75 @@
+.modal-wrapper {
+    position: absolute;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.modal-inner {
+    border-radius: var(--border-radius-outer);
+    background: var(--color-background);
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.12);
+    max-height: 90vh;
+    overflow-y: scroll;
+}
+
+.modal.regular .modal-inner {
+    max-width: 600px;
+}
+
+.modal.large .modal-inner {
+    max-width: 960px;
+}
+
+.modal-inner .modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-inner .modal-header h3 {
+    margin: 0;
+}
+
+.modal-inner .modal-footer {
+    margin-top: 20px;
+}
+
+.modal-overlay {
+    background: rgba(0,0,0,0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+}
+
+.modal .transition-enter {
+    transition: opacity .1s cubic-bezier(.4,0,.2,1), transform .1s ease-out;
+}
+
+.modal .transition-leave {
+    transition: opacity .1s ease-in, transform .1s ease-in;
+}
+
+.modal .transition-leave-from,
+.modal .transition-enter-to {
+    opacity: 1;
+}
+
+.modal .transition-leave-to,
+.modal .transition-enter-from {
+    opacity: 0;
+}
+
+.modal .transition-enter-from-scale {
+    transform: scale(1.05);
+}

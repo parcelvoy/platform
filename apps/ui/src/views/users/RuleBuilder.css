@@ -1,0 +1,103 @@
+.rule-builder {
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.rule-set {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    border-radius: var(--border-radius);
+}
+
+.rule-set .rule > .rule-set {
+    border: 1px solid var(--color-grey);
+}
+
+.rule-set .rule-set-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.rule-set .rule-set-rules {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 0;
+    margin-left: 10px;
+}
+
+.rule-set .rule-set-actions {
+    display: flex;
+    gap: 5px;
+    padding: 0 20px;
+    margin-left: 10px;
+}
+
+.rule-set .rule > .rule-set .rule-set-header {
+    padding: 5px 10px 0;
+}
+
+.rule-set .rule > .rule-set .rule-set-rules,
+.rule-set .rule > .rule-set .rule-set-actions {
+    margin-left: 0;
+}
+
+.rule {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-left: -1px;
+    padding: 5px 20px;
+    border-left: 1px solid var(--color-grey);
+}
+
+.rule::after {
+    content: '';
+    border-bottom: 1px solid var(--color-grey);
+    border-left: 1px solid var(--color-grey);
+    border-bottom-left-radius: var(--border-radius);
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.rule:last-child {
+    border-left-color: transparent;
+}
+
+.rule-inner {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.rule-options {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    padding: 5px;
+}
+
+.rule-part input {
+    margin: 0;
+    min-width: 100px;
+}
+
+.rule-inner .ui-button {
+    color: var(--color-primary-soft);
+}
+
+.rule-inner input {
+    font-weight: 500;
+}

@@ -1,0 +1,13 @@
+.ui-columns {
+    --spacing: 20px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing);
+}
+
+.ui-columns > .ui-column {
+    flex-basis: 0;
+    flex-grow: 1;
+}
