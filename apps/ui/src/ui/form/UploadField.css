@@ -1,0 +1,25 @@
+.ui-upload-field {
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    padding: 12px;
+}
+
+.ui-upload-field.highlighted {
+    border: 1px solid var(--color-grey-hard);
+}
+
+.ui-upload-field span {
+    font-weight: 600;
+}
+
+.ui-upload-field input {
+    display: none;
+}
+
+.ui-upload-field p {
+    margin: 10px 0;
+}
+
+.ui-upload-field .upload-icon {
+    font-size: 24px;
+}

@@ -1,0 +1,66 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0.27
+    platform: linux/x86_64
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    expose:
+      - 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: "/usr/bin/mysql hallow --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
+      interval: 1s
+      retries: 120
+  api:
+    image: 'parcelvoy/platform/api:0.1.0'
+    restart: always
+    ports:
+      - 3001:3001
+    links:
+      - mysql:mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      BASE_URL: ${BASE_URL}
+      APP_SECRET: ${APP_SECRET}
+      PORT: 3000
+      DB_CLIENT: ${DB_CLIENT}
+      DB_HOST: mysql
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      QUEUE_DRIVER: ${QUEUE_DRIVER}
+      AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${S3_LOCAWS_SECRET_ACCESS_KEYAL_STACK}
+      AWS_REGION: ${AWS_REGION}
+      AUTH_DRIVER: ${AUTH_DRIVER}
+      AUTH_SAML_CALLBACK_URL: ${AUTH_SAML_CALLBACK_URL}
+      AUTH_SAML_ENTRY_POINT_URL: ${AUTH_SAML_ENTRY_POINT_URL}
+      AUTH_SAML_ISSUER: ${AUTH_SAML_ISSUER}
+      AUTH_SAML_CERT: ${AUTH_SAML_CERT}
+      AUTH_SAML_IS_AUTHN_SIGNED: ${AUTH_SAML_IS_AUTHN_SIGNED}
+      AUTH_OPENID_ISSUER_URL: ${AUTH_OPENID_ISSUER_URL}
+      AUTH_OPENID_CLIENT_ID: ${AUTH_OPENID_CLIENT_ID}
+      AUTH_OPENID_CLIENT_SECRET: ${AUTH_OPENID_CLIENT_SECRET}
+      AUTH_OPENID_REDIRECT_URI: ${AUTH_OPENID_REDIRECT_URI}
+      AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
+  ui:
+    image: 'parcelvoy/platform/ui:0.1.0'
+    depends_on:
+      - api
+    environment:
+      REACT_APP_API_URL: ${BASE_URL}
+      REACT_APP_ENVIRONMENT: ${NODE_ENV}
+      REACT_APP_DOCKER_HOSTED_ENV: 'true'
+    ports:
+      - 3000:3000
+volumes:
+  mysql_data:
+    driver: local

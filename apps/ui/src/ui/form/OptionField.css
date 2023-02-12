@@ -1,0 +1,40 @@
+.options-group {
+    padding-bottom: 5px;
+}
+
+.options-group .options {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    padding: 5px;
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.options-group .option {
+    /* border: 1px solid var(--color-grey); */
+    flex-grow: 1;
+    border-radius: var(--border-radius-inner);
+    padding: 8px 10px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.options-group .label-subtitle {
+    font-weight: 400;
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.options-group .option:hover {
+    background: var(--color-grey-soft);
+    border-color: var(--color-grey-hard);
+}
+
+.options-group .option.selected {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border-color: var(--color-primary);
+}

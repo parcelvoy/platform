@@ -1,0 +1,31 @@
+.ui-menu {
+    background: var(--color-background);
+    border: 1px solid var(--color-grey);
+    border-radius: var(--border-radius);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
+    z-index: 999;
+    min-width: 150px;
+    padding: 5px 0;
+}
+
+.ui-menu-item {
+    padding: 10px;
+    border-bottom: 1px solid var(--color-grey);
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.ui-menu-item:last-child {
+    border-bottom-width: 0px;
+}
+
+.ui-menu-item:hover {
+    background: var(--color-background-soft);
+}
+
+.ui-menu-item svg {
+    width: 16px;
+    height: 16px;
+    margin-top: -1px;
+}

@@ -1,0 +1,23 @@
+.preview-source-editor {
+    background: #1E1E1E;
+    display: flex;
+    position: relative;
+    align-items: stretch;
+    border-radius: var(--border-radius);
+    overflow: auto;
+    padding: 10px 0;
+    min-height: 400px;
+}
+
+.preview-source-editor section {
+    height: auto !important;
+}
+
+.user-lookup .ui-button-group {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.user-lookup .ui-button-group .ui-text-field {
+    flex-grow: 1;
+}

@@ -1,0 +1,135 @@
+.ui-select {
+    position: relative;
+}
+
+.ui-select svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.ui-select .select-button {
+    background: var(--color-background);
+    appearance: none;
+    border: 1px solid var(--color-grey);
+    box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    width: 100%;
+    margin: 0;
+    color: var(--color-primary);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    cursor: pointer;
+    position: relative;
+    outline-color: var(--color-blue);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+}
+
+.ui-select .select-button:hover {
+    border: 1px solid var(--color-grey-hard);
+    z-index: 2;
+}
+
+.ui-select .select-button.small {
+    padding: 5px 7px;
+    border-radius: var(--border-radius-inner);
+}
+
+.ui-select .select-button.small svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.ui-select .select-button .select-button-label {
+    flex-grow: 2;
+    display: block;
+    text-align: left;
+}
+
+.ui-select .select-button .select-button-icon {
+    display: inline-flex;
+    justify-content: center;
+    margin-top: 1px;
+}
+
+.ui-select .transition-enter {
+    transition: opacity .05s ease-out;
+}
+
+.ui-select .transition-leave {
+    transition: opacity .05s ease-in;
+}
+
+.ui-select .transition-leave-from,
+.ui-select .transition-enter-to {
+    opacity: 1;
+}
+
+.ui-select .transition-leave-to,
+.ui-select .transition-enter-from {
+    opacity: 0;
+}
+
+.ui-select .select-options {
+    background: var(--color-background);
+    border: 1px solid var(--color-grey);
+    box-shadow: 0px 1px 5px rgba(16, 24, 40, 0.1);
+    border-radius: var(--border-radius);
+    list-style: none;
+    padding: 5px;
+    z-index: 999;
+    overflow: hidden;
+    max-height: 275px;
+    overflow: scroll;
+}
+
+.ui-select .select-option {
+    padding: 12px 10px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: var(--border-radius-inner);
+    font-weight: 500;
+    margin: 3px 0;
+}
+
+.ui-select .select-option:first-child {
+    margin-top: 0;
+}
+
+.ui-select .select-option:last-child {
+    margin-bottom: 0;
+}
+
+.ui-select .select-option span {
+    line-height: 20px;
+}
+
+.ui-select .select-option .option-icon {
+    display: none;
+}
+
+.ui-select .select-option.active {
+    background: var(--color-background-soft);
+}
+
+.ui-select .select-option.selected {
+    background: var(--color-grey-soft);
+}
+
+.ui-select .select-option.selected .option-icon {
+    display: block;
+    height: 20px;
+}
+
+.ui-select .select-option.selected svg {
+    height: 20px;
+    width: 20px;
+}
+

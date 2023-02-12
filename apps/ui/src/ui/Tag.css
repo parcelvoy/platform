@@ -1,0 +1,43 @@
+.ui-tag {
+    padding: 5px 8px;
+    font-size: 15px;
+    line-height: 20px;
+    border-radius: var(--border-radius);
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    background: var(--color-grey-soft);
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.ui-tag svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ui-tag.info {
+    background: var(--color-blue-soft);
+    color: var(--color-blue-hard);
+}
+
+.ui-tag.success {
+    background: var(--color-green-soft);
+    color: var(--color-green-hard);
+}
+
+.ui-tag.error {
+    background: var(--color-red-soft);
+    color: var(--color-red-hard);
+}
+
+.ui-tag.warn {
+    background: var(--color-yellow-soft);
+    color: var(--color-yellow-hard);
+}
+
+.ui-tag-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
