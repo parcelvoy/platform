@@ -59,54 +59,99 @@ Alongside being able to access variables using handlebars, you can also modify v
 Appends the speficied `suffix to the given `string`.
 #### Camelcase
 camelCase the characters in the given `string`.
+```handlebars
+{{ camelcase "snake_case_string" }} // = `snakeCaseString`
+```
 
 #### Capitalize
 Capitalize the first word in a sentence.
+```handlebars
+{{ capitalize "this is a sentence" }} // = `This is a sentence`
+```
+
+#### Capitalize All
+Capitalize all words in a string.
+```handlebars
+{{ capitalizeAll "this is a sentence" }} // = `This Is A Sentence`
+```
 
 #### Ellipsis
-Capitalize all words in a string.
+Truncates a string to the specified `length`, and appends it with an el;ipsis, `…`.
+```handlebars
+{{ ellipsis "very long string" 4 }} // = `very...`
+```
 
 #### Lowercase
 Lowercase all characters in the given string.
 ```handlebars
-{{lowercase myStr}}
+{{ lowercase "UPPERCASE" }} // = `uppercase`
 ```
 
 #### Occurences
 Return the number of occurrences of `substring` within the given `string`.
+```handlebars
+{{ occurences "this and that and those" "and" }} // = `2`
+```
 
 #### Prepend
 Prepends the given `string` with the specified `prefix`.
+```handlebars
+{{ prepend "means come before" "Prepend" }} // = `Prepend means come before`
+```
 
 #### Replace
-Replace all occurrences of substring `a` with substring `b`.
+In a given piece of text, replace all occurrences of substring `a` with substring `b`.
+```handlebars
+{{ replace "one two three four" " " ", " }} // = `one, two, three, four`
+```
 
 #### Replace First
 Replace the first occurrence of substring `a` with substring `b`.
+```handlebars
+{{ replaceFirst "one two three four" " " ", " }} // = `one, two three four`
+```
 
 #### Reverse
 Reverses a string.
+```handlebars
+{{ reverse "abcd" }} // = `dcba`
+```
 
 #### Snakecase
 Converts a given string to snake case (i.e. snake_case)
+```handlebars
+{{ snakecase "camelCaseText" }} // = `camel_case_text`
+```
 
 #### Split
 Split a piece of text into an array on the given `character`.
+```handlebars
+{{ split "one two three" " " }} // = `Array[one, two, three]`
+```
 
 #### Starts With
 Tests whether a string begins with the given prefix.
-
-#### Titlelize
-Convert the entire string to title case.
+```handlebars
+{{ startsWith "Peter" "Pet" }} // = `true`
+```
 
 #### Trim
 Removes extraneous whitespace from the beginning and end of a string.
+```handlebars
+{{ trim " text " }} // = `text` (no space before or after)
+```
 
 #### Truncate
 Truncate a string to the specified `length`
+```handlebars
+{{ truncate "This is a long piece of text" 4 }} // = `This`
+```
 
 #### Truncate Words
 Truncate a string to have the specified number of words.
+```handlebars
+{{ trucateWords "This is a long piece of text" 3 }} // = `This is a`
+```
 
 ### Numbers
 #### Absolute Value
@@ -136,7 +181,7 @@ Divide `a` by `b`
 ```
 
 #### Floor
-Round a decimal valu down to the closest whole number.
+Round a decimal value down to the closest whole number.
 ```handlebars
 {{ floor 5.14 }} // = `5`
 ```

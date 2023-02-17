@@ -5,6 +5,7 @@
     "apps/*"
   ],
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "lerna": "^6.0.3"
   },
   "scripts": {
@@ -12,5 +13,8 @@
     "build": "lerna run build",
     "lint": "lerna run lint",
     "test": "lerna run test"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
   }
 }

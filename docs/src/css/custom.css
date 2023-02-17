@@ -1,0 +1,147 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* You can override the default Infima variables here. */
+:root {
+    --color-black: #151c2d;
+    --color-white: #ffffff;
+
+    --color-primary: var(--color-black);
+    --color-primary-soft: #6b707b;
+
+    --color-grey: #eae8e8;
+    --color-grey-soft: #F5F5F7;
+    --color-grey-hard: #cecfd2;
+
+    --ifm-color-primary: var(--color-primary);
+    --ifm-heading-color: var(--color-primary);
+    --ifm-color-primary-dark: #151c2d;
+    --ifm-color-primary-darker: #277148;
+    --ifm-color-primary-darkest: #205d3b;
+    --ifm-color-primary-light: var(--color-primary-soft);
+    --ifm-color-primary-lighter: #359962;
+    --ifm-color-primary-lightest: #3cad6e;
+    --ifm-code-font-size: 95%;
+    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+body {
+    font-family: 'Inter', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 15px;
+    background: var(--color-background);
+    color: var(--color-primary);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-primary) !important;
+}
+
+.navbar {
+    box-shadow: none;
+    border-bottom: 1px solid var(--color-grey);
+}
+
+.theme-doc-sidebar-container {
+    border-right-color: var(--color-grey-soft) !important;
+}
+
+.container {
+    padding: 40px !important;
+}
+
+.menu .menu__list .menu__link {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.menu .menu__list .menu__list .menu__link {
+    color: var(--color-primary-soft);
+    font-weight: 500;
+    border-radius: 0;
+    margin: 0;
+}
+
+.menu .menu__list .menu__list .menu__list-item > .menu__list-item-collapsible,
+.menu .menu__list .menu__list .menu__list-item > .menu__link {
+    border-left: 1px solid var(--color-grey);
+    border-radius: 0;
+}
+
+.menu .theme-doc-sidebar-item-link-level-1,
+.menu .theme-doc-sidebar-item-category-level-1 {
+    margin-top: 20px;
+}
+
+.menu .theme-doc-sidebar-item-link-level-2,
+.menu .theme-doc-sidebar-item-category-level-2 {
+    margin: 0;
+}
+
+.menu__caret:before {
+    background: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16px\" height=\"16px\" viewBox=\"0 0 24 24\"><path fill=\"rgba(0,0,0,0.3)\" d=\"M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z\"></path></svg>") 50% / 1.5rem 1.5rem;
+}
+
+.menu .menu__link:hover,
+.menu .menu__list-item-collapsible:hover {
+    background: none;
+}
+
+.menu .menu__list .menu__list .menu__list-item > .menu__list-item-collapsible:hover,
+.menu .menu__list .menu__list .menu__list-item > .menu__link:hover,
+.menu .menu__list .menu__list .menu__list-item > .menu__link.menu__link--active {
+    border-left: 1px solid var(--color-primary);
+    color: var(--color-primary);
+}
+
+.menu .menu__list .menu__list .menu__list-item > .menu__list-item-collapsible:hover .menu__link,
+.menu .menu__list .menu__list .menu__list-item > .menu__link.menu__link--active {
+    background: none;
+    color: var(--color-primary);
+}
+
+.menu .menu__list .menu__list .menu__list-item > .menu__link.menu__link--active {
+    font-weight: 600;
+}
+
+.menu-home {
+    display: none;
+}
+
+.theme-code-block {
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px !important;
+}
+
+.table-of-contents__link {
+    color: var(--color-primary-soft);
+}
+
+.table-of-contents__link.table-of-contents__link--active,
+.table-of-contents__link:hover {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.footer {
+    background: var(--color-primary);
+}
