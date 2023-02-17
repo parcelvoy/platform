@@ -208,6 +208,8 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<Page<InstanceType<T>, B>> {
         const records = await query(this.table(db))
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             .where('id', '<', params.sinceId)
             .limit(params.limit)
         return {
