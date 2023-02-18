@@ -37,6 +37,8 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: List files
+        run: ls
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
