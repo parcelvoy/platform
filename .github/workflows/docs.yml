@@ -36,9 +36,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Build website
-        run: npm run build && mv build _site
+        run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
+        with:
+          path: build
 
   deploy:
     name: Deploy to GitHub Pages
