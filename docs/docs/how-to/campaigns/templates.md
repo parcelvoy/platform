@@ -12,7 +12,7 @@ Each of which has fields that are rendered as Handlebars templates. They can be 
 
 ### Template Types:
 #### Email
-Email templates are comprised of various fields that related to the email experience such as `subject`, `body`, `cc`, etc. Each field on the template allows you to use Handlebars to modify the end result. Additionally the `html` field is sent to the user to be rendered as HTML and will display any styles included.
+Email templates are comprised of various fields that are related to the email experience such as `subject`, `body`, `cc`, etc. Each field on the template allows you to use Handlebars to modify the end result. Additionally the `html` field is sent to the user to be rendered as HTML and will display any styles included.
 
 #### Text Message
 A text message template is largely just a single field that is broken up into pieces based on its content length. Bare in mind that any Handlebars variables that are filled in will be of variable length and could cause the total content length to grow.
@@ -52,11 +52,11 @@ All user objects will at a minimum have a series of constant fields present (alt
 
 
 ## Helpers
-Alongside being able to access variables using handlebars, you can also modify values using custom helpers. We've included a list of them below.
+Alongside being able to access variables using Handlebars, you can also modify values using custom helpers. We've included a list of them below.
 
 ### Strings
 #### Append
-Appends the speficied `suffix to the given `string`.
+Appends the specified `suffix` to the given `string`.
 #### Camelcase
 camelCase the characters in the given `string`.
 ```handlebars
