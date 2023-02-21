@@ -5,7 +5,7 @@ import { snakeToTitle } from '../../utils'
 import { FieldProps } from './Field'
 
 export interface TextFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
-    type?: 'text' | 'time' | 'date' | 'datetime-local'
+    type?: 'text' | 'time' | 'date' | 'datetime-local' | 'number'
     textarea?: boolean
     size?: 'small' | 'regular'
     value?: string | number | readonly string[] | undefined
@@ -14,6 +14,8 @@ export interface TextFieldProps<X extends FieldValues, P extends FieldPath<X>> e
     onBlur?: React.FocusEventHandler<HTMLTextAreaElement | HTMLInputElement>
     onFocus?: React.FocusEventHandler<HTMLTextAreaElement | HTMLInputElement>
     inputRef?: Ref<HTMLLabelElement>
+    min?: number
+    max?: number
 }
 
 export default function TextField<X extends FieldValues, P extends FieldPath<X>>({
@@ -22,6 +24,8 @@ export default function TextField<X extends FieldValues, P extends FieldPath<X>>
     form,
     label,
     subtitle,
+    min,
+    max,
     name,
     required,
     textarea,
@@ -39,10 +43,14 @@ export default function TextField<X extends FieldValues, P extends FieldPath<X>>
 
     return (
         <label ref={inputRef} className={clsx('ui-text-field', { 'hide-label': !form })}>
-            { form && <span>
-                {label ?? snakeToTitle(name)}
-                {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
-            </span> }
+            {
+                (!!form || !!label) && (
+                    <span>
+                        {label ?? snakeToTitle(name)}
+                        {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                    </span>
+                )
+            }
             {subtitle && <span className="label-subtitle">{subtitle}</span>}
             {
                 textarea
@@ -73,6 +81,8 @@ export default function TextField<X extends FieldValues, P extends FieldPath<X>>
                             }}
                             onFocus={onFocus}
                             id={id}
+                            min={min}
+                            max={max}
                         />
                     )
             }

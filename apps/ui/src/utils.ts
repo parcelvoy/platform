@@ -12,6 +12,14 @@ export function toInt(str: string | undefined, defaultValue: number) {
     return isNaN(p) ? defaultValue : p
 }
 
+export function round(n: number, places?: number) {
+    if (places && places > 0) {
+        const f = Math.pow(10, places)
+        return Math.round(n * f) / f
+    }
+    return Math.round(n)
+}
+
 export function snakeToTitle(snake: string) {
     return (snake ?? '').split('_').map(p => p.charAt(0).toUpperCase() + p.substring(1)).join(' ')
 }

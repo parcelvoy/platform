@@ -1,5 +1,6 @@
-import { useId } from 'react'
 import { JourneyStepType } from '../../../types'
+import TextField from '../../../ui/form/TextField'
+import { snakeToTitle } from '../../../utils'
 
 interface DelayStepConfig {
     minutes: number
@@ -21,24 +22,24 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
         onChange,
         value,
     }) {
-        const id = useId()
         return (
             <>
                 {
                     ['days', 'hours', 'minutes'].map(name => (
-                        <div key={name}>
-                            <label htmlFor={id + '-' + name}>{name}</label>
-                            <input
-                                id={id + '-' + name}
-                                type='number'
-                                min={0}
-                                value={value[name as keyof DelayStepConfig] ?? 0}
-                                onChange={e => onChange({ ...value, [name]: parseInt(e.target.value) })}
-                            />
-                        </div>
+                        <TextField
+                            key={name}
+                            name={name}
+                            label={snakeToTitle(name)}
+                            type='number'
+                            size='small'
+                            min={0}
+                            value={value[name as keyof DelayStepConfig] ?? 0}
+                            onChange={n => onChange({ ...value, [name]: parseInt(n) })}
+                        />
                     ))
                 }
             </>
         )
     },
+    maxChildren: 1,
 }

@@ -9,6 +9,7 @@ import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
 import { random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
+import jsonpath from 'jsonpath'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -34,7 +35,7 @@ export class JourneyStep extends Model {
     type!: string
     journey_id!: number
     data?: Record<string, unknown>
-    uuid!: string
+    external_id!: string
 
     // UI variables
     x = 0
@@ -42,6 +43,11 @@ export class JourneyStep extends Model {
 
     static tableName = 'journey_steps'
     static jsonAttributes = ['data']
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    static async getStats(steps: JourneyStep[]): Promise<{ [external_id: string]: any }> {
+        return {}
+    }
 
     static get type() { return snakeCase(this.name) }
 
@@ -95,7 +101,7 @@ export class JourneyEntrance extends JourneyStep {
     static async create(journeyId: number, listId?: number): Promise<JourneyEntrance> {
         return await JourneyEntrance.insertAndFetch({
             type: this.type,
-            uuid: uuid(),
+            external_id: uuid(),
             journey_id: journeyId,
             data: {
                 list_id: listId,
@@ -231,9 +237,11 @@ export class JourneyMap extends JourneyStep {
         // When comparing the user expects comparison
         // to be between the UI model user vs core user
         const templateUser = user.flatten()
+        let path = this.attribute
+        if (!this.attribute.startsWith('$.')) path = '$.' + path
 
         // Based on an attribute match, pick a child step
-        const value = templateUser[this.attribute]
+        const value = jsonpath.query(templateUser, path, 1)[0]
         for (const { child_id, data = {} } of children) {
             if (data.value === value) {
                 return await getJourneyStep(child_id)
@@ -264,7 +272,7 @@ export class JourneyExperiment extends JourneyStep {
         if (!children.length) return undefined
 
         children = children.reduce<JourneyStepChild[]>((a, c) => {
-            const proportion = Number(c.data?.value)
+            const proportion = Number(c.data?.ratio)
             if (!isNaN(proportion) && proportion > 0) {
                 for (let i = 0; i < proportion; i++) {
                     a.push(c)
@@ -273,7 +281,7 @@ export class JourneyExperiment extends JourneyStep {
             return a
         }, [])
 
-        if (!children) return undefined
+        if (!children.length) return undefined
 
         return await getJourneyStep(random(children).child_id)
     }
@@ -328,7 +336,7 @@ export type JourneyStepMap = Record<
         x: number
         y: number
         children?: Array<{
-            uuid: string
+            external_id: string
             data?: Record<string, unknown>
         }>
     }
@@ -339,7 +347,7 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
     const editData: JourneyStepMap = {}
 
     for (const step of steps) {
-        editData[step.uuid] = {
+        editData[step.external_id] = {
             type: step.type,
             data: step.data ?? {},
             x: step.x ?? 0,
@@ -349,7 +357,7 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
                     const child = steps.find(s => s.id === child_id)
                     if (child) {
                         a!.push({
-                            uuid: child.uuid,
+                            external_id: child.external_id,
                             data,
                         })
                     }

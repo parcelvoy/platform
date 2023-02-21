@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { useId } from 'react'
 import { JourneyStepType } from '../../../types'
+import TextField from '../../../ui/form/TextField'
 
 interface MapConfig {
     attribute: string
@@ -18,33 +18,35 @@ export const mapStep: JourneyStepType<MapConfig, { value: string }> = {
         onChange,
         value,
     }) {
-        const id = useId() + '-attribute'
         return (
-            <>
-                <label htmlFor={id}>
-                    Attribute Name
-                </label>
-                <input
-                    id={id}
-                    type='text'
-                    required
-                    value={value.attribute}
-                    onChange={e => onChange({ ...value, attribute: e.target.value })}
-                />
-            </>
+            <TextField
+                name='attribute'
+                label='Attribute'
+                subtitle='Path to value'
+                type='text'
+                size='small'
+                value={value.attribute}
+                onChange={attribute => onChange({ ...value, attribute })}
+            />
         )
     },
     EditEdge: ({
+        stepData,
+        siblingData,
         value,
         onChange,
     }) => {
         return (
-            <input
-                type='text'
-                value={value.value}
-                onChange={e => onChange({ ...value, value: e.target.value })}
-                required
-                aria-label='attribute value'
+            <TextField
+                name='value'
+                label={`When ${stepData.attribute} is:`}
+                subtitle={
+                    siblingData.find(s => s.value === value.value) && (
+                        <span style={{ color: 'red' }}>{'WARNING: duplicate value'}</span>
+                    )
+                }
+                value={value.value || ''}
+                onChange={s => onChange({ ...value, value: s })}
             />
         )
     },

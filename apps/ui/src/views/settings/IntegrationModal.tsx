@@ -26,7 +26,7 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
         setMeta(options?.find(item => item.channel === provider?.group && item.type === provider?.type))
     }, [provider])
 
-    async function handleCreate({ name, data }: ProviderCreateParams | ProviderUpdateParams, meta: ProviderMeta) {
+    async function handleCreate({ name, data = {} }: ProviderCreateParams | ProviderUpdateParams, meta: ProviderMeta) {
 
         const value = provider?.id
             ? await api.providers.update(project.id, provider?.id, { name, data, type: meta.type, group: meta.channel })

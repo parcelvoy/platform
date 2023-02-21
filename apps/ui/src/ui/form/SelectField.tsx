@@ -1,11 +1,10 @@
 import { Listbox, Transition } from '@headlessui/react'
-import { Fragment, Key, useEffect, useId, useMemo, useState } from 'react'
+import { Fragment, Key, useEffect, useId, useState } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '../icons'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
 import { FieldOption, FieldProps } from './Field'
 import './SelectField.css'
-import { Modifier } from '@popperjs/core'
-import { usePopper } from 'react-popper'
+import { usePopperSelectDropdown } from '../utils'
 
 interface OptionFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
     options: FieldOption[]
@@ -24,46 +23,12 @@ export default function SelectField<X extends FieldValues, P extends FieldPath<X
         onChange = field.onChange
     }
 
-    const [referenceElement, setReferenceElement] = useState<Element | null | undefined>()
-    const [popperElement, setPopperElement] = useState<HTMLElement | null | undefined>()
-
-    const modifiers = useMemo<Array<Partial<Modifier<any, any>>>>(
-        () => [
-            {
-                name: 'preventOverflow',
-                enabled: true,
-                options: {
-                    padding: 10,
-                },
-            },
-            {
-                name: 'offset',
-                options: {
-                    offset: [0, -12],
-                },
-            },
-            {
-                name: 'sameWidth',
-                enabled: true,
-                phase: 'beforeWrite',
-                requires: ['computeStyles'],
-                fn({ state }) {
-                    state.styles.popper.minWidth = `${state.rects.reference.width}px`
-                },
-                effect({ state }) {
-                    const reference = state.elements.reference as any as { offsetWidth: string }
-                    state.elements.popper.style.minWidth = `${reference.offsetWidth}px`
-                },
-            },
-        ],
-        [],
-    )
-
-    const { styles, attributes } = usePopper(referenceElement, popperElement, {
-        strategy: 'fixed',
-        placement: 'bottom-start',
-        modifiers,
-    })
+    const {
+        setReferenceElement,
+        setPopperElement,
+        attributes,
+        styles,
+    } = usePopperSelectDropdown()
 
     // Get an internal default value based on options list
     const [defaultValue, setDefaultValue] = useState<FieldOption>({ key: id, label: 'Loading...' })

@@ -1,4 +1,4 @@
-import { ComponentType, Dispatch, SetStateAction } from 'react'
+import { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react'
 
 export type Class<T> = new () => T
 
@@ -6,6 +6,15 @@ export interface ControlledProps<T> {
     value: T
     onChange: (value: T) => void
 }
+
+export interface CommonInputProps {
+    required?: boolean
+    disabled?: boolean
+    label?: ReactNode
+    subtitle?: ReactNode
+}
+
+export type ControlledInputProps<T> = ControlledProps<T> & CommonInputProps
 
 export type UseStateContext<T> = [T, Dispatch<SetStateAction<T>>]
 
@@ -161,16 +170,24 @@ export interface JourneyStep<T = any> {
 
 export type JourneyStepParams = Omit<JourneyStep, 'id'>
 
-export type JourneyStepMap = Record<string, {
-    type: string
-    data?: Record<string, unknown>
-    x: number
-    y: number
-    children?: Array<{
-        uuid: string
+export interface JourneyStepMap {
+    [external_id: string]: {
+        type: string
         data?: Record<string, unknown>
-    }>
-}>
+        x: number
+        y: number
+        children?: Array<{
+            external_id: string
+            data?: Record<string, unknown>
+        }>
+    }
+}
+
+export interface JourneyStepStats {
+    [external_id: string]: {
+        users: number
+    }
+}
 
 export interface JourneyStepTypeEditProps<T> extends ControlledProps<T> {
     journey: Journey
@@ -179,6 +196,7 @@ export interface JourneyStepTypeEditProps<T> extends ControlledProps<T> {
 
 export interface JourneyStepTypeEdgeProps<T, E> extends ControlledProps<E> {
     stepData: T
+    siblingData: E[] // does not include self
     journey: Journey
     project: Project
 }
@@ -192,6 +210,7 @@ export interface JourneyStepType<T = any, E = any> {
     newEdgeData?: () => Promise<E>
     Edit?: ComponentType<JourneyStepTypeEditProps<T>>
     EditEdge?: ComponentType<JourneyStepTypeEdgeProps<T, E>>
+    maxChildren?: number // 0 for unlimited
 }
 
 export type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'

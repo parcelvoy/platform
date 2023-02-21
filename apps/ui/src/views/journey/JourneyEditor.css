@@ -254,3 +254,16 @@
     border-radius: 8px;
     pointer-events: all;
 }
+
+.journey .react-flow__handle {
+    width: 10px;
+    height: 10px;
+}
+
+.journey .react-flow__handle-connecting {
+    background: var(--color-red)
+}
+
+.journey .react-flow__handle-valid {
+    background: var(--color-green)
+}

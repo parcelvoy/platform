@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api'
+import { Journey } from '../../types'
 import Button from '../../ui/Button'
-import Dialog from '../../ui/Dialog'
+import TextField from '../../ui/form/TextField'
+import FormWrapper from '../../ui/FormWrapper'
+import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 
@@ -37,13 +40,36 @@ export default function Journeys() {
                 onSelectRow={r => navigate(r.id.toString())}
                 enableSearch
             />
-            <Dialog
+            <Modal
                 onClose={() => setOpen(null)}
                 open={!!open}
                 title='Create Journey'
             >
-                form here
-            </Dialog>
+                <FormWrapper<Journey>
+                    onSubmit={async journey => {
+                        journey = await api.journeys.create(projectId, journey)
+                        setOpen(null)
+                        navigate(journey.id.toString())
+                    }}
+                >
+                    {
+                        form => (
+                            <>
+                                <TextField
+                                    form={form}
+                                    name='name'
+                                    required
+                                />
+                                <TextField
+                                    form={form}
+                                    name='description'
+                                    textarea
+                                />
+                            </>
+                        )
+                    }
+                </FormWrapper>
+            </Modal>
         </PageContent>
     )
 }

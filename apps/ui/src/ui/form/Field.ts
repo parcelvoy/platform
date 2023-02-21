@@ -1,13 +1,9 @@
-import { ReactNode } from 'react'
 import { FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
+import { CommonInputProps } from '../../types'
 
-export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> {
+export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> extends CommonInputProps {
     form?: UseFormReturn<X>
     name: P
-    label?: ReactNode
-    subtitle?: ReactNode
-    required?: boolean
-    disabled?: boolean
 }
 
 export interface FieldOption {

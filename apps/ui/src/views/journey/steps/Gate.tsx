@@ -24,4 +24,5 @@ export const gateStep: JourneyStepType<GateConfig> = {
             />
         )
     },
+    maxChildren: 1,
 }

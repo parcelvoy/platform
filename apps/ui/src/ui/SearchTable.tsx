@@ -9,6 +9,7 @@ import Pagination from './Pagination'
 
 interface SearchTableProps<T extends Record<string, any>> extends Omit<DataTableProps<T>, 'items'> {
     title?: ReactNode
+    description?: ReactNode
     actions?: ReactNode
     results: SearchResult<T> | null
     params: SearchParams
@@ -68,7 +69,7 @@ export const useTableSearchParams = () => {
 /**
  * local state
  */
-export function useSearchTableState<T>(loader: (params: SearchParams) => Promise<SearchResult<T>>) {
+export function useSearchTableState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>) {
 
     const [params, setParams] = useState<SearchParams>({
         page: 0,
@@ -89,7 +90,7 @@ export function useSearchTableState<T>(loader: (params: SearchParams) => Promise
 /**
  * global query string state
  */
-export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T>>) {
+export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>) {
 
     const [params, setParams] = useTableSearchParams()
 
@@ -105,6 +106,7 @@ export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Pr
 
 export function SearchTable<T extends Record<string, any>>({
     actions,
+    description,
     enableSearch,
     params,
     results,
@@ -126,23 +128,27 @@ export function SearchTable<T extends Record<string, any>>({
         <>
             {
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                (title || actions) && (
+                (title || actions || description) && (
                     <Heading
                         size='h3'
                         title={title}
                         actions={actions}
-                    />
+                    >
+                        {description}
+                    </Heading>
                 )
             }
             {
                 enableSearch && (
-                    <TextField
-                        name="search"
-                        value={params.q}
-                        size="small"
-                        placeholder="Search..."
-                        onChange={(value) => setParams({ ...params, q: value })}
-                    />
+                    <div style={{ paddingBottom: '15px' }}>
+                        <TextField
+                            name="search"
+                            value={params.q}
+                            size="small"
+                            placeholder="Search..."
+                            onChange={(value) => setParams({ ...params, q: value })}
+                        />
+                    </div>
                 )
             }
             <DataTable {...rest} items={results.results} />

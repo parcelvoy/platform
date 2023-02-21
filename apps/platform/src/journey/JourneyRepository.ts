@@ -4,6 +4,8 @@ import { RequestError } from '../core/errors'
 import { SearchParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
+import { CampaignDelivery } from 'campaigns/Campaign'
+import { raw } from '../core/Model'
 
 export const pagedJourneys = async (params: SearchParams, projectId: number) => {
     return await Journey.searchParams(
@@ -78,13 +80,13 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
         ])
 
         // Create or update steps
-        for (const [uuid, { type, x = 0, y = 0, data = {} }] of Object.entries(stepMap)) {
-            const idx = steps.findIndex(s => s.uuid === uuid)
+        for (const [external_id, { type, x = 0, y = 0, data = {} }] of Object.entries(stepMap)) {
+            const idx = steps.findIndex(s => s.external_id === external_id)
             if (idx === -1) {
                 steps.push(await JourneyStep.insertAndFetch({
                     journey_id: journeyId,
                     type,
-                    uuid,
+                    external_id,
                     data,
                     x,
                     y,
@@ -93,7 +95,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                 const step = steps[idx]
                 steps[idx] = await JourneyStep.updateAndFetch(step.id, {
                     type,
-                    uuid,
+                    external_id,
                     data,
                     x,
                     y,
@@ -102,23 +104,28 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
         }
 
         // Delete removed or unused steps
+        const deleteSteps: number[] = []
         let i = 0
         while (i < steps.length) {
             const step = steps[i]
-            if (!stepMap[step.uuid]) {
-                await JourneyStep.delete(q => q.where('id', step.id), trx)
+            if (!stepMap[step.external_id]) {
+                deleteSteps.push(step.id)
                 steps.splice(i, 1)
                 continue
             }
             i++
         }
+        if (deleteSteps.length) {
+            await JourneyStep.delete(q => q.whereIn('id', deleteSteps), trx)
+        }
 
+        const deleteChildSteps: number[] = []
         for (const step of steps) {
-            const list = stepMap[step.uuid]?.children ?? []
+            const list = stepMap[step.external_id]?.children ?? []
             const childIds: number[] = []
 
-            for (const { uuid, data = {} } of list) {
-                const child = steps.find(s => s.uuid === uuid)
+            for (const { external_id, data = {} } of list) {
+                const child = steps.find(s => s.external_id === external_id)
                 if (!child) continue
                 const idx = children.findIndex(sc => sc.step_id === step.id && sc.child_id === child.id)
                 let stepChild: JourneyStepChild
@@ -141,12 +148,15 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             while (i < children.length) {
                 const stepChild = children[i]
                 if (stepChild.step_id === step.id && !childIds.includes(stepChild.child_id)) {
-                    await JourneyStepChild.delete(q => q.where('id', stepChild.id), trx)
+                    deleteChildSteps.push(stepChild.id)
                     children.splice(i, 1)
                     continue
                 }
                 i++
             }
+        }
+        if (deleteChildSteps.length) {
+            await JourneyStepChild.delete(q => q.whereIn('id', deleteChildSteps), trx)
         }
 
         return toJourneyStepMap(steps, children)
@@ -188,4 +198,35 @@ export const lastJourneyStep = async (userId: number, journeyId: number): Promis
             .orderBy('created_at', 'desc')
             .orderBy('id', 'desc'),
     )
+}
+
+interface JourneyStepStats {
+    [external_id: string]: {
+        users: number
+        delivery?: CampaignDelivery
+    }
+}
+
+export const getJourneyStepStats = async (journeyId: number) => {
+
+    const [steps, userCounts] = await Promise.all([
+        getJourneySteps(journeyId),
+        (JourneyUserStep.query()
+            .with(
+                'latest_journey_steps',
+                raw('SELECT step_id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id DESC) AS rn FROM journey_user_step where journey_id = ' + journeyId),
+            )
+            .select('step_id')
+            .count('* as users')
+            .from('latest_journey_steps')
+            .where('rn', 1)
+            .groupBy('step_id')) as Promise<Array<{ step_id: number, users: number }>>,
+    ])
+
+    return steps.reduce<JourneyStepStats>((a, { external_id, id }) => {
+        a[external_id] = {
+            users: userCounts.find(uc => uc.step_id === id)?.users ?? 0,
+        }
+        return a
+    }, {})
 }
