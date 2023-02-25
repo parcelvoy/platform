@@ -1,5 +1,6 @@
-import { useId } from 'react'
 import { JourneyStepType } from '../../../types'
+import TextField from '../../../ui/form/TextField'
+import { round } from '../../../utils'
 
 interface ExperimentStepChildConfig {
     ratio: number
@@ -12,23 +13,23 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
     description: 'Randomly send users down different paths.',
     newEdgeData: async () => ({ ratio: 1 }),
     EditEdge({
+        siblingData,
         onChange,
         value,
     }) {
-        const id = useId() + '-ratio'
+        const ratio = value.ratio ?? 0
+        const totalRatio = siblingData.reduce((a, c) => a + c.ratio ?? 0, ratio)
+        const percentage = totalRatio > 0 ? round(ratio / totalRatio * 100, 2) : 0
         return (
-            <>
-                <label htmlFor={id}>
-                    {'Ratio'}
-                </label>
-                <input
-                    type='number'
-                    min={0}
-                    id={id}
-                    value={value.ratio ?? 0}
-                    onChange={e => onChange({ ...value, ratio: e.target.valueAsNumber })}
-                />
-            </>
+            <TextField
+                name='ratio'
+                label='Ratio'
+                subtitle={`${percentage}% of users will follow this path.`}
+                type='number'
+                size='small'
+                value={value.ratio ?? 0}
+                onChange={str => onChange({ ...value, ratio: parseFloat(str) })}
+            />
         )
     },
 }

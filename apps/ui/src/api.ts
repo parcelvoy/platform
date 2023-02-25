@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Journey, JourneyStepMap, List, ListCreateParams, ListUpdateParams, Project, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 const client = Axios.create(env.api)
 
@@ -118,6 +118,9 @@ const api = {
                 .then(r => r.data),
             set: async (projectId: number | string, journeyId: number | string, stepData: JourneyStepMap) => await client
                 .put<JourneyStepMap>(`/admin/projects/${projectId}/journeys/${journeyId}/steps`, stepData)
+                .then(r => r.data),
+            stats: async (projectId: number | string, journeyId: number | string) => await client
+                .get<JourneyStepStats>(`/admin/projects/${projectId}/journeys/${journeyId}/step-stats`)
                 .then(r => r.data),
         },
     },

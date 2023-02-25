@@ -28,8 +28,10 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                     search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
                     value={value.campaign_id}
                     onChange={campaign_id => onChange({ ...value, campaign_id })}
+                    required
                 />
             </>
         )
     },
+    maxChildren: 1,
 }

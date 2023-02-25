@@ -37,4 +37,5 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             </>
         )
     },
+    maxChildren: 1,
 }

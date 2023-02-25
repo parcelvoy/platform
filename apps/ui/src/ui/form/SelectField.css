@@ -133,3 +133,7 @@
     width: 20px;
 }
 
+.ui-select .select-option.disabled {
+    color: var(--color-grey-hard);
+    cursor: not-allowed;
+}

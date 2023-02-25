@@ -1,4 +1,4 @@
-import { createElement, DragEventHandler, memo, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { createElement, DragEventHandler, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ReactFlow, {
     addEdge,
@@ -10,15 +10,20 @@ import ReactFlow, {
     EdgeProps,
     EdgeTypes,
     getBezierPath,
+    getConnectedEdges,
     Handle,
     MarkerType,
     MiniMap,
     Node,
     NodeProps,
     NodeTypes,
+    OnEdgeUpdateFunc,
     Position,
     ReactFlowInstance,
+    updateEdge,
+    useEdges,
     useEdgesState,
+    useNodes,
     useNodesState,
     useReactFlow,
 } from 'reactflow'
@@ -28,11 +33,12 @@ import { createComparator, createUuid, formatDate } from '../../utils'
 import * as journeySteps from './steps/index'
 import clsx from 'clsx'
 import api from '../../api'
-import { JourneyStep, JourneyStepMap, JourneyStepType } from '../../types'
+import { JourneyStep, JourneyStepMap, JourneyStepStats, JourneyStepType } from '../../types'
 
 import './JourneyEditor.css'
 import 'reactflow/dist/style.css'
 import Button from '../../ui/Button'
+import Alert from '../../ui/Alert'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -41,13 +47,16 @@ function JourneyStepNode({
     data: {
         type: typeName,
         data,
+        stats: {
+            users = 0,
+        } = {},
     } = {},
     selected,
 }: NodeProps) {
 
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
-    const { setNodes } = useReactFlow()
+    const { setNodes, getNode, getEdges } = useReactFlow()
 
     const onDataChange = useCallback((data: any) => {
         setNodes(nds => nds.map(n => n.id === id
@@ -63,11 +72,18 @@ function JourneyStepNode({
 
     const type = getStepType(typeName)
 
+    const validateConnection = useCallback((conn: Connection) => {
+        if (!type) return false
+        if (!type.maxChildren) return true
+        const sourceNode = conn.source && getNode(conn.source)
+        if (!sourceNode) return true
+        const edges = getConnectedEdges([sourceNode], getEdges())
+        return edges.length <= type.maxChildren
+    }, [id, type, getNode, getEdges])
+
     if (!type) {
         return (
-            <div>
-                invalid step type!
-            </div>
+            <Alert variant='error' title='Invalid Step Type' />
         )
     }
 
@@ -82,6 +98,9 @@ function JourneyStepNode({
                 <div className="journey-step-header">
                     <i className={clsx('step-header-icon', type.icon)} />
                     <h4 className="step-header-title">{type.name}</h4>
+                    <span>
+                        {users + ' Users'}
+                    </span>
                 </div>
                 {
                     type.Edit && (
@@ -98,7 +117,11 @@ function JourneyStepNode({
                     )
                 }
             </div>
-            <Handle type='source' position={Position.Bottom} id={'s-' + id} />
+            <Handle
+                type='source'
+                position={Position.Bottom} id={'s-' + id}
+                isValidConnection={validateConnection}
+            />
         </>
     )
 }
@@ -112,11 +135,16 @@ function JourneyStepEdge({
     sourcePosition,
     targetPosition,
     source,
+    sourceHandleId,
+    targetHandleId,
     data = {},
 }: EdgeProps) {
 
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
+    const nodes = useNodes()
+    const edges = useEdges()
+    const siblingData = useMemo(() => edges.filter(e => e.sourceHandle === sourceHandleId && e.targetHandle !== targetHandleId).map(e => e.data ?? {}), [edges, sourceHandleId, targetHandleId])
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX,
@@ -127,11 +155,11 @@ function JourneyStepEdge({
         targetPosition,
     })
 
-    const { getNode, setEdges } = useReactFlow()
+    const { setEdges } = useReactFlow()
 
     const onChangeData = useCallback((data: any) => setEdges(edges => edges.map(e => e.id === id ? { ...e, data } : e)), [id, setEdges])
 
-    const sourceNode = getNode(source)
+    const sourceNode = nodes.find(n => n.id === source) as Node<any> | undefined
     const sourceType = getStepType(sourceNode?.data?.type)
 
     return (
@@ -152,6 +180,7 @@ function JourneyStepEdge({
                                     value: data,
                                     onChange: onChangeData,
                                     stepData: sourceNode.data.data,
+                                    siblingData,
                                     journey,
                                     project,
                                 })
@@ -176,7 +205,7 @@ const DATA_FORMAT = 'application/parcelvoy-journey-step'
 
 const STEP_STYLE = 'smoothstep'
 
-function stepsToNodes(stepMap: JourneyStepMap) {
+function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
 
     const nodes: Node[] = []
     const edges: Edge[] = []
@@ -192,14 +221,16 @@ function stepsToNodes(stepMap: JourneyStepMap) {
             data: {
                 type,
                 data,
+                stats: stats[id] ?? { users: 0 },
             },
+            deletable: type !== 'entrance',
         })
-        children?.forEach(({ uuid, data }) => edges.push({
-            id: 'e-' + id + '-' + uuid,
+        children?.forEach(({ external_id, data }) => edges.push({
+            id: 'e-' + id + '-' + external_id,
             source: id,
             sourceHandle: 's-' + id,
-            target: uuid,
-            targetHandle: 't-' + uuid,
+            target: external_id,
+            targetHandle: 't-' + external_id,
             data,
             type: STEP_STYLE,
             markerEnd: {
@@ -231,7 +262,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
             children: edges
                 .filter(e => e.source === id)
                 .map(({ data = {}, target }) => ({
-                    uuid: target,
+                    external_id: target,
                     data,
                 })),
         }
@@ -253,9 +284,12 @@ export default function JourneyEditor() {
 
     const loadSteps = useCallback(async () => {
 
-        const steps = await api.journeys.steps.get(project.id, journey.id)
+        const [steps, stats] = await Promise.all([
+            api.journeys.steps.get(project.id, journey.id),
+            api.journeys.steps.stats(project.id, journey.id),
+        ])
 
-        const { edges, nodes } = stepsToNodes(steps)
+        const { edges, nodes } = stepsToNodes(steps, stats)
 
         setNodes(nodes)
         setEdges(edges)
@@ -269,8 +303,9 @@ export default function JourneyEditor() {
     const saveSteps = useCallback(async () => {
 
         const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
+        const stats = await api.journeys.steps.stats(project.id, journey.id)
 
-        const refreshed = stepsToNodes(stepMap)
+        const refreshed = stepsToNodes(stepMap, stats)
 
         setNodes(refreshed.nodes)
         setEdges(refreshed.edges)
@@ -286,6 +321,10 @@ export default function JourneyEditor() {
             data,
         }, edges))
     }, [nodes, setEdges])
+
+    const onEdgeUpdate = useCallback<OnEdgeUpdateFunc>((prev, next) => {
+        setEdges(edges => updateEdge(prev, next, edges))
+    }, [setEdges])
 
     const onDragOver = useCallback<DragEventHandler>(event => {
         event.preventDefault()
@@ -373,6 +412,7 @@ export default function JourneyEditor() {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
+                    onEdgeUpdate={onEdgeUpdate}
                     onInit={setFlowInstance}
                     elementsSelectable
                     onDragOver={onDragOver}
