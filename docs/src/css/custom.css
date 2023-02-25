@@ -18,9 +18,12 @@
     --color-grey-soft: #F5F5F7;
     --color-grey-hard: #cecfd2;
 
+    --color-background: var(--color-white);
+
+    --ifm-navbar-background-color: var(--color-white);
     --ifm-color-primary: var(--color-primary);
     --ifm-heading-color: var(--color-primary);
-    --ifm-color-primary-dark: #151c2d;
+    --ifm-color-primary-dark: var(--color-primary);
     --ifm-color-primary-darker: #277148;
     --ifm-color-primary-darkest: #205d3b;
     --ifm-color-primary-light: var(--color-primary-soft);
@@ -32,14 +35,23 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+    --color-grey: #333b51;
+    --color-grey-soft: #252b3a;
+
+    --color-primary: var(--color-white);
+    --color-primary-soft: #F9FAFB;
+
+    --color-background: var(--color-black);
+    --color-background-soft: var(--color-grey-soft);
+
+    --ifm-navbar-background-color: var(--color-black);
+    --ifm-background-color: var(--color-black);
+    --ifm-color-primary-darker: #1fa588;
+    --ifm-color-primary-darkest: #1a8870;
+    --ifm-color-primary-light: #29d5b0;
+    --ifm-color-primary-lighter: #32d8b4;
+    --ifm-color-primary-lightest: #4fddbf;
+    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
 body {

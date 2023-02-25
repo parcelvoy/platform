@@ -1,4 +1,4 @@
-## Providers
+# Providers
 Providers are the backbone of the product and let you configure how your communications go out. Currently Parcelvoy supports four major types of communications:
 - Email
 - Text Message
