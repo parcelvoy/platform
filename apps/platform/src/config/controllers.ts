@@ -15,6 +15,7 @@ import ProfileController from '../profile/ProfileController'
 import TagController from '../tags/TagController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 import ProjectAdminController from '../projects/ProjectAdminController'
+import AdminController from '../auth/AdminController'
 
 const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
@@ -34,10 +35,6 @@ export default (api: import('../api').default) => {
 
     api.use(root.routes())
         .use(root.allowedMethods())
-
-    // for (const i of root.stack) {
-    //     console.log(i.path)
-    // }
 }
 
 /**
@@ -53,6 +50,7 @@ export const adminRouter = () => {
         ProjectController,
         projectRouter(),
         ProfileController,
+        AdminController,
     )
 }
 
