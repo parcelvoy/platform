@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import TextField from '../../ui/form/TextField'
 import { ProjectCreate } from '../../types'
-import FormWrapper from '../../ui/FormWrapper'
+import FormWrapper from '../../ui/form/FormWrapper'
 
 export default function ProjectForm() {
     const navigate = useNavigate()
@@ -10,7 +10,7 @@ export default function ProjectForm() {
     return (
         <FormWrapper<ProjectCreate>
             onSubmit={async project => {
-                const { id } = await api.project.create(project)
+                const { id } = await api.projects.create(project)
                 navigate(`/projects/${id}`)
             }}
         >

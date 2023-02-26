@@ -1,13 +1,13 @@
 import { Combobox, Transition } from '@headlessui/react'
 import { useCallback, useState, Fragment, RefCallback } from 'react'
-import useResolver from '../hooks/useResolver'
-import { ControlledInputProps, SearchResult } from '../types'
+import useResolver from '../../hooks/useResolver'
+import { ControlledInputProps, SearchResult } from '../../types'
 import clsx from 'clsx'
-import { CheckIcon, ChevronUpDownIcon } from './icons'
-import { usePopperSelectDropdown } from './utils'
-import { FieldProps } from './form/Field'
+import { CheckIcon, ChevronUpDownIcon } from '../icons'
+import { usePopperSelectDropdown } from '../utils'
+import { FieldProps } from './Field'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
-import Button from './Button'
+import Button from '../Button'
 
 interface EntityIdPickerProps<T extends { id: number }> extends ControlledInputProps<number> {
     get: (value: number) => Promise<T>

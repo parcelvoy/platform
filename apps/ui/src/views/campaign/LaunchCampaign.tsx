@@ -6,7 +6,7 @@ import { CampaignLaunchParams } from '../../types'
 import OptionField from '../../ui/form/OptionField'
 import SwitchField from '../../ui/form/SwitchField'
 import TextField from '../../ui/form/TextField'
-import FormWrapper from '../../ui/FormWrapper'
+import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 
 interface LaunchCampaignParams {

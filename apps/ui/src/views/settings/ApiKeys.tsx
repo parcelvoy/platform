@@ -6,7 +6,7 @@ import { ProjectApiKey, ProjectApiKeyParams } from '../../types'
 import Button from '../../ui/Button'
 import OptionField from '../../ui/form/OptionField'
 import TextField from '../../ui/form/TextField'
-import FormWrapper from '../../ui/FormWrapper'
+import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 

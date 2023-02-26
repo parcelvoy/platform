@@ -1,8 +1,8 @@
 import { ReactNode, useState } from 'react'
 import { DeepPartial, DeepRequired, FieldErrorsImpl, FieldValues, useForm, UseFormReturn } from 'react-hook-form'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
-import Alert from './Alert'
-import Button from './Button'
+import Alert from '../Alert'
+import Button from '../Button'
 
 interface FormWrapperProps<T extends FieldValues> {
     children: (form: UseFormReturn<T>) => ReactNode
