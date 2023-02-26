@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 const client = Axios.create(env.api)
 
@@ -180,6 +180,15 @@ const api = {
         update: async (projectId: number | string, entityId: number | string, { group, type, ...provider }: ProviderUpdateParams) => await client
             .patch<Provider>(`${projectUrl(projectId)}/providers/${group}/${type}/${entityId}`, provider)
             .then(r => r.data),
+    },
+
+    images: {
+        ...createProjectEntityPath<Image>('images'),
+        create: async (projectId: number | string, image: File) => {
+            const formData = new FormData()
+            formData.append('image', image)
+            await client.post(`${projectUrl(projectId)}/images`, formData)
+        },
     },
 }
 

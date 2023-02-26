@@ -1,0 +1,42 @@
+.image-gallery .images {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    place-items: start;
+    padding: 20px 0;
+}
+
+.image-gallery .image {
+    width: 100%;
+    position: relative;
+    display: flex;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--border-radius-inner);
+    cursor: pointer;
+    
+}
+
+.image-gallery .image:after {
+    content: '';
+    background: rgba(255,255,255,0.2);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    border: 3px solid var(--color-primary);
+    border-radius: var(--border-radius-inner);
+    opacity: 0;
+    transition: all ease-in-out 0.25s;
+}
+
+.image-gallery .image:hover:after {
+    opacity: 1;
+}
+
+.image-gallery .image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}

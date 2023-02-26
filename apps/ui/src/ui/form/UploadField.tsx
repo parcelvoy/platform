@@ -4,6 +4,9 @@ import { FieldProps } from './Field'
 import './UploadField.css'
 
 interface UploadFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
+    value?: FileList | null
+    onChange?: (value: FileList) => void
+    isUploading?: boolean
 }
 
 export default function UploadField<X extends FieldValues, P extends FieldPath<X>>(props: UploadFieldProps<X, P>) {
@@ -14,8 +17,14 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
         label,
         name,
         required,
+        isUploading = false,
     } = props
-    const { field: { value, onChange } } = useController({ name, control: form?.control })
+    let { value, onChange } = props
+    if (form) {
+        const { field } = useController({ name, control: form?.control })
+        value = field.value
+        onChange = field.onChange
+    }
 
     const [isHighlighted, setIsHighlighted] = useState(false)
 
@@ -33,7 +42,7 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
 
     const drop = (event: React.DragEvent<HTMLLabelElement>) => {
         dragExit(event)
-        onChange(event.dataTransfer.files)
+        onChange?.(event.dataTransfer.files)
     }
 
     return (
@@ -48,7 +57,9 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
             </span>
 
             <p>{value?.[0]
-                ? value?.[0].name
+                ? isUploading
+                    ? `Uploading ${value?.[0].name} ...`
+                    : value?.[0].name
                 : 'Click to select file or drop one in.' }</p>
             <input
                 type="file"
@@ -56,8 +67,8 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
                 name={name}
                 accept="text/csv"
                 required={required}
-                disabled={disabled}
-                onChange={(event) => onChange(event.target.files)} />
+                disabled={disabled ?? isUploading}
+                onChange={(event) => event.target.files && onChange?.(event.target.files)} />
         </label>
     )
 }

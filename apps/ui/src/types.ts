@@ -365,3 +365,14 @@ export interface ProviderMeta {
     channel: string
     schema: any
 }
+
+export interface Image {
+    id: number
+    uuid: string
+    url: string
+    name: string
+    original_name: string
+    extension: string
+    alt: string
+    filesize: string
+}
