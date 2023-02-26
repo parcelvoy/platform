@@ -1,6 +1,6 @@
 import { Campaign } from '../../types'
 import TextField from '../../ui/form/TextField'
-import FormWrapper from '../../ui/FormWrapper'
+import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { languageName } from '../../utils'
 import { UseFormReturn } from 'react-hook-form'

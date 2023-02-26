@@ -93,7 +93,7 @@ const api = {
 
     admins: createEntityPath<Admin>('/admin/admins'),
 
-    project: {
+    projects: {
         ...createEntityPath<Project>('/admin/projects'),
         all: async () => await client
             .get<Project[]>('/admin/projects/all')

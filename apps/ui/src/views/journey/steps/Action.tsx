@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import api from '../../../api'
 import { JourneyStepType } from '../../../types'
-import { EntityIdPicker } from '../../../ui/EntityIdPicker'
+import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 
 interface ActionConfig {
     campaign_id: number

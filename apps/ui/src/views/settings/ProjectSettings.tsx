@@ -3,14 +3,14 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Project } from '../../types'
 import TextField from '../../ui/form/TextField'
-import FormWrapper from '../../ui/FormWrapper'
+import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
 
 export default function ProjectSettings() {
     const [project, setProject] = useContext(ProjectContext)
 
     async function handleSaveProject({ name, description, locale, timezone }: Project) {
-        const value = await api.project.update(project.id, { name, description, locale, timezone })
+        const value = await api.projects.update(project.id, { name, description, locale, timezone })
         setProject(value)
     }
 

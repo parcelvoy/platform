@@ -9,7 +9,6 @@ import { AdminContext, CampaignContext, JourneyContext, ListContext, ProjectCont
 import PageContent from '../ui/PageContent'
 import { NavigationTabs } from '../ui/Tabs'
 import ApiKeys from './settings/ApiKeys'
-import ProjectSummary from './project/ProjectSummary'
 import EmailEditor from './campaign/EmailEditor'
 import Lists from './users/Lists'
 import ListDetail from './users/ListDetail'
@@ -74,7 +73,7 @@ export const router = createBrowserRouter([
                     if (latest) {
                         return redirect(`projects/${latest}`)
                     }
-                    const projects = await api.project.all()
+                    const projects = await api.projects.all()
                     if (projects.length) {
                         return redirect(`projects/${projects[0].id}`)
                     }
@@ -92,7 +91,7 @@ export const router = createBrowserRouter([
             {
                 path: 'projects/:projectId',
                 loader: async ({ params: { projectId = '' } }) => {
-                    const project = await api.project.get(projectId)
+                    const project = await api.projects.get(projectId)
                     localStorage.setItem('last-project', projectId)
                     return project
                 },
@@ -100,13 +99,6 @@ export const router = createBrowserRouter([
                     <StatefulLoaderContextProvider context={ProjectContext}>
                         <Sidebar
                             links={[
-                                {
-                                    key: 'summary',
-                                    to: '',
-                                    end: true,
-                                    children: 'Summary',
-                                    icon: 'bi-list-check',
-                                },
                                 {
                                     key: 'campaigns',
                                     to: 'campaigns',
@@ -146,7 +138,9 @@ export const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <ProjectSummary />,
+                        loader: async () => {
+                            return redirect('campaigns')
+                        },
                     },
                     createStatefulRoute({
                         path: 'campaigns',
