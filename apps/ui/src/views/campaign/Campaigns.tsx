@@ -69,7 +69,10 @@ export default function Campaigns() {
                             key: 'delivery',
                             cell: ({ item }) => `${item.delivery?.sent ?? 0} / ${item.delivery?.total ?? 0}`,
                         },
-                        { key: 'launched_at' },
+                        {
+                            key: 'send_at',
+                            title: 'Launched At',
+                        },
                         { key: 'updated_at' },
                         {
                             key: 'options',
