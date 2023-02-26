@@ -98,6 +98,7 @@
 }
 
 .ui-button.secondary {
+    background: var(--color-background);
     border: 1px solid var(--color-grey);
     color: var(--color-primary);
 }

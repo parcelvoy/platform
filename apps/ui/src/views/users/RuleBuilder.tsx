@@ -88,7 +88,7 @@ const RuleSet = ({ group, onChange, onDelete }: RuleSetParams) => {
 
     return <div className="rule-set">
         {group && <div className="rule-set-header">
-            {!onDelete && 'Target all users '}
+            {!onDelete && 'Target users '}
             {isEvent
                 ? <>
                     Did
