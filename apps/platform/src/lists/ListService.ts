@@ -139,13 +139,7 @@ export const populateList = async (list: List, rule: Rule) => {
 
     // Once list is regenerated, drop any users from previous version
     await UserList.delete(qb => qb.where('version', '<', version))
-    console.log('deleted not', version)
 
-    // await UserList.query().whereIn(
-    //     'id', UserList.query()
-    //         .where('version', '!=', version)
-    //         .select('id'),
-    // ).delete()
     await updateList(id, { state: 'ready' })
 }
 
