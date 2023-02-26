@@ -7,7 +7,7 @@ import TextField from './form/TextField'
 import Heading from './Heading'
 import Pagination from './Pagination'
 
-interface SearchTableProps<T extends Record<string, any>> extends Omit<DataTableProps<T>, 'items'> {
+export interface SearchTableProps<T extends Record<string, any>> extends Omit<DataTableProps<T>, 'items'> {
     title?: ReactNode
     description?: ReactNode
     actions?: ReactNode
@@ -87,10 +87,17 @@ export function useSearchTableState<T>(loader: (params: SearchParams) => Promise
     }
 }
 
+export interface SearchTableQueryState<T> {
+    results: SearchResult<T> | null
+    params: SearchParams
+    reload: () => Promise<void>
+    setParams: (params: SearchParams) => void
+}
+
 /**
  * global query string state
  */
-export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>) {
+export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>): SearchTableQueryState<T> {
 
     const [params, setParams] = useTableSearchParams()
 

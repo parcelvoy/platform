@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 const client = Axios.create(env.api)
 
@@ -91,6 +91,8 @@ const api = {
         get: async () => await client.get<Admin>('/admin/profile').then(r => r.data),
     },
 
+    admins: createEntityPath<Admin>('/admin/admins'),
+
     project: {
         ...createEntityPath<Project>('/admin/projects'),
         all: async () => await client
@@ -158,7 +160,7 @@ const api = {
         },
     },
 
-    admins: createProjectEntityPath<Admin>('admins'),
+    projectAdmins: createProjectEntityPath<Admin, ProjectAdminCreateParams>('admins'),
 
     subscriptions: createProjectEntityPath<Subscription>('subscriptions'),
 

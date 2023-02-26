@@ -108,7 +108,7 @@ export default class Model {
             if (isNaN(id)) return undefined
         }
         const record = await query(this.table(db))
-            .where({ id })
+            .where(`${this.tableName}.id`, id)
             .first()
         if (!record) return undefined
         return this.fromJson(record)

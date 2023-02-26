@@ -2,11 +2,9 @@ import Router from '@koa/router'
 import App from '../app'
 import { getTokenCookies, revokeAccessToken } from './TokenRepository'
 
-const router = new Router<{
-    app: import('../app').default
-        }>({
-            prefix: '/auth',
-        })
+const router = new Router({
+    prefix: '/auth',
+})
 
 router.get('/login', async ctx => {
     await App.main.auth.start(ctx)

@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Campaign, CampaignCreateParams, Project, Provider, SearchParams, Subscription } from '../../types'
-import { Control, FieldPath, FieldValues, useController, UseFormReturn } from 'react-hook-form'
+import { useController, UseFormReturn } from 'react-hook-form'
 import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/FormWrapper'
 import Heading from '../../ui/Heading'
@@ -11,6 +11,7 @@ import ListTable from '../users/ListTable'
 import SelectField from '../../ui/form/SelectField'
 import { snakeToTitle } from '../../utils'
 import OptionField from '../../ui/form/OptionField'
+import { SelectionProps } from '../../ui/form/Field'
 
 interface CampaignEditParams {
     campaign?: Campaign
@@ -19,13 +20,11 @@ interface CampaignEditParams {
     onSave: (campaign: Campaign) => void
 }
 
-interface SelectionProps<X extends FieldValues> {
+interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
     project: Project
-    name: FieldPath<X>
-    control: Control<X, any> | undefined
 }
 
-const ListSelection = ({ project, name, control }: SelectionProps<CampaignCreateParams>) => {
+const ListSelection = ({ project, name, control }: ListSelectionProps) => {
     const lists = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [api.lists, project])
 
     const { field: { value, onChange } } = useController({ name, control, rules: { required: true } })

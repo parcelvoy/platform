@@ -1,4 +1,4 @@
-import { FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
+import { Control, FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 import { CommonInputProps } from '../../types'
 
 export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> extends CommonInputProps {
@@ -9,4 +9,9 @@ export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> exten
 export interface FieldOption {
     key: string | number
     label: string
+}
+
+export interface SelectionProps<X extends FieldValues> {
+    name: FieldPath<X>
+    control: Control<X, any> | undefined
 }

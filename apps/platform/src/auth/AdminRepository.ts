@@ -1,4 +1,12 @@
+import { SearchParams } from '../core/searchParams'
 import { Admin, AdminParams } from './Admin'
+
+export const pagedAdmins = async (params: SearchParams) => {
+    return await Admin.searchParams(
+        params,
+        ['first_name', 'last_name', 'email'],
+    )
+}
 
 export const getAdmin = async (id: number): Promise<Admin | undefined> => {
     return await Admin.find(id)

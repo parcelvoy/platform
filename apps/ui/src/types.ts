@@ -85,6 +85,10 @@ export interface Admin {
     email: string
 }
 
+export interface ProjectAdminCreateParams {
+    admin_id: number
+}
+
 export interface Project {
     id: number
     name: string
