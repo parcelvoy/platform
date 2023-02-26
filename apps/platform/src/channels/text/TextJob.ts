@@ -25,7 +25,7 @@ export default class TextJob extends Job {
         }
 
         // Send and render text
-        const channel = await loadTextChannel(campaign.project_id, project.id)
+        const channel = await loadTextChannel(campaign.provider_id, project.id)
         if (!channel) {
             await updateSendState(campaign, user, 'failed')
             return

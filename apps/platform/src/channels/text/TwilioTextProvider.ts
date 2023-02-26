@@ -47,7 +47,7 @@ export default class TwilioTextProvider extends TextProvider {
 
     async send(message: TextMessage): Promise<TextResponse> {
         const { to, text } = message
-        const form = new FormData()
+        const form = new URLSearchParams()
         form.append('From', this.phone_number)
         form.append('To', to)
         form.append('Body', text)

@@ -56,7 +56,8 @@ export const createList = async (projectId: number, params: ListCreateParams): P
         project_id: projectId,
     })
 
-    if (list.type === 'dynamic') {
+    const hasRules = (params.rule?.children?.length ?? 0) > 0
+    if (list.type === 'dynamic' && hasRules) {
         App.main.queue.enqueue(
             ListPopulateJob.from(list.id, list.project_id),
         )
@@ -102,19 +103,21 @@ export const importUsersToList = async (list: List, stream: FileStream) => {
     await updateList(list.id, { state: 'ready' })
 }
 
-export const populateList = async (id: number, rule: Rule) => {
-    const list = await updateList(id, { state: 'loading' })
+export const populateList = async (list: List, rule: Rule) => {
+    const { id, version: oldVersion } = list
+    const version = oldVersion + 1
+    await updateList(id, { state: 'loading', version })
 
-    type UserListChunk = { user_id: number, list_id: number }[]
+    type UserListChunk = { user_id: number, list_id: number, version: number }[]
     const insertChunk = async (chunk: UserListChunk) => {
         return await UserList.query()
             .insert(chunk)
             .onConflict(['user_id', 'list_id'])
-            .ignore()
+            .merge(['version'])
     }
 
     await ruleQuery(rule)
-        .where('users.project_id', list!.project_id)
+        .where('users.project_id', list.project_id)
         .stream(async function(stream) {
 
             // Stream results and insert in chunks of 100
@@ -122,7 +125,7 @@ export const populateList = async (id: number, rule: Rule) => {
             let chunk: UserListChunk = []
             let i = 0
             for await (const { id: user_id } of stream) {
-                chunk.push({ user_id, list_id: id })
+                chunk.push({ user_id, list_id: id, version })
                 i++
                 if (i % chunkSize === 0) {
                     await insertChunk(chunk)
@@ -133,6 +136,16 @@ export const populateList = async (id: number, rule: Rule) => {
             // Insert remaining items
             await insertChunk(chunk)
         })
+
+    // Once list is regenerated, drop any users from previous version
+    await UserList.delete(qb => qb.where('version', '<', version))
+    console.log('deleted not', version)
+
+    // await UserList.query().whereIn(
+    //     'id', UserList.query()
+    //         .where('version', '!=', version)
+    //         .select('id'),
+    // ).delete()
     await updateList(id, { state: 'ready' })
 }
 
