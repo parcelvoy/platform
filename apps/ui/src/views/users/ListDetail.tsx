@@ -21,7 +21,7 @@ const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rul
     const [rule, setRule] = useState<WrapperRule>(list.rule)
     return <>
         <Heading size="h3" title="Rules" actions={
-            <Button size="small" onClick={() => onRuleSave(rule) }>Save List</Button>
+            <Button size="small" onClick={() => onRuleSave(rule) }>Save Rules</Button>
         } />
         <RuleBuilder rule={rule} setRule={setRule} />
     </>
@@ -86,8 +86,8 @@ export default function ListDetail() {
             <Dialog
                 open={isDialogOpen}
                 onClose={setIsDialogOpen}
-                title="List Saved!">
-                Initial list generation will happen in the background. Please reload the page to see the latest status.
+                title="Success">
+                List generation will happen in the background. Please reload the page to see the latest status.
             </Dialog>
 
             <Modal

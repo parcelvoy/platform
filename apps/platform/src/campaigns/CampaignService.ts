@@ -24,7 +24,7 @@ export const pagedCampaigns = async (params: SearchParams, projectId: number) =>
         params,
         ['name'],
         b => {
-            b.where({ project_id: projectId })
+            b.where({ project_id: projectId }).orderBy('id', 'desc')
             params?.tags?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tags))
             return b
         },

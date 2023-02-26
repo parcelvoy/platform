@@ -10,6 +10,7 @@ export default class List extends Model {
     type!: ListType
     state!: ListState
     rule?: Rule
+    version!: number
     users_count?: number
 
     static jsonAttributes = ['rule']
@@ -21,6 +22,7 @@ export class UserList extends Model {
     user_id!: number
     list_id!: number
     event_id!: number
+    version!: number
     deleted_at?: Date
 
     static tableName = 'user_list'

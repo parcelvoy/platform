@@ -21,7 +21,7 @@ export default class ListPopulateJob extends Job {
         const list = await getList(listId, projectId) as DynamicList
         if (!list) return
 
-        await populateList(list.id, list.rule)
+        await populateList(list, list.rule)
 
         App.main.queue.enqueue(ListStatsJob.from(listId, projectId))
     }

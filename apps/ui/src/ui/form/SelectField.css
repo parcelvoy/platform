@@ -97,6 +97,7 @@
     border-radius: var(--border-radius-inner);
     font-weight: 500;
     margin: 3px 0;
+    gap: 10px;
 }
 
 .ui-select .select-option:first-child {
@@ -125,12 +126,12 @@
 
 .ui-select .select-option.selected .option-icon {
     display: block;
-    height: 20px;
+    height: 18px;
 }
 
 .ui-select .select-option.selected svg {
-    height: 20px;
-    width: 20px;
+    height: 15px;
+    width: 15px;
 }
 
 .ui-select .select-option.disabled {

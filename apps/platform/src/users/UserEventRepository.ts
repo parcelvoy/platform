@@ -10,6 +10,7 @@ export const getUserEvents = async (id: number, params: SearchParams, projectId:
         params,
         ['name'],
         b => b.where('project_id', projectId)
-            .where('user_id', id),
+            .where('user_id', id)
+            .orderBy('id', 'desc'),
     )
 }
