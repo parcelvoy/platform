@@ -50,6 +50,12 @@ exports.up = function(knex) {
         .table('users', function(table) {
             table.string('timezone', 50).after('devices')
         })
+        .table('providers', function(table) {
+            table.renameColumn('name', 'type')
+        })
+        .table('providers', function(table) {
+            table.string('name', 255)
+        })
 }
 
 exports.down = function(knex) {
@@ -72,5 +78,9 @@ exports.down = function(knex) {
         .table('templates', function(table) {
             table.dropColumn('locale')
             table.dropColumn('campaign_id')
+        })
+        .table('providers', function(table) {
+            table.dropColumn('name')
+            table.renameColumn('type', 'name')
         })
 }

@@ -79,7 +79,7 @@ const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
         },
     ],
     additionalProperties: false,
-}
+} as any
 router.post('/identify', async ctx => {
     const user = validate(identifyParams, ctx.request.body)
     await App.main.queue.enqueue(UserPatchJob.from({
@@ -137,7 +137,7 @@ const deviceParams: JSONSchemaType<DeviceParams> = {
             required: ['external_id'],
         },
     ],
-}
+} as any
 router.post('/devices', async ctx => {
     const payload = validate(deviceParams, ctx.request.body)
     await saveDevice(ctx.state.project.id, payload)
@@ -185,7 +185,7 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
         ],
     },
     minItems: 1,
-}
+} as any
 router.post('/events', async ctx => {
     const events = validate(postEventsRequest, ctx.request.body)
 

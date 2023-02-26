@@ -29,10 +29,10 @@ describe('CampaignService', () => {
             channel: 'email',
         })
         const provider = await createProvider(project.id, {
+            type: 'smtp',
             group: 'email',
             data: {},
             name: uuid(),
-            is_default: false,
         })
         return {
             project_id: project.id,

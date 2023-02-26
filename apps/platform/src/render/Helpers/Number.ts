@@ -38,7 +38,7 @@ const operate = (values: any[], operation: (a: number, b: number) => number) => 
 }
 
 /**
- * Return the magnitude of `a`.
+ * Return the absolute value of `a`.
  */
 export const abs = function(value: number | any): number {
     const [num] = getNumbers(value)
