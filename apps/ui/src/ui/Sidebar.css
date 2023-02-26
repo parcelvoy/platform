@@ -64,11 +64,13 @@
 }
 
 .project-switcher .switcher-value {
+    color: var(--color-primary);
     font-size: 14px;
     font-weight: 500;
 }
 
 .project-switcher .project-switcher-icon {
+    color: var(--color-primary);
     width: 1rem;
     height: 1rem;
     flex-shrink: 0;
