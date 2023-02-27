@@ -1,9 +1,11 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import parse, { FileMetadata } from './FileStream'
-import { allImages, getImage, updateImage, uploadImage } from './ImageService'
+import { getImage, pagedImages, updateImage, uploadImage } from './ImageService'
 import Image, { ImageParams } from './Image'
 import { ProjectState } from '../auth/AuthMiddleware'
+import { extractQueryParams } from '../utilities'
+import { searchParamsSchema } from '../core/searchParams'
 
 const router = new Router<
     ProjectState & { image?: Image }
@@ -43,7 +45,8 @@ router.post('/', async ctx => {
 })
 
 router.get('/', async ctx => {
-    ctx.body = await allImages(ctx.state.project.id)
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedImages(params, ctx.state.project.id)
 })
 
 router.param('imageId', async (value, ctx, next) => {

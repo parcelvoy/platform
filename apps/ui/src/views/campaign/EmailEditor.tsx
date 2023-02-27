@@ -1,10 +1,11 @@
 import { useContext, useState } from 'react'
 import { CampaignContext, ProjectContext } from '../../contexts'
 import SourceEditor from '@monaco-editor/react'
+import { editor as Editor } from 'monaco-editor'
 import './EmailEditor.css'
 import Button, { LinkButton } from '../../ui/Button'
 import api from '../../api'
-import { Template } from '../../types'
+import { Image, Template } from '../../types'
 import { useSearchParams } from 'react-router-dom'
 import Preview from '../../ui/Preview'
 import { locales } from './CampaignDetail'
@@ -13,14 +14,20 @@ import { formatDate } from '../../utils'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { route } from '../router'
 import CreateLocaleModal from './CreateLocaleModal'
-
-// type EditorType = 'html' | 'builder'
+import ImageGalleryModal from './ImageGalleryModal'
 
 const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
+
+    const [monaco, setMonaco] = useState<Editor.IStandaloneCodeEditor | undefined>()
 
     const [preferences] = useContext(PreferencesContext)
     const [data, setData] = useState(template.data)
     const [selectedIndex, setSelectedIndex] = useState(0)
+    const [showImages, setShowImages] = useState(false)
+
+    function handleMount(editor: Editor.IStandaloneCodeEditor) {
+        setMonaco(editor)
+    }
 
     function handleHtmlChange(html?: string) {
         setData({ ...data, html })
@@ -28,6 +35,30 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
 
     function handleTextChange(text?: string) {
         setData({ ...data, text })
+    }
+
+    function handleImageInsert(image: Image) {
+        setShowImages(false)
+        handleEditorInsert(`<img src="${image.url}" alt="${image.alt || image.name}" />`)
+    }
+
+    function handleEditorInsert(text: string) {
+        if (monaco) {
+            const selection = monaco.getSelection()
+            const id = { major: 1, minor: 1 }
+            const op = {
+                identifier: id,
+                range: {
+                    startLineNumber: selection?.selectionStartLineNumber ?? 1,
+                    startColumn: selection?.selectionStartColumn ?? 1,
+                    endLineNumber: selection?.endLineNumber ?? 1,
+                    endColumn: selection?.endColumn ?? 1,
+                },
+                text,
+                forceMoveMarkers: true,
+            }
+            monaco.executeEdits('html', [op])
+        }
     }
 
     function handleSave() {
@@ -45,14 +76,24 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                         tabs={[{
                             key: 'html',
                             label: 'HTML',
-                            children: <SourceEditor
-                                height="100%"
-                                defaultLanguage="handlebars"
-                                defaultValue={data.html}
-                                onChange={handleHtmlChange}
-                                options={{ wordWrap: 'on' }}
-                                theme="vs-dark"
-                            />,
+                            children: <>
+                                <SourceEditor
+                                    height="100%"
+                                    defaultLanguage="handlebars"
+                                    defaultValue={data.html}
+                                    onChange={handleHtmlChange}
+                                    onMount={handleMount}
+                                    options={{ wordWrap: 'on' }}
+                                    theme="vs-dark"
+                                />
+                                <div className="editor-toolbar">
+                                    <Button
+                                        variant="secondary"
+                                        icon="image"
+                                        onClick={() => setShowImages(true)}
+                                    >Images</Button>
+                                </div>
+                            </>,
                         },
                         {
                             key: 'text',
@@ -65,7 +106,8 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                                 options={{ wordWrap: 'on' }}
                                 theme="vs-dark"
                             />,
-                        }]} />
+                        }]}
+                    />
                 </div>
                 <div className="source-preview">
                     <Preview template={{ type: 'email', data }} />
@@ -78,6 +120,11 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                 </div>
                 <Button onClick={() => handleSave()}>Save</Button>
             </div>
+
+            <ImageGalleryModal
+                open={showImages}
+                onClose={setShowImages}
+                onInsert={handleImageInsert} />
         </>
     )
 }

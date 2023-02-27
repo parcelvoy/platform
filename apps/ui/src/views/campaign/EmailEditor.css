@@ -99,7 +99,7 @@
     background: #1E1E1E;
     border-radius: var(--border-radius);
     overflow: hidden;
-    padding: 0 0 10px;
+    padding: 0;
     display: flex;
     flex-direction: column;
 }
@@ -114,6 +114,17 @@
 
 .source-editor .ui-tabs .tab.selected {
     border-color: var(--color-on-primary);
+}
+
+.source-editor .ui-tabs-panels .panel {
+    flex-direction: column;
+}
+
+.source-editor .editor-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px;
 }
 
 .source-preview {

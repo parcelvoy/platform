@@ -2,9 +2,12 @@ import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, PropsWithChildren, ReactNode } from 'react'
 import './Modal.css'
 
-export interface ModalProps {
+export interface ModalStateProps {
     open: boolean
     onClose: (open: boolean) => void
+}
+
+export interface ModalProps extends ModalStateProps {
     title: ReactNode
     actions?: ReactNode
     size?: 'small' | 'regular' | 'large'
