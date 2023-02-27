@@ -4,7 +4,7 @@ import { LocaleContext } from '../../contexts'
 import { Campaign, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
-import SelectField from '../../ui/form/SelectField'
+import { SelectField } from '../../ui/form/SelectField'
 import CreateLocaleModal from './CreateLocaleModal'
 
 interface LocaleSelectorParams {
@@ -28,21 +28,33 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
 
     return <>
         <ButtonGroup>
-            { currentLocale && <SelectField
-                options={allLocales}
-                name="locale"
-                size="small"
-                value={currentLocale}
-                onChange={(currentLocale) => setLocale({ currentLocale, allLocales })} />}
-            { campaign.state !== 'finished' && <Button
-                size="small"
-                variant="secondary"
-                onClick={() => setOpen(true)}>Add Locale</Button>}
+            {
+                currentLocale && (
+                    <SelectField
+                        options={allLocales}
+                        size="small"
+                        value={currentLocale}
+                        onChange={(currentLocale) => setLocale({ currentLocale, allLocales })}
+                    />
+                )
+            }
+            {
+                campaign.state !== 'finished' && (
+                    <Button
+                        size="small"
+                        variant="secondary"
+                        onClick={() => setOpen(true)}
+                    >
+                        {'Add Locale'}
+                    </Button>
+                )
+            }
         </ButtonGroup>
         <CreateLocaleModal
             open={open}
             setIsOpen={setOpen}
             campaign={campaign}
-            setCampaign={handleCampaignCreate} />
+            setCampaign={handleCampaignCreate}
+        />
     </>
 }

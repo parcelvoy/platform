@@ -28,7 +28,7 @@ export const createJourney = async (projectId: number, params: JourneyParams): P
         }, trx)
 
         // auto-create entrance step
-        await JourneyEntrance.create(journey.id)
+        await JourneyEntrance.create(journey.id, undefined, trx)
 
         return journey
     })

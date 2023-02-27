@@ -1,7 +1,7 @@
 import { Operator, Rule, RuleType, WrapperRule } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
-import SelectField from '../../ui/form/SelectField'
+import { SelectField } from '../../ui/form/SelectField'
 import TextField from '../../ui/form/TextField'
 import './RuleBuilder.css'
 
@@ -269,12 +269,16 @@ const OperatorSelector = ({ type, value, onChange }: OperatorParams) => {
 
     const operators = types[type]
 
-    return <SelectField
-        options={operators}
-        name="operator"
-        size="small"
-        value={value}
-        onChange={(key) => onChange(key as Operator)} />
+    return (
+        <SelectField
+            options={operators}
+            size="small"
+            toValue={o => o.key}
+            value={value}
+            onChange={onChange}
+            hideLabel
+        />
+    )
 }
 
 interface TypeParams {
@@ -283,7 +287,10 @@ interface TypeParams {
 }
 
 const TypeOperator = ({ value, onChange }: TypeParams) => {
-    const types = [
+    const types: Array<{
+        key: RuleType
+        label: string
+    }> = [
         { key: 'string', label: 'String' },
         { key: 'number', label: 'Number' },
         { key: 'boolean', label: 'Boolean' },
@@ -291,12 +298,16 @@ const TypeOperator = ({ value, onChange }: TypeParams) => {
         { key: 'array', label: 'Array' },
     ]
 
-    return <SelectField
-        options={types}
-        name="type"
-        size="small"
-        value={value}
-        onChange={(key) => onChange(key as RuleType)} />
+    return (
+        <SelectField
+            options={types}
+            size="small"
+            toValue={o => o.key}
+            value={value}
+            onChange={onChange}
+            hideLabel
+        />
+    )
 }
 
 interface RuleBuilderParams {

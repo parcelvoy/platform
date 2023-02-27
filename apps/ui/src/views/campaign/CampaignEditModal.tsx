@@ -8,7 +8,7 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
 import Modal from '../../ui/Modal'
 import ListTable from '../users/ListTable'
-import SelectField from '../../ui/form/SelectField'
+import { SelectField } from '../../ui/form/SelectField'
 import { snakeToTitle } from '../../utils'
 import OptionField from '../../ui/form/OptionField'
 import { SelectionProps } from '../../ui/form/Field'
@@ -59,12 +59,15 @@ const SubscriptionSelection = ({ subscriptions, form }: { subscriptions: Subscri
         label: item.name,
     })), watchChannel)
 
-    return <SelectField
-        form={form}
-        name="subscription_id"
-        label="Subscription Group"
-        options={options}
-        required />
+    return (
+        <SelectField.Field
+            form={form}
+            name="subscription_id"
+            label="Subscription Group"
+            options={options}
+            required
+        />
+    )
 }
 
 const ProviderSelection = ({ providers, form }: { providers: Provider[], form: UseFormReturn<CampaignCreateParams> }) => {
@@ -75,12 +78,15 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
         label: item.name,
     })), watchChannel)
 
-    return <SelectField
-        form={form}
-        name="provider_id"
-        label="Provider"
-        options={options}
-        required />
+    return (
+        <SelectField.Field
+            form={form}
+            name="provider_id"
+            label="Provider"
+            options={options}
+            required
+        />
+    )
 }
 
 export default function CampaignEditModal({ campaign, open, onClose, onSave }: CampaignEditParams) {
