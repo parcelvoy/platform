@@ -1,4 +1,5 @@
-import { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react'
+import { ComponentType, Dispatch, Key, ReactNode, SetStateAction } from 'react'
+import { FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 
 export type Class<T> = new () => T
 
@@ -12,9 +13,25 @@ export interface CommonInputProps {
     disabled?: boolean
     label?: ReactNode
     subtitle?: ReactNode
+    hideLabel?: boolean
+    error?: ReactNode
 }
 
 export type ControlledInputProps<T> = ControlledProps<T> & CommonInputProps
+
+export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> extends CommonInputProps {
+    form: UseFormReturn<X>
+    name: P
+}
+
+export type FieldBindingsProps<I extends ControlledInputProps<T>, T, X extends FieldValues, P extends FieldPath<X>> = Omit<I, keyof ControlledProps<T>> & FieldProps<X, P>
+
+export interface OptionsProps<O, V = O> {
+    options: O[]
+    toValue?: (option: O) => V
+    getValueKey?: (option: V) => Key
+    getOptionDisplay?: (option: O) => ReactNode
+}
 
 export type UseStateContext<T> = [T, Dispatch<SetStateAction<T>>]
 

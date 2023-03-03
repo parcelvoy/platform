@@ -1,27 +1,43 @@
 import { Listbox, Transition } from '@headlessui/react'
-import { Fragment, Key, useEffect, useId, useState } from 'react'
+import { Fragment, ReactNode } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '../icons'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
-import { FieldOption, FieldProps } from './Field'
 import './SelectField.css'
-import { usePopperSelectDropdown } from '../utils'
+import { defaultGetOptionDisplay, defaultGetValueKey, usePopperSelectDropdown } from '../utils'
+import { ControlledInputProps, FieldBindingsProps, OptionsProps } from '../../types'
+import clsx from 'clsx'
 
-interface OptionFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
-    options: FieldOption[]
-    value?: Key
-    onChange?: (value: Key) => void
+export interface SelectFieldProps<T, O = T> extends ControlledInputProps<T>, OptionsProps<O, T> {
+    className?: string
+    buttonClassName?: string
+    getSelectedOptionDisplay?: (option: O) => ReactNode
+    optionsFooter?: ReactNode
     size?: 'small' | 'regular'
+    variant?: 'plain' | 'minimal'
 }
 
-export default function SelectField<X extends FieldValues, P extends FieldPath<X>>(props: OptionFieldProps<X, P>) {
-    const id = useId()
-    const { form, label, name, options, size = 'regular' } = props
-    let { value, onChange } = props
-    if (form) {
-        const { field } = useController({ name, control: form?.control })
-        value = field.value
-        onChange = field.onChange
-    }
+const defaultToValue = (o: any) => o
+
+export function SelectField<T, U = T>({
+    buttonClassName,
+    className,
+    disabled,
+    error,
+    getOptionDisplay = defaultGetOptionDisplay,
+    getSelectedOptionDisplay = getOptionDisplay,
+    hideLabel,
+    label,
+    options,
+    optionsFooter,
+    onChange,
+    required,
+    size,
+    subtitle,
+    toValue = defaultToValue,
+    getValueKey = defaultGetValueKey,
+    value,
+    variant,
+}: SelectFieldProps<T, U>) {
 
     const {
         setReferenceElement,
@@ -30,64 +46,113 @@ export default function SelectField<X extends FieldValues, P extends FieldPath<X
         styles,
     } = usePopperSelectDropdown()
 
-    // Get an internal default value based on options list
-    const [defaultValue, setDefaultValue] = useState<FieldOption>({ key: id, label: 'Loading...' })
-    useEffect(() => {
-        const option = options.find(item => value && item.key === value) ?? options[0]
-        setDefaultValue(option)
-        if (!value && options.length > 0) {
-            onChange?.(option.key)
-        }
-    }, [value, options])
+    const selectedOption = options.find(o => Object.is(getValueKey(toValue(o)), getValueKey(value)))
 
     return (
-        <div className="ui-select">
-            <Listbox
-                value={defaultValue}
-                onChange={(value) => onChange?.(value.key) }
-                name={name}>
-                {label && <Listbox.Label>
-                    <span>
-                        {label}
-                        {props.required && <span style={{ color: 'red' }}>&nbsp;*</span>}
+        <Listbox
+            as='div'
+            className={clsx('ui-select', className, variant ?? 'plain')}
+            by={(left: T, right: T) => Object.is(getValueKey(left), getValueKey(right))}
+            disabled={disabled}
+            value={value}
+            onChange={onChange}
+        >
+            <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
+                {label}
+                {
+                    required && (
+                        <span style={{ color: 'red' }}>&nbsp;*</span>
+                    )
+                }
+            </Listbox.Label>
+            {
+                subtitle && (
+                    <span className='label-subtitle'>
+                        {subtitle}
                     </span>
-                </Listbox.Label>}
-                <Listbox.Button className={`select-button ${size}`} ref={setReferenceElement}>
-                    <span className="select-button-label">{defaultValue?.label}</span>
-                    <span className="select-button-icon">
-                        <ChevronUpDownIcon aria-hidden="true" />
+                )
+            }
+            <Listbox.Button className={clsx('select-button', size, buttonClassName)} ref={setReferenceElement}>
+                <span className="select-button-label">
+                    {
+                        selectedOption === undefined
+                            ? ''
+                            : getSelectedOptionDisplay(selectedOption)
+                    }
+                </span>
+                <span className="select-button-icon">
+                    <ChevronUpDownIcon aria-hidden="true" />
+                </span>
+            </Listbox.Button>
+            {
+                (error && !hideLabel) && (
+                    <span className='field-error'>
+                        {error}
                     </span>
-                </Listbox.Button>
-                <Transition
-                    as={Fragment}
-                    leave="transition-leave"
-                    leaveFrom="transition-leave-from"
-                    leaveTo="transition-leave-to"
-                    enter="transition-enter"
-                    enterFrom="transition-enter-from"
-                    enterTo="transition-enter-to"
+                )
+            }
+            <Transition
+                as={Fragment}
+                leave="transition-leave"
+                leaveFrom="transition-leave-from"
+                leaveTo="transition-leave-to"
+                enter="transition-enter"
+                enterFrom="transition-enter-from"
+                enterTo="transition-enter-to"
+            >
+                <Listbox.Options
+                    className="select-options"
+                    ref={setPopperElement}
+                    style={styles.popper}
+                    {...attributes.popper}
                 >
-                    <Listbox.Options
-                        className="select-options"
-                        ref={setPopperElement}
-                        style={styles.popper}
-                        {...attributes.popper}>
-                        {options.map((option) => (
+                    {options.map((option) => {
+                        const value = toValue(option)
+                        return (
                             <Listbox.Option
-                                key={option.key}
-                                value={option}
-                                className={
-                                    ({ active, selected }) => `select-option ${active ? 'active' : ''} ${selected ? 'selected' : ''}` }
+                                key={getValueKey(value)}
+                                value={value}
+                                className={({ active, selected }) => clsx(
+                                    'select-option',
+                                    active && 'active',
+                                    selected && 'selected',
+                                )}
                             >
-                                <span>{option.label}</span>
+                                <span>{getOptionDisplay(option)}</span>
                                 <span className="option-icon">
                                     <CheckIcon aria-hidden="true" />
                                 </span>
                             </Listbox.Option>
-                        ))}
-                    </Listbox.Options>
-                </Transition>
-            </Listbox>
-        </div>
+                        )
+                    })}
+                    {optionsFooter}
+                </Listbox.Options>
+            </Transition>
+        </Listbox>
+    )
+}
+
+SelectField.Field = function SelectFieldField<T, X extends FieldValues, P extends FieldPath<X>>({
+    form,
+    name,
+    required,
+    ...rest
+}: FieldBindingsProps<SelectFieldProps<T>, T, X, P>) {
+
+    const { field, fieldState } = useController({
+        control: form.control,
+        name,
+        rules: {
+            required,
+        },
+    })
+
+    return (
+        <SelectField
+            {...rest}
+            {...field}
+            required={required}
+            error={fieldState.error?.message}
+        />
     )
 }

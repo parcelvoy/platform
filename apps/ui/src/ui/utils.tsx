@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Key, useState } from 'react'
 import { Modifier, usePopper } from 'react-popper'
 
 const modifiers: Array<Partial<Modifier<any, any>>> = [
@@ -12,7 +12,7 @@ const modifiers: Array<Partial<Modifier<any, any>>> = [
     {
         name: 'offset',
         options: {
-            offset: [0, -12],
+            offset: [0, 4],
         },
     },
     {
@@ -47,3 +47,7 @@ export function usePopperSelectDropdown() {
         attributes,
     }
 }
+
+export const defaultGetValueKey = (option: any) => (typeof option === 'object' ? option.id : option) as Key
+
+export const defaultGetOptionDisplay = (option: any) => (typeof option === 'object' ? option.label ?? option.name : option) as string

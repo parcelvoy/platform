@@ -7,6 +7,7 @@
     border-right: 1px solid var(--color-grey);
     display: flex;
     flex-direction: column;
+    z-index: 1;
 }
 
 .sidebar + * {
@@ -28,93 +29,27 @@
 }
 
 .sidebar-header .logo svg {
-    width: 30px;
+    height: 30px;
     flex-shrink: 0;
     fill: var(--color-primary);
 }
 
-.sidebar-header .project-switcher {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
+.sidebar .project-switcher.select-button {
+    padding: 15px 20px;
+    border-radius: 0;
+    border-width: 0 0 1px;
+    border-color: var(--color-grey);
 }
 
-.project-switcher .switcher-button {
-    border: 0px;
-    background: var(--color-background);
-    display: flex;
-    text-align: left;
-    align-items: center;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-}
-
-.project-switcher .switcher-button .switcher-text {
-    flex-grow: 1;
-}
-
-.project-switcher .switcher-button span {
-    display: block;
-}
-
-.project-switcher .switcher-label {
+.project-switcher-label {
     color: var(--color-primary-soft);
     font-size: 12px;
 }
 
-.project-switcher .switcher-value {
+.project-switcher-value {
     color: var(--color-primary);
     font-size: 14px;
     font-weight: 500;
-}
-
-.project-switcher .project-switcher-icon {
-    color: var(--color-primary);
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-}
-
-.project-switcher .switcher-options {
-    position: absolute;
-    background: var(--color-background);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-    box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
-    padding: 0;
-    width: 100%;
-    left: 0px;
-    margin: 0;
-    top: 100%;
-    outline: none;
-    border: 1px solid var(--color-grey);
-}
-
-.project-switcher .switcher-options .switcher-option {
-    display: flex;
-    border-bottom: 1px solid var(--color-grey);
-    padding: 15px 20px;
-    justify-content: space-between;
-    cursor: pointer;
-}
-
-.project-switcher .switcher-options .switcher-option:hover:not(.disabled) {
-    background: var(--color-background-soft);
-}
-
-.project-switcher .switcher-options .switcher-option:last-child {
-    border-bottom: 0px;
-}
-
-.project-switcher .switcher-options .switcher-option svg {  
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    display: none;
-}
-
-.project-switcher .switcher-options .switcher-option.selected svg {
-    display: inline-block;
 }
 
 nav {

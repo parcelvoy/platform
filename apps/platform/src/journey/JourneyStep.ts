@@ -10,6 +10,7 @@ import { random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
 import jsonpath from 'jsonpath'
+import { Database } from '../config/database'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -98,7 +99,7 @@ export class JourneyEntrance extends JourneyStep {
         this.list_id = json?.data.list_id
     }
 
-    static async create(journeyId: number, listId?: number): Promise<JourneyEntrance> {
+    static async create(journeyId: number, listId?: number, db?: Database): Promise<JourneyEntrance> {
         return await JourneyEntrance.insertAndFetch({
             type: this.type,
             external_id: uuid(),
@@ -108,7 +109,7 @@ export class JourneyEntrance extends JourneyStep {
             },
             x: 0,
             y: 0,
-        })
+        }, db)
     }
 }
 
