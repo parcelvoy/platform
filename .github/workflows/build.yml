@@ -34,6 +34,3 @@ jobs:
       - name: Build the hello-docker Docker image
         run: |
           npm run docker:build:push
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
