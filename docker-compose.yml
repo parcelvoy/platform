@@ -11,7 +11,7 @@ services:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: "/usr/bin/mysql hallow --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
+      test: "/usr/bin/mysql parcelvoy --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
       interval: 1s
       retries: 120
   api:

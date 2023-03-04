@@ -7,7 +7,7 @@ export interface DatabaseConnection {
     port: number
     user: string
     password: string
-    database: string
+    database?: string
 }
 
 export interface DatabaseConfig {
@@ -15,11 +15,15 @@ export interface DatabaseConfig {
     connection: DatabaseConnection
 }
 
-export default (config: DatabaseConfig) => {
+const connect = (config: DatabaseConfig, withDB = true) => {
+    let connection = config.connection
+    if (!withDB) {
+        delete connection.database
+    }
     return knex({
         client: config.client,
         connection: {
-            ...config.connection,
+            ...connection,
             typeCast(field: any, next: any) {
                 if (field.type === 'TINY' && field.length === 1) {
                     return field.string() === '1'
@@ -31,9 +35,22 @@ export default (config: DatabaseConfig) => {
     })
 }
 
-export const migrate = async (db: Database) => {
+const migrate = async (db: Database) => {
     return db.migrate.latest({
         directory: './db/migrations',
         tableName: 'migrations',
     })
+}
+
+export default (config: DatabaseConfig) => {
+    
+    let db = connect(config)
+    try {
+        migrate(db)
+    }
+    catch (error) {
+        db = connect(config, false)
+        db.raw(`CREATE DATABASE parcelvoy`)
+        return connect(config)
+    }
 }
