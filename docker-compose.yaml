@@ -15,7 +15,7 @@ services:
       interval: 1s
       retries: 120
   api:
-    image: 'parcelvoy/platform/api:latest'
+    image: 'ghcr.io/parcelvoy/api:latest'
     restart: always
     ports:
       - 3001:3001
@@ -52,7 +52,7 @@ services:
       AUTH_OPENID_REDIRECT_URI: ${AUTH_OPENID_REDIRECT_URI}
       AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
   ui:
-    image: 'parcelvoy/platform/ui:latest'
+    image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
       - api
     environment:

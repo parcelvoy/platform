@@ -11,6 +11,8 @@
     "start": "lerna run start",
     "build": "lerna run build",
     "lint": "lerna run lint",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "docker:build": "lerna run docker:build",
+    "docker:build:push": "lerna run docker:build:push"
   }
 }
