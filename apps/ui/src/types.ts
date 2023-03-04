@@ -81,6 +81,7 @@ export interface SearchParams {
     page: number
     itemsPerPage: number
     q: string
+    tag?: string[]
 }
 
 export interface SearchResult<T> {
@@ -392,4 +393,15 @@ export interface Image {
     extension: string
     alt: string
     filesize: string
+}
+
+export interface Tag {
+    id: number
+    name: string
+}
+
+export interface UsedTag {
+    id: number
+    name: string
+    count: number
 }

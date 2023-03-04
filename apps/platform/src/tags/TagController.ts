@@ -5,6 +5,7 @@ import { validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { Tag, TagParams } from './Tag'
+import { getUsedTags } from './TagService'
 
 const router = new Router<
     ProjectState & {
@@ -21,7 +22,12 @@ router.get('/', async ctx => {
     )
 })
 
+router.get('/used/:entity', async ctx => {
+    ctx.body = await getUsedTags(ctx.state.project!.id, ctx.params.entity)
+})
+
 const tagParams: JSONSchemaType<TagParams> = {
+    $id: 'tagParams',
     type: 'object',
     required: ['name'],
     properties: {
@@ -32,7 +38,10 @@ const tagParams: JSONSchemaType<TagParams> = {
 }
 
 router.post('/', async ctx => {
-    ctx.body = await Tag.insertAndFetch(validate(tagParams, ctx.request.body))
+    ctx.body = await Tag.insertAndFetch({
+        project_id: ctx.state.project!.id,
+        ...validate(tagParams, ctx.request.body),
+    })
 })
 
 router.param('tagId', async (value, ctx, next) => {

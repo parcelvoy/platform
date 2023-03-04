@@ -2,12 +2,11 @@ import { Listbox, Transition } from '@headlessui/react'
 import { Fragment, ReactNode } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '../icons'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
-import './SelectField.css'
 import { defaultGetOptionDisplay, defaultGetValueKey, defaultToValue, usePopperSelectDropdown } from '../utils'
 import { ControlledInputProps, FieldBindingsProps, OptionsProps } from '../../types'
 import clsx from 'clsx'
 
-export interface SelectFieldProps<T, O = T> extends ControlledInputProps<T>, OptionsProps<O, T> {
+export interface MultiSelectProps<T, O = T> extends ControlledInputProps<T[]>, OptionsProps<O, T> {
     className?: string
     buttonClassName?: string
     getSelectedOptionDisplay?: (option: O) => ReactNode
@@ -16,7 +15,7 @@ export interface SelectFieldProps<T, O = T> extends ControlledInputProps<T>, Opt
     variant?: 'plain' | 'minimal'
 }
 
-export function SelectField<T, U = T>({
+export function MultiSelect<T, U = T>({
     buttonClassName,
     className,
     disabled,
@@ -35,7 +34,7 @@ export function SelectField<T, U = T>({
     getValueKey = defaultGetValueKey,
     value,
     variant,
-}: SelectFieldProps<T, U>) {
+}: MultiSelectProps<T, U>) {
 
     const {
         setReferenceElement,
@@ -44,7 +43,23 @@ export function SelectField<T, U = T>({
         styles,
     } = usePopperSelectDropdown()
 
-    const selectedOption = options.find(o => Object.is(getValueKey(toValue(o)), getValueKey(value)))
+    const { valid, invalid } = (value ?? []).reduce((a, v) => {
+        const valueKey = getValueKey(v)
+        const option = options.find(o => getValueKey(toValue(o)) === valueKey)
+        if (option) {
+            a.valid.push(
+                <Fragment key={valueKey}>
+                    {getSelectedOptionDisplay(option)}
+                </Fragment>,
+            )
+        } else {
+            a.invalid.push(v)
+        }
+        return a
+    }, {
+        valid: [] as ReactNode[],
+        invalid: [] as T[],
+    })
 
     return (
         <Listbox
@@ -54,16 +69,21 @@ export function SelectField<T, U = T>({
             disabled={disabled}
             value={value}
             onChange={onChange}
+            multiple
         >
             <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
-                <span>
-                    {label}
-                    {
-                        required && (
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                        )
-                    }
-                </span>
+                {
+                    label && (
+                        <span>
+                            {label}
+                            {
+                                required && (
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
+                                )
+                            }
+                        </span>
+                    )
+                }
             </Listbox.Label>
             {
                 subtitle && (
@@ -75,9 +95,20 @@ export function SelectField<T, U = T>({
             <Listbox.Button className={clsx('select-button', size, buttonClassName)} ref={setReferenceElement}>
                 <span className="select-button-label">
                     {
-                        selectedOption === undefined
-                            ? ''
-                            : getSelectedOptionDisplay(selectedOption)
+                        value?.length
+                            ? (
+                                <>
+                                    {valid}
+                                    {
+                                        !!invalid.length && (
+                                            <span>
+                                                {`+${invalid.length} Invalid Values`}
+                                            </span>
+                                        )
+                                    }
+                                </>
+                            )
+                            : 'None Selected'
                     }
                 </span>
                 <span className="select-button-icon">
@@ -132,12 +163,12 @@ export function SelectField<T, U = T>({
     )
 }
 
-SelectField.Field = function SelectFieldField<T, O, X extends FieldValues, P extends FieldPath<X>>({
+MultiSelect.Field = function MultiSelectField<X extends FieldValues, P extends FieldPath<X>>({
     form,
     name,
     required,
     ...rest
-}: FieldBindingsProps<SelectFieldProps<T, O>, T, X, P>) {
+}: FieldBindingsProps<MultiSelectProps<any>, any, X, P>) {
 
     const { field, fieldState } = useController({
         control: form.control,
@@ -148,7 +179,7 @@ SelectField.Field = function SelectFieldField<T, O, X extends FieldValues, P ext
     })
 
     return (
-        <SelectField
+        <MultiSelect
             {...rest}
             {...field}
             required={required}

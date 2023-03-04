@@ -48,6 +48,8 @@ export function usePopperSelectDropdown() {
     }
 }
 
+export const defaultToValue = (option: any) => option
+
 export const defaultGetValueKey = (option: any) => (typeof option === 'object' ? option.id : option) as Key
 
 export const defaultGetOptionDisplay = (option: any) => (typeof option === 'object' ? option.label ?? option.name : option) as string

@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, UsedTag, User, UserEvent, UserSubscription } from './types'
 
 const client = Axios.create(env.api)
 
@@ -189,6 +189,13 @@ const api = {
             formData.append('image', image)
             await client.post(`${projectUrl(projectId)}/images`, formData)
         },
+    },
+
+    tags: {
+        ...createProjectEntityPath<Tag>('tags'),
+        used: async (projectId: number | string, entity: string) => await client
+            .get<UsedTag[]>(`${projectUrl(projectId)}/tags/used/${entity}`)
+            .then(r => r.data),
     },
 }
 

@@ -36,9 +36,18 @@ export default function UserDetailSubscriptions() {
     }
 
     return <>
-        <Heading size="h3" title="Subscriptions" actions={
-            <Button variant="secondary" onClick={async () => await unsubscribeAll()}>Unsubscribe From All</Button>
-        } />
+        <Heading
+            size="h3"
+            title="Subscriptions"
+            actions={
+                <Button
+                    variant="secondary"
+                    onClick={async () => await unsubscribeAll()}
+                >
+                    Unsubscribe From All
+                </Button>
+            }
+        />
         <SearchTable
             results={search}
             params={params}
@@ -56,7 +65,11 @@ export default function UserDetailSubscriptions() {
                     title: 'Subscribed',
                     cell: ({ item: { subscription_id, state } }) => {
                         return (
-                            <SwitchField name="state" checked={state !== 0} onChange={async (checked) => await updateSubscription(subscription_id, checked ? 1 : 0)} />
+                            <SwitchField
+                                name="state"
+                                checked={state !== 0}
+                                onChange={async (checked) => await updateSubscription(subscription_id, checked ? 1 : 0)}
+                            />
                         )
                     },
                 },

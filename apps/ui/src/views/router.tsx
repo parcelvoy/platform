@@ -31,6 +31,7 @@ import Journeys from './journey/Journeys'
 import JourneyEditor from './journey/JourneyEditor'
 import ProjectSettings from './settings/ProjectSettings'
 import Integrations from './settings/Integrations'
+import Tags from './settings/Tags'
 
 export const route = (path: string, includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -260,6 +261,11 @@ export const router = createBrowserRouter([
                                             to: 'subscriptions',
                                             children: 'Subscriptions',
                                         },
+                                        {
+                                            key: 'tags',
+                                            to: 'tags',
+                                            children: 'Tags',
+                                        },
                                     ]}
                                 />
                                 <Outlet />
@@ -285,6 +291,10 @@ export const router = createBrowserRouter([
                             {
                                 path: 'subscriptions',
                                 element: <Subscriptions />,
+                            },
+                            {
+                                path: 'tags',
+                                element: <Tags />,
                             },
                         ],
                     },
