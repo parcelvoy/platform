@@ -1,7 +1,6 @@
 import { cleanupExpiredRevokedTokens } from '../auth/TokenRepository'
 import { addSeconds, subDays } from 'date-fns'
 import nodeScheduler from 'node-schedule'
-import process from 'process'
 import App from '../app'
 import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
@@ -10,7 +9,7 @@ import CampaignSendJob from '../campaigns/CampaignSendJob'
 import Model from '../core/Model'
 
 export default async (app: App) => {
-    const scheduler = new Scheduler()
+    const scheduler = new Scheduler(app)
     scheduler.schedule({
         rule: '* * * * *',
         callback: () => {
@@ -44,11 +43,16 @@ interface Schedule {
 }
 
 class Scheduler {
+    app: App
+    constructor(app: App) {
+        this.app = app
+    }
+
     async schedule({ rule, name, callback, lockLength = 3600 }: Schedule) {
-        nodeScheduler.scheduleJob(rule, async function() {
+        nodeScheduler.scheduleJob(rule, async () => {
             const lock = await SchedulerLock.acquire({
                 key: name ?? rule,
-                owner: process.pid.toString(),
+                owner: this.app.uuid,
                 expiration: addSeconds(Date.now(), lockLength),
             })
             if (lock) {

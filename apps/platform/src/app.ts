@@ -8,6 +8,7 @@ import scheduler from './config/scheduler'
 import Queue from './queue'
 import Storage from './storage'
 import Auth from './auth/Auth'
+import { uuid } from './utilities'
 
 export default class App {
     private static $main: App
@@ -40,6 +41,7 @@ export default class App {
         return App.$main
     }
 
+    uuid = uuid()
     api: Api
     scheduler: any
     #registered: { [key: string | number]: unknown }
