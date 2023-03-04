@@ -40,7 +40,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest",
+    "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest ../../",
     "docker:build:push": "npm run docker:build -- --push"
   },
   "browserslist": {
