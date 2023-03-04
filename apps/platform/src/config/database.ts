@@ -42,14 +42,18 @@ const migrate = async (db: Database) => {
     })
 }
 
-export default (config: DatabaseConfig) => {
+export default async (config: DatabaseConfig) => {
     
-    let db = connect(config)
+    // Attempt to connect & migrate
     try {
-        migrate(db)
+        const db = connect(config)
+        await migrate(db)
+        return db
     }
     catch (error) {
-        db = connect(config, false)
+
+        // On error, try to create the database and try again
+        const db = connect(config, false)
         db.raw(`CREATE DATABASE parcelvoy`)
         return connect(config)
     }
