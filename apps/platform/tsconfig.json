@@ -5,5 +5,14 @@
     "moduleResolution": "node",
     "baseUrl": "./src",
     "outDir": "./build"
-  }
+  },
+  "include": [
+    "./src/**/*",
+    "tsconfig.json"
+  ],
+  "exclude": [
+      "node_modules",
+      "./**/*.spec.ts",
+      "./**/__mocks__/*"
+  ]
 }
