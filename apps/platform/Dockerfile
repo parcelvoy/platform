@@ -22,7 +22,5 @@ ENV NODE_ENV="production"
 USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app ./
-RUN chmod 755 ./scripts/entrypoint.sh
 EXPOSE 3001
-ENTRYPOINT ["./scripts/entrypoint.sh", "--"]
 CMD ["dumb-init", "node", "index.js"]
