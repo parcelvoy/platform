@@ -26,7 +26,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
         <>
             <section className="sidebar">
                 <div className="sidebar-header">
-                    <Link className="logo" to='/'>
+                    <Link className="logo" to="/">
                         <Logo />
                     </Link>
                 </div>
@@ -36,13 +36,13 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                     options={projects ?? [project]}
                     getSelectedOptionDisplay={p => (
                         <>
-                            <div className='project-switcher-label'>Project</div>
-                            <div className='project-switcher-value'>{p.name}</div>
+                            <div className="project-switcher-label">Project</div>
+                            <div className="project-switcher-value">{p.name}</div>
                         </>
                     )}
                     hideLabel
-                    buttonClassName='project-switcher'
-                    variant='minimal'
+                    buttonClassName="project-switcher"
+                    variant="minimal"
                     optionsFooter={
                         <div
                             style={{
@@ -51,7 +51,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                                 textAlign: 'center',
                             }}
                         >
-                            <LinkButton size='small' variant='primary' to='/projects/new' icon='plus'>
+                            <LinkButton size="small" variant="primary" to="/projects/new" icon="plus">
                                 {'Create Project'}
                             </LinkButton>
                         </div>
@@ -69,18 +69,17 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                         <div className="sidebar-profile">
                             <div className="profile-image"></div>
                             <span className="profile-name">{`${profile.first_name} ${profile.last_name}`}</span>
-                            <span className='profile-role'>
+                            <span className="profile-role">
                                 <ButtonGroup>
                                     <Button
-                                        variant='plain'
-                                        size='small'
+                                        variant="plain"
+                                        size="small"
                                         icon={preferences.mode === 'dark' ? 'moon' : 'sun'}
                                         onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}
                                     />
                                     <Button
-                                        variant='plain'
-                                        size='small'
-                                        icon=''
+                                        variant="plain"
+                                        size="small"
                                         onClick={async () => await api.logout()}
                                     >
                                         {'Sign Out'}

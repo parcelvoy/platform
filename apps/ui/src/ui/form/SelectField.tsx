@@ -48,7 +48,7 @@ export function SelectField<T, U = T>({
 
     return (
         <Listbox
-            as='div'
+            as="div"
             className={clsx('ui-select', className, variant ?? 'plain')}
             by={(left: T, right: T) => Object.is(getValueKey(left), getValueKey(right))}
             disabled={disabled}
@@ -67,7 +67,7 @@ export function SelectField<T, U = T>({
             </Listbox.Label>
             {
                 subtitle && (
-                    <span className='label-subtitle'>
+                    <span className="label-subtitle">
                         {subtitle}
                     </span>
                 )
@@ -86,7 +86,7 @@ export function SelectField<T, U = T>({
             </Listbox.Button>
             {
                 (error && !hideLabel) && (
-                    <span className='field-error'>
+                    <span className="field-error">
                         {error}
                     </span>
                 )

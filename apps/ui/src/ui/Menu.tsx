@@ -46,7 +46,7 @@ export default function Menu({ children, variant, size, placement }: PropsWithCh
                 ref={setPopperElement}
                 style={styles.popper}
                 {...attributes.popper}
-                className='ui-menu'
+                className="ui-menu"
             >
                 {children}
             </Popover.Panel>

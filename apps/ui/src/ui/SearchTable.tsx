@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import useResolver from '../hooks/useResolver'
 import { SearchParams, SearchResult } from '../types'
 import { TagPicker } from '../views/settings/TagPicker'
+import Button from './Button'
+import ButtonGroup from './ButtonGroup'
 import { DataTable, DataTableProps } from './DataTable'
 import TextField from './form/TextField'
 import Heading from './Heading'
@@ -118,21 +120,12 @@ export function SearchTable<T extends Record<string, any>>({
     ...rest
 }: SearchTableProps<T>) {
 
-    if (!results) {
-        // TODO nice loading view
-        return (
-            <div>
-                loading...
-            </div>
-        )
-    }
-
     const filters: ReactNode[] = []
 
     if (enableSearch) {
         filters.push(
             <TextField
-                key='search'
+                key="search"
                 name="search"
                 value={params.q}
                 placeholder="Search..."
@@ -144,7 +137,7 @@ export function SearchTable<T extends Record<string, any>>({
     if (tagEntity) {
         filters.push(
             <TagPicker
-                key='tags'
+                key="tags"
                 entity={tagEntity}
                 value={params.tag ?? []}
                 onChange={tag => setParams({ ...params, tag })}
@@ -158,7 +151,7 @@ export function SearchTable<T extends Record<string, any>>({
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 (title || actions || description) && (
                     <Heading
-                        size='h3'
+                        size="h3"
                         title={title}
                         actions={actions}
                     >
@@ -173,12 +166,14 @@ export function SearchTable<T extends Record<string, any>>({
                     </div>
                 )
             }
-            <DataTable {...rest} items={results.results} />
-            <Pagination
-                page={results.page}
-                total={results.pages}
-                itemsPerPage={results.itemsPerPage}
-                onChangePage={page => setParams({ ...params, page })} />
+            <DataTable {...rest} items={results?.results} isLoading={!results} />
+            {results && (
+                <Pagination
+                    page={results.page}
+                    total={results.pages}
+                    itemsPerPage={results.itemsPerPage}
+                    onChangePage={page => setParams({ ...params, page })} />
+            )}
         </>
     )
 }

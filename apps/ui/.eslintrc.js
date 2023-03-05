@@ -23,6 +23,7 @@ module.exports = {
         'padded-blocks': 'off',
         camelcase: 'off',
         'no-use-before-define': 'off',
+        'jsx-quotes': ['warn', 'prefer-double'],
         'comma-dangle': 'off',
         'space-before-function-paren': ['error', {
             anonymous: 'never',

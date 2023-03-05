@@ -17,11 +17,12 @@ export interface DataTableCol<T> {
 export interface DataTableProps<T, C = {}> {
     columns: Array<DataTableCol<T>>
     context?: C
-    items: T[]
+    items?: T[]
     itemKey?: DataTableResolver<T, Key>
     emptyMessage?: ReactNode
     selectedRow?: Key
     onSelectRow?: (row: T) => void
+    isLoading?: boolean
 }
 
 export function DataTable<T>({
@@ -31,6 +32,7 @@ export function DataTable<T>({
     itemKey,
     selectedRow,
     onSelectRow,
+    isLoading = false,
 }: DataTableProps<T>) {
     const [preferences] = useContext(PreferencesContext)
     return (
@@ -45,7 +47,7 @@ export function DataTable<T>({
                 }
             </div>
             {
-                (items.length > 0)
+                (items && items.length > 0)
                     ? items.map(item => {
 
                         const args = { item }
@@ -82,11 +84,23 @@ export function DataTable<T>({
                             </div>
                         )
                     })
-                    : (
-                        <div className='table-cell'>
-                            {emptyMessage}
+                    : isLoading
+                        ? Array.from({ length: 3 }, (x, i) => (
+                            <div className="table-row loading" key={i}>
+                                {
+                                    columns.map(col => (
+                                        <div className="table-cell" key={col.key}>
+                                            <div className="loader"></div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        ))
+                        : <div className="table-row">
+                            <div className="table-cell">
+                                {emptyMessage}
+                            </div>
                         </div>
-                    )
             }
         </div>
     )
