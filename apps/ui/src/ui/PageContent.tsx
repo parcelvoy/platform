@@ -9,7 +9,7 @@ type PageHeaderProps = PropsWithChildren<{
 
 export default function PageContent({ actions, children, desc, title }: PageHeaderProps) {
     return (
-        <div className='page-content'>
+        <div className="page-content">
             <Heading title={title} actions={actions}>{desc}</Heading>
             {children}
         </div>

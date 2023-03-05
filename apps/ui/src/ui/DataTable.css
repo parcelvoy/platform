@@ -74,3 +74,28 @@
     object-position: 0px 0px;
     border-radius: var(--border-radius-inner);
 }
+
+.ui-table .table-cell .loader {
+    background-color: var(--color-grey-soft);
+    height: 18px;
+    border-radius: 7px;
+    width: 100%;
+    background: linear-gradient(100deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, .8) 50%,
+    rgba(255, 255, 255, 0) 60%) var(--color-grey-soft);
+    background-size: 200% 100%;
+    background-position-x: 180%;
+    animation: 1s loading ease-in-out infinite;
+    opacity: 0.7;
+}
+.ui-table .table-row.loading:hover .table-cell {
+    background: transparent;
+    cursor: default;
+}
+
+@keyframes loading {
+    to {
+        background-position-x: -30%;
+    }
+}

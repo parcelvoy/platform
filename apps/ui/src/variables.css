@@ -38,14 +38,16 @@
 }
 
 [data-theme="dark"] {
-    --color-grey: #333b51;
+    --color-black: #121721;
+
+    --color-grey: #2b3245;
     --color-grey-soft: #252b3a;
 
     --color-primary: var(--color-white);
     --color-primary-soft: #e8ebed;
 
     --color-background: var(--color-black);
-    --color-background-soft: var(--color-grey-soft);
+    --color-background-soft: #1a1f2b;
 
     --color-on-primary: var(--color-black);
     --color-on-background: var(--color-white);
