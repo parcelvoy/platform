@@ -53,7 +53,7 @@ export const capitalizeAll = function(str: string): string {
 
 /**
  * Truncates a string to the specified `length`, and appends
- * it with an elipsis, `…`.
+ * it with an ellipsis, `…`.
  */
 export const ellipsis = function(str: string, limit: number): string {
     if (!isString(str)) return ''

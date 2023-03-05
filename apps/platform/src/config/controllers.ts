@@ -110,7 +110,7 @@ export const publicRouter = () => {
         ctx.body = {
             status: 'ok',
             environment: process.env.NODE_ENV,
-            time: new Date()
+            time: new Date(),
         }
     })
     return register(router,

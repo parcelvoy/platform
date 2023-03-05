@@ -16,7 +16,7 @@ export interface DatabaseConfig {
 }
 
 const connect = (config: DatabaseConfig, withDB = true) => {
-    let connection = config.connection
+    const connection = config.connection
     if (!withDB) {
         delete connection.database
     }
@@ -43,18 +43,17 @@ const migrate = async (db: Database) => {
 }
 
 export default async (config: DatabaseConfig) => {
-    
+
     // Attempt to connect & migrate
     try {
         const db = connect(config)
         await migrate(db)
         return db
-    }
-    catch (error) {
+    } catch (error) {
 
         // On error, try to create the database and try again
         const db = connect(config, false)
-        db.raw(`CREATE DATABASE parcelvoy`)
+        db.raw('CREATE DATABASE parcelvoy')
         return connect(config)
     }
 }
