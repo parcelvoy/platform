@@ -1,0 +1,26 @@
+.auth {
+    background: var(--color-background-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    flex-direction: column;
+    gap: 15px;
+    padding: 40px 0;
+}
+
+.auth .logo svg {
+    height: 40px;
+}
+
+.auth-step {
+    max-width: 600px;
+    background: var(--color-background);
+    border: 1px solid var(--color-grey-soft);
+    border-radius: var(--border-radius-outer);
+    padding: 40px;
+}
+
+.auth-step h1 {
+    margin: 0;
+}

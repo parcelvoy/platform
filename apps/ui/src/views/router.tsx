@@ -32,6 +32,10 @@ import JourneyEditor from './journey/JourneyEditor'
 import ProjectSettings from './settings/ProjectSettings'
 import Integrations from './settings/Integrations'
 import Tags from './settings/Tags'
+import Login from './auth/Login'
+import OnboardingStart from './auth/OnboardingStart'
+import Onboarding from './auth/Onboarding'
+import OnboardingProject from './auth/OnboardingProject'
 
 export const route = (path: string, includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -57,6 +61,24 @@ export const useRoute = (includeProject = true) => {
 }
 
 export const router = createBrowserRouter([
+    {
+        path: '/login',
+        element: <Login />,
+    },
+    {
+        path: '/onboarding',
+        element: <Onboarding />,
+        children: [
+            {
+                index: true,
+                element: <OnboardingStart />,
+            },
+            {
+                path: 'project',
+                element: <OnboardingProject />,
+            },
+        ],
+    },
     {
         path: '*',
         errorElement: <ErrorPage />,
