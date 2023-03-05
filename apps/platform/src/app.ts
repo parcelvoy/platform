@@ -1,5 +1,5 @@
 import Api from './api'
-import loadDatabase, { Database, migrate } from './config/database'
+import loadDatabase, { Database } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadAuth from './config/auth'
@@ -20,11 +20,8 @@ export default class App {
     }
 
     static async init(env: Env): Promise<App> {
-        // Load database
-        const database = loadDatabase(env.db)
-
-        // Migrate to latest version
-        await migrate(database)
+        // Load & migrate database
+        const database = await loadDatabase(env.db)
 
         // Load queue
         const queue = loadQueue(env.queue)

@@ -11,11 +11,11 @@ services:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: "/usr/bin/mysql hallow --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
+      test: "/usr/bin/mysql parcelvoy --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
       interval: 1s
       retries: 120
   api:
-    image: 'parcelvoy/platform/api:0.1.0'
+    image: 'ghcr.io/parcelvoy/api:latest'
     restart: always
     ports:
       - 3001:3001
@@ -35,6 +35,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE}
+      STORAGE_DRIVER: ${STORAGE_DRIVER}
+      STORAGE_BASE_URL: ${STORAGE_BASE_URL}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       QUEUE_DRIVER: ${QUEUE_DRIVER}
       AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -52,15 +55,13 @@ services:
       AUTH_OPENID_REDIRECT_URI: ${AUTH_OPENID_REDIRECT_URI}
       AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
   ui:
-    image: 'parcelvoy/platform/ui:0.1.0'
+    image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
       - api
     environment:
-      REACT_APP_API_URL: ${BASE_URL}
-      REACT_APP_ENVIRONMENT: ${NODE_ENV}
-      REACT_APP_DOCKER_HOSTED_ENV: 'true'
+      API_BASE_URL: ${API_BASE_URL}
     ports:
-      - 3000:3000
+      - 80:3000
 volumes:
   mysql_data:
     driver: local

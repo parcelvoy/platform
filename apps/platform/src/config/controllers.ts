@@ -106,6 +106,13 @@ export const clientRouter = () => {
  */
 export const publicRouter = () => {
     const router = new Router()
+    router.get('/health', async (ctx) => {
+        ctx.body = {
+            status: 'ok',
+            environment: process.env.NODE_ENV,
+            time: new Date(),
+        }
+    })
     return register(router,
         AuthController,
         PublicSubscriptionController,
