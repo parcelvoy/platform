@@ -35,6 +35,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE}
+      STORAGE_DRIVER: ${STORAGE_DRIVER}
+      STORAGE_BASE_URL: ${STORAGE_BASE_URL}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       QUEUE_DRIVER: ${QUEUE_DRIVER}
       AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -56,11 +59,11 @@ services:
     depends_on:
       - api
     environment:
-      REACT_APP_API_URL: ${BASE_URL}
+      REACT_APP_API_BASE_URL: ${API_BASE_URL}
       REACT_APP_ENVIRONMENT: ${NODE_ENV}
       REACT_APP_DOCKER_HOSTED_ENV: 'true'
     ports:
-      - 3000:3000
+      - 80:3000
 volumes:
   mysql_data:
     driver: local
