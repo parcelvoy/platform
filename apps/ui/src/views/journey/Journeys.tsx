@@ -39,6 +39,7 @@ export default function Journeys() {
                 ]}
                 onSelectRow={r => navigate(r.id.toString())}
                 enableSearch
+                tagEntity='journeys'
             />
             <Modal
                 onClose={() => setOpen(null)}

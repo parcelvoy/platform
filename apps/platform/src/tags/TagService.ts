@@ -1,3 +1,4 @@
+import { Database } from 'config/database'
 import Model from 'core/Model'
 import { EntityTag, Tag } from './Tag'
 
@@ -64,4 +65,20 @@ export function createTagSubquery<T extends typeof Model>(model: T, project_id: 
         .andWhere('entity', model.tableName)
         .groupBy('tag.id')
         .having(model.raw(`count(*) > ${names.length}`))
+}
+
+export async function getUsedTags(projectId: number, entity: string, db?: Database): Promise<{
+    id: number
+    name: string
+    count: number
+}> {
+    return await EntityTag.query(db)
+        .select('tags.id as id')
+        .select('tags.name as name')
+        .countDistinct('entity_id as count')
+        .join('tags', 'tag_id', '=', 'tags.id')
+        .where('entity', entity)
+        .andWhere('tags.project_id', projectId)
+        .groupBy('tag_id')
+        .orderBy('tags.name', 'asc')
 }

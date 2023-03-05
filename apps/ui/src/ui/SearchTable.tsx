@@ -2,6 +2,7 @@ import { useState, ReactNode, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import useResolver from '../hooks/useResolver'
 import { SearchParams, SearchResult } from '../types'
+import { TagPicker } from '../views/settings/TagPicker'
 import { DataTable, DataTableProps } from './DataTable'
 import TextField from './form/TextField'
 import Heading from './Heading'
@@ -15,6 +16,7 @@ export interface SearchTableProps<T extends Record<string, any>> extends Omit<Da
     params: SearchParams
     setParams: (params: SearchParams) => void
     enableSearch?: boolean
+    tagEntity?: 'journeys' | 'lists' | 'users' | 'campaigns' // anything else we want to tag?
 }
 
 const DEFAULT_ITEMS_PER_PAGE = 10
@@ -25,6 +27,7 @@ const toTableParams = (searchParams: URLSearchParams) => {
         page: parseInt(searchParams.get('page') ?? '0'),
         itemsPerPage: parseInt(searchParams.get('itemsPerPage') ?? '10'),
         q: searchParams.get('q') ?? '',
+        tag: searchParams.getAll('tag'),
     }
 }
 
@@ -33,6 +36,7 @@ const fromTableParams = (params: SearchParams) => {
         page: params.page.toString(),
         itemsPerPage: params.itemsPerPage.toString(),
         q: params.q,
+        tag: params.tag ?? [],
     }
 }
 
@@ -43,27 +47,18 @@ export const useTableSearchParams = () => {
         q: '',
     })
 
-    const {
-        page,
-        itemsPerPage,
-        q,
-    } = toTableParams(searchParams)
-
     const setParams = useCallback<(params: SearchParams | ((prev: SearchParams) => SearchParams)) => void>(next => {
         typeof next === 'function'
             ? setSearchParams(prev => fromTableParams(next(toTableParams(prev))))
             : setSearchParams(fromTableParams(next))
     }, [setSearchParams])
 
+    const str = searchParams.toString()
+
     return useMemo(() => [
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        {
-            page,
-            itemsPerPage,
-            q,
-        } as SearchParams,
+        toTableParams(new URLSearchParams(str)),
         setParams,
-    ] as const, [page, itemsPerPage, q, setParams])
+    ] as const, [str, setParams])
 }
 
 /**
@@ -118,6 +113,7 @@ export function SearchTable<T extends Record<string, any>>({
     params,
     results,
     setParams,
+    tagEntity,
     title,
     ...rest
 }: SearchTableProps<T>) {
@@ -128,6 +124,31 @@ export function SearchTable<T extends Record<string, any>>({
             <div>
                 loading...
             </div>
+        )
+    }
+
+    const filters: ReactNode[] = []
+
+    if (enableSearch) {
+        filters.push(
+            <TextField
+                key='search'
+                name="search"
+                value={params.q}
+                placeholder="Search..."
+                onChange={(value) => setParams({ ...params, q: value })}
+            />,
+        )
+    }
+
+    if (tagEntity) {
+        filters.push(
+            <TagPicker
+                key='tags'
+                entity={tagEntity}
+                value={params.tag ?? []}
+                onChange={tag => setParams({ ...params, tag })}
+            />,
         )
     }
 
@@ -146,15 +167,9 @@ export function SearchTable<T extends Record<string, any>>({
                 )
             }
             {
-                enableSearch && (
+                filters.length > 0 && (
                     <div style={{ paddingBottom: '15px' }}>
-                        <TextField
-                            name="search"
-                            value={params.q}
-                            size="small"
-                            placeholder="Search..."
-                            onChange={(value) => setParams({ ...params, q: value })}
-                        />
+                        {filters}
                     </div>
                 )
             }
