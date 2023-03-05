@@ -59,9 +59,7 @@ services:
     depends_on:
       - api
     environment:
-      REACT_APP_API_BASE_URL: ${API_BASE_URL}
-      REACT_APP_ENVIRONMENT: ${NODE_ENV}
-      REACT_APP_DOCKER_HOSTED_ENV: 'true'
+      API_BASE_URL: ${API_BASE_URL}
     ports:
       - 80:3000
 volumes:
