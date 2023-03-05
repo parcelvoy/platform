@@ -80,7 +80,7 @@ function createProjectEntityPath<T, C = Omit<T, OmitFields>, U = Omit<T, OmitFie
 const api = {
 
     login() {
-        window.location.href = env.api.baseURL + '/auth/login?r=' + encodeURIComponent(window.location.href)
+        window.location.href = `/login?r=${encodeURIComponent(window.location.href)}`
     },
 
     async logout() {

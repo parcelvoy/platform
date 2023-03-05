@@ -3,9 +3,18 @@ import api from '../../api'
 import TextField from '../../ui/form/TextField'
 import { ProjectCreate } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
+import { SelectField } from '../../ui/form/SelectField'
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export declare namespace Intl {
+    type Key = 'calendar' | 'collation' | 'currency' | 'numberingSystem' | 'timeZone' | 'unit'
+    function supportedValuesOf(input: Key): string[]
+}
 
 export default function ProjectForm() {
     const navigate = useNavigate()
+
+    const timeZones = Intl.supportedValuesOf('timeZone')
 
     return (
         <FormWrapper<ProjectCreate>
@@ -18,7 +27,19 @@ export default function ProjectForm() {
                 form => (
                     <>
                         <TextField form={form} name="name" required />
-                        <TextField form={form} name="description" />
+                        <TextField form={form} name="description" textarea />
+                        <TextField form={form}
+                            name="locale"
+                            label="Default Locale"
+                            subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."
+                            required />
+                        <SelectField.Field
+                            form={form}
+                            options={timeZones}
+                            name="timezone"
+                            label="Timezone"
+                            required
+                        />
                     </>
                 )
             }
