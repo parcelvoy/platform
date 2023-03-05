@@ -7,4 +7,4 @@ touch ${ENV_JS}
 
 varname='API_BASE_URL'
 value=$(printf '%s\n' "${!varname}")
-echo "window.$varname: \"$value\"," >> ${ENV_JS}
+echo "window.$varname: \"$value\";" >> ${ENV_JS}
