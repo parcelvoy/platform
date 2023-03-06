@@ -117,7 +117,8 @@ class SchedulerLock {
                         .where((subQb) => {
                             subQb.where('owner', owner)
                                 .orWhere('expiration', '<=', new Date())
-                        }),
+                        })
+                        .orderBy('id'),
                 {
                     owner,
                     expiration,
