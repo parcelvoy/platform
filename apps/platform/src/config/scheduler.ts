@@ -68,6 +68,8 @@ class JobLock extends Model {
     expiration!: Date
 }
 
+type LockParams = Pick<JobLock, 'key' | 'owner' | 'expiration'>
+
 class SchedulerLock {
 
     /**
@@ -76,7 +78,7 @@ class SchedulerLock {
      * @param job Partial<JobLock>
      * @returns Promise<boolean>
      */
-    static async acquire({ key, owner, expiration }: Pick<JobLock, 'key' | 'owner' | 'expiration'>) {
+    static async acquire({ key, owner, expiration }: LockParams) {
         let acquired = false
         try {
 
@@ -92,24 +94,39 @@ class SchedulerLock {
             // Because of the unique index, duplicate locks for a job
             // will fail. In which case lets next check if the lock
             // has expired or if current owner, extend the lock
-            const updatedCount = await JobLock.update(
-                qb =>
-                    qb.where('key', key)
-                        .where((subQb) => {
-                            subQb.where('owner', owner)
-                                .orWhere('expiration', '<=', new Date())
-                        }),
-                {
-                    owner,
-                    expiration,
-                },
-            )
-            acquired = updatedCount > 0
+            acquired = await this.extendLock({ key, owner, expiration })
         }
 
         // Clean up any oddball pending jobs that are missed
         await JobLock.delete(qb => qb.where('expiration', '<=', new Date()))
 
         return acquired
+    }
+
+    static async extendLock({ key, owner, expiration }: LockParams, retry = 3): Promise<boolean> {
+
+        // If out of retries, fail
+        if (retry <= 0) return false
+
+        // Update job can deadlock. In case of deadlock, retry operation
+        // up to three times total before failing.
+        try {
+            const updatedCount = await JobLock.update(
+                qb =>
+                    qb.where('key', key)
+                        .where((subQb) => {
+                            subQb.where('owner', owner)
+                                .orWhere('expiration', '<=', new Date())
+                        })
+                        .orderBy('id'),
+                {
+                    owner,
+                    expiration,
+                },
+            )
+            return updatedCount > 0
+        } catch {
+            return this.extendLock({ key, owner, expiration }, --retry)
+        }
     }
 }
