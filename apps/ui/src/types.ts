@@ -158,6 +158,7 @@ export type List = {
     type: ListType
     rule?: WrapperRule
     users_count: number
+    tags?: string[]
     created_at: string
     updated_at: string
 } & (
@@ -170,13 +171,14 @@ export type List = {
 
 export type DynamicList = List & { type: 'dynamic' }
 
-export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type'>
-export type ListUpdateParams = Pick<List, 'name' | 'rule'>
+export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type' | 'tags'>
+export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
 
 export interface Journey {
     id: number
     name: string
     description?: string
+    tags?: string[]
     created_at: string
     updated_at: string
 }
@@ -254,6 +256,7 @@ export interface Campaign {
     templates: Template[]
     list_id: number
     list?: List
+    tags?: string[]
     send_in_user_timezone: boolean
     send_at: string
     created_at: string
@@ -262,8 +265,8 @@ export interface Campaign {
 
 export type CampaignSendState = 'pending' | 'sent' | 'failed'
 
-export type CampaignUpdateParams = Pick<Campaign, 'name' | 'list_id' | 'subscription_id'>
-export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_id' | 'channel' | 'subscription_id' | 'provider_id'>
+export type CampaignUpdateParams = Pick<Campaign, 'name' | 'list_id' | 'subscription_id' | 'tags'>
+export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_id' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
 export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_timezone'>
 // export type ListUpdateParams = Pick<List, 'name' | 'rule'>
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }
@@ -398,10 +401,5 @@ export interface Image {
 export interface Tag {
     id: number
     name: string
-}
-
-export interface UsedTag {
-    id: number
-    name: string
-    count: number
+    count?: number
 }

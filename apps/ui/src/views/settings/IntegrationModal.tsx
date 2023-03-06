@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import useResolver from '../../hooks/useResolver'
+import { useResolver } from '../../hooks'
 import { Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams } from '../../types'
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'

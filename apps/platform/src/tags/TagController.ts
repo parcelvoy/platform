@@ -22,6 +22,13 @@ router.get('/', async ctx => {
     )
 })
 
+router.get('/all', async ctx => {
+    ctx.body = await Tag.all(q => q
+        .where('project_id', ctx.state.project!.id)
+        .orderBy('name', 'asc'),
+    )
+})
+
 router.get('/used/:entity', async ctx => {
     ctx.body = await getUsedTags(ctx.state.project!.id, ctx.params.entity)
 })

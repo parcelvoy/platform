@@ -3,18 +3,18 @@ import { CampaignContext, ProjectContext } from '../../contexts'
 import SourceEditor from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
 import './EmailEditor.css'
-import Button, { LinkButton } from '../../ui/Button'
+import Button from '../../ui/Button'
 import api from '../../api'
 import { Image, Template } from '../../types'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Preview from '../../ui/Preview'
 import { locales } from './CampaignDetail'
 import Tabs from '../../ui/Tabs'
 import { formatDate } from '../../utils'
 import { PreferencesContext } from '../../ui/PreferencesContext'
-import { route } from '../router'
 import CreateLocaleModal from './CreateLocaleModal'
 import ImageGalleryModal from './ImageGalleryModal'
+import Modal from '../../ui/Modal'
 
 const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
 
@@ -130,7 +130,7 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
 }
 
 export default function EmailEditor() {
-
+    const navigate = useNavigate()
     const [params] = useSearchParams()
     const [project] = useContext(ProjectContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
@@ -161,21 +161,27 @@ export default function EmailEditor() {
 
     return (
         <>
-            <section className="email-editor">
-                <div className="email-editor-header">
-                    <LinkButton variant="secondary" icon="x-lg" to={route(`campaigns/${campaign.id}/design`)}>Exit</LinkButton>
-                    <h3>{campaign.name}</h3>
-                </div>
+            <Modal
+                size="fullscreen"
+                title={campaign.name}
+                open
+                onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
+            >
                 <Tabs
                     selectedIndex={selectedIndex}
                     onChange={setSelectedIndex}
                     tabs={tabs}
                     append={
-                        <Button size="small"
+                        <Button
+                            size="small"
                             variant="secondary"
-                            onClick={() => setIsAddLocaleOpen(true)}>Add Locale</Button>
-                    } />
-            </section>
+                            onClick={() => setIsAddLocaleOpen(true)}
+                        >
+                            {'Add Locale'}
+                        </Button>
+                    }
+                />
+            </Modal>
             <CreateLocaleModal
                 open={isAddLocaleOpen}
                 setIsOpen={() => setIsAddLocaleOpen(false)}

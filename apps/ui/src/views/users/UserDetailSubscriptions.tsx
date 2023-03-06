@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 import api from '../../api'
 import { ProjectContext, UserContext } from '../../contexts'
-import useResolver from '../../hooks/useResolver'
+import { useResolver } from '../../hooks'
 import { SubscriptionParams, SubscriptionState } from '../../types'
 import Button from '../../ui/Button'
 import SwitchField from '../../ui/form/SwitchField'

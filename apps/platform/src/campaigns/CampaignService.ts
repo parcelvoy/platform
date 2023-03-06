@@ -16,19 +16,26 @@ import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { getProvider } from '../channels/ProviderRepository'
 import { pick } from '../utilities'
-import { createTagSubquery } from '../tags/TagService'
+import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
-    return await Campaign.searchParams(
+    const result = await Campaign.searchParams(
         params,
         ['name'],
         b => {
             b.where({ project_id: projectId }).orderBy('id', 'desc')
-            params?.tags?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tags))
+            params.tag?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tag))
             return b
         },
     )
+    if (result.results?.length) {
+        const tags = await getTags(Campaign.tableName, result.results.map(c => c.id))
+        for (const campaign of result.results) {
+            campaign.tags = tags.get(campaign.id)
+        }
+    }
+    return result
 }
 
 export const allCampaigns = async (projectId: number): Promise<Campaign[]> => {
@@ -43,12 +50,13 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
         campaign.list = campaign.list_id ? await getList(campaign.list_id, projectId) : undefined
         campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
         campaign.provider = await getProvider(campaign.provider_id, projectId)
+        campaign.tags = await getTags(Campaign.tableName, [campaign.id]).then(m => m.get(campaign.id))
     }
 
     return campaign
 }
 
-export const createCampaign = async (projectId: number, params: CampaignParams): Promise<Campaign> => {
+export const createCampaign = async (projectId: number, { tags, ...params }: CampaignParams): Promise<Campaign> => {
     const subscription = await Subscription.find(params.subscription_id)
     if (!subscription) {
         throw new RequestError('Unable to find associated subscription', 404)
@@ -67,10 +75,19 @@ export const createCampaign = async (projectId: number, params: CampaignParams):
         project_id: projectId,
     })
 
+    if (tags?.length) {
+        await setTags({
+            project_id: projectId,
+            entity: Campaign.tableName,
+            entity_id: id,
+            names: tags,
+        })
+    }
+
     return await getCampaign(id, projectId) as Campaign
 }
 
-export const updateCampaign = async (id: number, projectId: number, params: Partial<CampaignParams>): Promise<Campaign | undefined> => {
+export const updateCampaign = async (id: number, projectId: number, { tags, ...params }: Partial<CampaignParams>): Promise<Campaign | undefined> => {
 
     const data: Partial<Campaign> = { ...params }
 
@@ -84,6 +101,15 @@ export const updateCampaign = async (id: number, projectId: number, params: Part
     await Campaign.update(qb => qb.where('id', id), {
         ...data,
     })
+
+    if (tags) {
+        await setTags({
+            project_id: projectId,
+            entity: Campaign.tableName,
+            entity_id: id,
+            names: tags,
+        })
+    }
 
     return getCampaign(id, projectId)
 }

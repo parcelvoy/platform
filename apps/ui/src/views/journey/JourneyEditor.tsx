@@ -1,5 +1,5 @@
 import { createElement, DragEventHandler, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import ReactFlow, {
     addEdge,
     Background,
@@ -28,8 +28,7 @@ import ReactFlow, {
     useReactFlow,
 } from 'reactflow'
 import { JourneyContext, ProjectContext } from '../../contexts'
-import { PreferencesContext } from '../../ui/PreferencesContext'
-import { createComparator, createUuid, formatDate } from '../../utils'
+import { createComparator, createUuid } from '../../utils'
 import * as journeySteps from './steps/index'
 import clsx from 'clsx'
 import api from '../../api'
@@ -39,6 +38,8 @@ import './JourneyEditor.css'
 import 'reactflow/dist/style.css'
 import Button from '../../ui/Button'
 import Alert from '../../ui/Alert'
+import Modal from '../../ui/Modal'
+import { toast } from 'react-hot-toast'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -83,7 +84,7 @@ function JourneyStepNode({
 
     if (!type) {
         return (
-            <Alert variant='error' title='Invalid Step Type' />
+            <Alert variant="error" title="Invalid Step Type" />
         )
     }
 
@@ -91,7 +92,7 @@ function JourneyStepNode({
         <>
             {
                 type.category !== 'entrance' && (
-                    <Handle type='target' position={Position.Top} id={'t-' + id} />
+                    <Handle type="target" position={Position.Top} id={'t-' + id} />
                 )
             }
             <div className={clsx('journey-step', type.category, selected && 'selected')}>
@@ -104,7 +105,7 @@ function JourneyStepNode({
                 </div>
                 {
                     type.Edit && (
-                        <div className='journey-step-body'>
+                        <div className="journey-step-body">
                             {
                                 createElement(type.Edit, {
                                     value: data,
@@ -118,7 +119,7 @@ function JourneyStepNode({
                 }
             </div>
             <Handle
-                type='source'
+                type="source"
                 position={Position.Bottom} id={'s-' + id}
                 isValidConnection={validateConnection}
             />
@@ -271,11 +272,10 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
 }
 
 export default function JourneyEditor() {
-
+    const navigate = useNavigate()
     const [flowInstance, setFlowInstance] = useState<null | ReactFlowInstance>(null)
     const wrapper = useRef<HTMLDivElement>(null)
 
-    const [preferences] = useContext(PreferencesContext)
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
 
@@ -300,7 +300,10 @@ export default function JourneyEditor() {
         void loadSteps()
     }, [loadSteps])
 
+    const [saving, setSaving] = useState(false)
     const saveSteps = useCallback(async () => {
+
+        setSaving(true)
 
         const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
         const stats = await api.journeys.steps.stats(project.id, journey.id)
@@ -309,6 +312,9 @@ export default function JourneyEditor() {
 
         setNodes(refreshed.nodes)
         setEdges(refreshed.edges)
+
+        setSaving(false)
+        toast.success('Saved!')
 
     }, [project, journey, nodes, edges])
 
@@ -365,67 +371,65 @@ export default function JourneyEditor() {
     }, [setNodes, flowInstance, project, journey])
 
     return (
-        <div className='journey'>
-            <div className='journey-header'>
-                <Link to='../journeys' className='journey-header-close'>
-                    <i className="bi-x-lg" />
-                </Link>
-                <h2>{journey.name}</h2>
-                <div className='actions'>
-                    <div className='publish-details'>
-                        <span className="publish-label">Last published at:</span>
-                        <span className="publish-date">{formatDate(preferences, journey.updated_at)}</span>
-                    </div>
-                    <div>
-                        <Button onClick={saveSteps}>
-                            {'Publish'}
-                        </Button>
-                    </div>
+        <Modal
+            size="fullscreen"
+            title={journey.name}
+            open={true}
+            onClose={() => navigate('../journeys')}
+            actions={
+                <Button
+                    onClick={saveSteps}
+                    isLoading={saving}
+                    variant="primary"
+                >
+                    {'Save'}
+                </Button>
+            }
+        >
+            <div className="journey">
+                <div className="journey-options">
+                    <h3>Components</h3>
+                    {
+                        Object.entries(journeySteps).sort(createComparator(x => x[1].category)).filter(([, type]) => type.category !== 'entrance').map(([key, type]) => (
+                            <div
+                                key={key}
+                                className={clsx('component', type.category)}
+                                draggable
+                                onDragStart={event => {
+                                    event.dataTransfer.setData(DATA_FORMAT, key)
+                                    event.dataTransfer.effectAllowed = 'move'
+                                }}
+                            >
+                                <i className={clsx('component-handle', type.icon)} />
+                                <div className="component-title">{type.name}</div>
+                                <div className="component-desc">{type.description}</div>
+                            </div>
+                        ))
+                    }
+                </div>
+                <div className="journey-builder" ref={wrapper}>
+                    <ReactFlow
+                        nodeTypes={nodeTypes}
+                        edgeTypes={edgeTypes}
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        onEdgeUpdate={onEdgeUpdate}
+                        onInit={setFlowInstance}
+                        elementsSelectable
+                        onDragOver={onDragOver}
+                        onDrop={onDrop}
+                    >
+                        <Background className="internal-canvas" />
+                        <Controls />
+                        <MiniMap
+                            nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
+                        />
+                    </ReactFlow>
                 </div>
             </div>
-            <div className='journey-options'>
-                <h3>Components</h3>
-                {
-                    Object.entries(journeySteps).sort(createComparator(x => x[1].category)).filter(([, type]) => type.category !== 'entrance').map(([key, type]) => (
-                        <div
-                            key={key}
-                            className={clsx('component', type.category)}
-                            draggable
-                            onDragStart={event => {
-                                event.dataTransfer.setData(DATA_FORMAT, key)
-                                event.dataTransfer.effectAllowed = 'move'
-                            }}
-                        >
-                            <i className={clsx('component-handle', type.icon)} />
-                            <div className='component-title'>{type.name}</div>
-                            <div className='component-desc'>{type.description}</div>
-                        </div>
-                    ))
-                }
-            </div>
-            <div className='journey-builder' ref={wrapper}>
-                <ReactFlow
-                    nodeTypes={nodeTypes}
-                    edgeTypes={edgeTypes}
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onEdgeUpdate={onEdgeUpdate}
-                    onInit={setFlowInstance}
-                    elementsSelectable
-                    onDragOver={onDragOver}
-                    onDrop={onDrop}
-                    fitView
-                >
-                    <Background className='internal-canvas' />
-                    <Controls />
-                    <MiniMap
-                        nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
-                    />
-                </ReactFlow>
-            </div>
-        </div>
+        </Modal>
     )
 }

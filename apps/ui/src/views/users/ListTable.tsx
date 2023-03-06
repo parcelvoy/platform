@@ -49,6 +49,8 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
             ]}
             selectedRow={selectedRow}
             onSelectRow={({ id }) => handleOnSelectRow(id)}
+            enableSearch
+            tagEntity="lists"
         />
     )
 }

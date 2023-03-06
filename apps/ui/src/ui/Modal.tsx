@@ -1,5 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, PropsWithChildren, ReactNode } from 'react'
+import Button from './Button'
 import './Modal.css'
 
 export interface ModalStateProps {
@@ -9,12 +10,14 @@ export interface ModalStateProps {
 
 export interface ModalProps extends ModalStateProps {
     title: ReactNode
+    description?: ReactNode
     actions?: ReactNode
-    size?: 'small' | 'regular' | 'large'
+    size?: 'small' | 'regular' | 'large' | 'fullscreen'
 }
 
 export default function Modal({
     children,
+    description,
     open,
     onClose,
     title,
@@ -47,12 +50,43 @@ export default function Modal({
                     >
                         <Dialog.Panel className="modal-inner">
                             <div className="modal-header">
+                                {
+                                    size === 'fullscreen' && (
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => onClose(false)}
+                                            icon="x-lg"
+                                        >
+                                            {'Exit'}
+                                        </Button>
+                                    )
+                                }
                                 <Dialog.Title as="h3">{title}</Dialog.Title>
+                                {
+                                    size === 'fullscreen' && actions && (
+                                        <div className="modal-fullscreen-actions">
+                                            {actions}
+                                        </div>
+                                    )
+                                }
                             </div>
-                            {children}
-                            {actions && <div className="modal-footer">
-                                {actions}
-                            </div>}
+                            {
+                                description && (
+                                    <Dialog.Description className="modal-description">
+                                        {description}
+                                    </Dialog.Description>
+                                )
+                            }
+                            <div className="modal-content">
+                                {children}
+                            </div>
+                            {
+                                !!(actions && size !== 'fullscreen') && (
+                                    <div className="modal-footer">
+                                        {actions}
+                                    </div>
+                                )
+                            }
                         </Dialog.Panel>
                     </Transition.Child>
                 </div>

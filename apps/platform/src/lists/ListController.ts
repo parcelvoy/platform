@@ -60,6 +60,13 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 enum: ['dynamic'],
             },
             rule: ({ $ref: '#/definitions/rule' } as any),
+            tags: {
+                type: 'array',
+                items: {
+                    type: 'string',
+                },
+                nullable: true,
+            },
         },
         additionalProperties: false,
     },
@@ -73,6 +80,13 @@ const listParams: JSONSchemaType<ListCreateParams> = {
             type: {
                 type: 'string',
                 enum: ['static'],
+            },
+            tags: {
+                type: 'array',
+                items: {
+                    type: 'string',
+                },
+                nullable: true,
             },
         },
         additionalProperties: false,
@@ -109,6 +123,13 @@ const listUpdateParams: JSONSchemaType<ListUpdateParams> = {
             type: 'string',
         },
         rule: ({ $ref: '#/definitions/rule' } as any),
+        tags: {
+            type: 'array',
+            items: {
+                type: 'string',
+            },
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }

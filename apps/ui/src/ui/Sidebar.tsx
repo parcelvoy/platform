@@ -6,8 +6,8 @@ import { PropsWithChildren, useContext } from 'react'
 import { AdminContext, ProjectContext } from '../contexts'
 import api from '../api'
 import { PreferencesContext } from './PreferencesContext'
-import useResolver from '../hooks/useResolver'
-import { SelectField } from './form/SelectField'
+import { useResolver } from '../hooks'
+import { SingleSelect } from './form/SingleSelect'
 import Button, { LinkButton } from './Button'
 import ButtonGroup from './ButtonGroup'
 
@@ -30,7 +30,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                         <Logo />
                     </Link>
                 </div>
-                <SelectField
+                <SingleSelect
                     value={project}
                     onChange={project => navigate(`/projects/${project.id}`)}
                     options={projects ?? [project]}

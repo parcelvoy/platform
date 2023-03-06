@@ -28,15 +28,15 @@ export default function Tags() {
                         cell: () => 'TODO',
                     },
                 ]}
-                title='Tags'
-                description='Use tags to organize and report on your campaigns, journeys, lists, and users.'
+                title="Tags"
+                description="Use tags to organize and report on your campaigns, journeys, lists, and users."
                 actions={
                     <>
                         <Button
-                            size='small'
-                            variant='primary'
+                            size="small"
+                            variant="primary"
                             onClick={() => setEditing({ id: 0, name: 'New Tag' })}
-                            icon='plus'
+                            icon="plus"
                         >
                             {'Create Tag'}
                         </Button>
@@ -66,7 +66,7 @@ export default function Tags() {
                             {
                                 form => (
                                     <>
-                                        <TextField form={form} name='name' required />
+                                        <TextField form={form} name="name" required />
                                     </>
                                 )
                             }

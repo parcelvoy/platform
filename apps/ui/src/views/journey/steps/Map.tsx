@@ -20,11 +20,11 @@ export const mapStep: JourneyStepType<MapConfig, { value: string }> = {
     }) {
         return (
             <TextField
-                name='attribute'
-                label='Attribute'
-                subtitle='Path to value'
-                type='text'
-                size='small'
+                name="attribute"
+                label="Attribute"
+                subtitle="Path to value"
+                type="text"
+                size="small"
                 value={value.attribute}
                 onChange={attribute => onChange({ ...value, attribute })}
             />
@@ -38,7 +38,7 @@ export const mapStep: JourneyStepType<MapConfig, { value: string }> = {
     }) => {
         return (
             <TextField
-                name='value'
+                name="value"
                 label={`When ${stepData.attribute} is:`}
                 subtitle={
                     siblingData.find(s => s.value === value.value) && (

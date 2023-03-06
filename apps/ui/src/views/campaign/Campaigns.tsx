@@ -91,7 +91,10 @@ export default function Campaigns() {
                             ),
                         },
                     ]}
-                    onSelectRow={({ id }) => navigate(id.toString())} />
+                    onSelectRow={({ id }) => navigate(id.toString())}
+                    enableSearch
+                    tagEntity="campaigns"
+                />
             </PageContent>
 
             <CampaignEditModal

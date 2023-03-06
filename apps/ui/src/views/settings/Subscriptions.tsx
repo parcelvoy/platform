@@ -7,7 +7,7 @@ import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { Subscription } from '../../types'
 import TextField from '../../ui/form/TextField'
-import { SelectField } from '../../ui/form/SelectField'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 import Button from '../../ui/Button'
 
 export default function Subscriptions() {
@@ -26,13 +26,13 @@ export default function Subscriptions() {
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={(row) => navigate(`${row.id}`)}
-                title='Subscriptions'
+                title="Subscriptions"
                 actions={
                     <>
                         <Button
-                            variant='primary'
-                            icon='plus'
-                            size='small'
+                            variant="primary"
+                            icon="plus"
+                            size="small"
                             onClick={() => setOpen(true)}
                         >
                             {'Create Subscription'}
@@ -41,7 +41,7 @@ export default function Subscriptions() {
                 }
             />
             <Modal
-                title='Create Subscription'
+                title="Create Subscription"
                 open={open}
                 onClose={() => setOpen(false)}
             >
@@ -60,13 +60,13 @@ export default function Subscriptions() {
                             <>
                                 <TextField
                                     form={form}
-                                    name='name'
+                                    name="name"
                                     required
-                                    label='Name'
+                                    label="Name"
                                 />
-                                <SelectField.Field
+                                <SingleSelect.Field
                                     form={form}
-                                    name='channel'
+                                    name="channel"
                                     options={['email', 'push', 'text', 'webhook']}
                                 />
                             </>

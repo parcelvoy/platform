@@ -30,7 +30,7 @@ export default function ProjectApiKeys() {
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={(row: ProjectApiKey) => navigate(`${row.id}`)}
-                title='API Keys'
+                title="API Keys"
                 actions={
                     <Button icon="plus-lg" size="small" onClick={() => setIsModalOpen(true)}>
                         Create Key

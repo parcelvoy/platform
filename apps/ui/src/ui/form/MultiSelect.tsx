@@ -9,6 +9,7 @@ import clsx from 'clsx'
 export interface MultiSelectProps<T, O = T> extends ControlledInputProps<T[]>, OptionsProps<O, T> {
     className?: string
     buttonClassName?: string
+    placeholder?: ReactNode
     getSelectedOptionDisplay?: (option: O) => ReactNode
     optionsFooter?: ReactNode
     size?: 'small' | 'regular'
@@ -19,6 +20,7 @@ export function MultiSelect<T, U = T>({
     buttonClassName,
     className,
     disabled,
+    placeholder,
     error,
     getOptionDisplay = defaultGetOptionDisplay,
     getSelectedOptionDisplay = getOptionDisplay,
@@ -47,6 +49,9 @@ export function MultiSelect<T, U = T>({
         const valueKey = getValueKey(v)
         const option = options.find(o => getValueKey(toValue(o)) === valueKey)
         if (option) {
+            if (a.valid.length) {
+                a.valid.push(',')
+            }
             a.valid.push(
                 <Fragment key={valueKey}>
                     {getSelectedOptionDisplay(option)}
@@ -71,20 +76,24 @@ export function MultiSelect<T, U = T>({
             onChange={onChange}
             multiple
         >
-            <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
-                {
-                    label && (
-                        <span>
-                            {label}
-                            {
-                                required && (
-                                    <span style={{ color: 'red' }}>&nbsp;*</span>
-                                )
-                            }
-                        </span>
-                    )
-                }
-            </Listbox.Label>
+            {
+                label && (
+                    <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
+                        {
+                            label && (
+                                <span>
+                                    {label}
+                                    {
+                                        required && (
+                                            <span style={{ color: 'red' }}>&nbsp;*</span>
+                                        )
+                                    }
+                                </span>
+                            )
+                        }
+                    </Listbox.Label>
+                )
+            }
             {
                 subtitle && (
                     <span className="label-subtitle">
@@ -108,7 +117,7 @@ export function MultiSelect<T, U = T>({
                                     }
                                 </>
                             )
-                            : 'None Selected'
+                            : (placeholder ?? 'None Selected')
                     }
                 </span>
                 <span className="select-button-icon">

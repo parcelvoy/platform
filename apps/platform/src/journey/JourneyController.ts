@@ -30,6 +30,13 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
             type: 'string',
             nullable: true,
         },
+        tags: {
+            type: 'array',
+            items: {
+                type: 'string',
+            },
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }

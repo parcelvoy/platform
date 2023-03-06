@@ -1,6 +1,6 @@
 import { Combobox, Transition } from '@headlessui/react'
 import { useCallback, useState, Fragment, RefCallback } from 'react'
-import useResolver from '../../hooks/useResolver'
+import { useResolver } from '../../hooks'
 import { ControlledInputProps, SearchResult } from '../../types'
 import clsx from 'clsx'
 import { CheckIcon, ChevronUpDownIcon } from '../icons'
@@ -49,8 +49,8 @@ export function EntityIdPicker<T extends { id: number }>({
 
     return (
         <Combobox
-            as='div'
-            className='ui-select'
+            as="div"
+            className="ui-select"
             nullable
             value={entity}
             onChange={next => onChange(next?.id ?? 0)}
@@ -62,7 +62,7 @@ export function EntityIdPicker<T extends { id: number }>({
                 </span>
                 {subtitle && <span className="label-subtitle">{subtitle}</span>}
             </Combobox.Label>
-            <div className='ui-button-group'>
+            <div className="ui-button-group">
                 <span className={clsx('ui-text-field', size ?? 'regular')}>
                     <Combobox.Input
                         displayValue={(value: T) => value && displayValue(value)}
@@ -78,8 +78,8 @@ export function EntityIdPicker<T extends { id: number }>({
                 {
                     !!(value && !required) && (
                         <Button
-                            icon='x'
-                            variant='secondary'
+                            icon="x"
+                            variant="secondary"
                             size={size}
                             onClick={() => onChange(0)} // set to '0' to clear? or null?
                         />
@@ -102,7 +102,7 @@ export function EntityIdPicker<T extends { id: number }>({
                     ref={setPopperElement}
                     style={styles.popper}
                     {...attributes.popper}
-                    className='select-options'
+                    className="select-options"
                 >
                     {
                         result?.results.map((option) => (

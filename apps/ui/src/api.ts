@@ -1,8 +1,29 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, UsedTag, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
-const client = Axios.create(env.api)
+function appendValue(params: URLSearchParams, name: string, value: unknown) {
+    if (typeof value === 'undefined' || value === null || typeof value === 'function') return
+    if (typeof value === 'object') value = JSON.stringify(value)
+    params.append(name, value + '')
+}
+
+const client = Axios.create({
+    ...env.api,
+    paramsSerializer: params => {
+        const s = new URLSearchParams()
+        for (const [name, value] of Object.entries(params)) {
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    appendValue(s, name, item)
+                }
+            } else {
+                appendValue(s, name, value)
+            }
+        }
+        return s.toString()
+    },
+})
 
 client.interceptors.response.use(
     response => response,
@@ -194,7 +215,13 @@ const api = {
     tags: {
         ...createProjectEntityPath<Tag>('tags'),
         used: async (projectId: number | string, entity: string) => await client
-            .get<UsedTag[]>(`${projectUrl(projectId)}/tags/used/${entity}`)
+            .get<Tag[]>(`${projectUrl(projectId)}/tags/used/${entity}`)
+            .then(r => r.data),
+        assign: async (projectId: number | string, entity: string, entityId: number, tags: string[]) => await client
+            .put<string[]>(`${projectUrl(projectId)}/tags/assign`, { entity, entityId, tags })
+            .then(r => r.data),
+        all: async (projectId: number | string) => await client
+            .get<Tag[]>(`${projectUrl(projectId)}/tags/all`)
             .then(r => r.data),
     },
 }

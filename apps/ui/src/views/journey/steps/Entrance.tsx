@@ -27,7 +27,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
         return (
             <>
                 <EntityIdPicker
-                    label='List'
+                    label="List"
                     required
                     get={getList}
                     search={searchLists}

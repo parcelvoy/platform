@@ -20,6 +20,7 @@ export default function UserTabs() {
                 { key: 'created_at' },
                 { key: 'updated_at' },
             ]}
-            onSelectRow={({ id }) => route(`users/${id}`)} />
+            onSelectRow={({ id }) => route(`users/${id}`)}
+        />
     </PageContent>
 }

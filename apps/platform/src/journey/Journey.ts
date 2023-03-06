@@ -5,8 +5,7 @@ export default class Journey extends Model {
     project_id!: number
     description?: string
     deleted_at?: Date
-
-    static virtualAttributes: string[] = ['steps']
+    tags?: string[]
 }
 
 export type JourneyParams = Omit<Journey, ModelParams | 'deleted_at'>

@@ -1,9 +1,15 @@
-import { PropsWithChildren } from 'react'
+import clsx from 'clsx'
+import { CSSProperties, PropsWithChildren } from 'react'
 import './ButtonGroup.css'
 
-export default function ButtonGroup({ children }: PropsWithChildren) {
+type ButtonGroupProps = PropsWithChildren<{
+    className?: string
+    style?: CSSProperties
+}>
+
+export default function ButtonGroup({ children, className, style }: ButtonGroupProps) {
     return (
-        <div className="ui-button-group">
+        <div className={clsx('ui-button-group', className)} style={style}>
             {children}
         </div>
     )

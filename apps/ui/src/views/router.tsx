@@ -37,16 +37,6 @@ import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
 
-export const route = (path: string, includeProject = true) => {
-    const { projectId = '' } = useParams()
-    const parts = []
-    if (includeProject) {
-        parts.push('projects', projectId)
-    }
-    parts.push(path)
-    return '/' + parts.join('/')
-}
-
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
     const navigate = useNavigate()
@@ -106,7 +96,7 @@ export const router = createBrowserRouter([
             {
                 path: 'projects/new',
                 element: (
-                    <PageContent title='Create Project'>
+                    <PageContent title="Create Project">
                         <ProjectForm />
                     </PageContent>
                 ),
