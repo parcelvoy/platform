@@ -57,7 +57,14 @@ export default class Storage {
         await this.provider.upload(task)
     }
 
-    url(path: string): string {
-        return combineURLs([App.main.env.storage.baseUrl, path])
+    static url(path: string): string {
+
+        // If an override is provide, utilize that
+        if (App.main.env.storage.baseUrl) {
+            return combineURLs([App.main.env.storage.baseUrl, path])
+        }
+
+        // Otherwise default back to local path
+        return `/uploads/${path}`
     }
 }

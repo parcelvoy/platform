@@ -1,5 +1,5 @@
 import Model from '../core/Model'
-import { combineURLs } from '../utilities'
+import Storage from './Storage'
 
 export default class Image extends Model {
     project_id!: number
@@ -15,7 +15,7 @@ export default class Image extends Model {
     }
 
     get url(): string {
-        return combineURLs([process.env.STORAGE_BASE_URL!, this.filename])
+        return Storage.url(this.filename)
     }
 
     toJSON() {
