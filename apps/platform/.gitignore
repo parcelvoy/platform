@@ -109,4 +109,5 @@ build
 .DS_Store
 
 # Uploads
-/public/uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
