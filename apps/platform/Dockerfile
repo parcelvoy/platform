@@ -2,7 +2,7 @@
 FROM node:16 AS compile
 WORKDIR /usr/src/app/apps/platform
 COPY ./tsconfig.base.json /usr/src/app
-COPY ./package-lock.json /usr/src/app
+COPY ./package-lock.json /usr/src/app/apps/platform
 COPY ./apps/platform ./
 RUN npm ci
 RUN npm run build
