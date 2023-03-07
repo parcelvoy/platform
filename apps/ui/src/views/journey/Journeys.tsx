@@ -8,6 +8,7 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
+import { TagPicker } from '../settings/TagPicker'
 
 export default function Journeys() {
     const { projectId = '' } = useParams()
@@ -19,7 +20,7 @@ export default function Journeys() {
         <PageContent
             title="Journeys"
             actions={
-                <Button icon='plus-lg' onClick={() => setOpen('create')}>
+                <Button icon="plus-lg" onClick={() => setOpen('create')}>
                     Create Journey
                 </Button>
             }
@@ -39,12 +40,12 @@ export default function Journeys() {
                 ]}
                 onSelectRow={r => navigate(r.id.toString())}
                 enableSearch
-                tagEntity='journeys'
+                tagEntity="journeys"
             />
             <Modal
                 onClose={() => setOpen(null)}
                 open={!!open}
-                title='Create Journey'
+                title="Create Journey"
             >
                 <FormWrapper<Journey>
                     onSubmit={async journey => {
@@ -58,13 +59,17 @@ export default function Journeys() {
                             <>
                                 <TextField
                                     form={form}
-                                    name='name'
+                                    name="name"
                                     required
                                 />
                                 <TextField
                                     form={form}
-                                    name='description'
+                                    name="description"
                                     textarea
+                                />
+                                <TagPicker.Field
+                                    form={form}
+                                    name="tags"
                                 />
                             </>
                         )

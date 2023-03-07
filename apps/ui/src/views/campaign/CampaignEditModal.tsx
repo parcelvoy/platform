@@ -8,10 +8,11 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
 import Modal from '../../ui/Modal'
 import ListTable from '../users/ListTable'
-import { SelectField } from '../../ui/form/SelectField'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
 import OptionField from '../../ui/form/OptionField'
 import { SelectionProps } from '../../ui/form/Field'
+import { TagPicker } from '../settings/TagPicker'
 
 interface CampaignEditParams {
     campaign?: Campaign
@@ -24,10 +25,16 @@ interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
     project: Project
 }
 
-const ListSelection = ({ project, name, control }: ListSelectionProps) => {
+const ListSelection = ({ project, control }: ListSelectionProps) => {
     const lists = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [project])
 
-    const { field: { value, onChange } } = useController({ name, control, rules: { required: true } })
+    const { field: { value, onChange } } = useController({
+        control,
+        name: 'list_id',
+        rules: {
+            required: true,
+        },
+    })
 
     return (
         <ListTable
@@ -72,7 +79,7 @@ const SubscriptionSelection = ({ subscriptions, form }: { subscriptions: Subscri
         }
     }, [channel, form, subscriptions])
     return (
-        <SelectField.Field
+        <SingleSelect.Field
             form={form}
             name="subscription_id"
             label="Subscription Group"
@@ -98,7 +105,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
         }
     }, [channel, form, providers])
     return (
-        <SelectField.Field
+        <SingleSelect.Field
             form={form}
             name="provider_id"
             label="Provider"
@@ -131,10 +138,10 @@ export default function CampaignEditModal({ campaign, open, onClose, onSave }: C
             .catch(() => {})
     }, [])
 
-    async function handleSave({ name, list_id, channel, provider_id, subscription_id }: CampaignCreateParams) {
+    async function handleSave({ name, list_id, channel, provider_id, subscription_id, tags }: CampaignCreateParams) {
         const value = campaign
-            ? await api.campaigns.update(project.id, campaign.id, { name, list_id, subscription_id })
-            : await api.campaigns.create(project.id, { name, list_id, channel, provider_id, subscription_id })
+            ? await api.campaigns.update(project.id, campaign.id, { name, list_id, subscription_id, tags })
+            : await api.campaigns.create(project.id, { name, list_id, channel, provider_id, subscription_id, tags })
         onSave(value)
         onClose(false)
     }
@@ -199,6 +206,10 @@ export default function CampaignEditModal({ campaign, open, onClose, onSave }: C
                                     </>
                                 )
                         }
+                        <TagPicker.Field
+                            form={form}
+                            name="tags"
+                        />
                     </>
                 )}
             </FormWrapper>

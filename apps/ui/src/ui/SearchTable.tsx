@@ -1,12 +1,13 @@
 import { useState, ReactNode, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import useResolver from '../hooks/useResolver'
+import { useDebounceControl, useResolver } from '../hooks'
 import { SearchParams, SearchResult } from '../types'
 import { TagPicker } from '../views/settings/TagPicker'
 import { DataTable, DataTableProps } from './DataTable'
 import TextField from './form/TextField'
 import Heading from './Heading'
 import Pagination from './Pagination'
+import Stack from './Stack'
 
 export interface SearchTableProps<T extends Record<string, any>> extends Omit<DataTableProps<T>, 'items'> {
     title?: ReactNode
@@ -54,6 +55,8 @@ export const useTableSearchParams = () => {
     }, [setSearchParams])
 
     const str = searchParams.toString()
+
+    console.log(str)
 
     return useMemo(() => [
         toTableParams(new URLSearchParams(str)),
@@ -118,6 +121,8 @@ export function SearchTable<T extends Record<string, any>>({
     ...rest
 }: SearchTableProps<T>) {
 
+    const [search, setSearch] = useDebounceControl(params.q ?? '', q => setParams({ ...params, q }))
+
     const filters: ReactNode[] = []
 
     if (enableSearch) {
@@ -125,9 +130,9 @@ export function SearchTable<T extends Record<string, any>>({
             <TextField
                 key="search"
                 name="search"
-                value={params.q}
+                value={search}
                 placeholder="Search..."
-                onChange={(value) => setParams({ ...params, q: value })}
+                onChange={setSearch}
             />,
         )
     }
@@ -139,6 +144,7 @@ export function SearchTable<T extends Record<string, any>>({
                 entity={tagEntity}
                 value={params.tag ?? []}
                 onChange={tag => setParams({ ...params, tag })}
+                placeholder="Filter By Tag..."
             />,
         )
     }
@@ -159,9 +165,9 @@ export function SearchTable<T extends Record<string, any>>({
             }
             {
                 filters.length > 0 && (
-                    <div style={{ paddingBottom: '15px' }}>
+                    <Stack style={{ paddingBottom: 15 }}>
                         {filters}
-                    </div>
+                    </Stack>
                 )
             }
             <DataTable {...rest} items={results?.results} isLoading={!results} />

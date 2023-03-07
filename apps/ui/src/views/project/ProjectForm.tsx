@@ -3,7 +3,7 @@ import api from '../../api'
 import TextField from '../../ui/form/TextField'
 import { ProjectCreate } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
-import { SelectField } from '../../ui/form/SelectField'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Intl {
@@ -33,7 +33,7 @@ export default function ProjectForm() {
                             label="Default Locale"
                             subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."
                             required />
-                        <SelectField.Field
+                        <SingleSelect.Field
                             form={form}
                             options={timeZones}
                             name="timezone"

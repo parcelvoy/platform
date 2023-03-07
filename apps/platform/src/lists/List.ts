@@ -12,6 +12,7 @@ export default class List extends Model {
     rule?: Rule
     version!: number
     users_count?: number
+    tags?: string[]
 
     static jsonAttributes = ['rule']
 }
@@ -28,5 +29,5 @@ export class UserList extends Model {
     static tableName = 'user_list'
 }
 
-export type ListUpdateParams = Pick<List, 'name' | 'rule'>
-export type ListCreateParams = Pick<List, 'name' | 'type' | 'rule'>
+export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
+export type ListCreateParams = Pick<List, 'name' | 'type' | 'rule' | 'tags'>

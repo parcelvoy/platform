@@ -1,7 +1,7 @@
 import { Operator, Rule, RuleType, WrapperRule } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
-import { SelectField } from '../../ui/form/SelectField'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 import TextField from '../../ui/form/TextField'
 import './RuleBuilder.css'
 
@@ -270,7 +270,7 @@ const OperatorSelector = ({ type, value, onChange }: OperatorParams) => {
     const operators = types[type]
 
     return (
-        <SelectField
+        <SingleSelect
             options={operators}
             size="small"
             toValue={o => o.key}
@@ -299,7 +299,7 @@ const TypeOperator = ({ value, onChange }: TypeParams) => {
     ]
 
     return (
-        <SelectField
+        <SingleSelect
             options={types}
             size="small"
             toValue={o => o.key}

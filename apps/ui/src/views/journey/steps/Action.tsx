@@ -23,7 +23,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
         return (
             <>
                 <EntityIdPicker
-                    label='Campaign'
+                    label="Campaign"
                     get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
                     search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
                     value={value.campaign_id}

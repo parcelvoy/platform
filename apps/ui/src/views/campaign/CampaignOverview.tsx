@@ -7,7 +7,6 @@ import Heading from '../../ui/Heading'
 import { InfoTable } from '../../ui/InfoTable'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
-import { route } from '../router'
 import CampaignEditModal from './CampaignEditModal'
 import { CampaignTag } from './Campaigns'
 import ChannelTag from './ChannelTag'
@@ -25,9 +24,19 @@ export default function CampaignOverview() {
 
     return (
         <>
-            <Heading title="Details" size="h3" actions={
-                <Button size="small" variant="secondary" onClick={() => setIsEditOpen(true)}>Edit Details</Button>
-            } />
+            <Heading
+                title="Details"
+                size="h3"
+                actions={
+                    <Button
+                        size="small"
+                        variant="secondary"
+                        onClick={() => setIsEditOpen(true)}
+                    >
+                        Edit Details
+                    </Button>
+                }
+            />
 
             <Heading title="Channel" size="h4" />
             <InfoTable rows={{
@@ -41,7 +50,7 @@ export default function CampaignOverview() {
                 state: CampaignTag({ state: campaign.state }),
                 launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at) : undefined,
                 in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
-                list: <Link to={route(`lists/${campaign.list_id}`)}>{campaign.list?.name}</Link>,
+                list: <Link to={`/projects/${campaign.project_id}/lists/${campaign.list_id}`}>{campaign.list?.name}</Link>,
                 delivery: `${campaign.delivery?.sent ?? 0} / ${campaign.delivery?.total ?? 0}`,
             }} />
 

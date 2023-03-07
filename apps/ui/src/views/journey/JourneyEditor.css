@@ -1,81 +1,24 @@
-
 .journey {
-    background: var(--color-background);
-    display: grid;
-    grid-template-areas: "header header header" "options builder builder";
-    grid-template-columns: 300px auto 300px;
-    grid-template-rows: 60px auto;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 80;
-    padding: 0;
-}
-
-.journey-header {
-    grid-area: header;
-    border-bottom: 1px solid var(--color-grey);
-    padding: 0;
-    display: grid;
-    grid-template-areas: "close title actions";
-    grid-template-columns: 60px 1fr auto;
-    flex-grow: 0;
-}
-
-.journey-header h2 {
-    font-size: 20px;
-    padding: 10px 20px;
-    margin: 0;
-}
-
-.journey-header .actions {
-    grid-area: actions;
-    padding-right: 20px;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-.journey-header .publish-details {
-    padding: 10px;
-}
-
-.journey-header .publish-details span {
-    display: block;
-    color: var(--color-text-light);
-    font-size: 14px;
-}
-
-.journey-header .journey-header-close {
-    border-right: 1px solid var(--color-grey);
-    padding: 10px;
+    align-items: stretch;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer
 }
 
-.journey-header .journey-header-close:hover {
-    background-color: var(--color-grey-soft);
+.journey-actions {
+    display: flex;
+}
+
+.journey-actions .publish-date {
+    color: var(--color-grey);
 }
 
 .journey-builder {
-    grid-area: builder;
     background-size: 30px 30px;
-}
-
-.journey-settings {
-    grid-area: settings;
-    border-left: 1px solid var(--color-grey);
-    padding: 20px;
-    position: relative;
+    flex-grow: 1;
 }
 
 .journey-options {
-    grid-area: options;
+    max-width: 300px;
     padding: 20px;
     border-right: 1px solid var(--color-grey);
     position: relative;

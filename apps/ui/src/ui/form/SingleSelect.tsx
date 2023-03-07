@@ -2,21 +2,22 @@ import { Listbox, Transition } from '@headlessui/react'
 import { Fragment, ReactNode } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '../icons'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
-import './SelectField.css'
+import './Select.css'
 import { defaultGetOptionDisplay, defaultGetValueKey, defaultToValue, usePopperSelectDropdown } from '../utils'
 import { ControlledInputProps, FieldBindingsProps, OptionsProps } from '../../types'
 import clsx from 'clsx'
 
-export interface SelectFieldProps<T, O = T> extends ControlledInputProps<T>, OptionsProps<O, T> {
+export interface SingleSelectProps<T, O = T> extends ControlledInputProps<T>, OptionsProps<O, T> {
     className?: string
     buttonClassName?: string
     getSelectedOptionDisplay?: (option: O) => ReactNode
+    onBlur?: () => void
     optionsFooter?: ReactNode
     size?: 'small' | 'regular'
     variant?: 'plain' | 'minimal'
 }
 
-export function SelectField<T, U = T>({
+export function SingleSelect<T, U = T>({
     buttonClassName,
     className,
     disabled,
@@ -27,6 +28,7 @@ export function SelectField<T, U = T>({
     label,
     options,
     optionsFooter,
+    onBlur,
     onChange,
     required,
     size,
@@ -35,7 +37,7 @@ export function SelectField<T, U = T>({
     getValueKey = defaultGetValueKey,
     value,
     variant,
-}: SelectFieldProps<T, U>) {
+}: SingleSelectProps<T, U>) {
 
     const {
         setReferenceElement,
@@ -54,17 +56,22 @@ export function SelectField<T, U = T>({
             disabled={disabled}
             value={value}
             onChange={onChange}
+            onBlur={onBlur}
         >
-            <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
-                <span>
-                    {label}
-                    {
-                        required && (
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                        )
-                    }
-                </span>
-            </Listbox.Label>
+            {
+                label && (
+                    <Listbox.Label style={hideLabel ? { display: 'none' } : undefined}>
+                        <span>
+                            {label}
+                            {
+                                required && (
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
+                                )
+                            }
+                        </span>
+                    </Listbox.Label>
+                )
+            }
             {
                 subtitle && (
                     <span className="label-subtitle">
@@ -132,14 +139,14 @@ export function SelectField<T, U = T>({
     )
 }
 
-SelectField.Field = function SelectFieldField<T, O, X extends FieldValues, P extends FieldPath<X>>({
+SingleSelect.Field = function SingleSelectField<T, O, X extends FieldValues, P extends FieldPath<X>>({
     form,
     name,
     required,
     ...rest
-}: FieldBindingsProps<SelectFieldProps<T, O>, T, X, P>) {
+}: FieldBindingsProps<SingleSelectProps<T, O>, T, X, P>) {
 
-    const { field, fieldState } = useController({
+    const { field: { ref, ...field }, fieldState } = useController({
         control: form.control,
         name,
         rules: {
@@ -148,7 +155,7 @@ SelectField.Field = function SelectFieldField<T, O, X extends FieldValues, P ext
     })
 
     return (
-        <SelectField
+        <SingleSelect
             {...rest}
             {...field}
             required={required}

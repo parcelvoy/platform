@@ -30,8 +30,8 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                             key={name}
                             name={name}
                             label={snakeToTitle(name)}
-                            type='number'
-                            size='small'
+                            type="number"
+                            size="small"
                             min={0}
                             value={value[name as keyof DelayStepConfig] ?? 0}
                             onChange={n => onChange({ ...value, [name]: parseInt(n) })}

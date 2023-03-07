@@ -22,8 +22,8 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
         return (
             <>
                 <EntityIdPicker
-                    label='Target Journey'
-                    subtitle='Send users to this journey when they reach this step.'
+                    label="Target Journey"
+                    subtitle="Send users to this journey when they reach this step."
                     get={useCallback(async id => await api.journeys.get(project.id, id), [project])}
                     search={useCallback(async q => await api.journeys.search(project.id, { q, page: 0, itemsPerPage: 50 }), [project])}
                     optionEnabled={o => o.id !== journey.id}

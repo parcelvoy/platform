@@ -16,6 +16,7 @@ import { snakeToTitle } from '../../utils'
 import UploadField from '../../ui/form/UploadField'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
+import { TagPicker } from '../settings/TagPicker'
 
 const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: WrapperRule) => void }) => {
     const [rule, setRule] = useState<WrapperRule>(list.rule)
@@ -99,9 +100,20 @@ export default function ListDetail() {
                     submitLabel="Save"
                     defaultValues={{ name: list.name }}
                 >
-                    {form => <>
-                        <TextField form={form} name="name" label="List Name" required />
-                    </>}
+                    {form => (
+                        <>
+                            <TextField
+                                form={form}
+                                name="name"
+                                label="List Name"
+                                required
+                            />
+                            <TagPicker.Field
+                                form={form}
+                                name="tags"
+                            />
+                        </>
+                    )}
                 </FormWrapper>
             </Modal>
 

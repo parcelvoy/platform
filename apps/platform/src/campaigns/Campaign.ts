@@ -24,6 +24,7 @@ export default class Campaign extends Model {
     templates!: Template[]
     state!: CampaignState
     delivery!: CampaignDelivery
+    tags?: string[]
 
     send_in_user_timezone?: boolean
     send_at?: string | Date

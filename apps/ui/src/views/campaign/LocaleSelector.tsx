@@ -4,7 +4,7 @@ import { LocaleContext } from '../../contexts'
 import { Campaign, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
-import { SelectField } from '../../ui/form/SelectField'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 import CreateLocaleModal from './CreateLocaleModal'
 
 interface LocaleSelectorParams {
@@ -30,7 +30,7 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
         <ButtonGroup>
             {
                 currentLocale && (
-                    <SelectField
+                    <SingleSelect
                         options={allLocales}
                         size="small"
                         value={currentLocale}

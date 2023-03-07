@@ -9,21 +9,33 @@ import App from '../app'
 import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
+import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
 export const pagedLists = async (params: SearchParams, projectId: number) => {
-    return await List.searchParams(
+    const result = await List.searchParams(
         params,
         ['name'],
-        b => b.where('project_id', projectId),
+        b => {
+            b = b.where('project_id', projectId)
+            params.tag?.length && b.whereIn('id', createTagSubquery(List, projectId, params.tag))
+            return b
+        },
     )
-}
-
-export const allLists = async (projectId: number) => {
-    return await List.all(qb => qb.where('project_id', projectId))
+    if (result.results?.length) {
+        const tags = await getTags(List.tableName, result.results.map(l => l.id))
+        for (const list of result.results) {
+            list.tags = tags.get(list.id)
+        }
+    }
+    return result
 }
 
 export const getList = async (id: number, projectId: number) => {
-    return await List.find(id, qb => qb.where('project_id', projectId))
+    const list = await List.find(id, qb => qb.where('project_id', projectId))
+    if (list) {
+        list.tags = await getTags(List.tableName, [list.id]).then(m => m.get(list.id))
+    }
+    return list
 }
 
 export const getListUsers = async (id: number, params: SearchParams, projectId: number) => {
@@ -48,13 +60,22 @@ export const getUserLists = async (id: number, params: SearchParams, projectId: 
     )
 }
 
-export const createList = async (projectId: number, params: ListCreateParams): Promise<List> => {
+export const createList = async (projectId: number, { tags, ...params }: ListCreateParams): Promise<List> => {
     const list = await List.insertAndFetch({
         ...params,
         state: 'ready',
         users_count: 0,
         project_id: projectId,
     })
+
+    if (tags?.length) {
+        await setTags({
+            project_id: projectId,
+            entity: List.tableName,
+            entity_id: list.id,
+            names: tags,
+        })
+    }
 
     const hasRules = (params.rule?.children?.length ?? 0) > 0
     if (list.type === 'dynamic' && hasRules) {
@@ -66,8 +87,17 @@ export const createList = async (projectId: number, params: ListCreateParams): P
     return list
 }
 
-export const updateList = async (id: number, params: Partial<List>): Promise<List | undefined> => {
+export const updateList = async (id: number, { tags, ...params }: Partial<List>): Promise<List | undefined> => {
     const list = await List.updateAndFetch(id, params)
+
+    if (tags) {
+        await setTags({
+            project_id: list.project_id,
+            entity: List.tableName,
+            entity_id: list.id,
+            names: tags,
+        })
+    }
 
     if (params.rule && list.type === 'dynamic') {
         App.main.queue.enqueue(

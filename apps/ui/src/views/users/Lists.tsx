@@ -10,6 +10,7 @@ import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import ListTable from './ListTable'
 import { createWrapperRule } from './RuleBuilder'
+import { TagPicker } from '../settings/TagPicker'
 
 export default function Lists() {
     const { projectId = '' } = useParams()
@@ -19,13 +20,22 @@ export default function Lists() {
 
     return (
         <>
-            <PageContent title="Lists" actions={
-                <Button icon="plus-lg" onClick={() => setIsModalOpen(true) }>Create List</Button>
-            }>
+            <PageContent
+                title="Lists"
+                actions={
+                    <Button
+                        icon="plus-lg"
+                        onClick={() => setIsModalOpen(true) }
+                    >
+                        Create List
+                    </Button>
+                }
+            >
                 <ListTable search={search} />
             </PageContent>
 
-            <Modal title="Create List"
+            <Modal
+                title="Create List"
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >
@@ -43,17 +53,29 @@ export default function Lists() {
                     defaultValues={{ type: 'dynamic' }}
                     submitLabel="Save"
                 >
-                    {form => <>
-                        <TextField form={form} name="name" label="List Name" required />
-                        <OptionField
-                            form={form}
-                            name="type"
-                            label="Type"
-                            options={[
-                                { key: 'dynamic', label: 'Dynamic' },
-                                { key: 'static', label: 'Static' },
-                            ]}/>
-                    </>}
+                    {form => (
+                        <>
+                            <TextField
+                                form={form}
+                                name="name"
+                                label="List Name"
+                                required
+                            />
+                            <OptionField
+                                form={form}
+                                name="type"
+                                label="Type"
+                                options={[
+                                    { key: 'dynamic', label: 'Dynamic' },
+                                    { key: 'static', label: 'Static' },
+                                ]}
+                            />
+                            <TagPicker.Field
+                                form={form}
+                                name="tags"
+                            />
+                        </>
+                    )}
                 </FormWrapper>
             </Modal>
         </>
