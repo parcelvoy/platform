@@ -233,7 +233,8 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
-        const id: number = await this.table(db).insert(formattedData)
+        let id: number = await this.table(db).insert(formattedData)
+        if (Array.isArray(id)) id = id[0]
         return await this.find(id, b => b, db) as InstanceType<T>
     }
 
