@@ -28,7 +28,7 @@ services:
       NODE_ENV: ${NODE_ENV}
       BASE_URL: ${BASE_URL}
       APP_SECRET: ${APP_SECRET}
-      PORT: 3000
+      PORT: 3001
       DB_CLIENT: ${DB_CLIENT}
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}
@@ -54,6 +54,8 @@ services:
       AUTH_OPENID_CLIENT_SECRET: ${AUTH_OPENID_CLIENT_SECRET}
       AUTH_OPENID_REDIRECT_URI: ${AUTH_OPENID_REDIRECT_URI}
       AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
+    volumes:
+      - uploads:/usr/src/app/public/uploads
   ui:
     image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
@@ -64,4 +66,6 @@ services:
       - 80:3000
 volumes:
   mysql_data:
+    driver: local
+  uploads:
     driver: local
