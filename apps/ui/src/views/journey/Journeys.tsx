@@ -8,6 +8,7 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
+import { PlusIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 
 export default function Journeys() {
@@ -20,7 +21,7 @@ export default function Journeys() {
         <PageContent
             title="Journeys"
             actions={
-                <Button icon="plus-lg" onClick={() => setOpen('create')}>
+                <Button icon={<PlusIcon />} onClick={() => setOpen('create')}>
                     Create Journey
                 </Button>
             }

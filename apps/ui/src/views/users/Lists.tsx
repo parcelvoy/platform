@@ -10,6 +10,7 @@ import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import ListTable from './ListTable'
 import { createWrapperRule } from './RuleBuilder'
+import { PlusIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 
 export default function Lists() {
@@ -24,7 +25,7 @@ export default function Lists() {
                 title="Lists"
                 actions={
                     <Button
-                        icon="plus-lg"
+                        icon={<PlusIcon />}
                         onClick={() => setIsModalOpen(true) }
                     >
                         Create List

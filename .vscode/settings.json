@@ -1,0 +1,6 @@
+{
+    "eslint.workingDirectories": [
+        "./apps/ui", 
+        "./apps/platform"
+    ]
+}

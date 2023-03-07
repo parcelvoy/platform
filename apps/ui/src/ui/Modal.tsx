@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, PropsWithChildren, ReactNode } from 'react'
 import Button from './Button'
+import { CloseIcon } from './icons'
 import './Modal.css'
 
 export interface ModalStateProps {
@@ -55,7 +56,7 @@ export default function Modal({
                                         <Button
                                             variant="secondary"
                                             onClick={() => onClose(false)}
-                                            icon="x-lg"
+                                            icon={<CloseIcon />}
                                         >
                                             {'Exit'}
                                         </Button>

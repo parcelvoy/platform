@@ -10,6 +10,7 @@ import { Campaign, Template } from '../../types'
 import api from '../../api'
 import { CampaignTag } from './Campaigns'
 import LaunchCampaign from './LaunchCampaign'
+import { ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
 
 export const locales = (templates: Template[]) => templates?.map(item => {
     const language = languageName(item.locale)
@@ -74,10 +75,10 @@ export default function CampaignDetail() {
     ]
 
     const action = {
-        draft: <Button icon="send" onClick={() => setIsLaunchOpen(true)}>Launch Campaign</Button>,
-        aborted: <Button icon="send" onClick={() => setIsLaunchOpen(true)}>Restart Campaign</Button>,
-        scheduled: <Button icon="send" onClick={() => setIsLaunchOpen(true)}>Change Schedule</Button>,
-        running: <Button icon="send" onClick={() => setIsLaunchOpen(true)}>Abort Campaign</Button>,
+        draft: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Launch Campaign</Button>,
+        aborted: <Button icon={<RestartIcon />} onClick={() => setIsLaunchOpen(true)}>Restart Campaign</Button>,
+        scheduled: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Change Schedule</Button>,
+        running: <Button icon={<ForbiddenIcon />} onClick={() => setIsLaunchOpen(true)}>Abort Campaign</Button>,
         finished: <></>,
     }
 

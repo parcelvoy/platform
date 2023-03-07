@@ -1,5 +1,5 @@
 .ui-button {
-    display: inline-block;
+    display: inline-flex;
     border: 1px solid transparent;
     background: transparent;
     border-radius: var(--border-radius);
@@ -14,14 +14,21 @@
     transition: .2s;
     text-decoration: none;
     position: relative;
+    align-items: center;
+    gap: 5px;
 }
 
-.ui-button i {
-    margin-right: 5px;
-    margin-left: -1px;
+.ui-button .button-icon,
+.ui-button .button-icon svg {
+    width: 16px;
+    height: 16px;
 }
 
-.ui-button.ui-button-no-children i {
+.ui-button .button-icon {
+    margin-left: -2px;
+}
+
+.ui-button.ui-button-no-children .button-icon {
     margin: 0;
 }
 

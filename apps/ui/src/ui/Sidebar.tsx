@@ -2,7 +2,7 @@ import './Sidebar.css'
 import NavLink from './NavLink'
 import { ReactComponent as Logo } from '../assets/logo.svg'
 import { Link, NavLinkProps, useNavigate } from 'react-router-dom'
-import { PropsWithChildren, useContext } from 'react'
+import { PropsWithChildren, ReactNode, useContext } from 'react'
 import { AdminContext, ProjectContext } from '../contexts'
 import api from '../api'
 import { PreferencesContext } from './PreferencesContext'
@@ -10,9 +10,10 @@ import { useResolver } from '../hooks'
 import { SingleSelect } from './form/SingleSelect'
 import Button, { LinkButton } from './Button'
 import ButtonGroup from './ButtonGroup'
+import { MoonIcon, PlusIcon, SunIcon } from './icons'
 
 interface SidebarProps {
-    links?: Array<NavLinkProps & { key: string, icon: string }>
+    links?: Array<NavLinkProps & { key: string, icon: ReactNode }>
 }
 
 export default function Sidebar({ children, links }: PropsWithChildren<SidebarProps>) {
@@ -51,7 +52,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                                 textAlign: 'center',
                             }}
                         >
-                            <LinkButton size="small" variant="primary" to="/projects/new" icon="plus">
+                            <LinkButton size="small" variant="primary" to="/projects/new" icon={<PlusIcon />}>
                                 {'Create Project'}
                             </LinkButton>
                         </div>
@@ -74,7 +75,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                                     <Button
                                         variant="plain"
                                         size="small"
-                                        icon={preferences.mode === 'dark' ? 'moon' : 'sun'}
+                                        icon={preferences.mode === 'dark' ? <MoonIcon /> : <SunIcon />}
                                         onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}
                                     />
                                     <Button

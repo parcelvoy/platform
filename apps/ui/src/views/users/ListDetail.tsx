@@ -16,6 +16,7 @@ import { snakeToTitle } from '../../utils'
 import UploadField from '../../ui/form/UploadField'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
+import { EditIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 
 const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: WrapperRule) => void }) => {
@@ -64,10 +65,10 @@ export default function ListDetail() {
                 <>
                     {list.type === 'static' && <Button
                         variant="secondary"
-                        icon="upload"
+                        icon={<UploadIcon />}
                         onClick={() => setIsUploadOpen(true)}
                     >Upload List</Button>}
-                    <Button icon="pencil" onClick={() => setIsEditListOpen(true)}>Edit List</Button>
+                    <Button icon={<EditIcon />} onClick={() => setIsEditListOpen(true)}>Edit List</Button>
                 </>
             }>
 

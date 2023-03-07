@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { NavLink as BaseNavLink, NavLinkProps as BaseNavLinkProps } from 'react-router-dom'
 
-export type NavLinkProps = BaseNavLinkProps & { key: string, icon?: string }
+export type NavLinkProps = BaseNavLinkProps & { key: string, icon?: React.ReactNode }
 
 const NavLink = React.forwardRef(
-    function NavLink({ ...props }: NavLinkProps, ref: React.Ref<HTMLAnchorElement> | undefined) {
+    function NavLink({ icon, ...props }: NavLinkProps, ref: React.Ref<HTMLAnchorElement> | undefined) {
         return (
             <BaseNavLink
                 ref={ref}
@@ -19,7 +19,7 @@ const NavLink = React.forwardRef(
                 }
             >
                 <>
-                    {props.icon && <i className={`bi ${props.icon}`} />}
+                    {icon && (<div className="nav-icon">{icon}</div>)}
                     &nbsp;
                     {props.children}
                 </>

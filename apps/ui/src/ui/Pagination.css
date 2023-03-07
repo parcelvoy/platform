@@ -17,6 +17,7 @@
 .ui-pagination .pagination-button {
     background: var(--color-background);
     font-size: 16px;
+    line-height: 15px;
     cursor: pointer;
     text-decoration: none;
     color: var(--color-primary);
@@ -29,7 +30,7 @@
 
 .ui-pagination .pagination-button:disabled {
     color: var(--color-primary-soft);
-    cursor: auto;
+    cursor: not-allowed;
 }
 
 .ui-pagination .pagination-button:disabled:hover {
@@ -41,13 +42,22 @@
     font-weight: 500;
 }
 
-.ui-pagination .prev i {
-    margin-right: 5px;
+.ui-pagination .prev,
+.ui-pagination .next {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ui-pagination .prev svg,
+.ui-pagination .next svg {
+    width: 16px;
 }
 
 .ui-pagination .next {
     border-right-width: 0px;
 }
-.ui-pagination .next i {
-    margin-left: 5px;
+
+.ui-pagination .next svg {
+    width: 16px;
 }

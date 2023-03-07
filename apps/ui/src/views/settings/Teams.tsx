@@ -7,7 +7,7 @@ import Button from '../../ui/Button'
 import { DataTableCol } from '../../ui/DataTable'
 import { SelectionProps } from '../../ui/form/Field'
 import FormWrapper from '../../ui/form/FormWrapper'
-import { ArchiveIcon } from '../../ui/icons'
+import { ArchiveIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import Modal from '../../ui/Modal'
 import { SearchTable, SearchTableQueryState, useSearchTableState } from '../../ui/SearchTable'
@@ -92,7 +92,7 @@ export default function Teams() {
                 title="Team"
                 onDeleteRow={handleDeleteProjectAdmin}
                 actions={
-                    <Button icon="plus-lg" size="small" onClick={() => setIsModalOpen(true)}>
+                    <Button icon={<PlusIcon />} size="small" onClick={() => setIsModalOpen(true)}>
                         Add Team Member
                     </Button>
                 }

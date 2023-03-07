@@ -4,6 +4,7 @@ import { usePopper } from 'react-popper'
 import Button, { ButtonSize, ButtonVariant } from './Button'
 import './Menu.css'
 import { Placement } from '@popperjs/core'
+import { ThreeDotsIcon } from './icons'
 
 interface MenuProps {
     thing?: string
@@ -40,7 +41,7 @@ export default function Menu({ children, variant, size, placement }: PropsWithCh
                 ref={setReferenceElement}
                 variant={variant ?? 'plain'}
                 size={size}
-                icon="three-dots"></Popover.Button>
+                icon={<ThreeDotsIcon />}></Popover.Button>
 
             <Popover.Panel
                 ref={setPopperElement}

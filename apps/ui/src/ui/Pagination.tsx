@@ -1,3 +1,4 @@
+import { ChevronLeftIcon, ChevronRightIcon } from './icons'
 import './Pagination.css'
 
 interface PaginationProps {
@@ -81,7 +82,7 @@ export default function Pagination({
             <button className="pagination-button prev"
                 disabled={page <= 0}
                 onClick={() => onChangePage(page - 1)}>
-                <i className="bi bi-arrow-left"></i>
+                <ChevronLeftIcon />
                 Previous
             </button>
             {
@@ -95,7 +96,7 @@ export default function Pagination({
                 disabled={(page + 1) >= total}
                 onClick={() => onChangePage(page + 1)}>
                 Next
-                <i className="bi bi-arrow-right"></i>
+                <ChevronRightIcon />
             </button>
         </div>
     )

@@ -5,6 +5,7 @@ import { Tag } from '../../types'
 import Button from '../../ui/Button'
 import FormWrapper from '../../ui/form/FormWrapper'
 import TextField from '../../ui/form/TextField'
+import { PlusIcon } from '../../ui/icons'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 
@@ -36,7 +37,7 @@ export default function Tags() {
                             size="small"
                             variant="primary"
                             onClick={() => setEditing({ id: 0, name: 'New Tag' })}
-                            icon="plus"
+                            icon={<PlusIcon />}
                         >
                             {'Create Tag'}
                         </Button>
