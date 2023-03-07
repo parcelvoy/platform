@@ -107,3 +107,6 @@ build
 
 # VS Code
 .DS_Store
+
+# Uploads
+/public/uploads

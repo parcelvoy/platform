@@ -53,19 +53,20 @@ export default (type?: EnvType): Env => {
                 },
             }),
         }),
-        storage: {
-            baseUrl: process.env.STORAGE_BASE_URL!,
-            ...driver<Omit<StorageConfig, 'baseUrl'>>(process.env.STORAGE_DRIVER, {
-                s3: () => ({
-                    bucket: process.env.AWS_S3_BUCKET!,
-                    region: process.env.AWS_REGION!,
-                    credentials: {
-                        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-                    },
-                }),
+        storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
+            s3: () => ({
+                baseUrl: process.env.STORAGE_BASE_URL!,
+                bucket: process.env.AWS_S3_BUCKET!,
+                region: process.env.AWS_REGION!,
+                credentials: {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                },
             }),
-        },
+            local: () => ({
+                baseUrl: process.env.BASE_URL!,
+            }),
+        }),
         baseUrl: process.env.BASE_URL!,
         port: parseInt(process.env.PORT!),
         secret: process.env.APP_SECRET!,

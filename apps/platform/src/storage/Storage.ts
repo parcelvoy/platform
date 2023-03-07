@@ -8,10 +8,12 @@ import { combineURLs, uuid } from '../utilities'
 import { InternalError } from '../core/errors'
 import StorageError from './StorageError'
 import App from '../app'
+import { LocalConfig, LocalStorageProvider } from './LocalStorageProvider'
 
-export type StorageConfig = S3Config & { baseUrl: string }
+export type StorageConfig = S3Config | LocalConfig
 export interface StorageTypeConfig extends DriverConfig {
     driver: StorageProviderName
+    baseUrl: string
 }
 
 export interface ImageUpload {
@@ -24,6 +26,8 @@ export default class Storage {
     constructor(config?: StorageConfig) {
         if (config?.driver === 's3') {
             this.provider = new S3StorageProvider(config)
+        } else if (config?.driver === 'local') {
+            this.provider = new LocalStorageProvider()
         } else {
             throw new InternalError(StorageError.UndefinedStorageMethod)
         }
@@ -34,7 +38,7 @@ export default class Storage {
         const originalPath = path.parse(image.metadata.fileName)
         const extension = originalPath.ext
         const fileName = originalPath.name
-        const url = `${key}${extension}`
+        const url = this.provider.path(`${key}${extension}`)
 
         await this.upload({
             stream: image.file,

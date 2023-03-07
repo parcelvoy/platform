@@ -2,6 +2,8 @@ name: Create & Publish Docker Image
 
 on:
   push:
+    branches:
+      - "feat/local-storage"
     tags:
       - "v*.*.*"
 
