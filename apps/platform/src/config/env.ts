@@ -55,7 +55,7 @@ export default (type?: EnvType): Env => {
         }),
         storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
             s3: () => ({
-                baseUrl: process.env.STORAGE_BASE_URL!,
+                baseUrl: process.env.STORAGE_BASE_URL,
                 bucket: process.env.AWS_S3_BUCKET!,
                 region: process.env.AWS_REGION!,
                 credentials: {
@@ -64,7 +64,7 @@ export default (type?: EnvType): Env => {
                 },
             }),
             local: () => ({
-                baseUrl: process.env.BASE_URL!,
+                baseUrl: process.env.STORAGE_BASE_URL,
             }),
         }),
         baseUrl: process.env.BASE_URL!,

@@ -13,7 +13,7 @@ import { LocalConfig, LocalStorageProvider } from './LocalStorageProvider'
 export type StorageConfig = S3Config | LocalConfig
 export interface StorageTypeConfig extends DriverConfig {
     driver: StorageProviderName
-    baseUrl: string
+    baseUrl?: string
 }
 
 export interface ImageUpload {
