@@ -1,8 +1,7 @@
 # --------------> The compiler image
-FROM node:16 AS compile
+FROM node:18 AS compile
 WORKDIR /usr/src/app/apps/ui
 COPY ./tsconfig.base.json /usr/src/app
-COPY ./package-lock.json /usr/src/app/apps/ui
 COPY ./apps/ui ./
 RUN npm ci
 RUN npm run build
