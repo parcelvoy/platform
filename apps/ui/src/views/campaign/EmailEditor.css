@@ -1,7 +1,6 @@
 .email-editor {
-    height: 100vh;
     background: var(--color-background);
-    position: fixed;
+    position: absolute;
     display: flex;
     flex-direction: column;
     grid-template-rows: 60px auto auto;

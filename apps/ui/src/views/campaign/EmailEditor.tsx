@@ -168,20 +168,22 @@ export default function EmailEditor() {
                 open
                 onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
             >
-                <Tabs
-                    selectedIndex={selectedIndex}
-                    onChange={setSelectedIndex}
-                    tabs={tabs}
-                    append={
-                        <Button
-                            size="small"
-                            variant="secondary"
-                            onClick={() => setIsAddLocaleOpen(true)}
-                        >
-                            {'Add Locale'}
-                        </Button>
-                    }
-                />
+                <section className="email-editor">
+                    <Tabs
+                        selectedIndex={selectedIndex}
+                        onChange={setSelectedIndex}
+                        tabs={tabs}
+                        append={
+                            <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={() => setIsAddLocaleOpen(true)}
+                            >
+                                {'Add Locale'}
+                            </Button>
+                        }
+                    />
+                </section>
             </Modal>
             <CreateLocaleModal
                 open={isAddLocaleOpen}
