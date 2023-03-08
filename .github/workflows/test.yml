@@ -8,7 +8,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
         
     steps:
     - uses: actions/checkout@v1
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
 
     services:
       mysql:
@@ -48,10 +48,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Node 16.x
+    - name: Node 18.x
       uses: actions/setup-node@v2
       with:
-        node-version: 16.x
+        node-version: 18.x
 
     - name: Cache NPM
       uses: actions/cache@v2
