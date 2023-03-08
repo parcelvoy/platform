@@ -35,7 +35,8 @@ const connect = (config: DatabaseConfig, withDB = true) => {
     })
 }
 
-const migrate = async (db: Database) => {
+const migrate = async (db: Database, fresh = false) => {
+    if (fresh) await db.raw('CREATE DATABASE parcelvoy')
     return db.migrate.latest({
         directory: './db/migrations',
         tableName: 'migrations',
@@ -53,7 +54,7 @@ export default async (config: DatabaseConfig) => {
 
         // On error, try to create the database and try again
         const db = connect(config, false)
-        db.raw('CREATE DATABASE parcelvoy')
+        await migrate(db, true)
         return connect(config)
     }
 }
