@@ -14,5 +14,10 @@
     "test": "lerna run test",
     "docker:build": "lerna run docker:build",
     "docker:build:push": "lerna run docker:build:push"
+  },
+  "overrides": {
+    "@lerna/version": {
+      "@nrwl/devkit": "14.8.6"
+    }
   }
 }
