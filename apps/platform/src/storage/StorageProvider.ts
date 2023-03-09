@@ -1,6 +1,6 @@
 import { Stream } from 'stream'
 
-export type StorageProviderName = 's3'
+export type StorageProviderName = 's3' | 'local'
 
 export interface ImageUploadTask {
     stream: Stream
@@ -8,6 +8,7 @@ export interface ImageUploadTask {
 }
 
 export interface StorageProvider {
+    path(filename: string): string
     upload(task: ImageUploadTask): Promise<void>
     delete(filename: string): Promise<void>
 }

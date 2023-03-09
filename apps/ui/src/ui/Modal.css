@@ -63,6 +63,7 @@
 
 .modal.fullscreen .modal-content {
     flex-grow: 1;
+    position: relative;
 }
 
 .modal-inner .modal-header h3 {

@@ -107,3 +107,7 @@ build
 
 # VS Code
 .DS_Store
+
+# Uploads
+/public/uploads/*
+!/public/uploads/.gitkeep

@@ -82,7 +82,7 @@ export const openWrapHtml = (html: string, params: TrackedLinkParams) => {
     const imageHtml = `<img border="0" width="1" height="1" alt="" src="${link}" />`
     const hasBody = html.includes(bodyTag)
     if (hasBody) {
-        html.replace(bodyTag, imageHtml + bodyTag)
+        html = html.replace(bodyTag, (imageHtml + bodyTag))
     } else {
         html += imageHtml
     }

@@ -205,7 +205,7 @@ describe('CampaignService', () => {
                 send_at: new Date(),
             }) as SentCampaign
 
-            const inclusiveIds = []
+            const inclusiveIds: number[] = []
             for (let i = 0; i < 20; i++) {
                 const user = await createUser(params.project_id)
                 await addUserToList(user, list)

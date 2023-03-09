@@ -218,13 +218,17 @@ export default class Model {
         }
     }
 
+    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>, db?: Database): Promise<number>
+    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>[], db?: Database): Promise<number[]>
     static async insert<T extends typeof Model>(
         this: T,
         data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
-    ): Promise<number> {
+    ): Promise<number | number[]> {
         const formattedData = this.formatJson(data)
-        return await this.table(db).insert(formattedData)
+        const value = await this.table(db).insert(formattedData)
+        if (Array.isArray(data)) return value
+        return value[0]
     }
 
     static async insertAndFetch<T extends typeof Model>(
@@ -232,8 +236,7 @@ export default class Model {
         data: Partial<InstanceType<T>> = {},
         db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
-        const formattedData = this.formatJson(data)
-        const id: number = await this.table(db).insert(formattedData)
+        const id = await this.insert(data, db)
         return await this.find(id, b => b, db) as InstanceType<T>
     }
 

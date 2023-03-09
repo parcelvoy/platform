@@ -6,6 +6,7 @@ import { StorageTypeConfig } from './Storage'
 import { ImageUploadTask, StorageProvider } from './StorageProvider'
 
 export interface S3Config extends StorageTypeConfig, AWSConfig {
+    driver: 's3'
     bucket: string
 }
 
@@ -15,6 +16,10 @@ export class S3StorageProvider implements StorageProvider {
 
     constructor(config: S3Config) {
         this.config = config
+    }
+
+    path(filename: string) {
+        return filename
     }
 
     async upload(task: ImageUploadTask) {
