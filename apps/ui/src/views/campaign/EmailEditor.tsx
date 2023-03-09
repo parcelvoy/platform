@@ -15,6 +15,7 @@ import { PreferencesContext } from '../../ui/PreferencesContext'
 import CreateLocaleModal from './CreateLocaleModal'
 import ImageGalleryModal from './ImageGalleryModal'
 import Modal from '../../ui/Modal'
+import { ImageIcon } from '../../ui/icons'
 
 const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
 
@@ -89,7 +90,7 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                                 <div className="editor-toolbar">
                                     <Button
                                         variant="secondary"
-                                        icon="image"
+                                        icon={<ImageIcon />}
                                         onClick={() => setShowImages(true)}
                                     >Images</Button>
                                 </div>

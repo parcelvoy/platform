@@ -59,7 +59,7 @@ nav {
 }
 
 nav a {
-    display: block;
+    display: flex;
     padding: 15px;
     text-decoration: none;
     color: var(--color-primary);
@@ -67,6 +67,8 @@ nav a {
     font-size: 15px;
     font-weight: 500;
     margin-bottom: 5px;
+    align-items: center;
+    gap: 5px;
 }
 
 nav a:hover {
@@ -79,8 +81,10 @@ nav a.selected {
     background: var(--color-primary);
 }
 
-nav a i {
-    margin-right: 5px;
+nav a .nav-icon {
+    width: 16px;
+    height: 16px;
+    display: flex;
 }
 
 .sidebar-profile {

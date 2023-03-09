@@ -9,6 +9,7 @@ import { Subscription } from '../../types'
 import TextField from '../../ui/form/TextField'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import Button from '../../ui/Button'
+import { PlusIcon } from '../../ui/icons'
 
 export default function Subscriptions() {
     const navigate = useNavigate()
@@ -31,11 +32,11 @@ export default function Subscriptions() {
                     <>
                         <Button
                             variant="primary"
-                            icon="plus"
+                            icon={<PlusIcon />}
                             size="small"
                             onClick={() => setOpen(true)}
                         >
-                            {'Create Subscription'}
+                            Create Subscription
                         </Button>
                     </>
                 }

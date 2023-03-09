@@ -9,6 +9,7 @@ import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
+import { PlusIcon } from '../../ui/icons'
 
 export default function ProjectApiKeys() {
 
@@ -32,7 +33,7 @@ export default function ProjectApiKeys() {
                 onSelectRow={(row: ProjectApiKey) => navigate(`${row.id}`)}
                 title="API Keys"
                 actions={
-                    <Button icon="plus-lg" size="small" onClick={() => setIsModalOpen(true)}>
+                    <Button icon={<PlusIcon />} size="small" onClick={() => setIsModalOpen(true)}>
                         Create Key
                     </Button>
                 }

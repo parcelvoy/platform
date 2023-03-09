@@ -12,6 +12,7 @@ import Modal, { ModalProps } from '../../ui/Modal'
 import Tile, { TileGrid } from '../../ui/Tile'
 import { snakeToTitle } from '../../utils'
 import './IntegrationModal.css'
+import { ChevronLeftIcon } from '../../ui/icons'
 
 interface IntegrationModalProps extends Omit<ModalProps, 'title'> {
     provider: Provider | undefined
@@ -61,7 +62,7 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
         {meta && <>
             {!provider?.id && <div style={{ marginBottom: '10px' }}>
                 <Button
-                    icon="chevron-left"
+                    icon={<ChevronLeftIcon />}
                     variant="secondary"
                     size="small"
                     onClick={() => setMeta(undefined)}>Integrations</Button>

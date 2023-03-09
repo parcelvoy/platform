@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import api from '../../api'
 import { CampaignState } from '../../types'
 import Button from '../../ui/Button'
-import { ArchiveIcon, DuplicateIcon, EditIcon } from '../../ui/icons'
+import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
@@ -49,7 +49,7 @@ export default function Campaigns() {
     return (
         <>
             <PageContent title="Campaigns" actions={
-                <Button icon="plus-lg" onClick={() => setIsCreateOpen(true)}>Create Campaign</Button>
+                <Button icon={<PlusIcon />} onClick={() => setIsCreateOpen(true)}>Create Campaign</Button>
             }>
                 <SearchTable
                     {...state}
@@ -79,13 +79,13 @@ export default function Campaigns() {
                             cell: ({ item: { id } }) => (
                                 <Menu size="small">
                                     <MenuItem onClick={() => handleEditCampaign(id)}>
-                                        <EditIcon /> Edit
+                                        <EditIcon />Edit
                                     </MenuItem>
                                     <MenuItem onClick={async () => await handleDuplicateCampaign(id)}>
-                                        <DuplicateIcon /> Duplicate
+                                        <DuplicateIcon />Duplicate
                                     </MenuItem>
                                     <MenuItem onClick={async () => await handleArchiveCampaign(id)}>
-                                        <ArchiveIcon /> Archive
+                                        <ArchiveIcon />Archive
                                     </MenuItem>
                                 </Menu>
                             ),

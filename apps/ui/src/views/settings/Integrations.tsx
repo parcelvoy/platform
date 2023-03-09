@@ -4,6 +4,7 @@ import { ProjectContext } from '../../contexts'
 import { Provider } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
+import { PlusIcon } from '../../ui/icons'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import IntegrationModal from './IntegrationModal'
 
@@ -16,7 +17,7 @@ export default function Integrations() {
     return (
         <>
             <Heading size="h3" title="Integrations" actions={
-                <Button icon="plus-lg" size="small" onClick={() => {
+                <Button icon={<PlusIcon />} size="small" onClick={() => {
                     setProvider(undefined)
                     setIsModalOpen(true)
                 }}>Add Integration</Button>

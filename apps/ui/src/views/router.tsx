@@ -36,6 +36,7 @@ import Login from './auth/Login'
 import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
+import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -116,31 +117,31 @@ export const router = createBrowserRouter([
                                     key: 'campaigns',
                                     to: 'campaigns',
                                     children: 'Campaigns',
-                                    icon: 'bi-megaphone',
+                                    icon: <CampaignsIcon />,
                                 },
                                 {
                                     key: 'journeys',
                                     to: 'journeys',
                                     children: 'Journeys',
-                                    icon: 'bi-diagram-2',
+                                    icon: <JourneysIcon />,
                                 },
                                 {
                                     key: 'users',
                                     to: 'users',
                                     children: 'Users',
-                                    icon: 'bi-people',
+                                    icon: <UsersIcon />,
                                 },
                                 {
                                     key: 'lists',
                                     to: 'lists',
                                     children: 'Lists',
-                                    icon: 'bi-list-ol',
+                                    icon: <ListsIcon />,
                                 },
                                 {
                                     key: 'settings',
                                     to: 'settings',
                                     children: 'Settings',
-                                    icon: 'bi-gear',
+                                    icon: <SettingsIcon />,
                                 },
                             ]}
                         >

@@ -3,6 +3,7 @@ import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import TextField from '../../ui/form/TextField'
+import { PlusIcon, TrashIcon } from '../../ui/icons'
 import './RuleBuilder.css'
 
 interface RuleSetParams {
@@ -110,7 +111,7 @@ const RuleSet = ({ group, onChange, onDelete }: RuleSetParams) => {
             {onDelete && <Button
                 size="small"
                 variant="plain"
-                icon="trash"
+                icon={<TrashIcon />}
                 onClick={onDelete}
             />}
         </div>}
@@ -130,20 +131,20 @@ const RuleSet = ({ group, onChange, onDelete }: RuleSetParams) => {
                 ? <Button
                     size="small"
                     variant="secondary"
-                    icon="plus"
+                    icon={<PlusIcon />}
                     onClick={() => handleAddUserRule()}
                 >Add Condition</Button>
                 : <>
                     <Button
                         size="small"
                         variant="secondary"
-                        icon="plus"
+                        icon={<PlusIcon />}
                         onClick={() => handleAddUserRule()}
                     >Add User Condition</Button>
                     <Button
                         size="small"
                         variant="secondary"
-                        icon="plus"
+                        icon={<PlusIcon />}
                         onClick={() => handleAddEventRule()}
                     >Add Event Condition</Button>
                 </>
@@ -209,7 +210,7 @@ const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
                     />
                     <Button
                         size="small"
-                        icon="trash"
+                        icon={<TrashIcon />}
                         variant="secondary"
                         onClick={onDelete} />
                 </ButtonGroup>

@@ -5,12 +5,13 @@
     box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
     z-index: 999;
     min-width: 150px;
-    padding: 5px 0;
+    padding: 3px 0;
+    font-size: 13px;
+    overflow: hidden;
 }
 
 .ui-menu-item {
-    padding: 10px;
-    border-bottom: 1px solid var(--color-grey);
+    padding: 7px 10px;
     display: flex;
     gap: 5px;
     align-items: center;
@@ -25,7 +26,8 @@
 }
 
 .ui-menu-item svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     margin-top: -1px;
+    margin-right: 5px;
 }

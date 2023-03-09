@@ -10,7 +10,7 @@ type BaseButtonProps = PropsWithChildren<{
     children?: React.ReactNode
     variant?: ButtonVariant
     size?: ButtonSize
-    icon?: string
+    icon?: React.ReactNode
     isLoading?: boolean
 }> & JSX.IntrinsicElements['button']
 
@@ -28,7 +28,7 @@ const LinkButton = forwardRef(function LinkButton(props: LinkButtonProps, ref: R
         <Link to={props.to} className={
             `ui-button ${props.variant ?? 'primary'} ${props.size ?? 'regular'}`
         } ref={ref}>
-            {props.icon != null && <i className={`bi bi-${props.icon}`} /> }
+            {props.icon && (<span className="button-icon">{props.icon}</span>)}
             {props.children}
         </Link>
     )
@@ -61,7 +61,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
             ref={ref}
             disabled={disabled ?? isLoading}
         >
-            {icon != null && <i className={`bi bi-${icon}`} /> }
+            {icon && (<span className="button-icon">{icon}</span>)}
             {children}
         </button>
     )
