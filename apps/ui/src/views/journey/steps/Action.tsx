@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import api from '../../../api'
 import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
+import { ActionStepIcon } from '../../../ui/icons'
 
 interface ActionConfig {
     campaign_id: number
@@ -9,7 +10,7 @@ interface ActionConfig {
 
 export const actionStep: JourneyStepType<ActionConfig> = {
     name: 'Action',
-    icon: 'bi-lightning-fill',
+    icon: <ActionStepIcon />,
     category: 'action',
     description: 'Trigger a message (email, sms, push notification, webhook) to be sent.',
     newData: async () => ({
@@ -24,6 +25,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
             <>
                 <EntityIdPicker
                     label="Campaign"
+                    subtitle="Send this campaign when users reach this step."
                     get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
                     search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
                     value={value.campaign_id}
@@ -33,5 +35,4 @@ export const actionStep: JourneyStepType<ActionConfig> = {
             </>
         )
     },
-    maxChildren: 1,
 }

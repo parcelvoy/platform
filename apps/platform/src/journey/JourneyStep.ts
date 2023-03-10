@@ -9,8 +9,9 @@ import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
 import { random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
-import jsonpath from 'jsonpath'
 import { Database } from '../config/database'
+import { Compile } from '../render'
+import { logger } from '../config/logger'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -26,6 +27,7 @@ export class JourneyStepChild extends Model {
     step_id!: number
     child_id!: number
     data?: Record<string, unknown>
+    priority!: number
 
     static tableName = 'journey_step_child'
     static jsonAttributes: string[] = ['data']
@@ -173,85 +175,21 @@ export class JourneyAction extends JourneyStep {
     }
 }
 
-// Look at a condition tree and evaluate if user passes on to next step
 export class JourneyGate extends JourneyStep {
     static type = 'gate'
 
-    rule!: Rule
-
-    parseJson(json: any) {
-        super.parseJson(json)
-
-        this.rule = json?.data.rule
-    }
-
-    static async create(rule: Rule, journeyId?: number): Promise<JourneyGate> {
-        return await JourneyGate.insertAndFetch({
-            type: this.type,
-            journey_id: journeyId,
-            data: {
-                rule,
-            },
-        })
-    }
-
-    async condition(user: User, event?: UserEvent): Promise<boolean> {
-        return check({
-            user: user.flatten(),
-            event: event?.flatten(),
-        }, this.rule)
-    }
-}
-
-type MapOptions = Record<string, number>
-
-export class JourneyMap extends JourneyStep {
-    static type = 'map'
-
-    attribute!: string
-
-    parseJson(json: any) {
-        super.parseJson(json)
-
-        this.attribute = json?.data?.attribute
-    }
-
-    static async create(attribute: string, options: MapOptions, journeyId?: number): Promise<JourneyMap> {
-        return await JourneyMap.insertAndFetch({
-            type: this.type,
-            journey_id: journeyId,
-            data: {
-                attribute,
-                options,
-            },
-        })
-    }
-
-    async condition(): Promise<boolean> {
-        return true
-    }
-
-    async next(user: User) {
+    async next(user: User, event?: UserEvent | undefined) {
 
         const children = await getJourneyStepChildren(this.id)
 
-        // When comparing the user expects comparison
-        // to be between the UI model user vs core user
-        const templateUser = user.flatten()
-        let path = this.attribute
-        if (!this.attribute.startsWith('$.')) path = '$.' + path
-
-        // Based on an attribute match, pick a child step
-        const value = jsonpath.query(templateUser, path, 1)[0]
-        for (const { child_id, data = {} } of children) {
-            if (data.value === value) {
-                return await getJourneyStep(child_id)
-            }
+        const input = {
+            user: user.flatten(),
+            event: event?.flatten(),
         }
 
-        // Fallback
-        for (const { child_id, data } of children) {
-            if (data?.fallback) {
+        // Take user to first step where rule matches (fallthrough if no rule)
+        for (const { data, child_id } of children) {
+            if (!data?.rule || check(input, data.rule as Rule)) {
                 return await getJourneyStep(child_id)
             }
         }
@@ -316,14 +254,54 @@ export class JourneyLink extends JourneyStep {
     }
 }
 
+export class JourneyUpdate extends JourneyStep {
+    static type = 'update'
+
+    template!: string
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.template = json.data?.template
+    }
+
+    async complete(user: User, event?: UserEvent | undefined): Promise<void> {
+
+        if (this.template.trim()) {
+            let value: any
+            try {
+                value = JSON.parse(Compile(this.template, {
+                    user: user.flatten(),
+                    event: event?.flatten(),
+                }))
+            } catch (err: any) {
+                logger.warn({
+                    error: err.message,
+                }, 'Error while updating user')
+                return
+            }
+            if (typeof value === 'object') {
+                user.data = {
+                    ...user.data,
+                    ...value,
+                }
+                await User.update(q => q.where('id', user.id), {
+                    data: user.data,
+                })
+            }
+        }
+
+        return super.complete(user, event)
+    }
+}
+
 export const journeyStepTypes = [
     JourneyEntrance,
     JourneyDelay,
     JourneyAction,
     JourneyGate,
-    JourneyMap,
     JourneyExperiment,
     JourneyLink,
+    JourneyUpdate,
 ].reduce<Record<string, typeof JourneyStep>>((a, c) => {
     a[c.type] = c
     return a

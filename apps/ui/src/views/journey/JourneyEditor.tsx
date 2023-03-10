@@ -1,4 +1,4 @@
-import { createElement, DragEventHandler, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createElement, DragEventHandler, Fragment, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactFlow, {
     addEdge,
@@ -48,9 +48,6 @@ function JourneyStepNode({
     data: {
         type: typeName,
         data,
-        stats: {
-            users = 0,
-        } = {},
     } = {},
     selected,
 }: NodeProps) {
@@ -75,11 +72,14 @@ function JourneyStepNode({
 
     const validateConnection = useCallback((conn: Connection) => {
         if (!type) return false
-        if (!type.maxChildren) return true
+        if (type.sources === 'multi') return true
         const sourceNode = conn.source && getNode(conn.source)
         if (!sourceNode) return true
-        const edges = getConnectedEdges([sourceNode], getEdges())
-        return edges.length <= type.maxChildren
+        const existing = getConnectedEdges([sourceNode], getEdges())
+        if (Array.isArray(type.sources)) {
+            return existing.filter(e => e.sourceHandle === conn.sourceHandle).length <= 1
+        }
+        return existing.length <= 1
     }, [id, type, getNode, getEdges])
 
     if (!type) {
@@ -95,13 +95,19 @@ function JourneyStepNode({
                     <Handle type="target" position={Position.Top} id={'t-' + id} />
                 )
             }
-            <div className={clsx('journey-step', type.category, selected && 'selected')}>
+            <div
+                className={clsx(
+                    'journey-step',
+                    type.category,
+                    selected && 'selected',
+                    Array.isArray(type.sources) && 'journey-step-labelled-sources',
+                )}
+            >
                 <div className="journey-step-header">
-                    <i className={clsx('step-header-icon', type.icon)} />
-                    <h4 className="step-header-title">{type.name}</h4>
-                    <span>
-                        {users + ' Users'}
+                    <span className="step-header-icon">
+                        {type.icon}
                     </span>
+                    <h4 className="step-header-title">{type.name}</h4>
                 </div>
                 {
                     type.Edit && (
@@ -118,11 +124,39 @@ function JourneyStepNode({
                     )
                 }
             </div>
-            <Handle
-                type="source"
-                position={Position.Bottom} id={'s-' + id}
-                isValidConnection={validateConnection}
-            />
+            {
+                (
+                    Array.isArray(type.sources)
+                        ? type.sources
+                        : ['']
+                ).map((label, index, arr) => {
+                    const left = (((index + 1) / (arr.length + 1)) * 100) + '%'
+                    return (
+                        <Fragment key={label}>
+                            {
+                                label && (
+                                    <span
+                                        className="step-handle-label"
+                                        style={{
+                                            left,
+                                        }}
+                                    >
+                                        {label}
+                                    </span>
+                                )
+                            }
+                            <Handle
+                                type="source"
+                                position={Position.Bottom} id={index + '-s-' + id}
+                                isValidConnection={validateConnection}
+                                style={{
+                                    left,
+                                }}
+                            />
+                        </Fragment>
+                    )
+                })
+            }
         </>
     )
 }
@@ -222,14 +256,15 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
             data: {
                 type,
                 data,
-                stats: stats[id] ?? { users: 0 },
+                stats,
             },
             deletable: type !== 'entrance',
         })
-        children?.forEach(({ external_id, data }) => edges.push({
+        const stepType = getStepType(type)
+        children?.forEach(({ external_id, data }, index) => edges.push({
             id: 'e-' + id + '-' + external_id,
             source: id,
-            sourceHandle: 's-' + id,
+            sourceHandle: (Array.isArray(stepType?.sources) ? index : 0) + '-s-' + id,
             target: external_id,
             targetHandle: 't-' + external_id,
             data,
@@ -242,6 +277,8 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
 
     return { nodes, edges }
 }
+
+const getSourceIndex = (handleId: string) => parseInt(handleId.substring(0, handleId.indexOf('-s-')), 10)
 
 function nodesToSteps(nodes: Node[], edges: Edge[]) {
     return nodes.reduce<JourneyStepMap>((a, {
@@ -262,6 +299,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
             y,
             children: edges
                 .filter(e => e.source === id)
+                .sort((x, y) => getSourceIndex(x.sourceHandle!) - getSourceIndex(y.sourceHandle!))
                 .map(({ data = {}, target }) => ({
                     external_id: target,
                     data,
@@ -388,7 +426,7 @@ export default function JourneyEditor() {
         >
             <div className="journey">
                 <div className="journey-options">
-                    <h3>Components</h3>
+                    <h4>Components</h4>
                     {
                         Object.entries(journeySteps).sort(createComparator(x => x[1].category)).filter(([, type]) => type.category !== 'entrance').map(([key, type]) => (
                             <div
@@ -400,7 +438,9 @@ export default function JourneyEditor() {
                                     event.dataTransfer.effectAllowed = 'move'
                                 }}
                             >
-                                <i className={clsx('component-handle', type.icon)} />
+                                <span className="component-handle">
+                                    {type.icon}
+                                </span>
                                 <div className="component-title">{type.name}</div>
                                 <div className="component-desc">{type.description}</div>
                             </div>

@@ -10,8 +10,6 @@ const initial = localStorageAssign<Preferences>(PREFERENCES, {
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 })
 
-console.log('initial settings', initial)
-
 export const PreferencesContext = createContext<readonly [Preferences, Dispatch<SetStateAction<Preferences>>]>([
     initial,
     () => {},
@@ -22,7 +20,6 @@ export function PreferencesProvider({ children }: PropsWithChildren<{}>) {
 
     useEffect(() => {
         const handler = () => {
-            console.log('language changed!', window.navigator.language)
             setPreferences(prev => {
                 if (prev.lang !== window.navigator.language) {
                     return { ...prev, lang: window.navigator.language }

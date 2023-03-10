@@ -124,7 +124,7 @@ label.hide-label {
     margin: 0;
 }
 
-label .label-subtitle {
+.label-subtitle {
     color: var(--color-primary-soft);
     font-weight: 400;
     font-size: 14px;

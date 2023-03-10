@@ -9,7 +9,6 @@ import { raw } from '../core/Model'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
 export const pagedJourneys = async (params: SearchParams, projectId: number) => {
-    console.log('params', params)
     const result = await Journey.searchParams(
         params,
         ['name'],
@@ -87,12 +86,19 @@ export const getJourneySteps = async (journeyId: number, db?: Database): Promise
 }
 
 export const getJourneyStepChildren = async (stepId: number) => {
-    return await JourneyStepChild.all(q => q.where('step_id', stepId))
+    return await JourneyStepChild.all(q => q
+        .where('step_id', stepId)
+        .orderBy('priority', 'asc')
+        .orderBy('id', 'asc'),
+    )
 }
 
 const getAllJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
     return await JourneyStepChild.all(
-        q => q.whereIn('step_id', JourneyStep.query(db).select('id').where('journey_id', journeyId)),
+        q => q
+            .whereIn('step_id', JourneyStep.query(db).select('id').where('journey_id', journeyId))
+            .orderBy('priority', 'asc')
+            .orderBy('id', 'asc'),
         db,
     )
 }
@@ -158,6 +164,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             const list = stepMap[step.external_id]?.children ?? []
             const childIds: number[] = []
 
+            let ci = 0
             for (const { external_id, data = {} } of list) {
                 const child = steps.find(s => s.external_id === external_id)
                 if (!child) continue
@@ -168,14 +175,17 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                         step_id: step.id,
                         child_id: child.id,
                         data,
+                        priority: ci,
                     }, trx))
                 } else {
                     stepChild = children[idx]
                     children[idx] = await JourneyStepChild.updateAndFetch(stepChild.id, {
                         data,
+                        priority: ci,
                     }, trx)
                 }
                 childIds.push(stepChild.child_id)
+                ci++
             }
 
             i = 0

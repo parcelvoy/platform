@@ -56,8 +56,6 @@ export const useTableSearchParams = () => {
 
     const str = searchParams.toString()
 
-    console.log(str)
-
     return useMemo(() => [
         toTableParams(new URLSearchParams(str)),
         setParams,

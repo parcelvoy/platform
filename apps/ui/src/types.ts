@@ -73,7 +73,7 @@ export type WrapperRule = Rule & { type: 'wrapper' }
 
 export interface Preferences {
     readonly lang: string
-    readonly mode: 'system' | 'light' | 'dark'
+    readonly mode: 'light' | 'dark'
     readonly timeZone: string
 }
 
@@ -194,16 +194,18 @@ export interface JourneyStep<T = any> {
 
 export type JourneyStepParams = Omit<JourneyStep, 'id'>
 
+interface JourneyStepMapChild<E = any> {
+    external_id: string
+    data?: E
+}
+
 export interface JourneyStepMap {
     [external_id: string]: {
         type: string
         data?: Record<string, unknown>
         x: number
         y: number
-        children?: Array<{
-            external_id: string
-            data?: Record<string, unknown>
-        }>
+        children?: JourneyStepMapChild[]
     }
 }
 
@@ -227,14 +229,17 @@ export interface JourneyStepTypeEdgeProps<T, E> extends ControlledProps<E> {
 
 export interface JourneyStepType<T = any, E = any> {
     name: string
-    icon: string
+    icon: ReactNode
     category: 'entrance' | 'delay' | 'flow' | 'action'
     description: string
     newData?: () => Promise<T>
     newEdgeData?: () => Promise<E>
     Edit?: ComponentType<JourneyStepTypeEditProps<T>>
     EditEdge?: ComponentType<JourneyStepTypeEdgeProps<T, E>>
-    maxChildren?: number // 0 for unlimited
+    sources?:
+    | 'single' // single child (default)
+    | 'multi' // multiple children, one handle (unordered)
+    | string[] // enumerated handles (ordered)
 }
 
 export type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
@@ -254,7 +259,7 @@ export interface Campaign {
     subscription_id?: number
     subscription: Subscription
     templates: Template[]
-    list_id: number
+    list_id?: number
     list?: List
     tags?: string[]
     send_in_user_timezone: boolean

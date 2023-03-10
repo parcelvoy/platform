@@ -1,5 +1,6 @@
 import { JourneyStepType } from '../../../types'
 import TextField from '../../../ui/form/TextField'
+import { ExperimentStepIcon } from '../../../ui/icons'
 import { round } from '../../../utils'
 
 interface ExperimentStepChildConfig {
@@ -8,7 +9,7 @@ interface ExperimentStepChildConfig {
 
 export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
     name: 'Experiment',
-    icon: 'bi-signpost-split',
+    icon: <ExperimentStepIcon />,
     category: 'flow',
     description: 'Randomly send users down different paths.',
     newEdgeData: async () => ({ ratio: 1 }),
@@ -32,4 +33,5 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
             />
         )
     },
+    sources: 'multi',
 }

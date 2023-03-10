@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import api from '../../../api'
 import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
+import { EntranceStepIcon } from '../../../ui/icons'
 
 interface EntranceConfig {
     list_id: number
@@ -9,7 +10,7 @@ interface EntranceConfig {
 
 export const entranceStep: JourneyStepType<EntranceConfig> = {
     name: 'Entrance',
-    icon: 'bi-person-plus',
+    icon: <EntranceStepIcon />,
     category: 'entrance',
     description: 'How users are added to this journey.',
     newData: async () => ({
@@ -28,6 +29,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             <>
                 <EntityIdPicker
                     label="List"
+                    subtitle="Users added to this list will automatically start this journey."
                     required
                     get={getList}
                     search={searchLists}
@@ -37,5 +39,4 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             </>
         )
     },
-    maxChildren: 1,
 }

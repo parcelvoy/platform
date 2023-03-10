@@ -86,7 +86,6 @@ export function createTagSubquery<T extends typeof Model>(model: T, project_id: 
         .andWhere('entity', model.tableName)
         .groupBy('entity_id')
         .having(model.raw(`count(*) >= ${names.length}`))
-    console.log(sq.toSQL())
     return sq
 }
 

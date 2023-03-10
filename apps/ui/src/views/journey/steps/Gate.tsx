@@ -1,4 +1,5 @@
 import { JourneyStepType, Rule, WrapperRule } from '../../../types'
+import { GateStepIcon } from '../../../ui/icons'
 import RuleBuilder, { createWrapperRule } from '../../users/RuleBuilder'
 
 interface GateConfig {
@@ -7,9 +8,9 @@ interface GateConfig {
 
 export const gateStep: JourneyStepType<GateConfig> = {
     name: 'Gate',
-    icon: 'bi-layout-split',
+    icon: <GateStepIcon />,
     category: 'flow',
-    description: 'Only proceed to the next step if a condition passes',
+    description: 'Proceed on different paths depending on condition results.',
     newData: async () => ({
         rule: createWrapperRule(),
     }),
@@ -24,5 +25,5 @@ export const gateStep: JourneyStepType<GateConfig> = {
             />
         )
     },
-    maxChildren: 1,
+    sources: ['If', 'Else'],
 }
