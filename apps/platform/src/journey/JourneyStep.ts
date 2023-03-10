@@ -178,23 +178,26 @@ export class JourneyAction extends JourneyStep {
 export class JourneyGate extends JourneyStep {
     static type = 'gate'
 
+    rule!: Rule
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.rule = json.data?.rule
+    }
+
     async next(user: User, event?: UserEvent | undefined) {
 
-        const children = await getJourneyStepChildren(this.id)
+        const [passed, failed] = await getJourneyStepChildren(this.id)
 
         const input = {
             user: user.flatten(),
             event: event?.flatten(),
         }
 
-        // Take user to first step where rule matches (fallthrough if no rule)
-        for (const { data, child_id } of children) {
-            if (!data?.rule || check(input, data.rule as Rule)) {
-                return await getJourneyStep(child_id)
-            }
+        if (this.rule && check(input, this.rule)) {
+            return await getJourneyStep(passed?.child_id)
         }
-
-        return undefined
+        return await getJourneyStep(failed?.child_id)
     }
 }
 

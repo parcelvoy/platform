@@ -203,7 +203,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             await JourneyStepChild.delete(q => q.whereIn('id', deleteChildSteps), trx)
         }
 
-        return toJourneyStepMap(steps, children)
+        return { steps, children }
     })
 }
 
