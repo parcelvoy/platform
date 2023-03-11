@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import api from '../../../api'
 import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
+import { LinkStepIcon } from '../../../ui/icons'
 
 interface JourneyLinkConfig {
     target_id: number
@@ -9,7 +10,7 @@ interface JourneyLinkConfig {
 
 export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
     name: 'Link',
-    icon: 'bi-box-arrow-up-right',
+    icon: <LinkStepIcon />,
     category: 'action',
     description: 'Send users to another journey.',
     newData: async () => ({ target_id: 0 }),
@@ -34,5 +35,4 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
             </>
         )
     },
-    maxChildren: 1,
 }

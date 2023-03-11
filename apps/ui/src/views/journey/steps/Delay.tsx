@@ -1,5 +1,6 @@
 import { JourneyStepType } from '../../../types'
 import TextField from '../../../ui/form/TextField'
+import { DelayStepIcon } from '../../../ui/icons'
 import { snakeToTitle } from '../../../utils'
 
 interface DelayStepConfig {
@@ -10,7 +11,7 @@ interface DelayStepConfig {
 
 export const delayStep: JourneyStepType<DelayStepConfig> = {
     name: 'Delay',
-    icon: 'bi-clock-fill',
+    icon: <DelayStepIcon />,
     category: 'delay',
     description: 'Add a delay between the previous and next step.',
     newData: async () => ({
@@ -41,5 +42,4 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
             </>
         )
     },
-    maxChildren: 1,
 }

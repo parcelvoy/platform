@@ -8,10 +8,6 @@
     display: flex;
 }
 
-.journey-actions .publish-date {
-    color: var(--color-grey);
-}
-
 .journey-builder {
     background-size: 30px 30px;
     flex-grow: 1;
@@ -209,4 +205,19 @@
 
 .journey .react-flow__handle-valid {
     background: var(--color-green)
+}
+
+.journey .react-flow__edge-path,
+.journey .react-flow__connection-path {
+    stroke-width: 4;
+}
+
+.journey-step-labelled-sources {
+    padding-bottom: 20px;
+}
+
+.step-handle-label {
+    position: absolute;
+    bottom: 10px;
+    transform: translate(-50%, 0)
 }

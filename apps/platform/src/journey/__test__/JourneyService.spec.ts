@@ -1,54 +1,118 @@
-import List from '../../lists/List'
 import Project from '../../projects/Project'
 import { User } from '../../users/User'
 import Journey from '../Journey'
-import { lastJourneyStep } from '../JourneyRepository'
+import { lastJourneyStep, setJourneyStepMap } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
-import { JourneyEntrance, JourneyMap, JourneyStepChild } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {
-        test('an entrance will proceed to map', async () => {
+        test('user should be taken to action 2 or 3', async () => {
 
-            const project = await Project.insertAndFetch()
-            const journey = await Journey.insertAndFetch({ project_id: project.id })
-            const list = await List.insertAndFetch({
-                project_id: project.id,
-                rule: {
-                    type: 'string',
-                    group: 'user',
-                    path: '$.language',
-                    operator: '=',
-                    value: 'en',
-                },
+            const project = await Project.insertAndFetch({
+                name: `Test Project ${Date.now()}`,
             })
-            const step2 = await JourneyMap.create('country', {
-                US: 43,
-                ES: 34,
-            }, journey.id)
-            const entrance = await JourneyEntrance.create(journey.id, list.id)
-            await JourneyStepChild.insert({
-                step_id: entrance.id,
-                child_id: step2.id,
-                data: {},
+
+            const journey = await Journey.insertAndFetch({
+                project_id: project.id,
+                name: `Test Journey ${Date.now()}`,
+            })
+
+            const baseStep = {
+                x: 0,
+                y: 0,
+            }
+
+            // entrance -> gate -> (action1 | experiment -> (action2 | action3))
+            const { steps } = await setJourneyStepMap(journey.id, {
+                entrance: {
+                    ...baseStep,
+                    type: 'entrance',
+                    children: [
+                        {
+                            external_id: 'gate',
+                        },
+                    ],
+                },
+                gate: {
+                    ...baseStep,
+                    type: 'gate',
+                    data: {
+                        rule: {
+                            type: 'string',
+                            group: 'user',
+                            path: '$.email',
+                            operator: '=',
+                            value: 'test1@twochris.com',
+                        },
+                    },
+                    children: [
+                        // if passed
+                        {
+                            external_id: 'action1',
+                        },
+                        // if failed
+                        {
+                            external_id: 'experiment',
+                        },
+                    ],
+                },
+                experiment: {
+                    ...baseStep,
+                    type: 'experiment',
+                    children: [
+                        {
+                            external_id: 'action2',
+                            data: {
+                                ratio: 1,
+                            },
+                        },
+                        {
+                            external_id: 'action3',
+                            data: {
+                                ratio: 1,
+                            },
+                        },
+                    ],
+                },
+                action1: {
+                    ...baseStep,
+                    type: 'action',
+                    data: {
+                        campaign_id: 0,
+                    },
+                },
+                action2: {
+                    ...baseStep,
+                    type: 'action',
+                    data: {
+                        campaign_id: 0,
+                    },
+                },
+                action3: {
+                    ...baseStep,
+                    type: 'action',
+                    data: {
+                        campaign_id: 0,
+                    },
+                },
             })
 
             const service = new JourneyService(journey.id)
 
             const user = await User.insertAndFetch({
-                email: 'test@test.com',
                 project_id: project.id,
-                external_id: 'abcd',
-                data: {
-                    language: 'en',
-                    country: 'US',
-                },
+                external_id: '1',
+                email: 'test2@twochris.com', // won't match the gate condition
+                data: {},
             })
 
             await service.run(user)
 
+            const actionIds = steps
+                .filter(s => s.external_id === 'action2' || s.external_id === 'action3')
+                .map(s => s.id)
             const lastStep = await lastJourneyStep(user.id, journey.id)
-            expect(lastStep?.step_id).toEqual(step2.id)
+            expect(actionIds).toContain(lastStep?.step_id)
         })
     })
 })
