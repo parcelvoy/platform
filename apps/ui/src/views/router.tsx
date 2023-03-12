@@ -37,6 +37,8 @@ import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
+import { Projects } from './project/Projects'
+import { pushRecentProject } from '../utils'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -82,17 +84,9 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                loader: async () => {
-                    const latest = localStorage.getItem('last-project')
-                    if (latest) {
-                        return redirect(`projects/${latest}`)
-                    }
-                    const projects = await api.projects.all()
-                    if (projects.length) {
-                        return redirect(`projects/${projects[0].id}`)
-                    }
-                    return redirect('projects/new')
-                },
+                element: (
+                    <Projects />
+                ),
             },
             {
                 path: 'projects/new',
@@ -106,7 +100,7 @@ export const router = createBrowserRouter([
                 path: 'projects/:projectId',
                 loader: async ({ params: { projectId = '' } }) => {
                     const project = await api.projects.get(projectId)
-                    localStorage.setItem('last-project', projectId)
+                    pushRecentProject(project.id)
                     return project
                 },
                 element: (

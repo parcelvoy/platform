@@ -82,6 +82,7 @@ export interface SearchParams {
     itemsPerPage: number
     q: string
     tag?: string[]
+    id?: Array<number | string>
 }
 
 export interface SearchResult<T> {

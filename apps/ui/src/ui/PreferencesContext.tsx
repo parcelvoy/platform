@@ -1,14 +1,15 @@
 import { useMemo, useState, useEffect, Dispatch, PropsWithChildren, createContext, SetStateAction } from 'react'
 import { Preferences } from '../types'
-import { localStorageAssign, localStorageSet } from '../utils'
+import { localStorageGetJson, localStorageSetJson } from '../utils'
 
 const PREFERENCES = 'preferences'
 
-const initial = localStorageAssign<Preferences>(PREFERENCES, {
+const initial: Preferences = {
+    ...localStorageGetJson<Preferences>(PREFERENCES) ?? {},
     lang: window.navigator.language,
     mode: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-})
+}
 
 export const PreferencesContext = createContext<readonly [Preferences, Dispatch<SetStateAction<Preferences>>]>([
     initial,
@@ -35,7 +36,7 @@ export function PreferencesProvider({ children }: PropsWithChildren<{}>) {
 
     useEffect(() => {
         document.body.setAttribute('data-theme', preferences.mode === 'dark' ? 'dark' : 'light')
-        localStorageSet(PREFERENCES, preferences)
+        localStorageSetJson(PREFERENCES, preferences)
     }, [preferences])
 
     return (

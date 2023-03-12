@@ -35,19 +35,18 @@ export function combine(...parts: Array<string | number>) {
     return parts.filter(item => item != null).join(' ')
 }
 
-export function localStorageAssign<T extends object>(key: string, o: T) {
+export function localStorageGetJson<T extends object>(key: string) {
     try {
         const stored = localStorage.getItem(key)
         if (stored) {
-            Object.assign(o, JSON.parse(stored))
+            return JSON.parse(stored) as T
         }
     } catch (err) {
         console.warn(err)
     }
-    return o
 }
 
-export function localStorageSet<T extends object>(key: string, o: T) {
+export function localStorageSetJson<T extends object>(key: string, o: T) {
     localStorage.setItem(key, JSON.stringify(o))
 }
 
@@ -117,4 +116,44 @@ export function groupBy<T>(arr: T[], fn: (item: T) => any) {
 
 export function groupByKey<T>(arr: T[], key: keyof T) {
     return groupBy(arr, (item) => item[key])
+}
+
+export function arrayMove<T>(arr: T[], currentIndex: number, targetIndex: number) {
+    if (targetIndex >= arr.length) {
+        let k = targetIndex - arr.length + 1
+        while (k--) {
+            (arr as any).push(undefined)
+        }
+    }
+    arr.splice(targetIndex, 0, arr.splice(currentIndex, 1)[0])
+    return arr
+}
+
+const RECENT_PROJECTS = 'recent-projects'
+
+type RecentProjects = Array<{
+    id: number
+    when: number
+}>
+
+export function getRecentProjects() {
+    return (localStorageGetJson<RecentProjects>(RECENT_PROJECTS) ?? [])
+}
+
+export function pushRecentProject(id: number | string) {
+    const stored = getRecentProjects()
+    const idx = stored.findIndex(p => p.id === id)
+    if (idx !== -1) {
+        arrayMove(stored, idx, 0)
+    } else {
+        stored.unshift({
+            id: typeof id === 'string' ? parseInt(id, 10) : id,
+            when: Date.now(),
+        })
+    }
+    while (stored.length > 3) {
+        stored.pop()
+    }
+    localStorageSetJson(RECENT_PROJECTS, stored)
+    return stored
 }
