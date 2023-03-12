@@ -83,7 +83,7 @@ export default class Model {
     }
 
     static query<T extends typeof Model>(this: T, db: Database = App.main.db): Database.QueryBuilder<InstanceType<T>> {
-        return this.table(db)
+        return this.table(db).clearSelect()
     }
 
     static async first<T extends typeof Model>(
@@ -166,7 +166,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ) {
-        let { page, itemsPerPage, sort, q } = params
+        let { page, itemsPerPage, sort, q, id } = params
         return await this.search(
             b => {
                 b = query(b)
@@ -192,6 +192,9 @@ export default class Model {
                         sort = sort.substring(1)
                     }
                     b.orderBy(sort, desc ? 'desc' : 'asc')
+                }
+                if (id?.length) {
+                    b.whereIn('id', id)
                 }
                 return b
             },
@@ -274,7 +277,7 @@ export default class Model {
     }
 
     static table(db: Database = App.main.db): Database.QueryBuilder<any> {
-        return db(this.tableName)
+        return db(this.tableName).select(`${this.tableName}.*`)
     }
 
     static raw = raw

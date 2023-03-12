@@ -1,13 +1,14 @@
+import { useSearchParams } from 'react-router-dom'
 import { ReactComponent as Logo } from '../../assets/logo.svg'
 import { env } from '../../config/env'
 import Button from '../../ui/Button'
 import './Auth.css'
 
 export default function Login() {
+    const [searchParams] = useSearchParams()
 
     const handleRedirect = () => {
-        const urlParams = new URLSearchParams(window.location.search)
-        window.location.href = `${env.api.baseURL}/auth/login?r=${urlParams.get('r')}`
+        window.location.href = `${env.api.baseURL}/auth/login?r=${searchParams.get('r') ?? '/'}`
     }
 
     return (

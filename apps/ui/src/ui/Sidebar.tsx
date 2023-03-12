@@ -2,15 +2,16 @@ import './Sidebar.css'
 import NavLink from './NavLink'
 import { ReactComponent as Logo } from '../assets/logo.svg'
 import { Link, NavLinkProps, useNavigate } from 'react-router-dom'
-import { PropsWithChildren, ReactNode, useContext } from 'react'
+import { PropsWithChildren, ReactNode, useCallback, useContext } from 'react'
 import { AdminContext, ProjectContext } from '../contexts'
 import api from '../api'
 import { PreferencesContext } from './PreferencesContext'
 import { useResolver } from '../hooks'
 import { SingleSelect } from './form/SingleSelect'
-import Button, { LinkButton } from './Button'
+import Button from './Button'
 import ButtonGroup from './ButtonGroup'
-import { MoonIcon, PlusIcon, SunIcon } from './icons'
+import { MoonIcon, SunIcon } from './icons'
+import { getRecentProjects } from '../utils'
 
 interface SidebarProps {
     links?: Array<NavLinkProps & { key: string, icon: ReactNode }>
@@ -21,7 +22,23 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
     const profile = useContext(AdminContext)
     const [project] = useContext(ProjectContext)
     const [preferences, setPreferences] = useContext(PreferencesContext)
-    const [projects] = useResolver(api.projects.all)
+    const [recents] = useResolver(useCallback(async () => {
+        const recentIds = getRecentProjects().filter(p => p.id !== project.id).map(p => p.id)
+        return [
+            project,
+            ...recentIds.length
+                ? await api.projects.search({
+                    page: 0,
+                    itemsPerPage: recentIds.length,
+                    id: recentIds,
+                }).then(r => r.results ?? [])
+                : [],
+            {
+                id: 0,
+                name: 'View All',
+            },
+        ]
+    }, [project]))
 
     return (
         <>
@@ -33,8 +50,14 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                 </div>
                 <SingleSelect
                     value={project}
-                    onChange={project => navigate(`/projects/${project.id}`)}
-                    options={projects ?? [project]}
+                    onChange={project => {
+                        if (project.id === 0) {
+                            navigate('/')
+                        } else {
+                            navigate(`/projects/${project.id}`)
+                        }
+                    }}
+                    options={recents ?? []}
                     getSelectedOptionDisplay={p => (
                         <>
                             <div className="project-switcher-label">Project</div>
@@ -44,19 +67,6 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                     hideLabel
                     buttonClassName="project-switcher"
                     variant="minimal"
-                    optionsFooter={
-                        <div
-                            style={{
-                                borderTop: '1px solid var(--color-grey)',
-                                paddingTop: '10px',
-                                textAlign: 'center',
-                            }}
-                        >
-                            <LinkButton size="small" variant="primary" to="/projects/new" icon={<PlusIcon />}>
-                                {'Create Project'}
-                            </LinkButton>
-                        </div>
-                    }
                 />
                 <nav>
                     {

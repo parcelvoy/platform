@@ -1,7 +1,6 @@
-import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import TextField from '../../ui/form/TextField'
-import { ProjectCreate } from '../../types'
+import { Project } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 
@@ -11,16 +10,19 @@ export declare namespace Intl {
     function supportedValuesOf(input: Key): string[]
 }
 
-export default function ProjectForm() {
-    const navigate = useNavigate()
+interface ProjectFormProps {
+    onSave?: (project: Project) => void
+}
 
+export default function ProjectForm({ onSave }: ProjectFormProps) {
     const timeZones = Intl.supportedValuesOf('timeZone')
-
     return (
-        <FormWrapper<ProjectCreate>
-            onSubmit={async project => {
-                const { id } = await api.projects.create(project)
-                navigate(`/projects/${id}`)
+        <FormWrapper<Project>
+            onSubmit={async ({ id, name, description, locale, timezone }) => {
+                const project = id
+                    ? await api.projects.update(id, { name, description, locale, timezone })
+                    : await api.projects.create({ name, description, locale, timezone })
+                onSave?.(project)
             }}
         >
             {

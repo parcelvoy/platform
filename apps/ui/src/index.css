@@ -89,11 +89,6 @@ textarea {
 
 input:hover, textarea:hover {
     border-color: var(--color-grey-hard);
-    z-index: 2;
-}
-
-input:focus, textarea:focus {
-    z-index: 2;
 }
 
 form .form-submit {

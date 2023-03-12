@@ -46,7 +46,7 @@ type OmitFields = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
 
 export interface EntityApi<T> {
     basePath: string
-    search: (params: SearchParams) => Promise<SearchResult<T>>
+    search: (params: Partial<SearchParams>) => Promise<SearchResult<T>>
     create: (params: Omit<T, OmitFields>) => Promise<T>
     get: (id: number | string) => Promise<T>
     update: (id: number | string, params: Omit<T, OmitFields>) => Promise<T>
@@ -106,6 +106,12 @@ function createProjectEntityPath<T, C = Omit<T, OmitFields>, U = Omit<T, OmitFie
     }
 }
 
+const cache: {
+    profile: null | Admin
+} = {
+    profile: null,
+}
+
 const api = {
 
     login() {
@@ -117,7 +123,12 @@ const api = {
     },
 
     profile: {
-        get: async () => await client.get<Admin>('/admin/profile').then(r => r.data),
+        get: async () => {
+            if (!cache.profile) {
+                cache.profile = await client.get<Admin>('/admin/profile').then(r => r.data)
+            }
+            return cache.profile!
+        },
     },
 
     admins: createEntityPath<Admin>('/admin/admins'),

@@ -10,6 +10,9 @@
     padding: 20px;
     transition: box-shadow ease-in .1s;
     cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .ui-tile:hover {
@@ -20,6 +23,23 @@
     border: 1px solid var(--color-primary);
 }
 
+.ui-tile img {
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 40px;
+    flex-shrink: 0;
+}
+
+.ui-tile-text {
+    flex-grow: 1;
+}
+
+.ui-tile h5 {
+    margin: 0 0 5px;
+}
+
 .ui-tile p {
-    margin: 5px 0;
+    font-size: 13px;
+    margin: 0;
+    color: var(--color-primary-soft);
 }

@@ -47,14 +47,12 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
             <TileGrid>
                 {options?.map(option => (
                     <Tile
-                        className="provider-tile"
                         key={`${option.channel}${option.type}`}
-                        onClick={() => setMeta(option)}>
-                        {option.icon && <img src={option.icon} />}
-                        <div className="tile-text">
-                            <h5>{option.name}</h5>
-                            <p>{snakeToTitle(option.channel)}</p>
-                        </div>
+                        title={option.name}
+                        onClick={() => setMeta(option)}
+                        iconUrl={option.icon}
+                    >
+                        {snakeToTitle(option.channel)}
                     </Tile>
                 ))}
             </TileGrid>

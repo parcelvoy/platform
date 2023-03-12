@@ -6,6 +6,7 @@ import { TagPicker } from '../views/settings/TagPicker'
 import { DataTable, DataTableProps } from './DataTable'
 import TextField from './form/TextField'
 import Heading from './Heading'
+import { SearchIcon } from './icons'
 import Pagination from './Pagination'
 import Stack from './Stack'
 
@@ -131,6 +132,7 @@ export function SearchTable<T extends Record<string, any>>({
                 value={search}
                 placeholder="Search..."
                 onChange={setSearch}
+                icon={<SearchIcon />}
             />,
         )
     }
