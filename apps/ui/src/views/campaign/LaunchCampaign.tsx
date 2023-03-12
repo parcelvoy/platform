@@ -8,6 +8,7 @@ import SwitchField from '../../ui/form/SwitchField'
 import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
+import Alert from '../../ui/Alert'
 
 interface LaunchCampaignParams {
     open: boolean
@@ -18,6 +19,7 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
     const [project] = useContext(ProjectContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [launchType, setLaunchType] = useState('now')
+    const [error, setError] = useState<string | undefined>()
 
     async function handleLaunchCampaign(params: CampaignLaunchParams) {
         if (params.send_at) {
@@ -25,12 +27,20 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
         } else {
             params.send_at = formatISO(new Date())
         }
-        const value = await api.campaigns.update(project.id, campaign.id, params)
-        setCampaign(value)
-        onClose(false)
+
+        try {
+            const value = await api.campaigns.update(project.id, campaign.id, params)
+            setCampaign(value)
+            onClose(false)
+        } catch (error: any) {
+            if (error?.response?.data) {
+                setError(error?.response?.data?.error)
+            }
+        }
     }
 
     return <Modal title="Launch Campaign" open={open} onClose={onClose}>
+        {error && <Alert variant="error" title="Error">{error}</Alert>}
         <p>Please check to ensure all settings are correct before launching a campaign. A scheduled campaign can be aborted, but one sent immediately cannot.</p>
         <FormWrapper<CampaignLaunchParams>
             submitLabel="Launch"

@@ -96,6 +96,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
         const newCampaign = { ...campaign }
         newCampaign.templates = campaign.templates.map(obj => obj.id === id ? value : obj)
         setCampaign(newCampaign)
+        console.log('new campaign', newCampaign)
         setIsEditOpen(false)
     }
 

@@ -60,7 +60,7 @@ export default function CampaignPreview() {
     const [{ currentLocale }] = useContext(LocaleContext)
     const openState = useState(false)
     const [isUserLookupOpen, setIsUserLookupOpen] = useState(false)
-    const template = campaignState[0].templates.find(template => template.locale === currentLocale)
+    const template = campaignState[0].templates.find(template => template.locale === currentLocale?.key)
 
     if (!template) {
         return (<>

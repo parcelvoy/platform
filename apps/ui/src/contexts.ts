@@ -1,4 +1,4 @@
-import { createContext, Dispatch, SetStateAction, Key } from 'react'
+import { createContext, Dispatch, SetStateAction } from 'react'
 import { Admin, Campaign, Journey, List, Project, Template, User, UseStateContext } from './types'
 import { FieldOption } from './ui/form/Field'
 
@@ -15,7 +15,7 @@ export const JourneyContext = createContext<UseStateContext<Journey>>([
 ])
 
 export interface LocaleSelection {
-    currentLocale?: Key
+    currentLocale?: FieldOption
     allLocales: FieldOption[]
 }
 export const LocaleContext = createContext<UseStateContext<LocaleSelection>>([

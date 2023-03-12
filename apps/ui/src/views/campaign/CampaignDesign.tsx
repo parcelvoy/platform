@@ -19,7 +19,7 @@ export default function CampaignDesign() {
                     campaignState={campaignState}
                     openState={openState} />
             } />
-            {templates.filter(template => template.locale === currentLocale)
+            {templates.filter(template => template.locale === currentLocale?.key)
                 .map(template => (
                     <TemplateDetail template={template} key={template.id} />
                 ))}

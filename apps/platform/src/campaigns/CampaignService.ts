@@ -11,7 +11,7 @@ import App from '../app'
 import PushJob from '../channels/push/PushJob'
 import { SearchParams } from '../core/searchParams'
 import { getList, listUserCount } from '../lists/ListService'
-import { allTemplates, duplicateTemplate } from '../render/TemplateService'
+import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { getProvider } from '../channels/ProviderRepository'
@@ -96,6 +96,10 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         data.state = 'scheduled'
     } else {
         data.state = data.state === 'running' ? 'aborted' : 'draft'
+    }
+
+    if (data.state === 'scheduled') {
+        await validateTemplates(projectId, id)
     }
 
     await Campaign.update(qb => qb.where('id', id), {
