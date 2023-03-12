@@ -107,7 +107,9 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
     createEvent({
         project_id: user.project_id,
         user_id: user.id,
-        name: previous ? 'unsubscribed' : 'subscribed',
+        name: state === SubscriptionState.unsubscribed
+            ? 'unsubscribed'
+            : 'subscribed',
         data: {
             project_id: user.project_id,
             subscription_id: subscription.id,
@@ -118,7 +120,7 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
 }
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
-    toggleSubscription(userId, subscriptionId)
+    toggleSubscription(userId, subscriptionId, SubscriptionState.unsubscribed)
 }
 
 export const subscribe = async (userId: number, subscriptionId: number): Promise<void> => {
