@@ -37,6 +37,7 @@ import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
+import Mason from '../wall/Mason'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -93,6 +94,10 @@ export const router = createBrowserRouter([
                     }
                     return redirect('projects/new')
                 },
+            },
+            {
+                path: 'wall',
+                element: <Mason />,
             },
             {
                 path: 'projects/new',

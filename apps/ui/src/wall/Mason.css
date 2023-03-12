@@ -1,0 +1,130 @@
+.mason {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+}
+
+.mason .mason-builder {
+    border: 3px solid #000;
+}
+
+.brick {
+    position: relative;
+}
+
+.brick-inner {
+    z-index: 5;
+}
+
+.brick.isHovering {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, .5);
+}
+
+.brick.isSelected {
+    box-shadow: 0 0 0 3px var(--color-green);
+}
+
+.brick-menu {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    position: absolute;
+    display: flex;
+    font-size: 13px;
+    display: none;
+}
+
+.brick-menu.right {
+    top: -3px;
+    left: 100%;
+    flex-direction: column;
+}
+
+.brick-menu.top {
+    bottom: 100%;
+    left: 50%;
+    margin-left: -90px;
+}
+
+.brick-menu button {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border: 0;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.brick-menu button:hover,
+.brick-menu button.selected {
+    background: var(--color-primary-soft);
+}
+
+.brick-menu button svg {
+    width: 16px;
+}
+
+.brick.isSelected > .brick-menu {
+    display: block;
+}
+
+.brick .brick-handle {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+    cursor: grab;
+}
+
+.brick .brick-inner {
+    position: relative;
+    z-index: 5;
+}
+
+.brick.section {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    margin: 0 auto;
+}
+
+.brick.section > .brick-inner {
+    width: 100%;
+}
+
+.brick.section > .brick-inner > .brick-children {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.brick.button .brick-inner,
+.brick.text .brick-inner {
+    display: inline-block;
+}
+
+.brick.image .dropzone,
+.brick.button .dropzone,
+.brick.paragraph .dropzone,
+.brick.heading .dropzone,
+.brick.division .dropzone {
+    display: none;
+}
+
+.dropzone {
+    min-height: 50px;
+}
+
+.brick.text .pell-editor,
+.brick.button .pell-editor {
+    border: none;
+}
+
+.brick.text .pell-editor .pell-content,
+.brick.button .pell-editor .pell-content {
+    height: auto;
+}
+
+.brick.isSelected  > .brick-inner > .pell-editor .brick-menu {
+    display: flex;
+}

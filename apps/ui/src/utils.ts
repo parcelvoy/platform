@@ -31,6 +31,10 @@ export function camelToTitle(camel: string) {
         .trim()
 }
 
+export function kebabToCamel(kebab: string) {
+    return kebab.replace(/-./g, x => x[1].toUpperCase())
+}
+
 export function combine(...parts: Array<string | number>) {
     return parts.filter(item => item != null).join(' ')
 }
