@@ -32,17 +32,24 @@ export default function FormWrapper<T extends FieldValues>({
         })
     })
 
-    const handleErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>) => {
+    const handleErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>): string | undefined => {
         const keys = Object.keys(errors)
-        if (keys.length) {
-            const key = keys[0]
-            const error = errors[key]
-            if (error?.type === 'required') {
-                return `The ${key} field is required`
-            } else {
-                return `Unable to submit the form: ${JSON.stringify(error)}`
+        if (keys.length === 0) return undefined
+
+        const key = keys[0]
+        const error = errors[key]
+        if (error) {
+
+            // If nested, keep searching
+            if (!error.type) {
+                return handleErrors(error)
+            } else if (error.type === 'required') {
+                return `The \`${key}\` field is required`
+            } else if (error.message && typeof error.message === 'string') {
+                return error.message
             }
         }
+        return 'Unable to submit the form an unknown error has occurred'
     }
 
     const { errors } = form.formState

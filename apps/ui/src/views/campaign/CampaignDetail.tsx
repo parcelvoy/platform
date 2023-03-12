@@ -24,7 +24,7 @@ export const locales = (templates: Template[]) => templates?.map(item => {
 const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)
     return {
-        currentLocale: allLocales[0]?.key,
+        currentLocale: allLocales[0],
         allLocales: locales(templates ?? []),
     }
 }
@@ -48,7 +48,7 @@ export default function CampaignDetail() {
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     useEffect(() => {
         setLocale(localeState(templates ?? []))
-    }, [campaign])
+    }, [campaign.id])
     const [isLaunchOpen, setIsLaunchOpen] = useState(false)
 
     const tabs = [

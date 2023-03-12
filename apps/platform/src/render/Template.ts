@@ -2,6 +2,7 @@ import Render, { Variables } from '.'
 import { Webhook } from '../channels/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
+import { isValid, IsValidSchema } from '../core/validate'
 
 export default class Template extends Model {
     project_id!: number
@@ -25,9 +26,21 @@ export default class Template extends Model {
         }
         return WebhookTemplate.fromJson(json)
     }
+
+    validate(): IsValidSchema {
+        return [true, undefined]
+    }
+
+    requiredErrors(...fields: string[]) {
+        const errors: Record<string, string> = {}
+        for (const field of fields) {
+            errors[field] = `The \`${field}\` field on the \`${this.locale}\` template is missing and is required.`
+        }
+        return errors
+    }
 }
 
-export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl'>
+export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl' | 'validate' | 'requiredErrors'>
 export type TemplateUpdateParams = Pick<Template, 'type' | 'data'>
 export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 
@@ -75,6 +88,23 @@ export class EmailTemplate extends Template {
         if (this.bcc) email.bcc = Render(this.bcc, variables)
         return email
     }
+
+    validate() {
+        return isValid({
+            type: 'object',
+            required: ['from', 'subject', 'text', 'html'],
+            properties: {
+                from: { type: 'string' },
+                subject: { type: 'string' },
+                text: { type: 'string' },
+                html: { type: 'string' },
+            },
+            additionalProperties: true,
+            errorMessage: {
+                required: this.requiredErrors('from', 'subject', 'text', 'html'),
+            },
+        }, this.data)
+    }
 }
 
 export interface CompiledText {
@@ -93,6 +123,19 @@ export class TextTemplate extends Template {
 
     compile(variables: Variables): CompiledText {
         return { text: Render(this.text, variables) }
+    }
+
+    validate() {
+        return isValid({
+            type: 'object',
+            required: ['text'],
+            properties: {
+                text: { type: 'string' },
+            },
+            errorMessage: {
+                required: this.requiredErrors('text'),
+            },
+        }, this.data)
     }
 }
 
@@ -131,6 +174,22 @@ export class PushTemplate extends Template {
             body: Render(this.body, variables),
             custom,
         }
+    }
+
+    validate() {
+        return isValid({
+            type: 'object',
+            required: ['title', 'topic', 'body'],
+            properties: {
+                title: { type: 'string' },
+                topic: { type: 'string' },
+                body: { type: 'string' },
+            },
+            additionalProperties: true,
+            errorMessage: {
+                required: this.requiredErrors('title', 'topic', 'body'),
+            },
+        }, this.data)
     }
 }
 

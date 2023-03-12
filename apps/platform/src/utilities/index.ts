@@ -114,3 +114,7 @@ export function extractQueryParams<T extends Record<string, any>>(search: URLSea
 export function firstQueryParam(value: string | string[] | undefined) {
     return Array.isArray(value) ? value[0] : value
 }
+
+export function capitalizeFirstLetter(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+}

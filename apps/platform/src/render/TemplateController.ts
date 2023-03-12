@@ -22,9 +22,11 @@ router.get('/', async ctx => {
 
 const templateDataEmailParams = {
     type: 'object',
-    required: ['from', 'subject', 'text', 'html'],
     properties: {
-        from: { type: 'string' },
+        from: {
+            type: 'string',
+            nullable: true,
+        },
         cc: {
             type: 'string',
             nullable: true,
@@ -37,18 +39,29 @@ const templateDataEmailParams = {
             type: 'string',
             nullable: true,
         },
-        subject: { type: 'string' },
-        text: { type: 'string' },
-        html: { type: 'string' },
+        subject: {
+            type: 'string',
+            nullable: true,
+        },
+        text: {
+            type: 'string',
+            nullable: true,
+        },
+        html: {
+            type: 'string',
+            nullable: true,
+        },
     },
     nullable: true,
 }
 
 const templateDataTextParams = {
     type: 'object',
-    required: ['text'],
     properties: {
-        text: { type: 'string' },
+        text: {
+            type: 'string',
+            nullable: true,
+        },
     },
     nullable: true,
 }

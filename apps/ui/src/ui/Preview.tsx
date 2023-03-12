@@ -15,7 +15,7 @@ export default function Preview({ template }: PreviewProps) {
             <span className="email-from">{data.from}</span>
             <span className="email-subject">{data.subject}</span>
         </div>
-        <Iframe content={data.html} />
+        <Iframe content={data.html ?? ''} />
     </div>
 
     const TextFrame = () => <div className="text-frame phone-frame">
