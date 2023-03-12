@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import { useResolver } from '../../hooks'
@@ -35,6 +35,20 @@ export function Projects() {
         }, [])
     }, [projects])
     const [open, setOpen] = useState(false)
+
+    useEffect(() => {
+        if (projects && !projects.length) {
+            navigate('onboarding')
+        }
+    }, [projects, navigate])
+
+    if (!projects) {
+        return (
+            <div>
+                loading...
+            </div>
+        )
+    }
 
     return (
         <PageContent

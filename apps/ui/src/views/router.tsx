@@ -2,7 +2,6 @@ import { createBrowserRouter, Outlet, redirect, useNavigate, useParams } from 'r
 import api from '../api'
 
 import ErrorPage from './ErrorPage'
-import ProjectForm from './project/ProjectForm'
 import Sidebar from '../ui/Sidebar'
 import { LoaderContextProvider, StatefulLoaderContextProvider } from './LoaderContextProvider'
 import { AdminContext, CampaignContext, JourneyContext, ListContext, ProjectContext, UserContext } from '../contexts'
@@ -59,20 +58,6 @@ export const router = createBrowserRouter([
         element: <Login />,
     },
     {
-        path: '/onboarding',
-        element: <Onboarding />,
-        children: [
-            {
-                index: true,
-                element: <OnboardingStart />,
-            },
-            {
-                path: 'project',
-                element: <OnboardingProject />,
-            },
-        ],
-    },
-    {
         path: '*',
         errorElement: <ErrorPage />,
         loader: async () => await api.profile.get(),
@@ -89,12 +74,18 @@ export const router = createBrowserRouter([
                 ),
             },
             {
-                path: 'projects/new',
-                element: (
-                    <PageContent title="Create Project">
-                        <ProjectForm />
-                    </PageContent>
-                ),
+                path: 'onboarding',
+                element: <Onboarding />,
+                children: [
+                    {
+                        index: true,
+                        element: <OnboardingStart />,
+                    },
+                    {
+                        path: 'project',
+                        element: <OnboardingProject />,
+                    },
+                ],
             },
             {
                 path: 'projects/:projectId',
