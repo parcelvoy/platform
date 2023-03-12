@@ -24,7 +24,6 @@ const connect = (config: DatabaseConfig, withDB = true) => {
         client: config.client,
         connection: {
             ...connection,
-            socketPath: '/tmp/mysql.sock',
             typeCast(field: any, next: any) {
                 if (field.type === 'TINY' && field.length === 1) {
                     return field.string() === '1'

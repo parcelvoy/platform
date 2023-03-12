@@ -2,7 +2,6 @@
   "name": "platform",
   "version": "0.1.0",
   "dependencies": {
-    "@apideck/better-ajv-errors": "^0.3.6",
     "@aws-sdk/client-s3": "^3.171.0",
     "@aws-sdk/client-ses": "^3.121.0",
     "@aws-sdk/client-sns": "^3.121.0",
@@ -14,6 +13,7 @@
     "@node-saml/node-saml": "github:node-saml/node-saml",
     "@rxfork/sqs-consumer": "^6.0.0",
     "ajv": "^8.11.0",
+    "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",
     "busboy": "^1.6.0",
     "csv-parse": "^5.3.3",

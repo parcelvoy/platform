@@ -40,3 +40,11 @@ export const duplicateTemplate = async (template: Template, campaignId: number) 
     params.campaign_id = campaignId
     return await Template.insert(params)
 }
+
+export const validateTemplates = async (projectId: number, campaignId: number) => {
+    const templates = await allTemplates(projectId, campaignId)
+    for (const template of templates) {
+        const [isValid, error] = template.map().validate()
+        if (!isValid) throw error
+    }
+}

@@ -22,7 +22,7 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
     const handleCampaignCreate = (campaign: Campaign) => {
         setCampaign(campaign)
         if (campaign.templates.length === 1 && campaign.channel === 'email') {
-            navigate('editor')
+            navigate('../editor')
         }
     }
 

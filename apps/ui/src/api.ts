@@ -31,8 +31,16 @@ client.interceptors.response.use(
         if (error.response.status === 401) {
             api.login()
         }
+        throw error
     },
 )
+
+export interface NetworkError {
+    response: {
+        data: any
+        status: number
+    }
+}
 
 type OmitFields = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
 
