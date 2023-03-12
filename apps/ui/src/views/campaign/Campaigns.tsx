@@ -5,11 +5,12 @@ import { CampaignState } from '../../types'
 import Button from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
+import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import Tag, { TagVariant } from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
-import CampaignEditModal from './CampaignEditModal'
+import { CampaignForm } from './CampaignForm'
 import ChannelTag from './ChannelTag'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
@@ -96,11 +97,19 @@ export default function Campaigns() {
                     tagEntity="campaigns"
                 />
             </PageContent>
-
-            <CampaignEditModal
+            <Modal
                 open={isCreateOpen}
                 onClose={setIsCreateOpen}
-                onSave={(item) => navigate(`${item.id}`)} />
+                title="Create Campaign"
+                size="large"
+            >
+                <CampaignForm
+                    onSave={campaign => {
+                        setIsCreateOpen(false)
+                        navigate(campaign.id.toString())
+                    }}
+                />
+            </Modal>
         </>
     )
 }

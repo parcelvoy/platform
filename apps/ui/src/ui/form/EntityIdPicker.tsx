@@ -1,13 +1,14 @@
 import { Combobox, Transition } from '@headlessui/react'
-import { useCallback, useState, Fragment, RefCallback } from 'react'
+import { useCallback, useState, Fragment, RefCallback, ReactNode } from 'react'
 import { useResolver } from '../../hooks'
 import { ControlledInputProps, SearchResult } from '../../types'
 import clsx from 'clsx'
-import { CheckIcon, ChevronUpDownIcon } from '../icons'
+import { CheckIcon, ChevronUpDownIcon, CloseIcon, EditIcon, PlusIcon } from '../icons'
 import { usePopperSelectDropdown } from '../utils'
 import { FieldProps } from './Field'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
 import Button from '../Button'
+import Modal from '../Modal'
 
 interface EntityIdPickerProps<T extends { id: number }> extends ControlledInputProps<number> {
     get: (value: number) => Promise<T>
@@ -17,6 +18,8 @@ interface EntityIdPickerProps<T extends { id: number }> extends ControlledInputP
     size?: 'small' | 'regular'
     onBlur?: (event: any) => void
     inputRef?: RefCallback<HTMLInputElement>
+    renderCreateForm?: (onCreated: (created: T) => void) => ReactNode
+    onEditLink?: (item: T) => void
 }
 
 const defaultDisplayValue = (item: any) => item.name
@@ -29,7 +32,9 @@ export function EntityIdPicker<T extends { id: number }>({
     label,
     onChange,
     onBlur,
+    onEditLink,
     optionEnabled = defaultOptionEnabled,
+    renderCreateForm,
     search,
     size,
     subtitle,
@@ -46,6 +51,7 @@ export function EntityIdPicker<T extends { id: number }>({
         attributes,
         styles,
     } = usePopperSelectDropdown()
+    const [open, setOpen] = useState(false)
 
     return (
         <Combobox
@@ -63,7 +69,7 @@ export function EntityIdPicker<T extends { id: number }>({
                 {subtitle && <span className="label-subtitle">{subtitle}</span>}
             </Combobox.Label>
             <div className="ui-button-group">
-                <span className={clsx('ui-text-field', size ?? 'regular')}>
+                <span className={clsx('ui-text-field', size ?? 'regular')} style={{ flexGrow: 1 }}>
                     <Combobox.Input
                         displayValue={(value: T) => value && displayValue(value)}
                         disabled={Boolean(value && !entity)}
@@ -78,7 +84,7 @@ export function EntityIdPicker<T extends { id: number }>({
                 {
                     !!(value && !required) && (
                         <Button
-                            icon="x"
+                            icon={<CloseIcon />}
                             variant="secondary"
                             size={size}
                             onClick={() => onChange(0)} // set to '0' to clear? or null?
@@ -88,6 +94,39 @@ export function EntityIdPicker<T extends { id: number }>({
                 <Combobox.Button className={clsx('ui-button', 'secondary', size ?? 'regular')}>
                     <ChevronUpDownIcon />
                 </Combobox.Button>
+                {
+                    !!(onEditLink && entity) && (
+                        <Button
+                            icon={<EditIcon />}
+                            variant="secondary"
+                            size={size}
+                            disabled={!entity}
+                            onClick={() => onEditLink(entity)}
+                        />
+                    )
+                }
+                {
+                    renderCreateForm && (
+                        <>
+                            <Button
+                                variant="secondary"
+                                size={size}
+                                onClick={() => setOpen(true)}
+                                icon={<PlusIcon />}
+                            />
+                            <Modal
+                                open={open}
+                                onClose={setOpen}
+                                title="Create"
+                            >
+                                {renderCreateForm(created => {
+                                    setOpen(false)
+                                    onChange(created.id)
+                                })}
+                            </Modal>
+                        </>
+                    )
+                }
             </div>
             <Transition
                 as={Fragment}

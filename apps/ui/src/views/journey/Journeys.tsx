@@ -1,15 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../api'
-import { Journey } from '../../types'
 import Button from '../../ui/Button'
-import TextField from '../../ui/form/TextField'
-import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import { PlusIcon } from '../../ui/icons'
-import { TagPicker } from '../settings/TagPicker'
+import { JourneyForm } from './JourneyForm'
 
 export default function Journeys() {
     const { projectId = '' } = useParams()
@@ -48,34 +45,12 @@ export default function Journeys() {
                 open={!!open}
                 title="Create Journey"
             >
-                <FormWrapper<Journey>
-                    onSubmit={async journey => {
-                        journey = await api.journeys.create(projectId, journey)
+                <JourneyForm
+                    onSaved={journey => {
                         setOpen(null)
                         navigate(journey.id.toString())
                     }}
-                >
-                    {
-                        form => (
-                            <>
-                                <TextField
-                                    form={form}
-                                    name="name"
-                                    required
-                                />
-                                <TextField
-                                    form={form}
-                                    name="description"
-                                    textarea
-                                />
-                                <TagPicker.Field
-                                    form={form}
-                                    name="tags"
-                                />
-                            </>
-                        )
-                    }
-                </FormWrapper>
+                />
             </Modal>
         </PageContent>
     )

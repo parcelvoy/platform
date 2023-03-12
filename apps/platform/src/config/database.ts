@@ -24,6 +24,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
         client: config.client,
         connection: {
             ...connection,
+            socketPath: '/tmp/mysql.sock',
             typeCast(field: any, next: any) {
                 if (field.type === 'TINY' && field.length === 1) {
                     return field.string() === '1'
@@ -51,6 +52,8 @@ export default async (config: DatabaseConfig) => {
         await migrate(db)
         return db
     } catch (error) {
+
+        console.error(error)
 
         // On error, try to create the database and try again
         const db = connect(config, false)

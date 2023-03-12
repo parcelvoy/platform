@@ -120,7 +120,7 @@ router.get('/:journeyId/steps', async ctx => {
 
 router.put('/:journeyId/steps', async ctx => {
     const { steps, children } = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
-    ctx.body = toJourneyStepMap(steps, children)
+    ctx.body = await toJourneyStepMap(steps, children)
 })
 
 router.get('/:journeyId/step-stats', async ctx => {

@@ -1,13 +1,13 @@
 import { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CampaignContext } from '../../contexts'
-import { Campaign } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import { InfoTable } from '../../ui/InfoTable'
+import Modal from '../../ui/Modal'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
-import CampaignEditModal from './CampaignEditModal'
+import { CampaignForm } from './CampaignForm'
 import { CampaignTag } from './Campaigns'
 import ChannelTag from './ChannelTag'
 
@@ -16,11 +16,6 @@ export default function CampaignOverview() {
     const [preferences] = useContext(PreferencesContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [isEditOpen, setIsEditOpen] = useState(false)
-
-    function handleSave(campaign: Campaign) {
-        setCampaign(campaign)
-        setIsEditOpen(false)
-    }
 
     return (
         <>
@@ -53,12 +48,20 @@ export default function CampaignOverview() {
                 list: <Link to={`/projects/${campaign.project_id}/lists/${campaign.list_id}`}>{campaign.list?.name}</Link>,
                 delivery: `${campaign.delivery?.sent ?? 0} / ${campaign.delivery?.total ?? 0}`,
             }} />
-
-            <CampaignEditModal
-                campaign={campaign}
+            <Modal
                 open={isEditOpen}
                 onClose={setIsEditOpen}
-                onSave={(campaign) => handleSave(campaign)} />
+                title="Edit Campaign"
+                size="large"
+            >
+                <CampaignForm
+                    campaign={campaign}
+                    onSave={campaign => {
+                        setCampaign(campaign)
+                        setIsEditOpen(false)
+                    }}
+                />
+            </Modal>
         </>
     )
 }

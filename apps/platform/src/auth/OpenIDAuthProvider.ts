@@ -63,11 +63,11 @@ export default class OpenIDAuthProvider extends AuthProvider {
 
     async validate(ctx: Context): Promise<void> {
         const client = await this.getClient()
-        const nonce = ctx.cookies.get('nonce')
-        const state = ctx.cookies.get('relaystate')
 
         // Unsafe cast, but Koa and library don't play nicely
         const params = client.callbackParams(ctx.request as any)
+        const nonce = ctx.cookies.get('nonce')
+        const state = params.state ?? ctx.cookies.get('relaystate')
 
         try {
             const tokenSet = await client.callback(this.config.redirectUri, params, { nonce, state })

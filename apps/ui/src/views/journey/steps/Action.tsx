@@ -22,17 +22,21 @@ export const actionStep: JourneyStepType<ActionConfig> = {
         value,
     }) {
         return (
-            <>
-                <EntityIdPicker
-                    label="Campaign"
-                    subtitle="Send this campaign when users reach this step."
-                    get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
-                    search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
-                    value={value.campaign_id}
-                    onChange={campaign_id => onChange({ ...value, campaign_id })}
-                    required
-                />
-            </>
+            <EntityIdPicker
+                label="Campaign"
+                subtitle="Send this campaign when users reach this step."
+                get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
+                search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
+                value={value.campaign_id}
+                onChange={campaign_id => onChange({ ...value, campaign_id })}
+                required
+                renderCreateForm={() => (
+                    <>
+                        create
+                    </>
+                )}
+                onEditLink={campaign => window.open(`/projects/${projectId}/campaigns/${campaign.id}`)}
+            />
         )
     },
 }

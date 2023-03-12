@@ -6,7 +6,6 @@ import { useController, UseFormReturn, useWatch } from 'react-hook-form'
 import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
-import Modal from '../../ui/Modal'
 import ListTable from '../users/ListTable'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
@@ -16,9 +15,8 @@ import { TagPicker } from '../settings/TagPicker'
 
 interface CampaignEditParams {
     campaign?: Campaign
-    open: boolean
-    onClose: (open: boolean) => void
     onSave: (campaign: Campaign) => void
+    disableListSelection?: boolean
 }
 
 interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
@@ -116,7 +114,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
     )
 }
 
-export default function CampaignEditModal({ campaign, open, onClose, onSave }: CampaignEditParams) {
+export function CampaignForm({ campaign, disableListSelection, onSave }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
@@ -143,76 +141,74 @@ export default function CampaignEditModal({ campaign, open, onClose, onSave }: C
             ? await api.campaigns.update(project.id, campaign.id, { name, list_id, subscription_id, tags })
             : await api.campaigns.create(project.id, { name, list_id, channel, provider_id, subscription_id, tags })
         onSave(value)
-        onClose(false)
     }
 
     return (
-        <Modal
-            title={campaign ? 'Edit Campaign' : 'Create Campaign'}
-            open={open}
-            onClose={() => onClose(false)}
-            size="large"
+        <FormWrapper<CampaignCreateParams>
+            onSubmit={async (item) => await handleSave(item)}
+            defaultValues={campaign}
+            submitLabel="Save"
         >
-            <FormWrapper<CampaignCreateParams>
-                onSubmit={async (item) => await handleSave(item)}
-                defaultValues={campaign}
-                submitLabel="Save"
-            >
-                {form => (
-                    <>
-                        <TextField form={form}
-                            name="name"
-                            label="Campaign Name"
-                            required
-                        />
-                        <Heading size="h3" title="List">
-                            Who is this campaign going to? Pick a list to send your campaign to.
-                        </Heading>
-                        <ListSelection
-                            project={project}
-                            name="list_id"
-                            control={form.control}
-                        />
-                        {
-                            campaign
-                                ? (
-                                    <>
-                                        <Heading size="h3" title="Channel">
-                                            This campaign is being sent over the <strong>{campaign.channel}</strong> channel. Set the subscription group this message will be associated to.
-                                        </Heading>
-                                        <SubscriptionSelection
-                                            subscriptions={subscriptions}
-                                            form={form}
-                                        />
-                                    </>
-                                )
-                                : (
-                                    <>
-                                        <Heading size="h3" title="Channel">
-                                            Setup the channel this campaign will go out on. The medium is the type of message, provider the sender that will process the message and subscription group the unsubscribe group associated to the campaign.
-                                        </Heading>
-                                        <ChannelSelection
-                                            subscriptions={subscriptions}
-                                            form={form}
-                                        />
-                                        <ProviderSelection
-                                            providers={providers}
-                                            form={form}
-                                        />
-                                        <SubscriptionSelection
-                                            subscriptions={subscriptions}
-                                            form={form}
-                                        />
-                                    </>
-                                )
-                        }
-                        <TagPicker.Field
-                            form={form}
-                            name="tags"
-                        />
-                    </>
-                )}
-            </FormWrapper>
-        </Modal>
+            {form => (
+                <>
+                    <TextField form={form}
+                        name="name"
+                        label="Campaign Name"
+                        required
+                    />
+                    {
+                        !disableListSelection && (
+                            <>
+                                <Heading size="h3" title="List">
+                                    Who is this campaign going to? Pick a list to send your campaign to.
+                                </Heading>
+                                <ListSelection
+                                    project={project}
+                                    name="list_id"
+                                    control={form.control}
+                                />
+                            </>
+                        )
+                    }
+                    {
+                        campaign
+                            ? (
+                                <>
+                                    <Heading size="h3" title="Channel">
+                                        This campaign is being sent over the <strong>{campaign.channel}</strong> channel. Set the subscription group this message will be associated to.
+                                    </Heading>
+                                    <SubscriptionSelection
+                                        subscriptions={subscriptions}
+                                        form={form}
+                                    />
+                                </>
+                            )
+                            : (
+                                <>
+                                    <Heading size="h3" title="Channel">
+                                        Setup the channel this campaign will go out on. The medium is the type of message, provider the sender that will process the message and subscription group the unsubscribe group associated to the campaign.
+                                    </Heading>
+                                    <ChannelSelection
+                                        subscriptions={subscriptions}
+                                        form={form}
+                                    />
+                                    <ProviderSelection
+                                        providers={providers}
+                                        form={form}
+                                    />
+                                    <SubscriptionSelection
+                                        subscriptions={subscriptions}
+                                        form={form}
+                                    />
+                                </>
+                            )
+                    }
+                    <TagPicker.Field
+                        form={form}
+                        name="tags"
+                    />
+                </>
+            )}
+        </FormWrapper>
     )
 }
