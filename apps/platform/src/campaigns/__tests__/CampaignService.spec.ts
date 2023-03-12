@@ -9,6 +9,7 @@ import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
 import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
 import { createProvider } from '../../channels/ProviderRepository'
+import { Admin } from '../../auth/Admin'
 
 afterEach(() => {
     jest.clearAllMocks()
@@ -23,7 +24,8 @@ describe('CampaignService', () => {
     }
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
-        const project = await createProject({ name: uuid() })
+        const adminId = await Admin.insert({})
+        const project = await createProject(adminId, { name: uuid() })
         const subscription = await createSubscription(project.id, {
             name: uuid(),
             channel: 'email',
