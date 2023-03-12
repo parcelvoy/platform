@@ -1,26 +1,34 @@
 import Project from '../../projects/Project'
 import { User } from '../../users/User'
+import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { lastJourneyStep, setJourneyStepMap } from '../JourneyRepository'
 import JourneyService from '../JourneyService'
+import { JourneyEntrance, JourneyUpdate } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {
-        test('user should be taken to action 2 or 3', async () => {
 
+        const baseStep = {
+            x: 0,
+            y: 0,
+            data: {},
+        }
+
+        const setup = async () => {
             const project = await Project.insertAndFetch({
                 name: `Test Project ${Date.now()}`,
             })
-
             const journey = await Journey.insertAndFetch({
                 project_id: project.id,
                 name: `Test Journey ${Date.now()}`,
             })
+            return { project, journey }
+        }
 
-            const baseStep = {
-                x: 0,
-                y: 0,
-            }
+        test('user should be taken to action 2 or 3', async () => {
+
+            const { project, journey } = await setup()
 
             // entrance -> gate -> (action1 | experiment -> (action2 | action3))
             const { steps } = await setJourneyStepMap(journey.id, {
@@ -113,6 +121,70 @@ describe('Run', () => {
                 .map(s => s.id)
             const lastStep = await lastJourneyStep(user.id, journey.id)
             expect(actionIds).toContain(lastStep?.step_id)
+        })
+
+        test('user update step adds data to profile', async () => {
+
+            const { project, journey } = await setup()
+
+            const { steps } = await setJourneyStepMap(journey.id, {
+                entrance: {
+                    ...baseStep,
+                    type: JourneyEntrance.type,
+                    children: [
+                        {
+                            external_id: 'update',
+                        },
+                    ],
+                },
+                update: {
+                    ...baseStep,
+                    type: JourneyUpdate.type,
+                    data: {
+                        template: `
+                            {
+                                "field2": 2,
+                                "fromUser": {
+                                    "prevField2": "{{user.field2}}"
+                                },
+                                "fromEvent": "{{event.name}}"
+                            }
+                        `,
+                    },
+                },
+            })
+
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: '2',
+                email: 'test3@twochris.com',
+                data: {
+                    field1: 1,
+                    field2: 'two',
+                },
+            })
+
+            const event = await UserEvent.insertAndFetch({
+                project_id: project.id,
+                user_id: user.id,
+                name: 'signin',
+                data: {
+                    project: 'Parcelvoy',
+                },
+            })
+
+            const service = new JourneyService(journey.id)
+
+            await service.run(user, event)
+
+            const updateStep = steps.find(s => s.external_id === 'update')!
+            const lastStep = await lastJourneyStep(user.id, journey.id)
+            expect(updateStep).toBeDefined()
+            expect(lastStep?.step_id).toBe(updateStep.id)
+            expect(user.data.field1).toBe(1)
+            expect(user.data.field2).toBe(2)
+            expect(user.data.fromUser.prevField2).toBe('two')
+            expect(user.data.fromEvent).toEqual('signin')
         })
     })
 })
