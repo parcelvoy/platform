@@ -1,0 +1,17 @@
+.ui-text-field-icon-wrapper {
+    position: relative;
+}
+
+.ui-text-field-icon-wrapper input,
+.ui-text-field-icon-wrapper textarea {
+    padding-left: 36px;
+}
+
+.ui-text-field-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    height: 16px;
+    width: 16px;
+    transform: translate(0, -50%);
+}
