@@ -1,6 +1,6 @@
 # Twilio
 ## Setup
-Start by creating a new account at [http://twilio.com](https://twilio.com).
+Start by creating a new account at [https://twilio.com](https://twilio.com).
 
 After you've created an account, hit the `Account` button in the top right hand corner of the Twilio dashboard and navigate to the `General Settings -> Keys & Credentials -> API keys & tokens`. Under `Auth Tokens` there should be two sets of values, live credentials and test credentials. For Parcelvoy, you need live credentials.
 
@@ -13,9 +13,9 @@ To purchase a new phone number, go to `Develop -> Phone Numbers -> Buy a Number`
 After you've purchased the number, enter it in the configuration on your Parcelvoy provider and hit save to create.
 
 ## Inbound
-By default Twilio automatically manages opt-outs (unsubscribes), you just have to listen for the inbound webhook to then register that event in Parcelvoy.
+By default Twilio automatically manages [opt-outs (unsubscribes)](https://support.twilio.com/hc/en-us/articles/360034798533-Getting-Started-with-Advanced-Opt-Out-for-Messaging-Services), you just have to listen for the inbound webhook to then register that event in Parcelvoy.
 
-To setup inbound SMS for Twilio, go to: `Develop -> Phone Numbers -> Manage -> Active Numbers` and pick the phone number you are using internally. From there scroll down to the `Messaging` section. On the enter  `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then the URL to the following:
+To setup inbound SMS for Twilio, go to `Develop -> Phone Numbers -> Manage -> Active Numbers` and pick the phone number you are using internally. From there scroll down to the `Messaging` section. On the enter  `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then the URL to the following:
 
 ```
 https://yourdomain.com/api/unsubscribe/sms
