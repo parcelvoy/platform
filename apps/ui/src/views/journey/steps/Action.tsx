@@ -3,6 +3,7 @@ import api from '../../../api'
 import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { ActionStepIcon } from '../../../ui/icons'
+import { CampaignForm } from '../../campaign/CampaignForm'
 
 interface ActionConfig {
     campaign_id: number
@@ -30,10 +31,12 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                 value={value.campaign_id}
                 onChange={campaign_id => onChange({ ...value, campaign_id })}
                 required
-                renderCreateForm={() => (
-                    <>
-                        create
-                    </>
+                createModalSize="large"
+                renderCreateForm={onCreated => (
+                    <CampaignForm
+                        disableListSelection
+                        onSave={onCreated}
+                    />
                 )}
                 onEditLink={campaign => window.open(`/projects/${projectId}/campaigns/${campaign.id}`)}
             />

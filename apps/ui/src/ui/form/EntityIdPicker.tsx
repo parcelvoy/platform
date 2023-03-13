@@ -8,7 +8,7 @@ import { usePopperSelectDropdown } from '../utils'
 import { FieldProps } from './Field'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
 import Button from '../Button'
-import Modal from '../Modal'
+import Modal, { ModalProps } from '../Modal'
 
 interface EntityIdPickerProps<T extends { id: number }> extends ControlledInputProps<number> {
     get: (value: number) => Promise<T>
@@ -18,6 +18,7 @@ interface EntityIdPickerProps<T extends { id: number }> extends ControlledInputP
     size?: 'small' | 'regular'
     onBlur?: (event: any) => void
     inputRef?: RefCallback<HTMLInputElement>
+    createModalSize?: ModalProps['size']
     renderCreateForm?: (onCreated: (created: T) => void) => ReactNode
     onEditLink?: (item: T) => void
 }
@@ -26,6 +27,7 @@ const defaultDisplayValue = (item: any) => item.name
 const defaultOptionEnabled = () => true
 
 export function EntityIdPicker<T extends { id: number }>({
+    createModalSize,
     displayValue = defaultDisplayValue,
     get,
     inputRef,
@@ -118,6 +120,7 @@ export function EntityIdPicker<T extends { id: number }>({
                                 open={open}
                                 onClose={setOpen}
                                 title="Create"
+                                size={createModalSize}
                             >
                                 {renderCreateForm(created => {
                                     setOpen(false)
