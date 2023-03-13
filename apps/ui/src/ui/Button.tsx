@@ -46,6 +46,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
         children,
         isLoading = false,
         disabled,
+        style,
     } = props
     return (
         <button
@@ -60,6 +61,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
             )}
             ref={ref}
             disabled={disabled ?? isLoading}
+            style={style}
         >
             {icon && (<span className="button-icon">{icon}</span>)}
             {children}

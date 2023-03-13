@@ -24,15 +24,23 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
     const [preferences, setPreferences] = useContext(PreferencesContext)
     const [recents] = useResolver(useCallback(async () => {
         const recentIds = getRecentProjects().filter(p => p.id !== project.id).map(p => p.id)
+        const recents: Array<typeof project> = []
+        if (recentIds.length) {
+            const projects = await api.projects.search({
+                page: 0,
+                itemsPerPage: recentIds.length,
+                id: recentIds,
+            }).then(r => r.results ?? [])
+            for (const id of recentIds) {
+                const recent = projects.find(p => p.id === id)
+                if (recent) {
+                    recents.push(recent)
+                }
+            }
+        }
         return [
             project,
-            ...recentIds.length
-                ? await api.projects.search({
-                    page: 0,
-                    itemsPerPage: recentIds.length,
-                    id: recentIds,
-                }).then(r => r.results ?? [])
-                : [],
+            ...recents,
             {
                 id: 0,
                 name: 'View All',

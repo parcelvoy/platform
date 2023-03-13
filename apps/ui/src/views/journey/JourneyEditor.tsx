@@ -40,6 +40,7 @@ import Button from '../../ui/Button'
 import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast'
+import { JourneyForm } from './JourneyForm'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -315,16 +316,18 @@ export default function JourneyEditor() {
     const wrapper = useRef<HTMLDivElement>(null)
 
     const [project] = useContext(ProjectContext)
-    const [journey] = useContext(JourneyContext)
+    const [journey, setJourney] = useContext(JourneyContext)
 
     const [nodes, setNodes, onNodesChange] = useNodesState([])
     const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
+    const journeyId = journey.id
+
     const loadSteps = useCallback(async () => {
 
         const [steps, stats] = await Promise.all([
-            api.journeys.steps.get(project.id, journey.id),
-            api.journeys.steps.stats(project.id, journey.id),
+            api.journeys.steps.get(project.id, journeyId),
+            api.journeys.steps.stats(project.id, journeyId),
         ])
 
         const { edges, nodes } = stepsToNodes(steps, stats)
@@ -332,7 +335,7 @@ export default function JourneyEditor() {
         setNodes(nodes)
         setEdges(edges)
 
-    }, [project, journey])
+    }, [project, journeyId])
 
     useEffect(() => {
         void loadSteps()
@@ -408,6 +411,8 @@ export default function JourneyEditor() {
 
     }, [setNodes, flowInstance, project, journey])
 
+    const [editOpen, setEditOpen] = useState(false)
+
     return (
         <Modal
             size="fullscreen"
@@ -415,13 +420,22 @@ export default function JourneyEditor() {
             open={true}
             onClose={() => navigate('../journeys')}
             actions={
-                <Button
-                    onClick={saveSteps}
-                    isLoading={saving}
-                    variant="primary"
-                >
-                    {'Save'}
-                </Button>
+                <>
+                    <Button
+                        variant="secondary"
+                        style={{ marginRight: 5 }}
+                        onClick={() => setEditOpen(true)}
+                    >
+                        {'Edit Details'}
+                    </Button>
+                    <Button
+                        onClick={saveSteps}
+                        isLoading={saving}
+                        variant="primary"
+                    >
+                        {'Save'}
+                    </Button>
+                </>
             }
         >
             <div className="journey">
@@ -470,6 +484,19 @@ export default function JourneyEditor() {
                     </ReactFlow>
                 </div>
             </div>
+            <Modal
+                open={editOpen}
+                onClose={setEditOpen}
+                title="Edit Journey Details"
+            >
+                <JourneyForm
+                    journey={journey}
+                    onSaved={async journey => {
+                        setEditOpen(false)
+                        setJourney(journey)
+                    }}
+                />
+            </Modal>
         </Modal>
     )
 }
