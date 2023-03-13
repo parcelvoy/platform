@@ -1,2 +1,0 @@
-
-export { es } from './es'
