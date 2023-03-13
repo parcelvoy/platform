@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -140,7 +140,7 @@ const api = {
             .then(r => r.data),
     },
 
-    apiKeys: createProjectEntityPath<ProjectApiKey>('keys'),
+    apiKeys: createProjectEntityPath<ProjectApiKey, ProjectApiKeyParams, Omit<ProjectApiKeyParams, 'scope'>>('keys'),
 
     campaigns: {
         ...createProjectEntityPath<Campaign, CampaignCreateParams, CampaignUpdateParams | CampaignLaunchParams>('campaigns'),
