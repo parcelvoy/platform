@@ -1,8 +1,7 @@
 import { useCallback, useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import { ProjectApiKey, ProjectApiKeyParams } from '../../types'
+import { ProjectApiKey } from '../../types'
 import Button from '../../ui/Button'
 import OptionField from '../../ui/form/OptionField'
 import TextField from '../../ui/form/TextField'
@@ -13,11 +12,10 @@ import { PlusIcon } from '../../ui/icons'
 
 export default function ProjectApiKeys() {
 
-    const navigate = useNavigate()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.apiKeys.search(project.id, params), [project]))
 
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editing, setEditing] = useState<null | Partial<ProjectApiKey>>(null)
 
     return (
         <>
@@ -30,42 +28,68 @@ export default function ProjectApiKeys() {
                     { key: 'description' },
                 ]}
                 itemKey={({ item }) => item.id}
-                onSelectRow={(row: ProjectApiKey) => navigate(`${row.id}`)}
+                onSelectRow={setEditing}
                 title="API Keys"
                 actions={
-                    <Button icon={<PlusIcon />} size="small" onClick={() => setIsModalOpen(true)}>
+                    <Button
+                        icon={<PlusIcon />}
+                        size="small"
+                        onClick={() => setEditing({ scope: 'public' })}
+                    >
                         Create Key
                     </Button>
                 }
             />
             <Modal
                 title="Create API Key"
-                open={isModalOpen}
-                onClose={setIsModalOpen}
+                open={Boolean(editing)}
+                onClose={() => setEditing(null)}
             >
-                <FormWrapper<ProjectApiKeyParams>
+                <FormWrapper<ProjectApiKey>
                     onSubmit={
-                        async key => {
-                            await api.apiKeys.create(project.id, key as ProjectApiKey)
+                        async ({ id, name, description, scope }) => {
+                            if (id) {
+                                await api.apiKeys.update(project.id, id, { name, description })
+                            } else {
+                                await api.apiKeys.create(project.id, { name, description, scope })
+                            }
                             await state.reload()
-                            setIsModalOpen(false)
+                            setEditing(null)
                         }
                     }
                     defaultValues={{ scope: 'public' }}
                     submitLabel="Create"
                 >
-                    {form => <>
-                        <TextField form={form} name="name" label="Name" required />
-                        <TextField form={form} name="description" label="Description" />
-                        <OptionField
-                            form={form}
-                            name="scope"
-                            label="Scope"
-                            options={[
-                                { key: 'public', label: 'Public' },
-                                { key: 'secret', label: 'Secret' },
-                            ]}/>
-                    </>}
+                    {
+                        form => (
+                            <>
+                                <TextField
+                                    form={form}
+                                    name="name"
+                                    label="Name"
+                                    required
+                                />
+                                <TextField
+                                    form={form}
+                                    name="description"
+                                    label="Description"
+                                />
+                                {
+                                    !!(editing && !editing.id) && (
+                                        <OptionField
+                                            form={form}
+                                            name="scope"
+                                            label="Scope"
+                                            options={[
+                                                { key: 'public', label: 'Public' },
+                                                { key: 'secret', label: 'Secret' },
+                                            ]}
+                                        />
+                                    )
+                                }
+                            </>
+                        )
+                    }
                 </FormWrapper>
             </Modal>
         </>
