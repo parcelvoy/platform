@@ -24,7 +24,11 @@ describe('CampaignService', () => {
     }
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
-        const adminId = await Admin.insert({})
+        const adminId = await Admin.insert({
+            first_name: uuid(),
+            last_name: uuid(),
+            email: `${uuid()}@test.com`,
+        })
         const project = await createProject(adminId, { name: uuid() })
         const subscription = await createSubscription(project.id, {
             name: uuid(),
