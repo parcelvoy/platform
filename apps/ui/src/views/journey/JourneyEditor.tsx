@@ -77,10 +77,7 @@ function JourneyStepNode({
         const sourceNode = conn.source && getNode(conn.source)
         if (!sourceNode) return true
         const existing = getConnectedEdges([sourceNode], getEdges())
-        if (Array.isArray(type.sources)) {
-            return existing.filter(e => e.sourceHandle === conn.sourceHandle).length <= 1
-        }
-        return existing.length <= 1
+        return existing.filter(e => e.sourceHandle === conn.sourceHandle).length < 1
     }, [id, type, getNode, getEdges])
 
     if (!type) {
