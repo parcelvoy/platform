@@ -1,6 +1,6 @@
 import { Job } from '../../queue'
 import { PushTemplate } from '../../render/Template'
-import { createEvent } from '../../events/UserEventRepository'
+import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'

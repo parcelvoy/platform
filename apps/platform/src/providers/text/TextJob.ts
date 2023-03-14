@@ -1,6 +1,6 @@
 import { Job } from '../../queue'
 import { TextTemplate } from '../../render/Template'
-import { createEvent } from '../../events/UserEventRepository'
+import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'

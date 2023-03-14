@@ -1,7 +1,7 @@
 import { Job } from '../../queue'
 import { MessageTrigger } from '../MessageTrigger'
 import { WebhookTemplate } from '../../render/Template'
-import { createEvent } from '../../events/UserEventRepository'
+import { createEvent } from '../../users/UserEventRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'

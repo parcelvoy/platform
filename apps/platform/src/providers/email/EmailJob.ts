@@ -1,5 +1,5 @@
 import { Job } from '../../queue'
-import { createEvent } from '../../events/UserEventRepository'
+import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from '.'
