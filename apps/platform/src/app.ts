@@ -3,14 +3,12 @@ import loadDatabase, { Database } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadAuth from './config/auth'
-import loadAnalytics from './config/analytics'
 import { Env } from './config/env'
 import scheduler from './config/scheduler'
 import Queue from './queue'
 import Storage from './storage'
 import Auth from './auth/Auth'
 import { uuid } from './utilities'
-import Analytics from './events/Analytics'
 
 export default class App {
     private static $main: App
@@ -34,16 +32,12 @@ export default class App {
         // Load auth
         const auth = loadAuth(env.auth)
 
-        // Load analytics
-        const analytics = loadAnalytics(env.analytics)
-
         // Setup app
         App.$main = new App(env,
             database,
             queue,
             auth,
             storage,
-            analytics,
         )
 
         return App.$main
@@ -61,7 +55,6 @@ export default class App {
         public queue: Queue,
         public auth: Auth,
         public storage: Storage,
-        public analytics: Analytics,
     ) {
         this.api = new Api(this)
         this.scheduler = scheduler(this)

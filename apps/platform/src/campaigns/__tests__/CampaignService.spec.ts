@@ -1,5 +1,5 @@
 import App from '../../app'
-import EmailJob from '../../channels/email/EmailJob'
+import EmailJob from '../../providers/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
 import { createProject } from '../../projects/ProjectService'
@@ -8,7 +8,7 @@ import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
 import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
-import { createProvider } from '../../channels/ProviderRepository'
+import { createProvider } from '../../providers/ProviderRepository'
 import { Admin } from '../../auth/Admin'
 
 afterEach(() => {
@@ -39,6 +39,7 @@ describe('CampaignService', () => {
             group: 'email',
             data: {},
             name: uuid(),
+            is_default: false,
         })
         return {
             project_id: project.id,

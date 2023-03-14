@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import App from '../app'
-import { loadTextChannelInbound } from '../channels/text'
+import { loadTextChannelInbound } from '../providers/text'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
 import Subscription, { SubscriptionParams } from './Subscription'

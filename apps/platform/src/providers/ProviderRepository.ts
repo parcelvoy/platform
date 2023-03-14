@@ -24,6 +24,25 @@ export const loadProvider = async <T extends Provider>(id: number, projectId: nu
     return mappedValue
 }
 
+export const loadDefaultProvider = async <T extends Provider>(type: string, projectId: number, mapper: ProviderMap<T>, app = App.main) => {
+
+    // Check if value is cached in memory
+    const cache = app.get<T>(Provider.cacheKey.default(projectId, type))
+    if (cache) return cache
+
+    // If not, fetch from DB
+    const record = await Provider.table()
+        .where('project_id', projectId)
+        .where('type', type)
+        .first()
+    if (!record) return
+
+    // Map to appropriate type, cache and return
+    const mappedValue = mapper(record)
+    cacheProvider(mappedValue)
+    return mappedValue
+}
+
 export const getProviderByExternalId = async <T extends Provider>(externalId: string, mapper: ProviderMap<T>, app = App.main): Promise<T | undefined> => {
 
     // Check if value is cached in memory
@@ -52,6 +71,7 @@ export const createProvider = async (projectId: number, params: ProviderParams) 
 export const updateProvider = async (id: number, params: ExternalProviderParams, app = App.main) => {
     const provider = await Provider.updateAndFetch(id, params)
     app.remove(Provider.cacheKey.internal(provider.id))
+    app.remove(Provider.cacheKey.default(provider.project_id, provider.type))
     if (provider.external_id) {
         app.remove(Provider.cacheKey.external(provider.external_id))
     }
@@ -60,6 +80,10 @@ export const updateProvider = async (id: number, params: ExternalProviderParams,
 
 export const cacheProvider = (provider: Provider, app = App.main) => {
     app.set(Provider.cacheKey.internal(provider.id), provider)
-    if (!provider.external_id) return
-    app.set(Provider.cacheKey.external(provider.external_id), provider)
+    if (provider.is_default) {
+        app.set(Provider.cacheKey.default(provider.project_id, provider.type), provider)
+    }
+    if (provider.external_id) {
+        app.set(Provider.cacheKey.external(provider.external_id), provider)
+    }
 }

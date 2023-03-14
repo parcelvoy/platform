@@ -1,5 +1,5 @@
-import App from '../app'
 import { SearchParams } from '../core/searchParams'
+import { loadAnalytics } from '../providers/analytics'
 import { User } from '../users/User'
 import { UserEvent, UserEventParams } from './UserEvent'
 
@@ -10,7 +10,8 @@ export const createEvent = async (user: User, event: UserEventParams): Promise<n
         ...event,
     }
     const id = await UserEvent.insert(data)
-    await App.main.analytics.track({
+    const analytics = await loadAnalytics(user.project_id)
+    analytics.track({
         external_id: user.external_id,
         ...event,
     })

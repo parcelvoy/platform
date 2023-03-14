@@ -17,7 +17,7 @@ export const pagedProviders = async (params: SearchParams, projectId: number) =>
     )
 }
 
-export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, type: string, schema: JSONSchemaType<T>, externalKey: (payload: T) => string): Router => {
+export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, type: string, schema: JSONSchemaType<T>, externalKey?: (payload: T) => string): Router => {
     const router = new Router<
         ProjectState & { provider?: Provider }
     >({
@@ -27,7 +27,7 @@ export const createController = <T extends ExternalProviderParams>(group: Provid
     router.post('/', async ctx => {
         const payload = validate(schema, ctx.request.body)
 
-        ctx.body = await createProvider(ctx.state.project.id, { ...payload, external_id: externalKey(payload), type, group })
+        ctx.body = await createProvider(ctx.state.project.id, { ...payload, external_id: externalKey?.(payload), type, group })
     })
 
     router.param('providerId', async (value, ctx, next) => {

@@ -8,7 +8,7 @@ import SubscriptionController, { publicRouter as PublicSubscriptionController } 
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
 import AuthController from '../auth/AuthController'
-import ProviderController from '../channels/ProviderController'
+import ProviderController from '../providers/ProviderController'
 import LinkController from '../render/LinkController'
 import TemplateController from '../render/TemplateController'
 import UserController from '../users/UserController'

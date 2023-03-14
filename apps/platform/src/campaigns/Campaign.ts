@@ -1,4 +1,4 @@
-import Provider from '../channels/Provider'
+import Provider from '../providers/Provider'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
