@@ -1,10 +1,10 @@
-import { createAndFetchEvent } from '../events/UserEventRepository'
 import { getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
 import { updateUsersJourneys } from '../journey/JourneyService'
 import { logger } from '../config/logger'
+import { createAndFetchEvent } from '../users/UserEventRepository'
 
 interface EventPostTrigger {
     project_id: number

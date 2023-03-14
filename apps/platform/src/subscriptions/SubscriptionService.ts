@@ -3,7 +3,7 @@ import { ChannelType } from '../config/channels'
 import { SearchParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { User } from '../users/User'
-import { createEvent } from '../events/UserEventRepository'
+import { createEvent } from '../users/UserEventRepository'
 import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 
@@ -104,9 +104,7 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
         })
     }
 
-    createEvent({
-        project_id: user.project_id,
-        user_id: user.id,
+    createEvent(user, {
         name: state === SubscriptionState.unsubscribed
             ? 'unsubscribed'
             : 'subscribed',

@@ -3,7 +3,6 @@ import { StorageConfig } from '../storage/Storage'
 import { QueueConfig } from '../queue/Queue'
 import { DatabaseConfig } from './database'
 import { AuthConfig } from '../auth/Auth'
-import { AnalyticsConfig } from '../events/Analytics'
 
 export interface Env {
     db: DatabaseConfig
@@ -13,7 +12,6 @@ export interface Env {
     port: number
     secret: string
     auth: AuthConfig
-    analytics: AnalyticsConfig
 }
 
 export interface DriverConfig {
@@ -91,11 +89,6 @@ export default (type?: EnvType): Env => {
             }),
             logger: () => ({
                 tokenLife: defaultTokenLife,
-            }),
-        }),
-        analytics: driver<AnalyticsConfig>(process.env.ANALYTICS_DRIVER, {
-            segment: () => ({
-                writeKey: process.env.ANALYTICS_SEGMENT_WRITE_KEY!,
             }),
         }),
     }
