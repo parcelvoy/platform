@@ -1,9 +1,10 @@
+import List from '../../lists/List'
 import Project from '../../projects/Project'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { lastJourneyStep, setJourneyStepMap } from '../JourneyRepository'
-import JourneyService from '../JourneyService'
+import JourneyService, { enterJourneyFromList } from '../JourneyService'
 import { JourneyEntrance, JourneyUpdate } from '../JourneyStep'
 
 describe('Run', () => {
@@ -185,6 +186,78 @@ describe('Run', () => {
             expect(user.data.field2).toBe(2)
             expect(user.data.fromUser.prevField2).toBe('two')
             expect(user.data.fromEvent).toEqual('signin')
+        })
+
+        test('user should only be added to a multi-entrance journey once', async () => {
+
+            const { project, journey } = await setup()
+
+            const list1 = await List.insertAndFetch({
+                project_id: project.id,
+                name: 'Multi-entrance Journey List 1',
+                type: 'static',
+            })
+
+            const list2 = await List.insertAndFetch({
+                project_id: project.id,
+                name: 'Multi-entrance Journey List 2',
+                type: 'static',
+            })
+
+            const { steps } = await setJourneyStepMap(journey.id, {
+                entrance1: {
+                    ...baseStep,
+                    type: 'entrance',
+                    data: {
+                        list_id: list1.id,
+                    },
+                    children: [
+                        {
+                            external_id: 'gate1',
+                        },
+                    ],
+                },
+                entrance2: {
+                    ...baseStep,
+                    type: 'entrance',
+                    data: {
+                        list_id: list2.id,
+                    },
+                    children: [
+                        {
+                            external_id: 'gate2',
+                        },
+                    ],
+                },
+                gate1: {
+                    ...baseStep,
+                    type: 'gate',
+                },
+                gate2: {
+                    ...baseStep,
+                    type: 'gate',
+                },
+            })
+
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: '1',
+                data: {},
+            })
+
+            // add user to journey entrance 1 via list 1
+            await enterJourneyFromList(list1, user)
+            const gateStep = steps.find(s => s.external_id === 'gate1')
+            let lastStep = await lastJourneyStep(user.id, journey.id)
+            expect(gateStep).toBeDefined()
+            expect(lastStep).toBeDefined()
+            expect(lastStep!.step_id).toEqual(gateStep!.id)
+
+            // when processed again via list 2, user state should remain unchanged
+            await enterJourneyFromList(list2, user)
+            lastStep = await lastJourneyStep(user.id, journey.id)
+            expect(lastStep).toBeDefined()
+            expect(lastStep!.step_id).toEqual(gateStep!.id)
         })
     })
 })
