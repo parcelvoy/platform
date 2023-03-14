@@ -1,6 +1,6 @@
 import { Job } from '../../queue'
 import { TextTemplate } from '../../render/Template'
-import { createEvent } from '../../users/UserEventRepository'
+import { createEvent } from '../../events/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'
@@ -36,9 +36,7 @@ export default class TextJob extends Job {
         await updateSendState(campaign, user)
 
         // Create an event on the user about the text
-        createEvent({
-            project_id: user.project_id,
-            user_id: user.id,
+        await createEvent(user, {
             name: 'text_sent',
             data: context,
         })

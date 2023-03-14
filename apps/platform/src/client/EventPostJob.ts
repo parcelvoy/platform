@@ -1,4 +1,4 @@
-import { createEvent } from '../users/UserEventRepository'
+import { createAndFetchEvent } from '../events/UserEventRepository'
 import { getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
@@ -27,9 +27,7 @@ export default class EventPostJob extends Job {
         }
 
         // Create event for given user
-        const dbEvent = await createEvent({
-            project_id,
-            user_id: user.id,
+        const dbEvent = await createAndFetchEvent(user, {
             name: event.name,
             data: event.data || {},
         })

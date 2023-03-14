@@ -1,5 +1,5 @@
 import { Job } from '../../queue'
-import { createEvent } from '../../users/UserEventRepository'
+import { createEvent } from '../../events/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from '.'
@@ -35,9 +35,7 @@ export default class EmailJob extends Job {
         await updateSendState(campaign, user)
 
         // Create an event on the user about the email
-        await createEvent({
-            project_id: user.project_id,
-            user_id: user.id,
+        await createEvent(user, {
             name: 'email_sent',
             data: context,
         })

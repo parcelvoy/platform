@@ -3,7 +3,7 @@ import { ChannelType } from '../config/channels'
 import { SearchParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { User } from '../users/User'
-import { createEvent } from '../users/UserEventRepository'
+import { createEvent } from '../events/UserEventRepository'
 import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 

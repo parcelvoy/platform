@@ -1,7 +1,7 @@
 import { Job } from '../../queue'
 import { MessageTrigger } from '../MessageTrigger'
 import { WebhookTemplate } from '../../render/Template'
-import { createEvent } from '../../users/UserEventRepository'
+import { createEvent } from '../../events/UserEventRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
@@ -35,9 +35,7 @@ export default class WebhookJob extends Job {
         await updateSendState(campaign, user)
 
         // Create an event on the user about the email
-        createEvent({
-            project_id: user.project_id,
-            user_id: user.id,
+        createEvent(user, {
             name: 'webhook_sent',
             data: context,
         })

@@ -20,7 +20,7 @@ export default function Iframe({ content, fullHeight = true }: IframeProps) {
     }
 
     return (
-        <iframe src="about:blank" scrolling="no" frameBorder="0" ref={writeHTML}
+        <iframe src="about:blank" frameBorder="0" ref={writeHTML}
         />
     )
 }
