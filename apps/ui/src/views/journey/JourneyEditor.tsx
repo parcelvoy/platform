@@ -256,7 +256,6 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
                 data,
                 stats,
             },
-            deletable: type !== 'entrance',
         })
         const stepType = getStepType(type)
         children?.forEach(({ external_id, data }, index) => edges.push({
@@ -439,7 +438,7 @@ export default function JourneyEditor() {
                 <div className="journey-options">
                     <h4>Components</h4>
                     {
-                        Object.entries(journeySteps).sort(createComparator(x => x[1].category)).filter(([, type]) => type.category !== 'entrance').map(([key, type]) => (
+                        Object.entries(journeySteps).sort(createComparator(x => x[1].category)).map(([key, type]) => (
                             <div
                                 key={key}
                                 className={clsx('component', type.category)}
