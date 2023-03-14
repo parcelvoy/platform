@@ -78,6 +78,6 @@ export default class PlivoTextProvider extends TextProvider {
     }
 
     static controllers(): Router {
-        return createController('text', this.namespace, this.schema)
+        return createController('text', this.namespace, this.schema, (payload) => payload.data.phone_number)
     }
 }

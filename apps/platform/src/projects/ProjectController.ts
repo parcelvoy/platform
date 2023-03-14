@@ -4,10 +4,9 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { Context } from 'koa'
-import { createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey } from './ProjectService'
+import { createProject, createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { ProjectApiKeyParams } from './ProjectApiKey'
-import ProjectAdmin from './ProjectAdmins'
 
 export async function projectMiddleware(ctx: Context, next: () => void) {
     ctx.state.project = await getProject(
@@ -55,12 +54,8 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
 }
 
 router.post('/', async ctx => {
-    const project = await Project.insertAndFetch(validate(projectCreateParams, ctx.request.body))
-    ProjectAdmin.insert({
-        project_id: project.id,
-        admin_id: ctx.state.admin!.id,
-    })
-    ctx.body = project
+    const payload = validate(projectCreateParams, ctx.request.body)
+    ctx.body = await createProject(ctx.state.admin!.id, payload)
 })
 
 export default router
