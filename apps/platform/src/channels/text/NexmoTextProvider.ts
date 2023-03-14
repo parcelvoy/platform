@@ -84,6 +84,6 @@ export default class NexmoTextProvider extends TextProvider {
     }
 
     static controllers(): Router {
-        return createController('text', this.namespace, this.schema)
+        return createController('text', this.namespace, this.schema, (payload) => payload.data.phone_number)
     }
 }

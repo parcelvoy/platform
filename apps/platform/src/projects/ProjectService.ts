@@ -1,12 +1,9 @@
 import { SearchParams } from '../core/searchParams'
+import { createSubscription } from '../subscriptions/SubscriptionService'
 import { uuid } from '../utilities'
 import Project, { ProjectParams } from './Project'
 import ProjectAdmin from './ProjectAdmins'
 import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
-
-export const createProject = async (params: ProjectParams): Promise<Project> => {
-    return await Project.insertAndFetch(params)
-}
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
@@ -23,6 +20,23 @@ export const getProject = async (id: number, adminId?: number) => {
             }
             return qb
         })
+}
+
+export const createProject = async (adminId: number, params: ProjectParams) => {
+    const project = await Project.insertAndFetch(params)
+
+    // Add the user creating the project to it
+    await ProjectAdmin.insert({
+        project_id: project.id,
+        admin_id: adminId,
+    })
+
+    // Create a single subscription for each type
+    await createSubscription(project.id, { name: 'Default Email', channel: 'email' })
+    await createSubscription(project.id, { name: 'Default SMS', channel: 'text' })
+    await createSubscription(project.id, { name: 'Default Push', channel: 'push' })
+
+    return project
 }
 
 export const pagedApiKeys = async (params: SearchParams, projectId: number) => {
