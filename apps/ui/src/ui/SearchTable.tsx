@@ -18,6 +18,7 @@ export interface SearchTableProps<T extends Record<string, any>> extends Omit<Da
     params: SearchParams
     setParams: (params: SearchParams) => void
     enableSearch?: boolean
+    searchPlaceholder?: string
     tagEntity?: 'journeys' | 'lists' | 'users' | 'campaigns' // anything else we want to tag?
 }
 
@@ -114,6 +115,7 @@ export function SearchTable<T extends Record<string, any>>({
     enableSearch,
     params,
     results,
+    searchPlaceholder = 'Search...',
     setParams,
     tagEntity,
     title,
@@ -130,7 +132,7 @@ export function SearchTable<T extends Record<string, any>>({
                 key="search"
                 name="search"
                 value={search}
-                placeholder="Search..."
+                placeholder={searchPlaceholder}
                 onChange={setSearch}
                 icon={<SearchIcon />}
             />,

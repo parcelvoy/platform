@@ -21,6 +21,8 @@ export default function UserTabs() {
                 { key: 'updated_at' },
             ]}
             onSelectRow={({ id }) => route(`users/${id}`)}
+            enableSearch
+            searchPlaceholder="Search email or phone"
         />
     </PageContent>
 }
