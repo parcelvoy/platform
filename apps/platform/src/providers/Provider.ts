@@ -62,8 +62,8 @@ export default class Provider extends Model {
             internal(id: number) {
                 return `providers:id:${id}`
             },
-            default(projectId: number, type: string) {
-                return `providers:project:${projectId}:${type}`
+            default(projectId: number, group: string) {
+                return `providers:project:${projectId}:${group}`
             },
         }
     }

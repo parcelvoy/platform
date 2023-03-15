@@ -24,16 +24,17 @@ export const loadProvider = async <T extends Provider>(id: number, projectId: nu
     return mappedValue
 }
 
-export const loadDefaultProvider = async <T extends Provider>(type: string, projectId: number, mapper: ProviderMap<T>, app = App.main) => {
+export const loadDefaultProvider = async <T extends Provider>(group: string, projectId: number, mapper: ProviderMap<T>, app = App.main) => {
 
     // Check if value is cached in memory
-    const cache = app.get<T>(Provider.cacheKey.default(projectId, type))
+    const cache = app.get<T>(Provider.cacheKey.default(projectId, group))
     if (cache) return cache
 
     // If not, fetch from DB
     const record = await Provider.table()
         .where('project_id', projectId)
-        .where('type', type)
+        .where('group', group)
+        .where('is_default', true)
         .first()
     if (!record) return
 
@@ -71,7 +72,7 @@ export const createProvider = async (projectId: number, params: ProviderParams) 
 export const updateProvider = async (id: number, params: ExternalProviderParams, app = App.main) => {
     const provider = await Provider.updateAndFetch(id, params)
     app.remove(Provider.cacheKey.internal(provider.id))
-    app.remove(Provider.cacheKey.default(provider.project_id, provider.type))
+    app.remove(Provider.cacheKey.default(provider.project_id, provider.group))
     if (provider.external_id) {
         app.remove(Provider.cacheKey.external(provider.external_id))
     }
@@ -81,7 +82,7 @@ export const updateProvider = async (id: number, params: ExternalProviderParams,
 export const cacheProvider = (provider: Provider, app = App.main) => {
     app.set(Provider.cacheKey.internal(provider.id), provider)
     if (provider.is_default) {
-        app.set(Provider.cacheKey.default(provider.project_id, provider.type), provider)
+        app.set(Provider.cacheKey.default(provider.project_id, provider.group), provider)
     }
     if (provider.external_id) {
         app.set(Provider.cacheKey.external(provider.external_id), provider)
