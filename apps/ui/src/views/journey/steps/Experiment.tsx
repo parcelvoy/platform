@@ -13,6 +13,13 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
     category: 'flow',
     description: 'Randomly send users down different paths.',
     newEdgeData: async () => ({ ratio: 1 }),
+    Edit: () => (
+        <div style={{ maxWidth: 300 }}>
+            Connect this step to others and configure ratios
+            to control what proportion of users will be sent
+            down each path.
+        </div>
+    ),
     EditEdge({
         siblingData,
         onChange,
