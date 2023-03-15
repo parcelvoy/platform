@@ -380,14 +380,18 @@ export default function JourneyEditor() {
         if (!wrapper.current || !flowInstance) return
 
         const bounds = wrapper.current.getBoundingClientRect()
-        const type = event.dataTransfer.getData(DATA_FORMAT)
-        const handler = getStepType(type)
+        const payload: {
+            type: string
+            x: number
+            y: number
+        } = JSON.parse(event.dataTransfer.getData(DATA_FORMAT))
+        const type = getStepType(payload.type)
 
-        if (!handler) return
+        if (!type) return
 
         const { x, y } = flowInstance.project({
-            x: event.clientX - bounds.left,
-            y: event.clientY - bounds.top,
+            x: event.clientX - bounds.left - (payload.x ?? 0),
+            y: event.clientY - bounds.top - (payload.y ?? 0),
         })
 
         const newStep = {
@@ -398,8 +402,8 @@ export default function JourneyEditor() {
             },
             type: 'step',
             data: {
-                type,
-                data: await handler.newData?.() ?? {},
+                type: payload.type,
+                data: await type.newData?.() ?? {},
             },
         }
 
@@ -444,7 +448,12 @@ export default function JourneyEditor() {
                                 className={clsx('component', type.category)}
                                 draggable
                                 onDragStart={event => {
-                                    event.dataTransfer.setData(DATA_FORMAT, key)
+                                    const rect = (event.target as HTMLDivElement).getBoundingClientRect()
+                                    event.dataTransfer.setData(DATA_FORMAT, JSON.stringify({
+                                        type: key,
+                                        x: event.clientX - rect.left,
+                                        y: event.clientY - rect.top,
+                                    }))
                                     event.dataTransfer.effectAllowed = 'move'
                                 }}
                             >
