@@ -278,10 +278,10 @@ export const duplicateCampaign = async (campaign: Campaign) => {
 }
 
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignDelivery> => {
-    const progress = await CampaignSend.first(
-        qb => qb.where('campaign_id', campaign.id)
-            .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total")),
-    ) as any
+    const progress = await CampaignSend.query()
+        .where('campaign_id', campaign.id)
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total"))
+        .first()
     return {
         sent: parseInt(progress.sent),
         total: parseInt(progress.total),
