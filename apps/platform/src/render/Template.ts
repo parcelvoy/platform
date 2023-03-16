@@ -50,6 +50,7 @@ export interface CompiledEmail {
     bcc?: string
     reply_to?: string
     subject: string
+    preheader?: string
     text: string
     html: string
 }
@@ -61,6 +62,7 @@ export class EmailTemplate extends Template {
     bcc?: string
     reply_to?: string
     subject!: string
+    preheader?: string
     text!: string
     html!: string
 
@@ -72,6 +74,7 @@ export class EmailTemplate extends Template {
         this.bcc = json?.data.bcc
         this.reply_to = json?.data.reply_to
         this.subject = json?.data.subject ?? ''
+        this.preheader = json?.data.preheader
         this.text = json?.data.text ?? ''
         this.html = json?.data.html ?? ''
     }
@@ -83,6 +86,7 @@ export class EmailTemplate extends Template {
             html: Render(this.html, variables),
             text: Render(this.text, variables),
         }
+        if (this.preheader) email.preheader = Render(this.preheader, variables)
         if (this.reply_to) email.reply_to = Render(this.reply_to, variables)
         if (this.cc) email.cc = Render(this.cc, variables)
         if (this.bcc) email.bcc = Render(this.bcc, variables)

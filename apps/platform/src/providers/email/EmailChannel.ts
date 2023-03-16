@@ -16,11 +16,17 @@ export default class EmailChannel {
     async send(template: EmailTemplate, variables: Variables) {
         if (!variables.user.email) throw new Error('Unable to send a text message to a user with no email.')
 
+        // TODO: Explore caching the Handlebars template
+        // before passing in variables for better performance
         const compiled = template.compile(variables)
         const email = {
             ...compiled,
             to: variables.user.email,
-            html: Wrap(compiled.html, variables), // Add link and open tracking
+            html: Wrap({
+                html: compiled.html,
+                preheader: compiled.preheader,
+                variables,
+            }), // Add link and open tracking
         }
         await this.provider.send(email)
     }

@@ -283,6 +283,7 @@ export interface EmailTemplateData {
     bcc?: string
     reply_to?: string
     subject: string
+    preheader?: string
     text: string
     html: string
 }
