@@ -33,7 +33,12 @@ export default class App {
         const auth = loadAuth(env.auth)
 
         // Setup app
-        App.$main = new App(env, database, queue, auth, storage)
+        App.$main = new App(env,
+            database,
+            queue,
+            auth,
+            storage,
+        )
 
         return App.$main
     }

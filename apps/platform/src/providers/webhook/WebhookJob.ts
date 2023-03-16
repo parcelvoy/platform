@@ -1,20 +1,20 @@
 import { Job } from '../../queue'
-import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
+import { WebhookTemplate } from '../../render/Template'
+import { createEvent } from '../../users/UserEventRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadEmailChannel } from '.'
 import { loadSendJob } from '../MessageTriggerService'
-import { EmailTemplate } from '../../render/Template'
+import { loadWebhookChannel } from '.'
 
-export default class EmailJob extends Job {
-    static $name = 'email'
+export default class WebhookJob extends Job {
+    static $name = 'webhook'
 
-    static from(data: MessageTrigger): EmailJob {
+    static from(data: MessageTrigger): WebhookJob {
         return new this(data)
     }
 
     static async handler(trigger: MessageTrigger) {
-        const data = await loadSendJob<EmailTemplate>(trigger)
+        const data = await loadSendJob<WebhookTemplate>(trigger)
         if (!data) return
 
         const { campaign, template, user, project, event } = data
@@ -23,8 +23,8 @@ export default class EmailJob extends Job {
             template_id: template?.id,
         }
 
-        // Send and render email
-        const channel = await loadEmailChannel(campaign.provider_id, project.id)
+        // Send and render webhook
+        const channel = await loadWebhookChannel(campaign.provider_id, project.id)
         if (!channel) {
             await updateSendState(campaign, user, 'failed')
             return
@@ -35,10 +35,8 @@ export default class EmailJob extends Job {
         await updateSendState(campaign, user)
 
         // Create an event on the user about the email
-        await createEvent({
-            project_id: user.project_id,
-            user_id: user.id,
-            name: 'email_sent',
+        createEvent(user, {
+            name: 'webhook_sent',
             data: context,
         })
     }

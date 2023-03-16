@@ -9,9 +9,9 @@ import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { getUser, pagedUsers } from './UserRepository'
 import { getUserLists } from '../lists/ListService'
-import { getUserEvents } from './UserEventRepository'
 import { getUserSubscriptions, toggleSubscription } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
+import { getUserEvents } from './UserEventRepository'
 
 const router = new Router<
     ProjectState & { user?: User }

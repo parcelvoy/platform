@@ -2,6 +2,7 @@ import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
+import { loadAnalyticsControllers } from './analytics'
 import { loadEmailControllers } from './email'
 import { ProviderMeta } from './Provider'
 import { allProviders, pagedProviders } from './ProviderService'
@@ -19,6 +20,7 @@ loadTextControllers(router, providers)
 loadEmailControllers(router, providers)
 loadWebhookControllers(router, providers)
 loadPushControllers(router, providers)
+loadAnalyticsControllers(router, providers)
 
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)

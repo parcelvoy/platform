@@ -1,21 +1,22 @@
-import EmailJob from '../channels/email/EmailJob'
-import TextJob from '../channels/text/TextJob'
-import WebhookJob from '../channels/webhook/WebhookJob'
-import { UserEvent } from '../users/UserEvent'
+import PushJob from '../providers/push/PushJob'
+import WebhookJob from '../providers/webhook/WebhookJob'
+import TextJob from '../providers/text/TextJob'
+import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
+import { UserEvent } from '../users/UserEvent'
 import Campaign, { CampaignDelivery, CampaignParams, CampaignSend, CampaignSendParams, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
-import PushJob from '../channels/push/PushJob'
+
 import { SearchParams } from '../core/searchParams'
 import { getList, listUserCount } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
-import { getProvider } from '../channels/ProviderRepository'
 import { pick } from '../utilities'
+import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
 
@@ -277,10 +278,10 @@ export const duplicateCampaign = async (campaign: Campaign) => {
 }
 
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignDelivery> => {
-    const progress = await CampaignSend.first(
-        qb => qb.where('campaign_id', campaign.id)
-            .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total")),
-    ) as any
+    const progress = await CampaignSend.query()
+        .where('campaign_id', campaign.id)
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total"))
+        .first()
     return {
         sent: parseInt(progress.sent),
         total: parseInt(progress.total),

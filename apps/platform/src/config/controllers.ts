@@ -1,13 +1,14 @@
 import Router from '@koa/router'
 import ProjectController, { ProjectSubrouter, projectMiddleware } from '../projects/ProjectController'
 import ClientController from '../client/ClientController'
+import SegmentController from '../client/SegmentController'
 import CampaignController from '../campaigns/CampaignController'
 import ListController from '../lists/ListController'
 import SubscriptionController, { publicRouter as PublicSubscriptionController } from '../subscriptions/SubscriptionController'
 import JourneyController from '../journey/JourneyController'
 import ImageController from '../storage/ImageController'
 import AuthController from '../auth/AuthController'
-import ProviderController from '../channels/ProviderController'
+import ProviderController from '../providers/ProviderController'
 import LinkController from '../render/LinkController'
 import TemplateController from '../render/TemplateController'
 import UserController from '../users/UserController'
@@ -90,6 +91,7 @@ export const clientRouter = () => {
     const router = new Router({ prefix: '/client' })
     router.use(authMiddleware)
     register(router, ClientController)
+    register(router, SegmentController)
 
     // Secret client routes
     router.use(scopeMiddleware('secret'))

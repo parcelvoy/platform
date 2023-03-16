@@ -1,5 +1,5 @@
 import Render, { Variables } from '.'
-import { Webhook } from '../channels/webhook/Webhook'
+import { Webhook } from '../providers/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import { isValid, IsValidSchema } from '../core/validate'

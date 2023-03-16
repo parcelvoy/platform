@@ -1,4 +1,4 @@
-import Model, { ModelParams } from '../core/Model'
+import Model from '../core/Model'
 
 export interface TemplateEvent extends Record<string, any> {
     name: string
@@ -20,4 +20,4 @@ export class UserEvent extends Model {
     }
 }
 
-export type UserEventParams = Omit<UserEvent, ModelParams | 'flatten'> & { project_id: number }
+export type UserEventParams = Pick<UserEvent, 'name' | 'data'>

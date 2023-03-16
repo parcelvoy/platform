@@ -1,7 +1,7 @@
 import Model, { ModelParams } from '../core/Model'
 import { JSONSchemaType } from '../core/validate'
 
-export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook'
+export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook' | 'analytics'
 export interface ProviderMeta {
     name: string
     description?: string
@@ -26,6 +26,10 @@ export const ProviderSchema = <T extends ExternalProviderParams, D>(id: string, 
                 type: 'string',
                 nullable: true,
             },
+            is_default: {
+                type: 'boolean',
+                nullable: true,
+            },
             data,
         },
         additionalProperties: false,
@@ -39,6 +43,7 @@ export default class Provider extends Model {
     external_id?: string
     group!: ProviderGroup
     data!: Record<string, any>
+    is_default!: boolean
 
     static jsonAttributes = ['data']
 
@@ -52,16 +57,15 @@ export default class Provider extends Model {
     static get cacheKey() {
         return {
             external(externalId: string) {
-                return `providers_external_${externalId}`
+                return `providers:external:${externalId}`
             },
             internal(id: number) {
-                return `providers_${id}`
+                return `providers:id:${id}`
+            },
+            default(projectId: number, group: string) {
+                return `providers:project:${projectId}:${group}`
             },
         }
-    }
-
-    static externalCacheKey(externalId: string) {
-        return `providers_${externalId}`
     }
 
     parseJson(json: any): void {

@@ -27,3 +27,40 @@ export type ClientPostEvent = {
 } & ClientIdentity
 
 export type ClientPostEventsRequest = ClientPostEvent[]
+
+export interface SegmentContext {
+    app?: {
+        build: string
+        name: string
+        namespace: string
+        version: string
+    }
+    ip?: number
+    os: {
+        name: string
+        version: string
+    }
+    timezone: string
+}
+
+export type SegmentPostEvent = {
+    event: string
+    anonymousId: string
+    userId: string
+    context: Record<string, any> & SegmentContext
+    properties: Record<string, any>
+    traits?: Record<string, any>
+    type: 'track' | 'alias' | 'identify'
+    timestamp: string
+} & (
+    {
+        type: 'track',
+        properties: Record<string, any>
+    }
+    | {
+        type: 'identify' | 'alias'
+        traits: Record<string, any>
+    }
+)
+
+export type SegmentPostEventsRequest = SegmentPostEvent[]

@@ -38,9 +38,7 @@ export default class PushJob extends Job {
             await updateSendState(campaign, user)
 
             // Create an event on the user about the push
-            await createEvent({
-                project_id: user.project_id,
-                user_id: user.id,
+            await createEvent(user, {
                 name: 'push_sent',
                 data: context,
             })
@@ -56,9 +54,7 @@ export default class PushJob extends Job {
                 await updateSendState(campaign, user, 'failed')
 
                 // Create an event about the disabling
-                await createEvent({
-                    project_id: user.project_id,
-                    user_id: user.id,
+                await createEvent(user, {
                     name: 'notifications_disabled',
                     data: {
                         ...context,

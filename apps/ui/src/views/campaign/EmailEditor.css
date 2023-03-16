@@ -133,7 +133,6 @@
 
 .source-preview, .source-preview iframe {
     border-radius: var(--border-radius);
-    overflow: hidden;
 }
 
 .source-preview iframe {

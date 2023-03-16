@@ -1,10 +1,10 @@
-import { createEvent } from '../users/UserEventRepository'
 import { getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
 import { updateUsersJourneys } from '../journey/JourneyService'
 import { logger } from '../config/logger'
+import { createAndFetchEvent } from '../users/UserEventRepository'
 
 interface EventPostTrigger {
     project_id: number
@@ -27,9 +27,7 @@ export default class EventPostJob extends Job {
         }
 
         // Create event for given user
-        const dbEvent = await createEvent({
-            project_id,
-            user_id: user.id,
+        const dbEvent = await createAndFetchEvent(user, {
             name: event.name,
             data: event.data || {},
         })

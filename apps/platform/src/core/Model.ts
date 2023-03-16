@@ -83,7 +83,7 @@ export default class Model {
     }
 
     static query<T extends typeof Model>(this: T, db: Database = App.main.db): Database.QueryBuilder<InstanceType<T>> {
-        return this.table(db).clearSelect()
+        return this.table(db)
     }
 
     static async first<T extends typeof Model>(
@@ -91,7 +91,7 @@ export default class Model {
         query: Query,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
-        const record = await query(this.table(db)).first()
+        const record = await this.build(query, db).first()
         if (!record) return undefined
         return this.fromJson(record)
     }
@@ -107,7 +107,7 @@ export default class Model {
             id = parseInt(id, 10)
             if (isNaN(id)) return undefined
         }
-        const record = await query(this.table(db))
+        const record = await this.build(query, db)
             .where(`${this.tableName}.id`, id)
             .first()
         if (!record) return undefined
@@ -119,7 +119,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T>[]> {
-        const records = await query(this.table(db))
+        const records = await this.build(query, db)
         return records.map((item: any) => this.fromJson(item))
     }
 
@@ -145,7 +145,9 @@ export default class Model {
         const total = await this.count(query, db)
         const start = page * itemsPerPage
         const results: T[] = total > 0
-            ? await query(this.table(db)).offset(start).limit(itemsPerPage)
+            ? await this.build(query, db)
+                .offset(start)
+                .limit(itemsPerPage)
             : []
         const end = Math.min(start + itemsPerPage, start + results.length)
         return {
@@ -210,7 +212,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<Page<InstanceType<T>, B>> {
-        const records = await query(this.table(db))
+        const records = await this.build(query, db)
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             .where('id', '<', params.sinceId)
@@ -277,10 +279,22 @@ export default class Model {
     }
 
     static table(db: Database = App.main.db): Database.QueryBuilder<any> {
-        return db(this.tableName).select(`${this.tableName}.*`)
+        return db(this.tableName)
     }
 
     static raw = raw
+
+    static build<T extends typeof Model>(
+        query: Query,
+        db: Database = App.main.db,
+    ): Database.QueryBuilder<InstanceType<T>> {
+        const builder = query(this.table(db)) as any
+        const hasSelects = builder._statements.find((item: any) => item.grouping === 'columns')
+        if (!hasSelects) {
+            builder.select(`${this.tableName}.*`)
+        }
+        return builder
+    }
 }
 
 export type ModelParams = 'id' | 'created_at' | 'updated_at' | 'parseJson' | 'project_id' | 'toJSON'

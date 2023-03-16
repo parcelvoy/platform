@@ -1,21 +1,20 @@
 import { Job } from '../../queue'
-import { TextTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
+import { loadEmailChannel } from '.'
 import { loadSendJob } from '../MessageTriggerService'
-import { loadTextChannel } from '.'
+import { EmailTemplate } from '../../render/Template'
 
-export default class TextJob extends Job {
-    static $name = 'text'
+export default class EmailJob extends Job {
+    static $name = 'email'
 
-    static from(data: MessageTrigger): TextJob {
+    static from(data: MessageTrigger): EmailJob {
         return new this(data)
     }
 
     static async handler(trigger: MessageTrigger) {
-
-        const data = await loadSendJob<TextTemplate>(trigger)
+        const data = await loadSendJob<EmailTemplate>(trigger)
         if (!data) return
 
         const { campaign, template, user, project, event } = data
@@ -24,8 +23,8 @@ export default class TextJob extends Job {
             template_id: template?.id,
         }
 
-        // Send and render text
-        const channel = await loadTextChannel(campaign.provider_id, project.id)
+        // Send and render email
+        const channel = await loadEmailChannel(campaign.provider_id, project.id)
         if (!channel) {
             await updateSendState(campaign, user, 'failed')
             return
@@ -35,11 +34,9 @@ export default class TextJob extends Job {
         // Update send record
         await updateSendState(campaign, user)
 
-        // Create an event on the user about the text
-        createEvent({
-            project_id: user.project_id,
-            user_id: user.id,
-            name: 'text_sent',
+        // Create an event on the user about the email
+        await createEvent(user, {
+            name: 'email_sent',
             data: context,
         })
     }
