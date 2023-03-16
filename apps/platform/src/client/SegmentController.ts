@@ -8,9 +8,7 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import UserPatchJob from '../users/UserPatchJob'
 
-const router = new Router<ProjectState>({
-    prefix: '/segment',
-})
+const router = new Router<ProjectState>()
 router.use(projectMiddleware)
 
 const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
@@ -59,7 +57,7 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
     minItems: 1,
     maxItems: 200,
 } as any
-router.post('/events', async ctx => {
+router.post('/segment', async ctx => {
     const events = validate(segmentEventsRequest, ctx.request.body)
 
     for (const event of events) {
