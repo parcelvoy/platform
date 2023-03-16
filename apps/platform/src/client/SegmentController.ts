@@ -8,7 +8,9 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import UserPatchJob from '../users/UserPatchJob'
 
-const router = new Router<ProjectState>()
+const router = new Router<ProjectState>({
+    prefix: '/segment',
+})
 router.use(projectMiddleware)
 
 const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
