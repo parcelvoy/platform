@@ -68,7 +68,7 @@ jobs:
       run: npm run test -- --scope=platform
       env:
         NODE_ENV: test
-        APP_SECRET: ${{ secrets.APP_SECRET }}
+        APP_SECRET: testing
         DB_CLIENT: mysql2
         DB_DATABASE: parcelvoy
         DB_USERNAME: root
