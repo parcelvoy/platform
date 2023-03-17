@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LinkService clickWrapHtml links are wrapped 1`] = `"This is some html <a href=\\"https://parcelvoy.com/c?u=M8LRMWZ645&c=1MLXN7R524&r=https%253A%252F%252Ftest.com\\">Test Link</a>"`;
+
+exports[`LinkService openWrapHtml open tracking image is added to end of body 1`] = `"<html><body>This is some html<img border=\\"0\\" width=\\"1\\" height=\\"1\\" alt=\\"\\" src=\\"https://parcelvoy.com/o?u=P9KR98X8L4&c=Y3QRV4XL74\\" /></body></html>"`;
+
+exports[`LinkService preheaderWrapHtml complex html injects preheader 1`] = `
+"<html>
+                <body
+                    style=\\"color:#000\\"
+                    class=\\"body-class\\"><span style=\\"color:transparent;visibility:hidden;display:none;opacity:0;height:0;width:0;font-size:0\\">This is some preheader</span>
+                    This is some html
+                </body>
+            </html>"
+`;
+
+exports[`LinkService preheaderWrapHtml simple html injects preheader 1`] = `"<html><body><span style=\\"color:transparent;visibility:hidden;display:none;opacity:0;height:0;width:0;font-size:0\\">This is some preheader</span>This is some html</body></html>"`;

@@ -18,6 +18,7 @@ const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
     CC: data.cc,
     BCC: data.bcc,
     Subject: data.subject,
+    Preheader: data.preheader,
 }} />
 
 const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
@@ -27,10 +28,15 @@ const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> })
         label="Subject"
         textarea
         required />
+    <TextField
+        form={form}
+        name="data.preheader"
+        label="Preheader"
+        textarea />
     <TextField form={form} name="data.from" label="From Email" required />
     <TextField form={form} name="data.reply_to" label="Reply To" />
     <TextField form={form} name="data.cc" label="CC" />
-    <TextField form={form} name="data.cc" label="BCC" />
+    <TextField form={form} name="data.bcc" label="BCC" />
 </>
 
 const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
@@ -96,7 +102,6 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
         const newCampaign = { ...campaign }
         newCampaign.templates = campaign.templates.map(obj => obj.id === id ? value : obj)
         setCampaign(newCampaign)
-        console.log('new campaign', newCampaign)
         setIsEditOpen(false)
     }
 

@@ -6,7 +6,7 @@ import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
 import { unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
-import { clickWrapHTML, openWrapHtml } from './LinkService'
+import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
 
 export interface RenderContext {
     template_id: number
@@ -42,10 +42,16 @@ export const Compile = (template: string, context: Record<string, any> = {}) => 
     return Handlebars.compile(template)(context)
 }
 
-export const Wrap = (html: string, { user, context }: Variables) => {
+interface WrapParams {
+    html: string
+    preheader?: string
+    variables: Variables
+}
+export const Wrap = ({ html, preheader, variables: { user, context } }: WrapParams) => {
     const trackingParams = { userId: user.id, campaignId: context.campaign_id }
-    html = clickWrapHTML(html, trackingParams)
+    html = clickWrapHtml(html, trackingParams)
     html = openWrapHtml(html, trackingParams)
+    if (preheader) html = preheaderWrapHtml(html, preheader)
     return html
 }
 

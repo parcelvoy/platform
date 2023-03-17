@@ -56,7 +56,7 @@ export const encodedLinkToParts = async (link: string | URL): Promise<TrackedLin
     return parts
 }
 
-export const clickWrapHTML = (html: string, params: TrackedLinkParams) => {
+export const clickWrapHtml = (html: string, params: TrackedLinkParams) => {
     const regex = /href\s*=\s*(['"])(https?:\/\/.+?)\1/gi
     let link
 
@@ -77,14 +77,31 @@ export const clickWrapHTML = (html: string, params: TrackedLinkParams) => {
 }
 
 export const openWrapHtml = (html: string, params: TrackedLinkParams) => {
-    const bodyTag = '</body>'
     const link = paramsToEncodedLink({ ...params, path: 'o' })
     const imageHtml = `<img border="0" width="1" height="1" alt="" src="${link}" />`
-    const hasBody = html.includes(bodyTag)
-    if (hasBody) {
-        html = html.replace(bodyTag, (imageHtml + bodyTag))
+    return injectInBody(html, imageHtml, 'end')
+}
+
+export const preheaderWrapHtml = (html: string, preheader: string) => {
+    const preheaderHtml = `<span style="color:transparent;visibility:hidden;display:none;opacity:0;height:0;width:0;font-size:0">${preheader}</span>`
+    return injectInBody(html, preheaderHtml, 'start')
+}
+
+export const injectInBody = (html: string, injection: string, placement: 'start' | 'end') => {
+    if (placement === 'end') {
+        const bodyTag = '</body'
+        html = html.includes(bodyTag)
+            ? html = html.replace(bodyTag, (injection + bodyTag))
+            : html += injection
     } else {
-        html += imageHtml
+        const regex = /<body(?:.|\n)*?>/
+        const match = html.match(regex)
+        if (match) {
+            const offset = match.index! + match[0].length
+            html = html.substring(0, offset) + injection + html.substring(offset)
+        } else {
+            html = injection + html
+        }
     }
     return html
 }
