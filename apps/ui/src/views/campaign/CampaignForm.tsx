@@ -47,6 +47,12 @@ const ListSelection = ({
         setIsOpen(false)
     }
 
+    const handleRemoveList = (list: List) => {
+        const newLists = [...lists].filter(item => item.id !== list.id)
+        setLists(newLists)
+        onChange(newLists.map(list => list.id))
+    }
+
     const { field: { onChange } } = useController({
         control,
         name,
@@ -73,6 +79,17 @@ const ListSelection = ({
                     },
                     { key: 'users_count' },
                     { key: 'updated_at' },
+                    {
+                        key: 'options',
+                        cell: ({ item }) => (
+                            <Button
+                                size="small"
+                                variant="destructive"
+                                onClick={() => handleRemoveList(item)}>
+                                Remove
+                            </Button>
+                        ),
+                    },
                 ]}
                 emptyMessage="Select one or more lists using the button above."
             />
@@ -164,6 +181,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
 export function CampaignForm({ campaign, disableListSelection, onSave }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
+    const [providers, setProviders] = useState<Provider[]>([])
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
     useEffect(() => {
         const params: SearchParams = { page: 0, itemsPerPage: 9999, q: '' }
@@ -172,10 +190,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                 setSubscriptions(results)
             })
             .catch(() => {})
-    }, [])
 
-    const [providers, setProviders] = useState<Provider[]>([])
-    useEffect(() => {
         api.providers.all(project.id)
             .then((results) => {
                 setProviders(results)

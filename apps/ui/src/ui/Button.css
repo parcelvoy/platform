@@ -121,7 +121,7 @@
 }
 
 .ui-button.destructive:hover {
-    background: var(--color-red-dark);
+    background: var(--color-red-hard);
 }
 
 .ui-button.plain {

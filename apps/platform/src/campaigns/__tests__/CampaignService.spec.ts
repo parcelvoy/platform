@@ -193,7 +193,7 @@ describe('CampaignService', () => {
             const updatedCampaign = await Campaign.find(campaign.id)
 
             expect(sends.length).toEqual(20)
-            expect(updatedCampaign?.state).toEqual('pending')
+            expect(updatedCampaign?.state).toEqual('scheduled')
         })
 
         test('users outside of list arent sent the campaign', async () => {
@@ -232,7 +232,7 @@ describe('CampaignService', () => {
             const updatedCampaign = await Campaign.find(campaign.id)
 
             expect(sends.length).toEqual(20)
-            expect(updatedCampaign?.state).toEqual('pending')
+            expect(updatedCampaign?.state).toEqual('scheduled')
         })
     })
 })

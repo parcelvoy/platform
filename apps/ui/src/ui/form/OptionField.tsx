@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useEffect, useId } from 'react'
 import { FieldPath, FieldValues, PathValue, useController } from 'react-hook-form'
 import { RadioGroup } from '@headlessui/react'
 import { FieldProps, FieldOption } from './Field'
@@ -27,6 +27,9 @@ export default function OptionField<X extends FieldValues, P extends FieldPath<X
         value = field.value
         onChange = field.onChange
     }
+    useEffect(() => {
+        if (!value && options[0]) onChange?.(options[0].key as any)
+    }, [options])
 
     return (
         <RadioGroup {...form?.register(name, { disabled, required })}

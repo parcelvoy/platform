@@ -7,6 +7,7 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignSendJob from '../campaigns/CampaignSendJob'
 import Model from '../core/Model'
+import { sleep, randomInt } from '../utilities'
 
 export default async (app: App) => {
     const scheduler = new Scheduler(app)
@@ -98,7 +99,10 @@ class SchedulerLock {
         }
 
         // Clean up any oddball pending jobs that are missed
-        await JobLock.delete(qb => qb.where('expiration', '<=', new Date()))
+        // Randomly run this job to reduce chance of deadlocks
+        if (randomInt() < 10) {
+            await JobLock.delete(qb => qb.where('expiration', '<=', new Date()))
+        }
 
         return acquired
     }
@@ -126,6 +130,9 @@ class SchedulerLock {
             )
             return updatedCount > 0
         } catch {
+
+            // Introduce jitter before trying again
+            await sleep(randomInt(5, 20))
             return this.extendLock({ key, owner, expiration }, --retry)
         }
     }
