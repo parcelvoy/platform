@@ -7,7 +7,7 @@ import { createSubscription, subscribe } from '../../subscriptions/SubscriptionS
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendCampaign, sendList } from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, sendCampaign, generateSendList } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
 import { Admin } from '../../auth/Admin'
 
@@ -176,7 +176,7 @@ describe('CampaignService', () => {
                 type: 'static',
             })
             const campaign = await createTestCampaign(params, {
-                list_id: list.id,
+                list_ids: [list.id],
                 send_at: new Date(),
             }) as SentCampaign
 
@@ -186,14 +186,14 @@ describe('CampaignService', () => {
                 await subscribe(user.id, params.subscription_id)
             }
 
-            await sendList(campaign)
+            await generateSendList(campaign)
 
             const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
 
             const updatedCampaign = await Campaign.find(campaign.id)
 
             expect(sends.length).toEqual(20)
-            expect(updatedCampaign?.state).toEqual('running')
+            expect(updatedCampaign?.state).toEqual('scheduled')
         })
 
         test('users outside of list arent sent the campaign', async () => {
@@ -208,7 +208,7 @@ describe('CampaignService', () => {
                 type: 'static',
             })
             const campaign = await createTestCampaign(params, {
-                list_id: list.id,
+                list_ids: [list.id],
                 send_at: new Date(),
             }) as SentCampaign
 
@@ -226,13 +226,13 @@ describe('CampaignService', () => {
                 await subscribe(user.id, params.subscription_id)
             }
 
-            await sendList(campaign)
+            await generateSendList(campaign)
 
             const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
             const updatedCampaign = await Campaign.find(campaign.id)
 
             expect(sends.length).toEqual(20)
-            expect(updatedCampaign?.state).toEqual('running')
+            expect(updatedCampaign?.state).toEqual('scheduled')
         })
     })
 })

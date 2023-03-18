@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import { Campaign, CampaignCreateParams, Project, Provider, SearchParams, Subscription } from '../../types'
+import { Campaign, CampaignCreateParams, List, Project, Provider, SearchParams, Subscription } from '../../types'
 import { useController, UseFormReturn, useWatch } from 'react-hook-form'
 import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -12,6 +12,10 @@ import { snakeToTitle } from '../../utils'
 import OptionField from '../../ui/form/OptionField'
 import { SelectionProps } from '../../ui/form/Field'
 import { TagPicker } from '../settings/TagPicker'
+import { Column, Columns } from '../../ui/Columns'
+import Modal from '../../ui/Modal'
+import Button from '../../ui/Button'
+import { DataTable } from '../../ui/DataTable'
 
 interface CampaignEditParams {
     campaign?: Campaign
@@ -21,25 +25,85 @@ interface CampaignEditParams {
 
 interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
     project: Project
+    title: string
+    value?: List[]
 }
 
-const ListSelection = ({ project, control }: ListSelectionProps) => {
-    const lists = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [project])
+const ListSelection = ({
+    project,
+    control,
+    name,
+    title,
+    value,
+}: ListSelectionProps) => {
+    const [isOpen, setIsOpen] = useState(false)
+    const [lists, setLists] = useState<List[]>(value ?? [])
+    const search = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [project])
 
-    const { field: { value, onChange } } = useController({
+    const handlePickList = (list: List) => {
+        const newLists = [...lists.filter(item => item.id !== list.id), list]
+        setLists(newLists)
+        onChange(newLists.map(list => list.id))
+        setIsOpen(false)
+    }
+
+    const handleRemoveList = (list: List) => {
+        const newLists = [...lists].filter(item => item.id !== list.id)
+        setLists(newLists)
+        onChange(newLists.map(list => list.id))
+    }
+
+    const { field: { onChange } } = useController({
         control,
-        name: 'list_id',
+        name,
         rules: {
             required: true,
         },
     })
 
     return (
-        <ListTable
-            search={lists}
-            selectedRow={value}
-            onSelectRow={onChange}
-        />
+        <>
+            <Heading size="h4" title={title} actions={
+                <Button
+                    size="small"
+                    onClick={() => setIsOpen(true)}>Add List</Button>
+            } />
+            <DataTable
+                items={lists}
+                itemKey={({ item }) => item.id}
+                columns={[
+                    { key: 'name' },
+                    {
+                        key: 'type',
+                        cell: ({ item: { type } }) => snakeToTitle(type),
+                    },
+                    { key: 'users_count' },
+                    { key: 'updated_at' },
+                    {
+                        key: 'options',
+                        cell: ({ item }) => (
+                            <Button
+                                size="small"
+                                variant="destructive"
+                                onClick={() => handleRemoveList(item)}>
+                                Remove
+                            </Button>
+                        ),
+                    },
+                ]}
+                emptyMessage="Select one or more lists using the button above."
+            />
+            <Modal
+                open={isOpen}
+                onClose={setIsOpen}
+                title={title}
+                size="large">
+                <ListTable
+                    search={search}
+                    onSelectRow={handlePickList}
+                />
+            </Modal>
+        </>
     )
 }
 
@@ -117,6 +181,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
 export function CampaignForm({ campaign, disableListSelection, onSave }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
+    const [providers, setProviders] = useState<Provider[]>([])
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
     useEffect(() => {
         const params: SearchParams = { page: 0, itemsPerPage: 9999, q: '' }
@@ -125,10 +190,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                 setSubscriptions(results)
             })
             .catch(() => {})
-    }, [])
 
-    const [providers, setProviders] = useState<Provider[]>([])
-    useEffect(() => {
         api.providers.all(project.id)
             .then((results) => {
                 setProviders(results)
@@ -136,10 +198,19 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
             .catch(() => {})
     }, [])
 
-    async function handleSave({ name, list_id, channel, provider_id, subscription_id, tags }: CampaignCreateParams) {
+    async function handleSave({
+        name,
+        list_ids,
+        exclusion_list_ids,
+        channel,
+        provider_id,
+        subscription_id,
+        tags,
+    }: CampaignCreateParams) {
+        const params = { name, list_ids, exclusion_list_ids, subscription_id, tags }
         const value = campaign
-            ? await api.campaigns.update(project.id, campaign.id, { name, list_id, subscription_id, tags })
-            : await api.campaigns.create(project.id, { name, list_id, channel, provider_id, subscription_id, tags })
+            ? await api.campaigns.update(project.id, campaign.id, params)
+            : await api.campaigns.create(project.id, { channel, provider_id, ...params })
         onSave(value)
     }
 
@@ -156,15 +227,28 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                         label="Campaign Name"
                         required
                     />
+                    <TagPicker.Field
+                        form={form}
+                        name="tags"
+                    />
                     {
                         !disableListSelection && (
                             <>
-                                <Heading size="h3" title="List">
-                                    Who is this campaign going to? Pick a list to send your campaign to.
+                                <Heading size="h3" title="Lists">
+                                    Select what lists to send this campaign to and what user lists you want to exclude from getting the campaign.
                                 </Heading>
                                 <ListSelection
                                     project={project}
-                                    name="list_id"
+                                    title="Send Lists"
+                                    name="list_ids"
+                                    value={campaign?.lists}
+                                    control={form.control}
+                                />
+                                <ListSelection
+                                    project={project}
+                                    title="Exclusion Lists"
+                                    name="exclusion_list_ids"
+                                    value={campaign?.exclusion_lists}
                                     control={form.control}
                                 />
                             </>
@@ -192,21 +276,23 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                                         subscriptions={subscriptions}
                                         form={form}
                                     />
-                                    <ProviderSelection
-                                        providers={providers}
-                                        form={form}
-                                    />
-                                    <SubscriptionSelection
-                                        subscriptions={subscriptions}
-                                        form={form}
-                                    />
+                                    <Columns>
+                                        <Column>
+                                            <ProviderSelection
+                                                providers={providers}
+                                                form={form}
+                                            />
+                                        </Column>
+                                        <Column>
+                                            <SubscriptionSelection
+                                                subscriptions={subscriptions}
+                                                form={form}
+                                            />
+                                        </Column>
+                                    </Columns>
                                 </>
                             )
                     }
-                    <TagPicker.Field
-                        form={form}
-                        name="tags"
-                    />
                 </>
             )}
         </FormWrapper>

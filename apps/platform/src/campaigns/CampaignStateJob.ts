@@ -9,8 +9,8 @@ export default class CampaignStateJob extends Job {
         const campaigns = await Campaign.query()
             .whereIn('state', ['running'])
         for (const campaign of campaigns) {
-            const progress = await campaignProgress(campaign)
-            await updateCampaignProgress(campaign.id, campaign.project_id, 'finished', progress)
+            const { sent, pending, total } = await campaignProgress(campaign)
+            await updateCampaignProgress(campaign.id, campaign.project_id, pending <= 0 ? 'finished' : campaign.state, { sent, total })
         }
     }
 }

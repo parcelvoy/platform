@@ -1,3 +1,5 @@
+import App from '../app'
+
 interface JobOptions {
     delay?: number
 }
@@ -29,6 +31,10 @@ export default class Job implements EncodedJob {
 
     static from(...args: any[]): Job {
         return new this({ ...args })
+    }
+
+    async queue() {
+        return App.main.queue.enqueue(this)
     }
 
     constructor(data: any) {

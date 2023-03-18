@@ -39,7 +39,7 @@ export { LinkButton }
 const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButtonElement> | undefined) {
     const {
         onClick,
-        type,
+        type = 'button',
         variant = 'primary',
         size = 'regular',
         icon,

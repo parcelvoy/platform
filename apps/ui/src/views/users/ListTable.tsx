@@ -9,7 +9,7 @@ interface ListTableParams {
     search: (params: SearchParams) => Promise<SearchResult<List>>
     title?: string
     selectedRow?: Key
-    onSelectRow?: (id: number) => void
+    onSelectRow?: (list: List) => void
 }
 
 export const ListTag = ({ state }: { state: ListState }) => {
@@ -22,8 +22,8 @@ export const ListTag = ({ state }: { state: ListState }) => {
 
 export default function ListTable({ search, selectedRow, onSelectRow, title }: ListTableParams) {
     const route = useRoute()
-    function handleOnSelectRow(id: number) {
-        onSelectRow ? onSelectRow(id) : route(`lists/${id}`)
+    function handleOnSelectRow(list: List) {
+        onSelectRow ? onSelectRow(list) : route(`lists/${list.id}`)
     }
 
     const state = useSearchTableState(search)
@@ -48,7 +48,7 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
                 { key: 'updated_at' },
             ]}
             selectedRow={selectedRow}
-            onSelectRow={({ id }) => handleOnSelectRow(id)}
+            onSelectRow={list => handleOnSelectRow(list)}
             enableSearch
             tagEntity="lists"
         />

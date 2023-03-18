@@ -1,3 +1,4 @@
+import { sleep } from '../utilities'
 import Job from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
@@ -39,15 +40,7 @@ export default class MemoryQueueProvider implements QueueProvider {
             }
             job = this.backlog.shift()
         }
-        await this.tick()
+        await sleep(1000)
         await this.process()
-    }
-
-    private async tick(): Promise<void> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve()
-            }, 1000)
-        })
     }
 }

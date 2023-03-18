@@ -243,7 +243,7 @@ export interface JourneyStepType<T = any, E = any> {
     | string[] // enumerated handles (ordered)
 }
 
-export type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
+export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'
 
 export interface Campaign {
     id: number
@@ -260,8 +260,10 @@ export interface Campaign {
     subscription_id?: number
     subscription: Subscription
     templates: Template[]
-    list_id?: number
-    list?: List
+    list_ids?: number[]
+    lists?: List[]
+    exclusion_list_ids?: number[]
+    exclusion_lists: List[]
     tags?: string[]
     send_in_user_timezone: boolean
     send_at: string
@@ -271,8 +273,8 @@ export interface Campaign {
 
 export type CampaignSendState = 'pending' | 'sent' | 'failed'
 
-export type CampaignUpdateParams = Pick<Campaign, 'name' | 'list_id' | 'subscription_id' | 'tags'>
-export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_id' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
+export type CampaignUpdateParams = Partial<Pick<Campaign, 'name' | 'state' | 'list_ids' | 'exclusion_list_ids' | 'subscription_id' | 'tags'>>
+export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
 export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_timezone'>
 // export type ListUpdateParams = Pick<List, 'name' | 'rule'>
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }
