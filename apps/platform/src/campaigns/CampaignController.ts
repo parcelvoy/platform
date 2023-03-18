@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
-import Campaign, { CampaignParams, CampaignUpdateParams } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignUpdateParams } from './Campaign'
 import { archiveCampaign, createCampaign, deleteCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
@@ -15,7 +15,7 @@ router.get('/', async ctx => {
     ctx.body = await pagedCampaigns(params, ctx.state.project.id)
 })
 
-export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
+export const campaignCreateParams: JSONSchemaType<CampaignCreateParams> = {
     $id: 'campaignCreate',
     type: 'object',
     required: ['subscription_id', 'provider_id'],
@@ -33,8 +33,14 @@ export const campaignCreateParams: JSONSchemaType<CampaignParams> = {
         provider_id: {
             type: 'integer',
         },
-        list_id: {
-            type: 'integer',
+        list_ids: {
+            type: 'array',
+            items: { type: 'integer' },
+            nullable: true,
+        },
+        exclusion_list_ids: {
+            type: 'array',
+            items: { type: 'integer' },
             nullable: true,
         },
         send_in_user_timezone: {
@@ -91,8 +97,19 @@ const campaignUpdateParams: JSONSchemaType<Partial<CampaignUpdateParams>> = {
             type: 'integer',
             nullable: true,
         },
-        list_id: {
-            type: 'integer',
+        state: {
+            type: 'string',
+            enum: ['draft', 'scheduled', 'finished', 'aborted'],
+            nullable: true,
+        },
+        list_ids: {
+            type: 'array',
+            items: { type: 'integer' },
+            nullable: true,
+        },
+        exclusion_list_ids: {
+            type: 'array',
+            items: { type: 'integer' },
             nullable: true,
         },
         send_in_user_timezone: {

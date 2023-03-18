@@ -1,17 +1,16 @@
 import { Job } from '../queue'
 import Campaign from './Campaign'
-import { sendList } from './CampaignService'
+import { generateSendList } from './CampaignService'
 
 export default class CampaignTriggerJob extends Job {
     static $name = 'campaign_trigger_job'
 
     static async handler() {
         const campaigns = await Campaign.query()
-            .whereIn('state', ['draft', 'scheduled'])
+            .where('state', 'pending')
             .whereNotNull('send_at')
-            .where('send_at', '<', new Date())
         for (const campaign of campaigns) {
-            await sendList(campaign)
+            await generateSendList(campaign)
         }
     }
 }

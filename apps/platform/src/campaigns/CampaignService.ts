@@ -4,14 +4,14 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import Campaign, { CampaignDelivery, CampaignParams, CampaignSend, CampaignSendParams, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
 
 import { SearchParams } from '../core/searchParams'
-import { getList, listUserCount } from '../lists/ListService'
+import { allLists, listUserCount } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
 import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
@@ -19,6 +19,7 @@ import { pick } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
+import CampaignError from './CampaignError'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     const result = await Campaign.searchParams(
@@ -48,7 +49,8 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
 
     if (campaign) {
         campaign.templates = await allTemplates(projectId, campaign.id)
-        campaign.list = campaign.list_id ? await getList(campaign.list_id, projectId) : undefined
+        campaign.lists = campaign.list_ids ? await allLists(projectId, campaign.list_ids) : []
+        campaign.exclusion_lists = campaign.exclusion_list_ids ? await allLists(projectId, campaign.exclusion_list_ids) : []
         campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
         campaign.provider = await getProvider(campaign.provider_id, projectId)
         campaign.tags = await getTags(Campaign.tableName, [campaign.id]).then(m => m.get(campaign.id))
@@ -57,15 +59,18 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
     return campaign
 }
 
-export const createCampaign = async (projectId: number, { tags, ...params }: CampaignParams): Promise<Campaign> => {
+export const createCampaign = async (projectId: number, { tags, ...params }: CampaignCreateParams): Promise<Campaign> => {
     const subscription = await Subscription.find(params.subscription_id)
     if (!subscription) {
         throw new RequestError('Unable to find associated subscription', 404)
     }
 
     const delivery = { sent: 0, total: 0 }
-    if (params.list_id) {
-        delivery.total = await listUserCount(params.list_id)
+    if (params.list_ids) {
+        delivery.total = await totalUsersCount(
+            params.list_ids,
+            params.exclusion_list_ids ?? [],
+        )
     }
 
     const id = await Campaign.insert({
@@ -90,17 +95,32 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
 
 export const updateCampaign = async (id: number, projectId: number, { tags, ...params }: Partial<CampaignParams>): Promise<Campaign | undefined> => {
 
-    const data: Partial<Campaign> = { ...params }
-
-    // Calculate current state based on past properties
-    if (params.send_at && data.state !== 'finished') {
-        data.state = 'scheduled'
-    } else {
-        data.state = data.state === 'running' ? 'aborted' : 'draft'
+    // Ensure finished campaigns are no longer modified
+    const campaign = await getCampaign(id, projectId) as Campaign
+    if (campaign.state === 'finished') {
+        throw new RequestError(CampaignError.CampaignFinished)
     }
 
+    const data: Partial<Campaign> = { ...params }
+
+    // If we are aborting, reset `send_at`
+    if (data.state === 'aborted') {
+        data.send_at = undefined
+        await abortCampaign(campaign)
+    }
+
+    // If we are rescheduling, abort sends to they are reset
+    if (data.send_at !== campaign.send_at) {
+        data.state = 'pending'
+        await abortCampaign(campaign)
+    }
+
+    // Check templates to make sure we can schedule a send
     if (data.state === 'scheduled') {
         await validateTemplates(projectId, id)
+
+        // Set to pending if success so scheduling starts
+        data.state = 'pending'
     }
 
     await Campaign.update(qb => qb.where('id', id), {
@@ -116,7 +136,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         })
     }
 
-    return getCampaign(id, projectId)
+    return await getCampaign(id, projectId)
 }
 
 export const archiveCampaign = async (id: number, projectId: number) => {
@@ -161,6 +181,9 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
     // TODO: Should filter out anyone who has already been through this
     // campaign before
 
+    // TODO: Create a `campaign_send` record for users coming through
+    // this path
+
     const channels = {
         email: EmailJob.from(body),
         text: TextJob.from(body),
@@ -185,27 +208,30 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
         .merge(['state'])
 }
 
-export const sendList = async (campaign: SentCampaign) => {
+export const generateSendList = async (campaign: SentCampaign) => {
 
     const project = await getProject(campaign.project_id)
-    if (!campaign.list_id || !project) {
+    if (!campaign.list_ids || !project) {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
     // Update campaign state to show it's processing
     await Campaign.update(qb => qb.where('id', campaign.id), {
-        state: 'running',
         delivery: {
             sent: 0,
-            total: await listUserCount(campaign.list_id),
+            total: await totalUsersCount(
+                campaign.list_ids,
+                campaign.exclusion_list_ids ?? [],
+            ),
         },
     })
 
     const insertChunk = async (chunk: CampaignSendParams[]) => {
+        if (chunk.length <= 0) return
         return await CampaignSend.query()
             .insert(chunk)
             .onConflict(['user_id', 'list_id'])
-            .ignore()
+            .merge(['state', 'send_at'])
     }
 
     // Stream results so that we aren't overwhelmed by millions
@@ -237,6 +263,8 @@ export const sendList = async (campaign: SentCampaign) => {
         .then(async function() {
             // Insert remaining items
             await insertChunk(chunk)
+
+            await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
         })
 }
 
@@ -250,24 +278,48 @@ export const campaignSendReadyQuery = () => {
 
 export const recipientQuery = (campaign: Campaign) => {
 
-    // Merge user subscription state in to filter out anyone
-    // who we can't send do
     return UserList.query()
         .select('user_list.user_id', 'users.timezone')
-        .where('list_id', campaign.list_id)
+
+        // Join user subscriptions to filter out unsubscribes
         .leftJoin('user_subscription', qb => {
             qb.on('user_list.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
         })
-        .leftJoin('users', 'users.id', '=', 'user_list.user_id')
+
+        // Join users to get the timezone field
+        .leftJoin('users', 'users.id', 'user_list.user_id')
+
+        // Join previous campaign successful sends
+        .leftJoin('campaign_sends', qb => {
+            qb.on('campaign_sends.user_id', 'user_list.user_id')
+                .andOn('campaign_sends.campaign_id', '=', UserList.raw(campaign.id))
+                .andOn('campaign_sends.state', '=', UserList.raw('"sent"'))
+        })
+
+        // Allow users with no preference or explicit preference
         .where(qb => {
             qb.whereNull('user_subscription.id')
                 .orWhere('user_subscription.state', '>', 0)
         })
+
+        // Find all users in provided lists, removing ones in exclusion list
+        .whereIn('list_id', campaign.list_ids ?? [])
+        .whereNotIn('list_id', campaign.exclusion_list_ids ?? [])
+
+        // Filter out existing sends (handle aborts & reschedules)
+        .whereNull('campaign_sends.id')
+}
+
+export const abortCampaign = async (campaign: Campaign) => {
+    await CampaignSend.query()
+        .where('campaign_id', campaign.id)
+        .where('state', 'pending')
+        .update({ state: 'aborted' })
 }
 
 export const duplicateCampaign = async (campaign: Campaign) => {
-    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_id', 'provider_id', 'subscription_id', 'channel', 'name'])
+    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name'])
     params.name = `Copy of ${params.name}`
     params.state = 'draft'
     const cloneId = await Campaign.insert(params)
@@ -277,13 +329,20 @@ export const duplicateCampaign = async (campaign: Campaign) => {
     return await getCampaign(cloneId, campaign.project_id)
 }
 
-export const campaignProgress = async (campaign: Campaign): Promise<CampaignDelivery> => {
+const totalUsersCount = async (listIds: number[], exclusionListIds: number[]): Promise<number> => {
+    const totalIncluded = await listUserCount(listIds)
+    const totalExcluded = await listUserCount(exclusionListIds)
+    return Math.max(0, (totalIncluded - totalExcluded))
+}
+
+export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
         .where('campaign_id', campaign.id)
-        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, COUNT(*) AS total"))
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total"))
         .first()
     return {
         sent: parseInt(progress.sent),
+        pending: parseInt(progress.pending),
         total: parseInt(progress.total),
     }
 }

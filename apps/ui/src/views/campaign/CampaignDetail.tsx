@@ -3,7 +3,7 @@ import PageContent from '../../ui/PageContent'
 import { Outlet } from 'react-router-dom'
 import { NavigationTabs } from '../../ui/Tabs'
 import { useContext, useEffect, useState } from 'react'
-import { CampaignContext, LocaleContext, LocaleSelection } from '../../contexts'
+import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../contexts'
 import { languageName } from '../../utils'
 import { FieldOption } from '../../ui/form/Field'
 import { Campaign, Template } from '../../types'
@@ -42,14 +42,19 @@ export const createLocale = async (newLocale: string, campaign: Campaign): Promi
 }
 
 export default function CampaignDetail() {
-
-    const [campaign] = useContext(CampaignContext)
+    const [project] = useContext(ProjectContext)
+    const [campaign, setCampaign] = useContext(CampaignContext)
     const { name, templates, state } = campaign
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     useEffect(() => {
         setLocale(localeState(templates ?? []))
     }, [campaign.id])
     const [isLaunchOpen, setIsLaunchOpen] = useState(false)
+
+    const handleAbort = async () => {
+        const value = await api.campaigns.update(project.id, campaign.id, { state: 'aborted' })
+        setCampaign(value)
+    }
 
     const tabs = [
         {
@@ -77,8 +82,9 @@ export default function CampaignDetail() {
     const action = {
         draft: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Launch Campaign</Button>,
         aborted: <Button icon={<RestartIcon />} onClick={() => setIsLaunchOpen(true)}>Restart Campaign</Button>,
+        pending: <></>,
         scheduled: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Change Schedule</Button>,
-        running: <Button icon={<ForbiddenIcon />} onClick={() => setIsLaunchOpen(true)}>Abort Campaign</Button>,
+        running: <Button icon={<ForbiddenIcon />} onClick={async () => await handleAbort()}>Abort Campaign</Button>,
         finished: <></>,
     }
 

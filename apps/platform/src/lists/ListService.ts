@@ -30,6 +30,25 @@ export const pagedLists = async (params: SearchParams, projectId: number) => {
     return result
 }
 
+export const allLists = async (projectId: number, listIds?: number[]) => {
+    const lists = await List.all(qb => {
+        qb.where('project_id', projectId)
+        if (listIds) {
+            qb.whereIn('id', listIds)
+        }
+        return qb
+    })
+
+    if (lists.length) {
+        const tags = await getTags(List.tableName, lists.map(l => l.id))
+        for (const list of lists) {
+            list.tags = tags.get(list.id)
+        }
+    }
+
+    return lists
+}
+
 export const getList = async (id: number, projectId: number) => {
     const list = await List.find(id, qb => qb.where('project_id', projectId))
     if (list) {
@@ -203,6 +222,7 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
     }
 }
 
-export const listUserCount = async (listId: number): Promise<number> => {
-    return await UserList.count(qb => qb.where('list_id', listId))
+export const listUserCount = async (listId: number | number[]): Promise<number> => {
+    const lists = Array.isArray(listId) ? listId : [listId]
+    return await UserList.count(qb => qb.whereIn('list_id', lists))
 }

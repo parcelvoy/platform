@@ -5,17 +5,21 @@ import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
 
-export type CampaignState = 'draft' | 'scheduled' | 'running' | 'finished' | 'aborted'
+export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'
 export interface CampaignDelivery {
     sent: number
     total: number
 }
 
+export type CampaignProgress = CampaignDelivery & { pending: number }
+
 export default class Campaign extends Model {
     project_id!: number
     name!: string
-    list_id?: number
-    list?: List
+    list_ids?: number[]
+    lists?: List[]
+    exclusion_list_ids?: number[]
+    exclusion_lists?: List[]
     channel!: ChannelType
     subscription_id!: number
     subscription?: Subscription
@@ -31,15 +35,16 @@ export default class Campaign extends Model {
 
     deleted_at?: Date
 
-    static jsonAttributes = ['delivery']
+    static jsonAttributes = ['delivery', 'list_ids', 'exclusion_list_ids']
 }
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'state' | 'delivery' | 'screenshotUrl' | 'templates' | 'list' | 'subscription' | 'provider' | 'deleted_at'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'screenshotUrl' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'deleted_at'>
+export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
 
-export type CampaignSendState = 'pending' | 'sent' | 'failed'
+export type CampaignSendState = 'pending' | 'sent' | 'failed' | 'aborted'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number

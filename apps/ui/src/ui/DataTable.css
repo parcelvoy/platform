@@ -89,6 +89,7 @@
     animation: 1s loading ease-in-out infinite;
     opacity: 0.7;
 }
+
 .ui-table .table-row.loading:hover .table-cell {
     background: transparent;
     cursor: default;

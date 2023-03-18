@@ -17,6 +17,7 @@ export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
         draft: 'plain',
         aborted: 'error',
+        pending: 'info',
         scheduled: 'info',
         running: 'info',
         finished: 'success',
