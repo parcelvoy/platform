@@ -5,7 +5,6 @@ import App from '../app'
 import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
-import CampaignSendJob from '../campaigns/CampaignSendJob'
 import Model from '../core/Model'
 import { sleep, randomInt } from '../utilities'
 
@@ -16,7 +15,6 @@ export default async (app: App) => {
         callback: () => {
             app.queue.enqueue(JourneyDelayJob.from())
             app.queue.enqueue(CampaignTriggerJob.from())
-            app.queue.enqueue(CampaignSendJob.from())
         },
         lockLength: 120,
     })

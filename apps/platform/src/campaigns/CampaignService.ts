@@ -20,6 +20,7 @@ import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
 import CampaignError from './CampaignError'
+import CampaignGenerateListJob from './CampaignGenerateListJob'
 
 export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
     const result = await Campaign.searchParams(
@@ -134,6 +135,10 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
             entity_id: id,
             names: tags,
         })
+    }
+
+    if (data.state === 'pending') {
+        await CampaignGenerateListJob.from(campaign).queue()
     }
 
     return await getCampaign(id, projectId)
@@ -268,12 +273,12 @@ export const generateSendList = async (campaign: SentCampaign) => {
         })
 }
 
-export const campaignSendReadyQuery = () => {
+export const campaignSendReadyQuery = (campaignId: number) => {
     return CampaignSend.query()
         .where('campaign_sends.send_at', '<', CampaignSend.raw('NOW()'))
         .where('campaign_sends.state', 'pending')
-        .leftJoin('campaigns', 'campaigns.id', '=', 'campaign_sends.campaign_id')
-        .select('user_id', 'campaigns.*')
+        .where('campaign_id', campaignId)
+        .select('user_id')
 }
 
 export const recipientQuery = (campaign: Campaign) => {

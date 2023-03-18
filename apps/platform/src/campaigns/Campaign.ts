@@ -53,3 +53,8 @@ export class CampaignSend extends Model {
 }
 
 export type CampaignSendParams = Pick<CampaignSend, 'campaign_id' | 'user_id' | 'state' | 'send_at'>
+
+export interface CampaignJobParams {
+    id: number
+    project_id: number
+}
