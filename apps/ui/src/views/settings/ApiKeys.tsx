@@ -8,7 +8,8 @@ import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import { PlusIcon } from '../../ui/icons'
+import { ArchiveIcon, PlusIcon } from '../../ui/icons'
+import Menu, { MenuItem } from '../../ui/Menu'
 
 export default function ProjectApiKeys() {
 
@@ -16,6 +17,13 @@ export default function ProjectApiKeys() {
     const state = useSearchTableState(useCallback(async params => await api.apiKeys.search(project.id, params), [project]))
 
     const [editing, setEditing] = useState<null | Partial<ProjectApiKey>>(null)
+
+    const handleArchive = async (id: number) => {
+        if (confirm('Are you sure you want to archive this key? All clients using the key will immediately be unable to access the API.')) {
+            await api.apiKeys.delete(project.id, id)
+            await state.reload()
+        }
+    }
 
     return (
         <>
@@ -26,6 +34,16 @@ export default function ProjectApiKeys() {
                     { key: 'scope' },
                     { key: 'value' },
                     { key: 'description' },
+                    {
+                        key: 'options',
+                        cell: ({ item: { id } }) => (
+                            <Menu size="small">
+                                <MenuItem onClick={async () => await handleArchive(id)}>
+                                    <ArchiveIcon />Archive
+                                </MenuItem>
+                            </Menu>
+                        ),
+                    },
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={setEditing}
@@ -41,7 +59,7 @@ export default function ProjectApiKeys() {
                 }
             />
             <Modal
-                title="Create API Key"
+                title={editing ? 'Update API Key' : 'Create API Key'}
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
@@ -57,8 +75,8 @@ export default function ProjectApiKeys() {
                             setEditing(null)
                         }
                     }
-                    defaultValues={{ scope: 'public' }}
-                    submitLabel="Create"
+                    defaultValues={editing ?? { scope: 'public' }}
+                    submitLabel={editing ? 'Save' : 'Create'}
                 >
                     {
                         form => (
@@ -73,6 +91,7 @@ export default function ProjectApiKeys() {
                                     form={form}
                                     name="description"
                                     label="Description"
+                                    textarea
                                 />
                                 {
                                     !!(editing && !editing.id) && (

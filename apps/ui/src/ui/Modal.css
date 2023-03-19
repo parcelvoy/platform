@@ -67,6 +67,16 @@
     overflow: auto;
 }
 
+.modal:not(.fullscreen) .modal-inner .modal-actions {
+    margin-right: -5px;
+}
+
+.modal:not(.fullscreen) .modal-inner .modal-actions .ui-button .button-icon,
+.modal:not(.fullscreen) .modal-inner .modal-actions .ui-button .button-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
 .modal-inner .modal-header h3 {
     margin-top: 0;
     margin-bottom: 0;

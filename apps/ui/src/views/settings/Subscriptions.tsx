@@ -68,6 +68,7 @@ export default function Subscriptions() {
                                 <SingleSelect.Field
                                     form={form}
                                     name="channel"
+                                    label="Channel"
                                     options={['email', 'push', 'text', 'webhook']}
                                 />
                             </>

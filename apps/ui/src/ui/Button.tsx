@@ -4,7 +4,7 @@ import { Link, To } from 'react-router-dom'
 import './Button.css'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'plain'
-export type ButtonSize = 'small' | 'regular'
+export type ButtonSize = 'tiny' | 'small' | 'regular'
 
 type BaseButtonProps = PropsWithChildren<{
     children?: React.ReactNode
@@ -47,6 +47,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
         isLoading = false,
         disabled,
         style,
+        ...rest
     } = props
     return (
         <button
@@ -62,6 +63,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
             ref={ref}
             disabled={disabled ?? isLoading}
             style={style}
+            {...rest}
         >
             {icon && (<span className="button-icon">{icon}</span>)}
             {children}

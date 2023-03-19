@@ -20,7 +20,6 @@ const NavLink = React.forwardRef(
             >
                 <>
                     {icon && (<div className="nav-icon">{icon}</div>)}
-                    &nbsp;
                     {props.children}
                 </>
             </BaseNavLink>
