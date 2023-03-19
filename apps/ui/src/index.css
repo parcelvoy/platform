@@ -92,7 +92,8 @@ input:hover, textarea:hover {
 }
 
 form .form-submit {
-    margin-top: 25px;
+    margin-top: 20px;
+    margin-bottom: 0;
     display: inline-block;
 }
 

@@ -64,17 +64,13 @@ export default function Modal({
                                     )
                                 }
                                 <Dialog.Title as="h3">{title}</Dialog.Title>
-                                <div className="modal-actions">
-                                    {
-                                        size === 'fullscreen'
-                                            ? actions
-                                            : actions ?? <Button
-                                                size="tiny"
-                                                variant="plain"
-                                                icon={<CloseIcon />}
-                                                onClick={() => onClose(false)} />
-                                    }
-                                </div>
+                                {
+                                    size === 'fullscreen' && actions && (
+                                        <div className="modal-fullscreen-actions">
+                                            {actions}
+                                        </div>
+                                    )
+                                }
                             </div>
                             {
                                 description && (
@@ -92,6 +88,14 @@ export default function Modal({
                                         {actions}
                                     </div>
                                 )
+                            }
+                            {
+                                size !== 'fullscreen' && <Button
+                                    className="modal-close"
+                                    size="tiny"
+                                    variant="plain"
+                                    icon={<CloseIcon />}
+                                    onClick={() => onClose(false)} />
                             }
                         </Dialog.Panel>
                     </Transition.Child>

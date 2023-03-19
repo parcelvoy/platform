@@ -39,6 +39,7 @@ export { LinkButton }
 const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButtonElement> | undefined) {
     const {
         onClick,
+        className,
         type = 'button',
         variant = 'primary',
         size = 'regular',
@@ -51,6 +52,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
     } = props
     return (
         <button
+            {...rest}
             onClick={onClick}
             type={type}
             className={clsx(
@@ -59,11 +61,11 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
                 size,
                 { 'is-loading': isLoading },
                 { 'ui-button-no-children': children == null },
+                className,
             )}
             ref={ref}
             disabled={disabled ?? isLoading}
             style={style}
-            {...rest}
         >
             {icon && (<span className="button-icon">{icon}</span>)}
             {children}

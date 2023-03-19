@@ -20,6 +20,7 @@
     box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.12);
     max-height: 90vh;
     overflow-y: scroll;
+    position: relative;
 }
 
 .modal.regular .modal-inner {
@@ -67,12 +68,14 @@
     overflow: auto;
 }
 
-.modal:not(.fullscreen) .modal-inner .modal-actions {
-    margin-right: -5px;
+.modal .modal-close {
+    position: absolute;
+    top: 30px;
+    right: 25px;
 }
 
-.modal:not(.fullscreen) .modal-inner .modal-actions .ui-button .button-icon,
-.modal:not(.fullscreen) .modal-inner .modal-actions .ui-button .button-icon svg {
+.modal .modal-close .button-icon,
+.modal .modal-close .button-icon svg {
     width: 20px;
     height: 20px;
 }
