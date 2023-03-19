@@ -1,3 +1,4 @@
+# Configuration
 Find below a list of all environment variables that can be set at launch to configure different portions of the application:
 
 
