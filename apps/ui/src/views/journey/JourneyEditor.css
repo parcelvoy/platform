@@ -15,14 +15,13 @@
 
 .journey-options {
     max-width: 300px;
-    padding: 20px;
     border-right: 1px solid var(--color-grey);
     position: relative;
     overflow: scroll;
 }
 
 .journey-options h4 {
-    padding: 10px 0;
+    padding: 10px 20px;
     margin: 0;
     border-bottom: 1px solid var(--color-grey);
 }
@@ -35,7 +34,7 @@
     display: grid;
     grid-template-areas: "handle title" "handle desc";
     border-bottom: 1px solid var(--color-grey);
-    padding: 20px 0px;
+    padding: 20px;
     column-gap: 15px;
     cursor: grab;
 }
@@ -52,13 +51,26 @@
     background-color: var(--color-grey);
     grid-area: handle;
     align-self: start;
-    padding: 8px;
-    border-radius: 3px;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.component-handle svg {
+    width: 16px;
+    height: 16px;
 }
 
 .component.entrance .component-handle, .journey-step.entrance .step-header-icon {
     background-color: var(--color-red-soft);
     color: var(--color-red-hard);
+}
+
+.component.entrance .component-handle svg, .journey-step.entrance .step-header-icon svg {
+    margin-left: -4px;
 }
 
 .component.delay .component-handle, .journey-step.delay .step-header-icon {
@@ -167,6 +179,11 @@
 .journey-step-header .step-header-icon {
     padding: 5px;
     border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .journey-step-header .step-header-title {
