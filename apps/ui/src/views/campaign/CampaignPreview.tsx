@@ -4,6 +4,7 @@ import SourceEditor from '@monaco-editor/react'
 import './CampaignPreview.css'
 import api from '../../api'
 import Preview from '../../ui/Preview'
+import { toast } from 'react-hot-toast'
 import { debounce } from '../../utils'
 import Heading from '../../ui/Heading'
 import LocaleSelector from './LocaleSelector'
@@ -14,7 +15,8 @@ import TextField from '../../ui/form/TextField'
 import ButtonGroup from '../../ui/ButtonGroup'
 import Modal, { ModalProps } from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import { User } from '../../types'
+import { ChannelType, TemplateProofParams, User } from '../../types'
+import FormWrapper from '../../ui/form/FormWrapper'
 
 interface UserLookupProps extends Omit<ModalProps, 'title'> {
     onSelected: (user: User) => void
@@ -53,6 +55,28 @@ const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
     </Modal>
 }
 
+interface SendProofProps extends Omit<ModalProps, 'title'> {
+    type: ChannelType
+    onSubmit: (recipient: string) => Promise<void>
+}
+
+const SendProof = ({ open, onClose, onSubmit, type }: SendProofProps) => {
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title="Send Proof"
+            description={`Enter the ${type === 'email' ? 'email address' : 'phone number'} of the recipient you want to receive the proof of this template.`}>
+            <FormWrapper<TemplateProofParams>
+                onSubmit={async ({ recipient }) => await onSubmit(recipient)}>
+                {form => (
+                    <TextField form={form} name="recipient" required />
+                )}
+            </FormWrapper>
+        </Modal>
+    )
+}
+
 export default function CampaignPreview() {
 
     const [project] = useContext(ProjectContext)
@@ -60,6 +84,7 @@ export default function CampaignPreview() {
     const [{ currentLocale }] = useContext(LocaleContext)
     const openState = useState(false)
     const [isUserLookupOpen, setIsUserLookupOpen] = useState(false)
+    const [isSendProofOpen, setIsSendProofOpen] = useState(false)
     const template = campaignState[0].templates.find(template => template.locale === currentLocale?.key)
 
     if (!template) {
@@ -86,6 +111,15 @@ export default function CampaignPreview() {
         const { data } = await api.templates.preview(project.id, template.id, JSON.parse(value ?? '{}'))
         setData(data)
     }), [template])
+
+    const handleSendProof = async (recipient: string) => {
+        await api.templates.proof(project.id, template.id, {
+            variables: JSON.parse(value ?? '{}'),
+            recipient,
+        })
+        setIsSendProofOpen(false)
+        toast.success('Template proof has been successfully sent!')
+    }
 
     return (
         <>
@@ -115,7 +149,12 @@ export default function CampaignPreview() {
                     </div>
                 </Column>
                 <Column>
-                    <Heading title="Preview" size="h4" />
+                    <Heading title="Preview" size="h4" actions={
+                        <Button
+                            size="small"
+                            variant="secondary"
+                            onClick={() => setIsSendProofOpen(true)}>Send Proof</Button>
+                    } />
                     <Preview template={{ type: template.type, data }} />
                 </Column>
             </Columns>
@@ -129,6 +168,11 @@ export default function CampaignPreview() {
                         event: {},
                     }, undefined, 4))
                 }} />
+            <SendProof
+                open={isSendProofOpen}
+                onClose={setIsSendProofOpen}
+                onSubmit={handleSendProof}
+                type={template.type} />
         </>
     )
 }

@@ -1,6 +1,14 @@
 import { SearchParams } from '../core/searchParams'
-import Template, { TemplateParams, TemplateUpdateParams } from './Template'
+import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
 import { pick, prune } from '../utilities'
+import { Variables } from '.'
+import { loadEmailChannel } from '../providers/email'
+import { getCampaign } from '../campaigns/CampaignService'
+import { User } from '../users/User'
+import { UserEvent } from '../users/UserEvent'
+import { loadTextChannel } from '../providers/text'
+import { RequestError } from '../core/errors'
+import CampaignError from '../campaigns/CampaignError'
 
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
@@ -46,5 +54,29 @@ export const validateTemplates = async (projectId: number, campaignId: number) =
     for (const template of templates) {
         const [isValid, error] = template.map().validate()
         if (!isValid) throw error
+    }
+}
+
+export const sendProof = async (template: TemplateType, variables: Variables, recipient: string) => {
+
+    const campaign = await getCampaign(template.campaign_id, template.project_id)
+    if (!campaign) throw new RequestError(CampaignError.CampaignDoesNotExist)
+
+    if (template.type === 'email') {
+        const channel = await loadEmailChannel(campaign.provider_id, template.project_id)
+        await channel?.send(template, {
+            user: User.fromJson({ ...variables.user, data: variables.user, email: recipient }),
+            event: UserEvent.fromJson(variables.event || {}),
+            context: variables.context || {},
+        })
+    } else if (template.type === 'text') {
+        const channel = await loadTextChannel(campaign.provider_id, template.project_id)
+        await channel?.send(template, {
+            user: User.fromJson({ ...variables.user, data: variables.user, phone: recipient }),
+            event: UserEvent.fromJson(variables.event || {}),
+            context: variables.context || {},
+        })
+    } else {
+        throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
     }
 }

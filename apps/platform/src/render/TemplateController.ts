@@ -4,7 +4,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import Template, { TemplateParams, TemplateUpdateParams } from './Template'
-import { createTemplate, getTemplate, pagedTemplates, updateTemplate } from './TemplateService'
+import { createTemplate, getTemplate, pagedTemplates, sendProof, updateTemplate } from './TemplateService'
 import { Variables } from '.'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
@@ -210,6 +210,32 @@ router.post('/:templateId/preview', async ctx => {
         event: UserEvent.fromJson(payload.event || {}),
         context: payload.context || {},
     })
+})
+
+interface TemplateProofParams {
+    variables: any
+    recipient: string
+}
+
+const templateProofParams: JSONSchemaType<TemplateProofParams> = {
+    $id: 'templateProof',
+    type: 'object',
+    required: ['recipient'],
+    properties: {
+        variables: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
+        recipient: { type: 'string' },
+    },
+    additionalProperties: false,
+}
+router.post('/:templateId/proof', async ctx => {
+    const { variables, recipient } = validate(templateProofParams, ctx.request.body)
+    const template = ctx.state.template!.map()
+
+    ctx.body = await sendProof(template, variables, recipient)
 })
 
 export default router
