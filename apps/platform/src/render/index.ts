@@ -7,6 +7,7 @@ import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
 import { unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
 import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
+import App from '../app'
 
 export interface RenderContext {
     template_id: number
@@ -49,7 +50,13 @@ interface WrapParams {
 }
 export const Wrap = ({ html, preheader, variables: { user, context } }: WrapParams) => {
     const trackingParams = { userId: user.id, campaignId: context.campaign_id }
-    html = clickWrapHtml(html, trackingParams)
+
+    // Check if link wrapping is enabled first
+    if (App.main.env.tracking.linkWrap) {
+        html = clickWrapHtml(html, trackingParams)
+    }
+
+    // Open wrap & preheader wrap
     html = openWrapHtml(html, trackingParams)
     if (preheader) html = preheaderWrapHtml(html, preheader)
     return html

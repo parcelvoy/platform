@@ -12,6 +12,10 @@ export interface Env {
     port: number
     secret: string
     auth: AuthConfig
+    tracking: {
+        linkWrap: boolean,
+        deeplinkMirrorUrl: string | undefined,
+    }
 }
 
 export interface DriverConfig {
@@ -91,5 +95,9 @@ export default (type?: EnvType): Env => {
                 tokenLife: defaultTokenLife,
             }),
         }),
+        tracking: {
+            linkWrap: (process.env.TRACKING_LINK_WRAP ?? 'true') === 'true',
+            deeplinkMirrorUrl: process.env.TRACKING_DEEPLINK_MIRROR_URL,
+        },
     }
 }

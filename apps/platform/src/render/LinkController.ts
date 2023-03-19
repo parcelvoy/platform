@@ -16,4 +16,15 @@ router.get('/o', async ctx => {
     ctx.status = 204
 })
 
+router.get('/.well-known/:file', async ctx => {
+    const url = App.main.env.tracking.deeplinkMirrorUrl
+    const file = ctx.params.file
+    if (!url) {
+        ctx.status = 404
+        return
+    }
+    const response = await fetch(`${url}/.well-known/${file}`)
+    ctx.body = await response.json()
+})
+
 export default router
