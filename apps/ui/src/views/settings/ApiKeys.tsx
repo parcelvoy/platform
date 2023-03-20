@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import { ProjectApiKey } from '../../types'
+import { ProjectApiKey, projectRoles } from '../../types'
 import Button from '../../ui/Button'
 import OptionField from '../../ui/form/OptionField'
 import TextField from '../../ui/form/TextField'
@@ -10,6 +10,8 @@ import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { ArchiveIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
+import { SingleSelect } from '../../ui/form/SingleSelect'
+import { snakeToTitle } from '../../utils'
 
 export default function ProjectApiKeys() {
 
@@ -32,6 +34,10 @@ export default function ProjectApiKeys() {
                 columns={[
                     { key: 'name' },
                     { key: 'scope' },
+                    {
+                        key: 'role',
+                        cell: ({ item }) => item.scope === 'public' ? '--' : item.role,
+                    },
                     { key: 'value' },
                     { key: 'description' },
                     {
@@ -52,7 +58,7 @@ export default function ProjectApiKeys() {
                     <Button
                         icon={<PlusIcon />}
                         size="small"
-                        onClick={() => setEditing({ scope: 'public' })}
+                        onClick={() => setEditing({ scope: 'public', role: 'support' })}
                     >
                         Create Key
                     </Button>
@@ -63,53 +69,68 @@ export default function ProjectApiKeys() {
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
-                <FormWrapper<ProjectApiKey>
-                    onSubmit={
-                        async ({ id, name, description, scope }) => {
-                            if (id) {
-                                await api.apiKeys.update(project.id, id, { name, description })
-                            } else {
-                                await api.apiKeys.create(project.id, { name, description, scope })
+                {
+                    editing && (
+                        <FormWrapper<ProjectApiKey>
+                            onSubmit={
+                                async ({ id, name, description, scope }) => {
+                                    if (id) {
+                                        await api.apiKeys.update(project.id, id, { name, description })
+                                    } else {
+                                        await api.apiKeys.create(project.id, { name, description, scope })
+                                    }
+                                    await state.reload()
+                                    setEditing(null)
+                                }
                             }
-                            await state.reload()
-                            setEditing(null)
-                        }
-                    }
-                    defaultValues={editing ?? { scope: 'public' }}
-                    submitLabel={editing ? 'Save' : 'Create'}
-                >
-                    {
-                        form => (
-                            <>
-                                <TextField
-                                    form={form}
-                                    name="name"
-                                    label="Name"
-                                    required
-                                />
-                                <TextField
-                                    form={form}
-                                    name="description"
-                                    label="Description"
-                                    textarea
-                                />
-                                {
-                                    !!(editing && !editing.id) && (
-                                        <OptionField
-                                            form={form}
-                                            name="scope"
-                                            label="Scope"
-                                            options={[
-                                                { key: 'public', label: 'Public' },
-                                                { key: 'secret', label: 'Secret' },
-                                            ]}
-                                        />
+                            defaultValues={editing}
+                            submitLabel="Create"
+                        >
+                            {
+                                form => {
+                                    const scope = form.watch('scope')
+                                    return (
+                                        <>
+                                            <TextField
+                                                form={form}
+                                                name="name"
+                                                label="Name"
+                                                required
+                                            />
+                                            <TextField
+                                                form={form}
+                                                name="description"
+                                                label="Description"
+                                            />
+                                            <OptionField
+                                                form={form}
+                                                name="scope"
+                                                label="Scope"
+                                                options={[
+                                                    { key: 'public', label: 'Public' },
+                                                    { key: 'secret', label: 'Secret' },
+                                                ]}
+                                                disabled={!!editing?.id}
+                                            />
+                                            {
+                                                scope === 'secret' && (
+                                                    <SingleSelect.Field
+                                                        form={form}
+                                                        name="role"
+                                                        label="Role"
+                                                        options={projectRoles}
+                                                        getOptionDisplay={snakeToTitle}
+                                                        required
+                                                    />
+                                                )
+                                            }
+                                        </>
                                     )
                                 }
-                            </>
-                        )
-                    }
-                </FormWrapper>
+                            }
+                        </FormWrapper>
+                    )
+                }
             </Modal>
         </>
     )

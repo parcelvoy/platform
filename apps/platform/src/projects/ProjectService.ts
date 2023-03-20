@@ -1,9 +1,12 @@
+import { ProjectState } from 'auth/AuthMiddleware'
+import { Next, ParameterizedContext } from 'koa'
+import { RequestError } from '../core/errors'
 import { SearchParams } from '../core/searchParams'
 import { createSubscription } from '../subscriptions/SubscriptionService'
 import { uuid } from '../utilities'
-import Project, { ProjectParams } from './Project'
-import ProjectAdmin from './ProjectAdmins'
-import { ProjectApiKey, ProjectApiKeyParams, ProjectApiKeyUpdateParams } from './ProjectApiKey'
+import Project, { ProjectParams, ProjectRole, projectRoles } from './Project'
+import { ProjectAdmin } from './ProjectAdmins'
+import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
@@ -29,6 +32,7 @@ export const createProject = async (adminId: number, params: ProjectParams) => {
     await ProjectAdmin.insert({
         project_id: project.id,
         admin_id: adminId,
+        role: 'admin',
     })
 
     // Create a single subscription for each type
@@ -59,7 +63,7 @@ export const createProjectApiKey = async (projectId: number, params: ProjectApiK
     })
 }
 
-export const updateProjectApiKey = async (id: number, params: ProjectApiKeyUpdateParams) => {
+export const updateProjectApiKey = async (id: number, params: ProjectApiKeyParams) => {
     return await ProjectApiKey.updateAndFetch(id, params)
 }
 
@@ -71,4 +75,15 @@ export const generateApiKey = (scope: 'public' | 'secret') => {
     const key = uuid().replace('-', '')
     const prefix = scope === 'public' ? 'pk' : 'sk'
     return `${prefix}_${key}`
+}
+
+export const requireProjectRole = (ctx: ParameterizedContext<ProjectState>, minRole: ProjectRole) => {
+    if (projectRoles.indexOf(minRole) > projectRoles.indexOf(ctx.state.projectRole)) {
+        throw new RequestError(`minimum project role ${minRole} is required`, 403)
+    }
+}
+
+export const projectRoleMiddleware = (minRole: ProjectRole) => async (ctx: ParameterizedContext<ProjectState>, next: Next) => {
+    requireProjectRole(ctx, minRole)
+    return next()
 }

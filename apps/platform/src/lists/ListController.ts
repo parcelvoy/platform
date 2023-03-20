@@ -6,12 +6,15 @@ import { createList, getList, getListUsers, importUsersToList, pagedLists, updat
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 
 const router = new Router<
     ProjectState & { list?: List }
 >({
     prefix: '/lists',
 })
+
+router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)

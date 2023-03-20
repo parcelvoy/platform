@@ -28,6 +28,7 @@ const defaultOptionEnabled = () => true
 
 export function EntityIdPicker<T extends { id: number }>({
     createModalSize,
+    disabled,
     displayValue = defaultDisplayValue,
     get,
     inputRef,
@@ -60,6 +61,7 @@ export function EntityIdPicker<T extends { id: number }>({
             as="div"
             className="ui-select"
             nullable
+            disabled={disabled}
             value={entity}
             onChange={next => onChange(next?.id ?? 0)}
         >
@@ -188,7 +190,7 @@ EntityIdPicker.Field = function EntityIdPickerField<T extends { id: number }, X 
     required,
     ...rest
 }: EntityIdPickerFieldProps<T, X, P>) {
-    const { field } = useController({
+    const { field: { ref, ...field } } = useController({
         control: form!.control,
         name,
         rules: {
@@ -200,6 +202,7 @@ EntityIdPicker.Field = function EntityIdPickerField<T extends { id: number }, X 
         <EntityIdPicker
             {...rest}
             {...field}
+            inputRef={ref}
             required={required}
             disabled={disabled}
         />

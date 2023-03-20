@@ -5,10 +5,13 @@ import { archiveCampaign, createCampaign, deleteCampaign, duplicateCampaign, get
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 
 const router = new Router<ProjectState & { campaign?: Campaign }>({
     prefix: '/campaigns',
 })
+
+router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)

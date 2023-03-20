@@ -1,6 +1,6 @@
 import { parseISO, formatDuration as dateFnsFormatDuration } from 'date-fns'
 import { format } from 'date-fns-tz'
-import { Preferences } from './types'
+import { Preferences, ProjectRole, projectRoles } from './types'
 import { v4 } from 'uuid'
 
 export function createUuid() {
@@ -156,4 +156,11 @@ export function pushRecentProject(id: number | string) {
     }
     localStorageSetJson(RECENT_PROJECTS, stored)
     return stored
+}
+
+/**
+ * @returns true if user has at least the minRole
+ */
+export function checkProjectRole(minRole: ProjectRole, currentRole: ProjectRole = 'support') {
+    return projectRoles.indexOf(minRole) <= projectRoles.indexOf(currentRole)
 }

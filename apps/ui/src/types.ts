@@ -27,7 +27,7 @@ export interface FieldProps<X extends FieldValues, P extends FieldPath<X>> exten
 export type FieldBindingsProps<I extends ControlledInputProps<T>, T, X extends FieldValues, P extends FieldPath<X>> = Omit<I, keyof ControlledProps<T>> & FieldProps<X, P>
 
 export interface OptionsProps<O, V = O> {
-    options: O[]
+    options: O[] | readonly O[]
     toValue?: (option: O) => V
     getValueKey?: (option: V) => Key
     getOptionDisplay?: (option: O) => ReactNode
@@ -104,9 +104,24 @@ export interface Admin {
     email: string
 }
 
-export interface ProjectAdminCreateParams {
+export const projectRoles = [
+    'support',
+    'editor',
+    'admin',
+] as const
+
+export type ProjectRole = (typeof projectRoles)[number]
+
+export interface ProjectAdmin extends Omit<Admin, 'id'> {
+    id: number
+    created_at: string
+    updated_at: string
+    project_id: number
     admin_id: number
+    role: ProjectRole
 }
+
+export type ProjectAdminParams = Pick<ProjectAdmin, 'role'>
 
 export interface Project {
     id: number
@@ -117,6 +132,7 @@ export interface Project {
     created_at: string
     updated_at: string
     deleted_at?: string
+    role?: ProjectRole
 }
 
 export type ChannelType = 'email' | 'push' | 'text' | 'webhook'
@@ -128,10 +144,11 @@ export interface ProjectApiKey {
     value: string
     name: string
     scope: 'public' | 'secret'
+    role?: ProjectRole
     description?: string
 }
 
-export type ProjectApiKeyParams = Pick<ProjectApiKey, 'name' | 'description' | 'scope'>
+export type ProjectApiKeyParams = Pick<ProjectApiKey, 'name' | 'description' | 'scope' | 'role'>
 
 export interface User {
     id: number

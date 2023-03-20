@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdminCreateParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -201,7 +201,20 @@ const api = {
         },
     },
 
-    projectAdmins: createProjectEntityPath<Admin, ProjectAdminCreateParams>('admins'),
+    projectAdmins: {
+        search: async (projectId: number, params: SearchParams) => await client
+            .get<SearchResult<ProjectAdmin>>(`${projectUrl(projectId)}/admins`, { params })
+            .then(r => r.data),
+        add: async (projectId: number, adminId: number, params: ProjectAdminParams) => await client
+            .put<ProjectAdmin>(`${projectUrl(projectId)}/admins/${adminId}`, params)
+            .then(r => r.data),
+        get: async (projectId: number, adminId: number) => await client
+            .get<ProjectAdmin>(`${projectUrl(projectId)}/admins/${adminId}`)
+            .then(r => r.data),
+        remove: async (projectId: number, adminId: number) => await client
+            .delete(`${projectUrl(projectId)}/admins/${adminId}`)
+            .then(r => r.data),
+    },
 
     subscriptions: createProjectEntityPath<Subscription>('subscriptions'),
 

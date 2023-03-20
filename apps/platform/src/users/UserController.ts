@@ -12,6 +12,7 @@ import { getUserLists } from '../lists/ListService'
 import { getUserSubscriptions, toggleSubscription } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
 import { getUserEvents } from './UserEventRepository'
+import { requireProjectRole } from '../projects/ProjectService'
 
 const router = new Router<
     ProjectState & { user?: User }
@@ -84,6 +85,7 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
     minItems: 1,
 }
 router.patch('/', async ctx => {
+    requireProjectRole(ctx, 'editor')
     const users = validate(patchUsersRequest, ctx.request.body)
 
     for (const user of users) {
@@ -105,6 +107,7 @@ const deleteUsersRequest: JSONSchemaType<string[]> = {
     minItems: 1,
 }
 router.delete('/', async ctx => {
+    requireProjectRole(ctx, 'editor')
 
     let userIds = ctx.request.query.user_id || []
     if (!Array.isArray(userIds)) userIds = userIds.length ? [userIds] : []

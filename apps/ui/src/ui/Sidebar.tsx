@@ -11,10 +11,15 @@ import { SingleSelect } from './form/SingleSelect'
 import Button from './Button'
 import ButtonGroup from './ButtonGroup'
 import { MoonIcon, SunIcon } from './icons'
-import { getRecentProjects } from '../utils'
+import { checkProjectRole, getRecentProjects } from '../utils'
+import { ProjectRole } from '../types'
 
 interface SidebarProps {
-    links?: Array<NavLinkProps & { key: string, icon: ReactNode }>
+    links?: Array<NavLinkProps & {
+        key: string
+        icon: ReactNode
+        minRole?: ProjectRole
+    }>
 }
 
 export default function Sidebar({ children, links }: PropsWithChildren<SidebarProps>) {
@@ -78,9 +83,11 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                 />
                 <nav>
                     {
-                        links?.map(({ key, ...props }) => (
-                            <NavLink {...props} key={key} />
-                        ))
+                        links
+                            ?.filter(({ minRole }) => !minRole || checkProjectRole(minRole, project.role))
+                            .map(({ key, minRole, ...props }) => (
+                                <NavLink {...props} key={key} />
+                            ))
                     }
                 </nav>
                 {

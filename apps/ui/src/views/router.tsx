@@ -103,12 +103,14 @@ export const router = createBrowserRouter([
                                     to: 'campaigns',
                                     children: 'Campaigns',
                                     icon: <CampaignsIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'journeys',
                                     to: 'journeys',
                                     children: 'Journeys',
                                     icon: <JourneysIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'users',
@@ -121,12 +123,14 @@ export const router = createBrowserRouter([
                                     to: 'lists',
                                     children: 'Lists',
                                     icon: <ListsIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'settings',
                                     to: 'settings',
                                     children: 'Settings',
                                     icon: <SettingsIcon />,
+                                    minRole: 'admin',
                                 },
                             ]}
                         >

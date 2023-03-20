@@ -10,3 +10,11 @@ export default class Project extends Model {
 }
 
 export type ProjectParams = Omit<Project, ModelParams | 'deleted_at'>
+
+export const projectRoles = [
+    'support',
+    'editor',
+    'admin',
+] as const
+
+export type ProjectRole = (typeof projectRoles)[number]
