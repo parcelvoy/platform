@@ -2,6 +2,7 @@ import { Context } from 'react'
 import { RouteObject } from 'react-router-dom'
 import { ProjectEntityPath } from '../api'
 import { UseStateContext } from '../types'
+import ErrorPage from './ErrorPage'
 import { StatefulLoaderContextProvider } from './LoaderContextProvider'
 
 interface StatefulRoute<T extends Record<string, any>> {
@@ -24,5 +25,6 @@ export function createStatefulRoute<T extends { id: number }>({ context, path, a
             )
             : element,
         children: children.map(({ tab, ...rest }) => rest),
+        errorElement: <ErrorPage />,
     }
 }

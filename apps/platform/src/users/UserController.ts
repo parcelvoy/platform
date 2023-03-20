@@ -12,6 +12,7 @@ import { getUserLists } from '../lists/ListService'
 import { getUserSubscriptions, toggleSubscription } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
 import { getUserEvents } from './UserEventRepository'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 
 const router = new Router<
     ProjectState & { user?: User }
@@ -83,7 +84,7 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
     },
     minItems: 1,
 }
-router.patch('/', async ctx => {
+router.patch('/', projectRoleMiddleware('editor'), async ctx => {
     const users = validate(patchUsersRequest, ctx.request.body)
 
     for (const user of users) {
@@ -104,7 +105,7 @@ const deleteUsersRequest: JSONSchemaType<string[]> = {
     },
     minItems: 1,
 }
-router.delete('/', async ctx => {
+router.delete('/', projectRoleMiddleware('editor'), async ctx => {
 
     let userIds = ctx.request.query.user_id || []
     if (!Array.isArray(userIds)) userIds = userIds.length ? [userIds] : []

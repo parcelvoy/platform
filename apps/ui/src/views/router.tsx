@@ -38,6 +38,7 @@ import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
 import { pushRecentProject } from '../utils'
+import { ProjectRoleRequired } from './project/ProjectRoleRequired'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -103,12 +104,14 @@ export const router = createBrowserRouter([
                                     to: 'campaigns',
                                     children: 'Campaigns',
                                     icon: <CampaignsIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'journeys',
                                     to: 'journeys',
                                     children: 'Journeys',
                                     icon: <JourneysIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'users',
@@ -121,12 +124,14 @@ export const router = createBrowserRouter([
                                     to: 'lists',
                                     children: 'Lists',
                                     icon: <ListsIcon />,
+                                    minRole: 'editor',
                                 },
                                 {
                                     key: 'settings',
                                     to: 'settings',
                                     children: 'Settings',
                                     icon: <SettingsIcon />,
+                                    minRole: 'admin',
                                 },
                             ]}
                         >
@@ -230,44 +235,46 @@ export const router = createBrowserRouter([
                     {
                         path: 'settings',
                         element: (
-                            <PageContent title="Settings">
-                                <NavigationTabs
-                                    tabs={[
-                                        {
-                                            key: 'general',
-                                            to: '',
-                                            end: true,
-                                            children: 'General',
-                                        },
-                                        {
-                                            key: 'team',
-                                            to: 'team',
-                                            children: 'Team',
-                                        },
-                                        {
-                                            key: 'api-keys',
-                                            to: 'api-keys',
-                                            children: 'API Keys',
-                                        },
-                                        {
-                                            key: 'integrations',
-                                            to: 'integrations',
-                                            children: 'Integrations',
-                                        },
-                                        {
-                                            key: 'subscriptions',
-                                            to: 'subscriptions',
-                                            children: 'Subscriptions',
-                                        },
-                                        {
-                                            key: 'tags',
-                                            to: 'tags',
-                                            children: 'Tags',
-                                        },
-                                    ]}
-                                />
-                                <Outlet />
-                            </PageContent>
+                            <ProjectRoleRequired minRole="admin">
+                                <PageContent title="Settings">
+                                    <NavigationTabs
+                                        tabs={[
+                                            {
+                                                key: 'general',
+                                                to: '',
+                                                end: true,
+                                                children: 'General',
+                                            },
+                                            {
+                                                key: 'team',
+                                                to: 'team',
+                                                children: 'Team',
+                                            },
+                                            {
+                                                key: 'api-keys',
+                                                to: 'api-keys',
+                                                children: 'API Keys',
+                                            },
+                                            {
+                                                key: 'integrations',
+                                                to: 'integrations',
+                                                children: 'Integrations',
+                                            },
+                                            {
+                                                key: 'subscriptions',
+                                                to: 'subscriptions',
+                                                children: 'Subscriptions',
+                                            },
+                                            {
+                                                key: 'tags',
+                                                to: 'tags',
+                                                children: 'Tags',
+                                            },
+                                        ]}
+                                    />
+                                    <Outlet />
+                                </PageContent>
+                            </ProjectRoleRequired>
                         ),
                         children: [
                             {

@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
-import { pagedAdmins } from './AdminRepository'
+import { getAdmin, pagedAdmins } from './AdminRepository'
 
 const router = new Router({
     prefix: '/admins',
@@ -10,6 +10,10 @@ const router = new Router({
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await pagedAdmins(params)
+})
+
+router.get('/:adminId', async ctx => {
+    ctx.body = await getAdmin(parseInt(ctx.params.adminId, 10))
 })
 
 export default router

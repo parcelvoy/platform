@@ -3,20 +3,38 @@ import Project, { ProjectParams } from './Project'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
-import { Context } from 'koa'
-import { createProject, createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey, updateProjectApiKey } from './ProjectService'
+import { ParameterizedContext } from 'koa'
+import { createProject, getProject, requireProjectRole } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
-import { ProjectApiKeyParams, ProjectApiKeyUpdateParams } from './ProjectApiKey'
+import { getProjectAdmin } from './ProjectAdminRepository'
+import { RequestError } from '../core/errors'
+import { ProjectError } from './ProjectError'
 
-export async function projectMiddleware(ctx: Context, next: () => void) {
-    ctx.state.project = await getProject(
-        ctx.params.project ?? ctx.state.key.project_id,
-        ctx.state.admin?.id,
+export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
+
+    const project = await getProject(
+        ctx.state.scope === 'admin'
+            ? ctx.params.project
+            : ctx.state.key!.project_id,
     )
-    if (!ctx.state.project) {
-        ctx.throw(404)
+
+    if (!project) {
+        throw new RequestError(ProjectError.ProjectDoesNotExist)
     }
-    return await next()
+
+    ctx.state.project = project
+
+    if (ctx.state.scope === 'admin') {
+        const projectAdmin = await getProjectAdmin(project.id, ctx.state.admin!.id)
+        if (!projectAdmin) {
+            throw new RequestError(ProjectError.ProjectAccessDenied)
+        }
+        ctx.state.projectRole = projectAdmin.role ?? 'support'
+    } else {
+        ctx.state.projectRole = ctx.state.key!.role ?? 'support'
+    }
+
+    return next()
 }
 
 const router = new Router<AuthState>({ prefix: '/projects' })
@@ -63,7 +81,10 @@ export default router
 const subrouter = new Router<ProjectState>()
 
 subrouter.get('/', async ctx => {
-    ctx.body = ctx.state.project
+    ctx.body = {
+        ...ctx.state.project,
+        role: ctx.state.projectRole,
+    }
 })
 
 const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
@@ -91,60 +112,8 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
 }
 
 subrouter.patch('/', async ctx => {
+    requireProjectRole(ctx, 'admin')
     ctx.body = await Project.updateAndFetch(ctx.state.project!.id, validate(projectUpdateParams, ctx.request.body))
-})
-
-subrouter.get('/keys', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
-    ctx.body = await pagedApiKeys(params, ctx.state.project.id)
-})
-
-const projectKeyCreateParams: JSONSchemaType<ProjectApiKeyParams> = {
-    $id: 'projectKeyCreate',
-    type: 'object',
-    required: ['name'],
-    properties: {
-        scope: {
-            type: 'string',
-            enum: ['public', 'secret'],
-        },
-        name: {
-            type: 'string',
-        },
-        description: {
-            type: 'string',
-            nullable: true,
-        },
-    },
-    additionalProperties: false,
-}
-subrouter.post('/keys', async ctx => {
-    const payload = await validate(projectKeyCreateParams, ctx.request.body)
-    ctx.body = await createProjectApiKey(ctx.state.project.id, payload)
-})
-
-const projectKeyUpdateParams: JSONSchemaType<ProjectApiKeyUpdateParams> = {
-    $id: 'projectKeyUpdate',
-    type: 'object',
-    required: ['name'],
-    properties: {
-        name: {
-            type: 'string',
-        },
-        description: {
-            type: 'string',
-            nullable: true,
-        },
-    },
-    additionalProperties: false,
-}
-subrouter.patch('/keys/:keyId', async ctx => {
-    const payload = await validate(projectKeyUpdateParams, ctx.request.body)
-    ctx.body = updateProjectApiKey(parseInt(ctx.params.keyId, 10), payload)
-})
-
-subrouter.delete('/keys/:keyId', async ctx => {
-    ctx.body = revokeProjectApiKey(parseInt(ctx.params.keyId, 10))
 })
 
 export { subrouter as ProjectSubrouter }

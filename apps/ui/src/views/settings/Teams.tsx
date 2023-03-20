@@ -1,124 +1,121 @@
-import { Key, ReactNode, useCallback, useContext, useState } from 'react'
-import { useController } from 'react-hook-form'
+import { useCallback, useContext, useState } from 'react'
 import api from '../../api'
-import { ProjectContext } from '../../contexts'
-import { Admin, ProjectAdminCreateParams } from '../../types'
+import { AdminContext, ProjectContext } from '../../contexts'
+import { ProjectAdmin, projectRoles } from '../../types'
 import Button from '../../ui/Button'
-import { DataTableCol } from '../../ui/DataTable'
-import { SelectionProps } from '../../ui/form/Field'
+import { EntityIdPicker } from '../../ui/form/EntityIdPicker'
 import FormWrapper from '../../ui/form/FormWrapper'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 import { ArchiveIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import Modal from '../../ui/Modal'
-import { SearchTable, SearchTableQueryState, useSearchTableState } from '../../ui/SearchTable'
-import { useRoute } from '../router'
+import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
+import { snakeToTitle } from '../../utils'
 
-interface AdminTableParams {
-    state: SearchTableQueryState<Admin>
-    title?: ReactNode
-    actions?: ReactNode
-    selectedRow?: Key
-    onSelectRow?: (id: number) => void
-    onDeleteRow?: (id: number) => void
-    showOptions?: boolean
-}
-
-const AdminTable = ({
-    state,
-    selectedRow,
-    onSelectRow,
-    onDeleteRow,
-    title,
-    actions,
-}: AdminTableParams) => {
-    const route = useRoute()
-    function handleOnSelectRow(id: number) {
-        onSelectRow ? onSelectRow(id) : route(`lists/${id}`)
-    }
-
-    const columns: Array<DataTableCol<Admin>> = [
-        { key: 'first_name' },
-        { key: 'last_name' },
-        { key: 'email' },
-    ]
-    if (onDeleteRow) {
-        columns.push({
-            key: 'options',
-            cell: ({ item: { id } }) => (
-                <Menu size="small">
-                    <MenuItem onClick={() => onDeleteRow?.(id)}>
-                        <ArchiveIcon /> Remove
-                    </MenuItem>
-                </Menu>
-            ),
-        })
-    }
-
-    return <SearchTable
-        {...state}
-        title={title}
-        actions={actions}
-        columns={columns}
-        itemKey={({ item }) => item.id}
-        selectedRow={selectedRow}
-        onSelectRow={({ id }) => handleOnSelectRow(id)}
-    />
-}
-
-const AdminSelection = ({ name, control }: SelectionProps<ProjectAdminCreateParams>) => {
-    const state = useSearchTableState(useCallback(async params => await api.admins.search(params), []))
-
-    const { field: { value, onChange } } = useController({ name, control, rules: { required: true } })
-
-    return <AdminTable
-        state={state}
-        selectedRow={value}
-        onSelectRow={(id) => onChange(id)} />
-}
+type EditFormData = Pick<ProjectAdmin, 'admin_id' | 'role'> & { id?: number }
 
 export default function Teams() {
+    const admin = useContext(AdminContext)
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.projectAdmins.search(project.id, params), [project]))
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const handleDeleteProjectAdmin = async (id: number) => {
-        await api.projectAdmins.delete(project.id, id)
-        await state.reload()
-    }
+    const [editing, setEditing] = useState<null | EditFormData>(null)
+    const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, page: 0, itemsPerPage: 100 }), [])
 
     return (
         <>
-            <AdminTable
-                state={state}
+            <SearchTable
+                {...state}
                 title="Team"
-                onDeleteRow={handleDeleteProjectAdmin}
                 actions={
-                    <Button icon={<PlusIcon />} size="small" onClick={() => setIsModalOpen(true)}>
+                    <Button
+                        icon={<PlusIcon />}
+                        size="small"
+                        onClick={() => setEditing({
+                            admin_id: 0,
+                            role: 'support',
+                        })}
+                    >
                         Add Team Member
                     </Button>
                 }
+                columns={[
+                    { key: 'first_name' },
+                    { key: 'last_name' },
+                    { key: 'email' },
+                    {
+                        key: 'role',
+                        cell: ({ item }) => snakeToTitle(item.role),
+                    },
+                    {
+                        key: 'options',
+                        cell: ({ item }) => (
+                            <Menu size="small">
+                                <MenuItem
+                                    onClick={async () => {
+                                        await api.projectAdmins.remove(item.project_id, item.admin_id)
+                                        await state.reload()
+                                    }}
+                                >
+                                    <ArchiveIcon /> Remove
+                                </MenuItem>
+                            </Menu>
+                        ),
+                    },
+                ]}
+                itemKey={({ item }) => item.id}
+                onSelectRow={setEditing}
+                enableSearch
             />
             <Modal
-                title="Add Team Member"
-                open={isModalOpen}
-                onClose={setIsModalOpen}
+                title={editing?.id ? 'Update Team Member Permissions' : 'Add Team Member'}
+                open={Boolean(editing)}
+                onClose={() => setEditing(null)}
                 size="regular"
             >
-                <FormWrapper<ProjectAdminCreateParams>
-                    onSubmit={
-                        async admin => {
-                            await api.projectAdmins.create(project.id, admin)
-                            await state.reload()
-                            setIsModalOpen(false)
-                        }
-                    }
-                    submitLabel="Add To Project"
-                >
-                    {form => <>
-                        <AdminSelection
-                            name="admin_id"
-                            control={form.control} />
-                    </>}
-                </FormWrapper>
+                {
+                    editing && (
+                        <FormWrapper<EditFormData>
+                            onSubmit={async ({ admin_id, role }) => {
+                                await api.projectAdmins.add(project.id, admin_id, { role })
+                                await state.reload()
+                                setEditing(null)
+                            }}
+                            defaultValues={editing}
+                            submitLabel={editing.id ? 'Update Permissions' : 'Add to Project'}
+                        >
+                            {
+                                form => (
+                                    <>
+                                        <EntityIdPicker.Field
+                                            form={form}
+                                            name="admin_id"
+                                            label="Admin"
+                                            search={searchAdmins}
+                                            get={api.admins.get}
+                                            displayValue={({ first_name, last_name, email }) => `${first_name} ${last_name} (${email})`}
+                                            required
+                                            disabled={!!editing.admin_id}
+                                        />
+                                        <SingleSelect.Field
+                                            form={form}
+                                            name="role"
+                                            label="Role"
+                                            subtitle={admin?.id === editing.admin_id && (
+                                                <span style={{ color: 'red' }}>
+                                                    {'You cannot change your own roles.'}
+                                                </span>
+                                            )}
+                                            options={projectRoles}
+                                            getOptionDisplay={snakeToTitle}
+                                            required
+                                            disabled={!admin || admin.id === editing.admin_id}
+                                        />
+                                    </>
+                                )
+                            }
+                        </FormWrapper>
+                    )
+                }
             </Modal>
         </>
     )

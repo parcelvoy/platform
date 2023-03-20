@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import { Context } from 'koa'
 import App from '../app'
 import { RequestError } from '../core/errors'
-import Project from '../projects/Project'
+import Project, { ProjectRole } from '../projects/Project'
 import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
@@ -25,6 +25,7 @@ export interface AuthState {
 
 export interface ProjectState extends AuthState {
     project: Project
+    projectRole: ProjectRole
 }
 
 const parseAuth = async (ctx: Context) => {

@@ -164,7 +164,7 @@ export default class Model {
     static async searchParams<T extends typeof Model>(
         this: T,
         params: SearchParams,
-        fields: Array<keyof InstanceType<T>>,
+        fields: Array<keyof InstanceType<T> | string>,
         query: Query = qb => qb,
         db: Database = App.main.db,
     ) {

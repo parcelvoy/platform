@@ -1,4 +1,5 @@
 import Router from '@koa/router'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
@@ -12,6 +13,8 @@ const router = new Router<
 >({
     prefix: '/journeys',
 })
+
+router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)

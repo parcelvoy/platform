@@ -16,6 +16,7 @@ import ProfileController from '../profile/ProfileController'
 import TagController from '../tags/TagController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 import ProjectAdminController from '../projects/ProjectAdminController'
+import ProjectApiKeyController from '../projects/ProjectApiKeyController'
 import AdminController from '../auth/AdminController'
 
 const register = (parent: Router, ...routers: Router[]) => {
@@ -74,6 +75,7 @@ export const projectRouter = (prefix = '/projects/:project') => {
         TemplateController,
         ProviderController,
         ProjectAdminController,
+        ProjectApiKeyController,
         UserController,
         TagController,
     )
