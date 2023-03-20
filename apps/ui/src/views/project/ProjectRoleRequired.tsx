@@ -1,7 +1,7 @@
 import { PropsWithChildren, useContext } from 'react'
 import { ProjectContext } from '../../contexts'
 import { ProjectRole, projectRoles } from '../../types'
-import Alert from '../../ui/Alert'
+import { AccessDenied } from '../ErrorPage'
 
 type ProjectRoleRequiredProps = PropsWithChildren<{
     minRole: ProjectRole
@@ -10,11 +10,9 @@ type ProjectRoleRequiredProps = PropsWithChildren<{
 export function ProjectRoleRequired({ children, minRole }: ProjectRoleRequiredProps) {
     const [project] = useContext(ProjectContext)
 
-    if (projectRoles.indexOf(minRole) > projectRoles.indexOf((project as any).role!)) {
+    if (!project.role || projectRoles.indexOf(minRole) > projectRoles.indexOf(project.role)) {
         return (
-            <Alert variant="warn" title="Permission Required">
-                Please speak with your administrator to get access to this section.
-            </Alert>
+            <AccessDenied />
         )
     }
 

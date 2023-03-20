@@ -6,7 +6,7 @@ import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { Tag, TagParams } from './Tag'
 import { getUsedTags } from './TagService'
-import { requireProjectRole } from '../projects/ProjectService'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 
 const router = new Router<
     ProjectState & {
@@ -45,8 +45,7 @@ const tagParams: JSONSchemaType<TagParams> = {
     },
 }
 
-router.post('/', async ctx => {
-    requireProjectRole(ctx, 'editor')
+router.post('/', projectRoleMiddleware('editor'), async ctx => {
     ctx.body = await Tag.insertAndFetch({
         project_id: ctx.state.project!.id,
         ...validate(tagParams, ctx.request.body),
@@ -68,13 +67,11 @@ router.get('/:tagId', async ctx => {
     ctx.body = ctx.state.tag!
 })
 
-router.patch('/:tagId', async ctx => {
-    requireProjectRole(ctx, 'editor')
+router.patch('/:tagId', projectRoleMiddleware('editor'), async ctx => {
     ctx.body = await Tag.updateAndFetch(ctx.state.tag!.id, validate(tagParams, ctx.request.body))
 })
 
-router.delete('/:tagId', async ctx => {
-    requireProjectRole(ctx, 'editor')
+router.delete('/:tagId', projectRoleMiddleware('editor'), async ctx => {
     await Tag.delete(b => b.where('id', ctx.state.tag!.id))
     ctx.body = true
 })

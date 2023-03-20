@@ -10,7 +10,7 @@ import { encodedLinkToParts } from '../render/LinkService'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
-import { requireProjectRole } from '../projects/ProjectService'
+import { projectRoleMiddleware } from '../projects/ProjectService'
 
 /**
  ***
@@ -118,8 +118,7 @@ export const subscriptionCreateSchema: JSONSchemaType<SubscriptionParams> = {
     additionalProperties: false,
 }
 
-router.post('/', async ctx => {
-    requireProjectRole(ctx, 'admin')
+router.post('/', projectRoleMiddleware('admin'), async ctx => {
     const payload = validate(subscriptionCreateSchema, ctx.request.body)
     ctx.body = await createSubscription(ctx.state.project.id, payload)
 })

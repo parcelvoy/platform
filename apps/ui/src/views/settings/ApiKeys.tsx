@@ -84,7 +84,7 @@ export default function ProjectApiKeys() {
                                 }
                             }
                             defaultValues={editing}
-                            submitLabel="Create"
+                            submitLabel={editing?.id ? 'Update Key' : 'Create Key'}
                         >
                             {
                                 form => {

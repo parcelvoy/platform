@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, useNavigate, useRouteError } from 'react-router-dom'
+import { isRouteErrorResponse, Navigate, useNavigate, useRouteError } from 'react-router-dom'
 import Alert from '../ui/Alert'
 import Button from '../ui/Button'
 
@@ -20,15 +20,15 @@ export default function ErrorPage() {
     }
 
     if (status === 401) {
-        return null
+        // in case the data router didn't catch this already
+        return (
+            <Navigate to="/login" />
+        )
     }
 
     if (status === 403) {
         return (
-            <Alert variant="warn" title="Access Denied" style={{ margin: 15 }}>
-                Additional permission is required in order to access this section.
-                Please reach out to your administrator.
-            </Alert>
+            <AccessDenied />
         )
     }
 
@@ -52,6 +52,15 @@ export default function ErrorPage() {
     return (
         <Alert variant="error" title={`Error [${status.toString()}]`}>
             {message}
+        </Alert>
+    )
+}
+
+export function AccessDenied() {
+    return (
+        <Alert variant="warn" title="Access Denied" style={{ margin: 15 }}>
+            Additional permission is required in order to access this section.
+            Please reach out to your administrator.
         </Alert>
     )
 }
