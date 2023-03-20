@@ -346,6 +346,11 @@ export interface TemplatePreviewParams {
     ontext: Record<string, any>
 }
 
+export interface TemplateProofParams {
+    variables: TemplatePreviewParams
+    recipient: string
+}
+
 export enum SubscriptionState {
     unsubscribed = 0,
     subscribed = 1,
