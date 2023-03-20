@@ -10,3 +10,5 @@ export class ProjectApiKey extends Model {
 }
 
 export type ProjectApiKeyParams = Pick<ProjectApiKey, 'scope' | 'name' | 'description'>
+
+export type ProjectApiKeyUpdateParams = Pick<ProjectApiKey, 'name' | 'description'>

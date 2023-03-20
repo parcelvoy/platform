@@ -85,6 +85,7 @@ nav a .nav-icon {
     width: 16px;
     height: 16px;
     display: flex;
+    margin-right: 4px;
 }
 
 .sidebar-profile {

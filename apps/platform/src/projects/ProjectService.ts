@@ -3,7 +3,7 @@ import { createSubscription } from '../subscriptions/SubscriptionService'
 import { uuid } from '../utilities'
 import Project, { ProjectParams } from './Project'
 import ProjectAdmin from './ProjectAdmins'
-import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
+import { ProjectApiKey, ProjectApiKeyParams, ProjectApiKeyUpdateParams } from './ProjectApiKey'
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
@@ -57,6 +57,10 @@ export const createProjectApiKey = async (projectId: number, params: ProjectApiK
         value: generateApiKey(params.scope),
         project_id: projectId,
     })
+}
+
+export const updateProjectApiKey = async (id: number, params: ProjectApiKeyUpdateParams) => {
+    return await ProjectApiKey.updateAndFetch(id, params)
 }
 
 export const revokeProjectApiKey = async (id: number) => {

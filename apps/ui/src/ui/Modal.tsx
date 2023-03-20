@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, PropsWithChildren, ReactNode } from 'react'
+import { Fragment, PropsWithChildren, ReactNode, useRef } from 'react'
 import Button from './Button'
 import { CloseIcon } from './icons'
 import './Modal.css'
@@ -25,9 +25,10 @@ export default function Modal({
     actions,
     size,
 }: PropsWithChildren<ModalProps>) {
+    const ref = useRef<HTMLDivElement>(null)
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className={`modal ${size ?? 'small'}`} onClose={onClose}>
+            <Dialog as="div" className={`modal ${size ?? 'small'}`} onClose={onClose} initialFocus={ref}>
                 <Transition.Child
                     as={Fragment}
                     enter="transition-enter"
@@ -78,7 +79,7 @@ export default function Modal({
                                     </Dialog.Description>
                                 )
                             }
-                            <div className="modal-content">
+                            <div className="modal-content" ref={ref}>
                                 {children}
                             </div>
                             {
@@ -87,6 +88,14 @@ export default function Modal({
                                         {actions}
                                     </div>
                                 )
+                            }
+                            {
+                                size !== 'fullscreen' && <Button
+                                    className="modal-close"
+                                    size="tiny"
+                                    variant="plain"
+                                    icon={<CloseIcon />}
+                                    onClick={() => onClose(false)} />
                             }
                         </Dialog.Panel>
                     </Transition.Child>

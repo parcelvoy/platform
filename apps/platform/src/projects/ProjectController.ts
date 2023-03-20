@@ -4,9 +4,9 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { Context } from 'koa'
-import { createProject, createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey } from './ProjectService'
+import { createProject, createProjectApiKey, getProject, pagedApiKeys, revokeProjectApiKey, updateProjectApiKey } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
-import { ProjectApiKeyParams } from './ProjectApiKey'
+import { ProjectApiKeyParams, ProjectApiKeyUpdateParams } from './ProjectApiKey'
 
 export async function projectMiddleware(ctx: Context, next: () => void) {
     ctx.state.project = await getProject(
@@ -121,6 +121,26 @@ const projectKeyCreateParams: JSONSchemaType<ProjectApiKeyParams> = {
 subrouter.post('/keys', async ctx => {
     const payload = await validate(projectKeyCreateParams, ctx.request.body)
     ctx.body = await createProjectApiKey(ctx.state.project.id, payload)
+})
+
+const projectKeyUpdateParams: JSONSchemaType<ProjectApiKeyUpdateParams> = {
+    $id: 'projectKeyUpdate',
+    type: 'object',
+    required: ['name'],
+    properties: {
+        name: {
+            type: 'string',
+        },
+        description: {
+            type: 'string',
+            nullable: true,
+        },
+    },
+    additionalProperties: false,
+}
+subrouter.patch('/keys/:keyId', async ctx => {
+    const payload = await validate(projectKeyUpdateParams, ctx.request.body)
+    ctx.body = updateProjectApiKey(parseInt(ctx.params.keyId, 10), payload)
 })
 
 subrouter.delete('/keys/:keyId', async ctx => {

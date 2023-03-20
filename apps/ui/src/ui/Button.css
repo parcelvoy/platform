@@ -93,6 +93,11 @@
     border-radius: var(--border-radius-inner);
 }
 
+.ui-button.tiny {
+    padding: 2px 3px;
+    border-radius: var(--border-radius-inner);
+}
+
 .ui-button.small.is-loading {
     padding-left: 30px;
 }

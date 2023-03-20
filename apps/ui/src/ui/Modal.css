@@ -20,6 +20,7 @@
     box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.12);
     max-height: 90vh;
     overflow-y: scroll;
+    position: relative;
 }
 
 .modal.regular .modal-inner {
@@ -65,6 +66,18 @@
     flex-grow: 1;
     position: relative;
     overflow: auto;
+}
+
+.modal .modal-close {
+    position: absolute;
+    top: 30px;
+    right: 25px;
+}
+
+.modal .modal-close .button-icon,
+.modal .modal-close .button-icon svg {
+    width: 20px;
+    height: 20px;
 }
 
 .modal-inner .modal-header h3 {
