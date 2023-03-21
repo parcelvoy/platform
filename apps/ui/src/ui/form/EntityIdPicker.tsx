@@ -64,7 +64,6 @@ export function EntityIdPicker<T extends { id: number }>({
             disabled={disabled}
             value={entity}
             onChange={next => onChange(next?.id ?? 0)}
-            disabled={Boolean(value && !entity)}
         >
             <Combobox.Label aria-required={required}>
                 <span>
