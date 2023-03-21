@@ -17,7 +17,7 @@ export default class CampaignSendJob extends Job {
 
         await campaignSendReadyQuery(campaign.id)
             .stream(async function(stream) {
-                for await (const { user_id, ...campaign } of stream) {
+                for await (const { user_id } of stream) {
                     await sendCampaign(campaign, user_id)
                 }
             })

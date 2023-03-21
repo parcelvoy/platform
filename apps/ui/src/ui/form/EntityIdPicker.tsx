@@ -64,6 +64,7 @@ export function EntityIdPicker<T extends { id: number }>({
             disabled={disabled}
             value={entity}
             onChange={next => onChange(next?.id ?? 0)}
+            disabled={Boolean(value && !entity)}
         >
             <Combobox.Label aria-required={required}>
                 <span>
@@ -76,7 +77,6 @@ export function EntityIdPicker<T extends { id: number }>({
                 <span className={clsx('ui-text-field', size ?? 'regular')} style={{ flexGrow: 1 }}>
                     <Combobox.Input
                         displayValue={(value: T) => value && displayValue(value)}
-                        disabled={Boolean(value && !entity)}
                         onChange={e => setQuery(e.target.value)}
                         onBlur={onBlur}
                         ref={(input: HTMLInputElement) => {

@@ -99,7 +99,12 @@ class SchedulerLock {
         // Clean up any oddball pending jobs that are missed
         // Randomly run this job to reduce chance of deadlocks
         if (randomInt() < 10) {
-            await JobLock.delete(qb => qb.where('expiration', '<=', new Date()))
+            await JobLock.delete(qb => qb.whereIn('id',
+                JobLock.query()
+                    .select('id')
+                    .where('expiration', '<=', new Date())
+                    .orderBy('id'),
+            ))
         }
 
         return acquired
