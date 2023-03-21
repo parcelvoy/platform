@@ -76,7 +76,6 @@ export function EntityIdPicker<T extends { id: number }>({
                 <span className={clsx('ui-text-field', size ?? 'regular')} style={{ flexGrow: 1 }}>
                     <Combobox.Input
                         displayValue={(value: T) => value && displayValue(value)}
-                        disabled={Boolean(value && !entity)}
                         onChange={e => setQuery(e.target.value)}
                         onBlur={onBlur}
                         ref={(input: HTMLInputElement) => {

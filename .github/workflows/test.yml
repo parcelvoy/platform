@@ -76,3 +76,24 @@ jobs:
         BASE_URL: https://parcelvoy.com
         QUEUE_DRIVER: memory
         STORAGE_DRIVER: s3
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Node Install
+      run: |
+        npm install
+    - name: Build
+      run: |
+        npm run build
