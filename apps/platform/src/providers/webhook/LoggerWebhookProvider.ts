@@ -1,7 +1,6 @@
-import Router from '@koa/router'
 import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
-import { ProviderParams, ProviderSchema } from '../Provider'
+import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { Webhook, WebhookResponse } from './Webhook'
 import { WebhookProvider } from './WebhookProvider'
@@ -32,7 +31,7 @@ export default class LoggerWebhookProvider extends WebhookProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('webhook', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('webhook', this.namespace, this.schema) }
     }
 }

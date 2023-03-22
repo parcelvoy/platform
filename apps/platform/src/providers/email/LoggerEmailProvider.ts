@@ -1,7 +1,6 @@
-import Router from '@koa/router'
 import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
-import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { Email } from './Email'
 import EmailProvider from './EmailProvider'
@@ -31,7 +30,7 @@ export default class LoggerEmailProvider extends EmailProvider {
         return true
     }
 
-    static controllers(): Router {
-        return createController('email', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('email', this.namespace, this.schema) }
     }
 }

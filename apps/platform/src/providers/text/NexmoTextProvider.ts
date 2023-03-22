@@ -1,8 +1,7 @@
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import TextError from './TextError'
 import { TextProvider } from './TextProvider'
-import { ProviderParams, ProviderSchema } from '../Provider'
-import Router from '@koa/router'
+import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 
 interface NexmoDataParams {
@@ -83,7 +82,8 @@ export default class NexmoTextProvider extends TextProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('text', this.namespace, this.schema, (payload) => payload.data.phone_number)
+    static controllers(): ProviderControllers {
+        const admin = createController('text', this.namespace, this.schema)
+        return { admin, public: this.unsubscribe(this.namespace) }
     }
 }

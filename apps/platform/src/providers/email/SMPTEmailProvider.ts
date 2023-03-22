@@ -1,6 +1,5 @@
-import Router from '@koa/router'
 import nodemailer from 'nodemailer'
-import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import EmailProvider from './EmailProvider'
 
@@ -55,7 +54,7 @@ export default class SMTPEmailProvider extends EmailProvider {
         })
     }
 
-    static controllers(): Router {
-        return createController('email', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('email', this.namespace, this.schema) }
     }
 }

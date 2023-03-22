@@ -1,0 +1,21 @@
+.card {
+    display: flex;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey);
+    padding: 20px;
+    line-height: 1.2;
+    box-shadow: none;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+
+a.card:hover {
+    cursor: pointer;
+    border-color: var(--color-primary);
+    text-decoration: none;
+}
+
+.card img {
+    border-radius: 8px;
+}

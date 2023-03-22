@@ -1,3 +1,4 @@
+import Router from '@koa/router'
 import Model, { ModelParams } from '../core/Model'
 import { JSONSchemaType } from '../core/validate'
 
@@ -86,3 +87,8 @@ export type ProviderMap<T extends Provider> = (record: any) => T
 export type ProviderParams = Omit<Provider, ModelParams>
 
 export type ExternalProviderParams = Omit<ProviderParams, 'group'>
+
+export interface ProviderControllers {
+    admin: Router
+    public?: Router
+}

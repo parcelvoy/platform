@@ -7,4 +7,5 @@ export interface Email {
     subject: string
     text: string
     html: string
+    headers?: Record<string, any>
 }

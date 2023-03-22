@@ -1,6 +1,5 @@
-import Router from '@koa/router'
-import { ProviderMeta } from '../Provider'
 import { loadProvider } from '../ProviderRepository'
+import { loadControllers } from '../ProviderService'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
 import LoggerEmailProvider from './LoggerEmailProvider'
@@ -18,23 +17,9 @@ export const providerMap = (record: { type: EmailProviderName }): EmailProvider 
 }
 
 export const loadEmailChannel = async (providerId: number, projectId: number): Promise<EmailChannel | undefined> => {
-    const provider = await loadProvider(providerId, projectId, providerMap)
+    const provider = await loadProvider(providerId, providerMap, projectId)
     if (!provider) return
     return new EmailChannel(provider)
 }
 
-export const loadEmailControllers = async (router: Router, providers: ProviderMeta[]) => {
-    for (const type of Object.values(typeMap)) {
-        const controllers = type.controllers()
-        router.use(
-            controllers.routes(),
-            controllers.allowedMethods(),
-        )
-        providers.push({
-            ...type.meta,
-            type: type.namespace,
-            channel: 'email',
-            schema: type.schema,
-        })
-    }
-}
+export const loadEmailControllers = loadControllers(typeMap, 'email')

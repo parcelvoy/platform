@@ -1,7 +1,6 @@
-import Router from '@koa/router'
 import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
-import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { Push, PushResponse } from './Push'
 import { PushProvider } from './PushProvider'
@@ -31,7 +30,7 @@ export default class LoggerPushProvider extends PushProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('email', 'push', this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('email', 'push', this.schema) }
     }
 }

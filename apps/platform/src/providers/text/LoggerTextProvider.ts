@@ -1,7 +1,6 @@
-import Router from '@koa/router'
 import { logger } from '../../config/logger'
 import { randomInt, sleep } from '../../utilities'
-import { ProviderParams, ProviderSchema } from '../Provider'
+import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
@@ -40,7 +39,7 @@ export default class LoggerTextProvider extends TextProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('text', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('text', this.namespace, this.schema) }
     }
 }
