@@ -4,7 +4,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { searchParamsSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import Template, { TemplateParams, TemplateUpdateParams } from './Template'
-import { createTemplate, getTemplate, pagedTemplates, sendProof, updateTemplate } from './TemplateService'
+import { createTemplate, deleteTemplate, getTemplate, pagedTemplates, sendProof, updateTemplate } from './TemplateService'
 import { Variables } from '.'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
@@ -199,6 +199,11 @@ const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
 router.patch('/:templateId', async ctx => {
     const payload = validate(templateUpdateParams, ctx.request.body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
+})
+
+router.delete('/:templateId', async ctx => {
+    const template = ctx.state.template!
+    ctx.body = await deleteTemplate(template.id, template.project_id)
 })
 
 router.post('/:templateId/preview', async ctx => {

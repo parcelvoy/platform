@@ -43,6 +43,10 @@ export const updateTemplate = async (templateId: number, params: TemplateUpdateP
     return await Template.updateAndFetch(templateId, prune(params))
 }
 
+export const deleteTemplate = async (id: number, projectId: number) => {
+    return await Template.delete(qb => qb.where('id', id).where('project_id', projectId))
+}
+
 export const duplicateTemplate = async (template: Template, campaignId: number) => {
     const params: Partial<Template> = pick(template, ['project_id', 'locale', 'type', 'data'])
     params.campaign_id = campaignId

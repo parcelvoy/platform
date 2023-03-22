@@ -109,11 +109,11 @@
 }
 
 .source-editor .ui-tabs .tab {
-    color: var(--color-on-primary);
+    color: var(--color-white);
 }
 
 .source-editor .ui-tabs .tab.selected {
-    border-color: var(--color-on-primary);
+    border-color: var(--color-white);
 }
 
 .source-editor .ui-tabs-panels .panel {
