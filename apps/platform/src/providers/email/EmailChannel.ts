@@ -1,5 +1,6 @@
 import { Variables, Wrap } from '../../render'
 import { EmailTemplate } from '../../render/Template'
+import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
 export default class EmailChannel {
@@ -19,7 +20,7 @@ export default class EmailChannel {
         // TODO: Explore caching the Handlebars template
         // before passing in variables for better performance
         const compiled = template.compile(variables)
-        const email = {
+        const email: Email = {
             ...compiled,
             to: variables.user.email,
             html: Wrap({
@@ -27,6 +28,10 @@ export default class EmailChannel {
                 preheader: compiled.preheader,
                 variables,
             }), // Add link and open tracking
+            headers: {
+                'X-Campaign-Id': variables.context.campaign_id,
+                'X-Subscription-Id': variables.context.subscription_id,
+            },
         }
         await this.provider.send(email)
     }

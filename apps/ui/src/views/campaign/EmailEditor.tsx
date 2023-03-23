@@ -16,6 +16,7 @@ import CreateLocaleModal from './CreateLocaleModal'
 import ImageGalleryModal from './ImageGalleryModal'
 import Modal from '../../ui/Modal'
 import { ImageIcon } from '../../ui/icons'
+import EditLocalesModal from './EditLocalesModal'
 
 const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
 
@@ -179,14 +180,19 @@ export default function EmailEditor() {
                                 variant="secondary"
                                 onClick={() => setIsAddLocaleOpen(true)}
                             >
-                                {'Add Locale'}
+                                {'Edit Locales'}
                             </Button>
                         }
                     />
                 </section>
             </Modal>
-            <CreateLocaleModal
+            <EditLocalesModal
                 open={isAddLocaleOpen}
+                setIsOpen={() => setIsAddLocaleOpen(false)}
+                campaign={campaign}
+                setCampaign={setCampaign} />
+            <CreateLocaleModal
+                open={false}
                 setIsOpen={() => setIsAddLocaleOpen(false)}
                 campaign={campaign}
                 setCampaign={setCampaign} />

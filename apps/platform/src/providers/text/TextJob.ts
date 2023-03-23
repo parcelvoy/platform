@@ -18,11 +18,7 @@ export default class TextJob extends Job {
         const data = await loadSendJob<TextTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event } = data
-        const context = {
-            campaign_id: campaign?.id,
-            template_id: template?.id,
-        }
+        const { campaign, template, user, project, event, context } = data
 
         // Send and render text
         const channel = await loadTextChannel(campaign.provider_id, project.id)

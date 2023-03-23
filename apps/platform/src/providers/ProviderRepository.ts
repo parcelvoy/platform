@@ -1,21 +1,18 @@
 import App from '../app'
 import Provider, { ProviderMap, ProviderParams, ExternalProviderParams } from './Provider'
 
-export const getProvider = async (id: number, projectId: number) => {
-    return await Provider.find(id, qb => qb.where('project_id', projectId))
+export const getProvider = async (id: number, projectId?: number) => {
+    return await Provider.find(id, qb => projectId ? qb.where('project_id', projectId) : qb)
 }
 
-export const loadProvider = async <T extends Provider>(id: number, projectId: number, mapper: ProviderMap<T>, app = App.main) => {
+export const loadProvider = async <T extends Provider>(id: number, mapper: ProviderMap<T>, projectId?: number, app = App.main) => {
 
     // Check if value is cached in memory
     const cache = app.get<T>(Provider.cacheKey.internal(id))
     if (cache) return cache
 
     // If not, fetch from DB
-    const record = await Provider.table()
-        .where('project_id', projectId)
-        .where('id', id)
-        .first()
+    const record = await Provider.find(id, qb => projectId ? qb.where('project_id', projectId) : qb, app.db)
     if (!record) return
 
     // Map to appropriate type, cache and return
@@ -35,24 +32,6 @@ export const loadDefaultProvider = async <T extends Provider>(group: string, pro
         .where('project_id', projectId)
         .where('group', group)
         .where('is_default', true)
-        .first()
-    if (!record) return
-
-    // Map to appropriate type, cache and return
-    const mappedValue = mapper(record)
-    cacheProvider(mappedValue)
-    return mappedValue
-}
-
-export const getProviderByExternalId = async <T extends Provider>(externalId: string, mapper: ProviderMap<T>, app = App.main): Promise<T | undefined> => {
-
-    // Check if value is cached in memory
-    const cache = app.get<T>(Provider.cacheKey.external(externalId))
-    if (cache) return cache
-
-    // If not, fetch from DB
-    const record = await Provider.table()
-        .where('external_id', externalId)
         .first()
     if (!record) return
 

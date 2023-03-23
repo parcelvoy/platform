@@ -1,10 +1,9 @@
 import Router from '@koa/router'
 import App from '../app'
-import { loadTextChannelInbound } from '../providers/text'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
 import Subscription, { SubscriptionParams } from './Subscription'
-import { createSubscription, getSubscription, pagedSubscriptions, unsubscribe, unsubscribeSms } from './SubscriptionService'
+import { createSubscription, getSubscription, pagedSubscriptions, unsubscribe } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -40,7 +39,6 @@ export const emailUnsubscribeSchema: JSONSchemaType<EmailUnsubscribeParams> = {
     },
     additionalProperties: false,
 }
-
 publicRouter.post('/email', async ctx => {
 
     const { user, campaign } = await encodedLinkToParts(ctx.URL)
@@ -50,19 +48,6 @@ publicRouter.post('/email', async ctx => {
     await unsubscribe(user.id, campaign.subscription_id)
 
     ctx.status = 204
-})
-
-publicRouter.post('/sms', async ctx => {
-
-    // Always return with positive status code
-    ctx.status = 204
-
-    // Match up to provider based on inbound number
-    const to = ctx.request.body.To || ctx.request.body.to
-    const channel = await loadTextChannelInbound(to)
-    if (!channel) return
-
-    await unsubscribeSms(channel.provider, ctx.request.body)
 })
 
 export { publicRouter }

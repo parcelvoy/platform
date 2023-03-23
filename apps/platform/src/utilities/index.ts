@@ -2,6 +2,7 @@ import { JSONSchemaType } from 'ajv'
 import { validate } from '../core/validate'
 import crypto from 'crypto'
 import Hashids from 'hashids'
+import { differenceInSeconds } from 'date-fns'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
@@ -35,6 +36,10 @@ export const snakeCase = (str: string): string => str.match(/[A-Z]{2,}(?=[A-Z][a
 
 export const uuid = (): string => {
     return crypto.randomUUID()
+}
+
+export const secondsAgo = (timestamp: Date | number) => {
+    return differenceInSeconds(Date.now(), timestamp)
 }
 
 const hashCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'

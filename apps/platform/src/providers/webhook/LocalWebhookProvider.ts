@@ -1,5 +1,4 @@
-import Router from '@koa/router'
-import { ProviderParams, ProviderSchema } from '../Provider'
+import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { Webhook, WebhookResponse } from './Webhook'
 import { WebhookProvider } from './WebhookProvider'
@@ -37,7 +36,7 @@ export default class LocalWebhookProvider extends WebhookProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('webhook', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('webhook', this.namespace, this.schema) }
     }
 }

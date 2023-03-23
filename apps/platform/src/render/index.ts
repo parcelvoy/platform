@@ -9,10 +9,11 @@ import { unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
 import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
 import App from '../app'
 
-export interface RenderContext {
+export type RenderContext = {
     template_id: number
     campaign_id: number
-}
+    subscription_id: number
+} & Record<string, unknown>
 
 export interface Variables {
     context: RenderContext

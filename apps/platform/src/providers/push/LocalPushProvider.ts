@@ -2,8 +2,7 @@ import { PushProvider } from './PushProvider'
 import PushNotifications from 'node-pushnotifications'
 import { Push, PushResponse } from './Push'
 import PushError from './PushError'
-import Router from '@koa/router'
-import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 
 interface APNParams {
@@ -111,7 +110,7 @@ export default class LocalPushProvider extends PushProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('push', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('push', this.namespace, this.schema) }
     }
 }

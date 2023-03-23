@@ -1,6 +1,5 @@
-import Router from '@koa/router'
-import { ProviderMeta } from '../Provider'
 import { loadProvider } from '../ProviderRepository'
+import { loadControllers } from '../ProviderService'
 import LocalPushProvider from './LocalPushProvider'
 import LoggerPushProvider from './LoggerPushProvider'
 import PushChannel from './PushChannel'
@@ -16,23 +15,9 @@ export const providerMap = (record: { type: PushProviderName }): PushProvider =>
 }
 
 export const loadPushChannel = async (providerId: number, projectId: number): Promise<PushChannel | undefined> => {
-    const provider = await loadProvider(providerId, projectId, providerMap)
+    const provider = await loadProvider(providerId, providerMap, projectId)
     if (!provider) return
     return new PushChannel(provider)
 }
 
-export const loadPushControllers = async (router: Router, providers: ProviderMeta[]) => {
-    for (const type of Object.values(typeMap)) {
-        const controllers = type.controllers()
-        router.use(
-            controllers.routes(),
-            controllers.allowedMethods(),
-        )
-        providers.push({
-            ...type.meta,
-            type: type.namespace,
-            channel: 'push',
-            schema: type.schema,
-        })
-    }
-}
+export const loadPushControllers = loadControllers(typeMap, 'push')

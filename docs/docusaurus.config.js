@@ -61,6 +61,7 @@ const config = {
         logo: {
           alt: 'Parcelvoy',
           src: 'img/parcelvoy.svg',
+          srcDark: 'img/parcelvoy-light.svg',
         },
         items: [
           {

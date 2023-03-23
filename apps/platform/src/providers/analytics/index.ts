@@ -1,6 +1,5 @@
-import Router from '@koa/router'
-import { ProviderMeta } from '../Provider'
 import { loadDefaultProvider } from '../ProviderRepository'
+import { loadControllers } from '../ProviderService'
 import Analytics from './Analytics'
 import { AnalyticsProvider, AnalyticsProviderName } from './AnalyticsProvider'
 import SegmentAnalyticsProvider from './SegmentProvider'
@@ -18,18 +17,4 @@ export const loadAnalytics = async (projectId: number): Promise<Analytics> => {
     return new Analytics(provider)
 }
 
-export const loadAnalyticsControllers = async (router: Router, providers: ProviderMeta[]) => {
-    for (const type of Object.values(typeMap)) {
-        const controllers = type.controllers()
-        router.use(
-            controllers.routes(),
-            controllers.allowedMethods(),
-        )
-        providers.push({
-            ...type.meta,
-            type: type.namespace,
-            channel: 'analytics',
-            schema: type.schema,
-        })
-    }
-}
+export const loadAnalyticsControllers = loadControllers(typeMap, 'analytics')

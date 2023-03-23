@@ -5,7 +5,7 @@ import Modal from '../../ui/Modal'
 import { languageName } from '../../utils'
 import { UseFormReturn } from 'react-hook-form'
 import { createLocale } from './CampaignDetail'
-import { useMemo } from 'react'
+import { useState } from 'react'
 
 interface CreateLocaleParams {
     open: boolean
@@ -15,20 +15,21 @@ interface CreateLocaleParams {
 }
 
 const LocaleTextField = ({ form }: { form: UseFormReturn<{ locale: string }> }) => {
-    const watch = form.watch(['locale'])
-    const { locale } = form.getValues()
-    const language = useMemo(() => {
+
+    const [language, setLanguage] = useState<string | undefined>(undefined)
+    const handlePreviewLanguage = (locale: string) => {
         try {
-            return languageName(locale)
+            return setLanguage(languageName(locale))
         } catch {
-            return undefined
+            return setLanguage(undefined)
         }
-    }, [watch])
+    }
 
     return <>
         <TextField form={form}
             name="locale"
             label="Locale"
+            onChange={handlePreviewLanguage}
             required />
         <p>{language}</p>
     </>

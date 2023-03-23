@@ -17,11 +17,7 @@ export default class WebhookJob extends Job {
         const data = await loadSendJob<WebhookTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event } = data
-        const context = {
-            campaign_id: campaign?.id,
-            template_id: template?.id,
-        }
+        const { campaign, template, user, project, event, context } = data
 
         // Send and render webhook
         const channel = await loadWebhookChannel(campaign.provider_id, project.id)

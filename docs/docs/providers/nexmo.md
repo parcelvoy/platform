@@ -1,4 +1,0 @@
-# Nexmo
-## Setup
-## Outbound
-## Inbound

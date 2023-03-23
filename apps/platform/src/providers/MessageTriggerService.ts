@@ -1,6 +1,7 @@
 import Campaign from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
 import Project from '../projects/Project'
+import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
@@ -12,6 +13,7 @@ interface MessageTriggerHydrated<T> {
     campaign: Campaign
     template: T
     project: Project
+    context: RenderContext
 }
 
 export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
@@ -42,5 +44,11 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         return
     }
 
-    return { campaign, template: template.map() as T, user, project, event }
+    const context = {
+        campaign_id: campaign.id,
+        template_id: template.id,
+        subscription_id: campaign.subscription_id,
+    }
+
+    return { campaign, template: template.map() as T, user, project, event, context }
 }
