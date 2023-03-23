@@ -14,6 +14,13 @@ services:
       test: "/usr/bin/mysql parcelvoy --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
       interval: 1s
       retries: 120
+  redis:
+    image: redis
+    expose:
+      - "6379"
+    restart: always
+    volumes:
+      - redis_data:/data
   api:
     image: 'ghcr.io/parcelvoy/api:latest'
     restart: always
@@ -23,6 +30,8 @@ services:
       - mysql:mysql
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV}
@@ -39,6 +48,8 @@ services:
       STORAGE_BASE_URL: ${STORAGE_BASE_URL}
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       QUEUE_DRIVER: ${QUEUE_DRIVER}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -66,6 +77,8 @@ services:
       - 80:3000
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local
   uploads:
     driver: local

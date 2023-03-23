@@ -61,10 +61,6 @@ export default class SQSQueueProvider implements QueueProvider {
         }
     }
 
-    start(): void {
-        this.app.start()
-    }
-
     close(): void {
         this.app.stop()
     }

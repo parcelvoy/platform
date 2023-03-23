@@ -28,7 +28,7 @@ There is currently no Destination in Segment for Parcelvoy, however Parcelvoy do
 11. Under mappings, enter the following information:
     - **URL**: Enter your domain along with the path `/api/client/segment` (i.e. `https://test.com/api/client/segment`)
     - **Method**: POST
-    - **Headers**: Set the key as `Authorization` and the value as the key you created in Parcelvoy
+    - **Headers**: Set the key as `Authorization` and the value to `Bearer API_KEY` where `API_KEY` is the key you created in Parcelvoy
     - **Data**: Leave as is
     - **Enable Batching**: Set to true
 12. Save the destination and enable to start sending events into Parcelvoy!.

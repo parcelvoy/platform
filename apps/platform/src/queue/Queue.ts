@@ -3,9 +3,10 @@ import { logger, LoggerConfig } from '../config/logger'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { QueueProviderName } from './QueueProvider'
+import RedisQueueProvider, { RedisConfig } from './RedisQueueProvider'
 import SQSQueueProvider, { SQSConfig } from './SQSQueueProvider'
 
-export type QueueConfig = SQSConfig | MemoryConfig | LoggerConfig
+export type QueueConfig = SQSConfig | RedisConfig | MemoryConfig | LoggerConfig
 
 export interface QueueTypeConfig extends DriverConfig {
     driver: QueueProviderName
@@ -18,6 +19,8 @@ export default class Queue {
     constructor(config?: QueueConfig) {
         if (config?.driver === 'sqs') {
             this.provider = new SQSQueueProvider(config, this)
+        } else if (config?.driver === 'redis') {
+            this.provider = new RedisQueueProvider(config, this)
         } else if (config?.driver === 'memory') {
             this.provider = new MemoryQueueProvider(this)
         } else {
