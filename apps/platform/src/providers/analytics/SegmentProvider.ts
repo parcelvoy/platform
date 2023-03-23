@@ -1,6 +1,5 @@
-import Router from '@koa/router'
 import { Analytics as Segment } from '@segment/analytics-node'
-import { ProviderParams, ProviderSchema } from '../Provider'
+import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
 import { AnalyticsTypeConfig } from './Analytics'
 import { AnalyticsProvider, AnalyticsUserEvent } from './AnalyticsProvider'
 import { createController } from '../ProviderService'
@@ -52,7 +51,7 @@ export default class SegmentAnalyticsProvider extends AnalyticsProvider {
         })
     }
 
-    static controllers(): Router {
-        return createController('analytics', this.namespace, this.schema)
+    static controllers(): ProviderControllers {
+        return { admin: createController('analytics', this.namespace, this.schema) }
     }
 }

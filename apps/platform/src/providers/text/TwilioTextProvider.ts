@@ -1,5 +1,4 @@
-import Router from '@koa/router'
-import { ExternalProviderParams, ProviderSchema } from '../Provider'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
@@ -82,7 +81,8 @@ export default class TwilioTextProvider extends TextProvider {
         }
     }
 
-    static controllers(): Router {
-        return createController('text', this.namespace, this.schema, (payload) => payload.data.phone_number)
+    static controllers(): ProviderControllers {
+        const admin = createController('text', this.namespace, this.schema)
+        return { admin, public: this.unsubscribe(this.namespace) }
     }
 }

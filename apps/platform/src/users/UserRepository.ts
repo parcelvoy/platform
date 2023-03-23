@@ -32,6 +32,13 @@ export const getUserFromPhone = async (projectId: number, phone: string): Promis
     )
 }
 
+export const getUserFromEmail = async (projectId: number, email: string): Promise<User | undefined> => {
+    return await User.first(
+        qb => qb.where('email', email)
+            .where('project_id', projectId),
+    )
+}
+
 export const pagedUsers = async (params: SearchParams, projectId: number) => {
     return await User.searchParams(
         params,

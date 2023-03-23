@@ -21,8 +21,9 @@ export default class PushJob extends Job {
 
         const { campaign, template, user, project, event } = data
         const context = {
-            campaign_id: campaign?.id,
-            template_id: template?.id,
+            campaign_id: campaign.id,
+            template_id: template.id,
+            subscription_id: campaign.subscription_id,
         }
 
         try {

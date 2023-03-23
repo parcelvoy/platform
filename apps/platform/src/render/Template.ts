@@ -96,7 +96,7 @@ export class EmailTemplate extends Template {
     validate() {
         return isValid({
             type: 'object',
-            required: ['from', 'subject', 'text', 'html'],
+            required: ['from', 'subject', 'html'],
             properties: {
                 from: { type: 'string' },
                 subject: { type: 'string' },

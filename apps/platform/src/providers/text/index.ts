@@ -1,6 +1,5 @@
-import Router from '@koa/router'
-import { ProviderMeta } from '../Provider'
-import { getProviderByExternalId, loadProvider } from '../ProviderRepository'
+import { loadProvider } from '../ProviderRepository'
+import { loadControllers } from '../ProviderService'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
@@ -19,30 +18,10 @@ export const providerMap = (record: { type: TextProviderName }): TextProvider =>
     return typeMap[record.type].fromJson(record)
 }
 
-export const loadTextChannel = async (providerId: number, projectId: number): Promise<TextChannel | undefined> => {
-    const provider = await loadProvider(providerId, projectId, providerMap)
+export const loadTextChannel = async (providerId: number, projectId?: number): Promise<TextChannel | undefined> => {
+    const provider = await loadProvider(providerId, providerMap, projectId)
     if (!provider) return
     return new TextChannel(provider)
 }
 
-export const loadTextChannelInbound = async (inboundNumber: string): Promise<TextChannel | undefined> => {
-    const provider = await getProviderByExternalId(inboundNumber, providerMap)
-    if (!provider) return
-    return new TextChannel(provider)
-}
-
-export const loadTextControllers = async (router: Router, providers: ProviderMeta[]) => {
-    for (const type of Object.values(typeMap)) {
-        const controllers = type.controllers()
-        router.use(
-            controllers.routes(),
-            controllers.allowedMethods(),
-        )
-        providers.push({
-            ...type.meta,
-            type: type.namespace,
-            channel: 'text',
-            schema: type.schema,
-        })
-    }
-}
+export const loadTextControllers = loadControllers(typeMap, 'text')
