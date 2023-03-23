@@ -32,7 +32,7 @@ services:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_healthy
+        condition: service_started
     environment:
       NODE_ENV: ${NODE_ENV}
       BASE_URL: ${BASE_URL}
@@ -70,7 +70,8 @@ services:
   ui:
     image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
-      - api
+      api:
+        condition: service_started
     environment:
       API_BASE_URL: ${API_BASE_URL}
     ports:
