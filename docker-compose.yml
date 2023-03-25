@@ -77,7 +77,7 @@ services:
     environment:
       API_BASE_URL: ${API_BASE_URL}
     ports:
-      - ${PORT}:3000
+      - ${UI_PORT}:3000
 volumes:
   mysql_data:
     driver: local
