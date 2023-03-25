@@ -79,6 +79,11 @@ export default (type?: EnvType): Env => {
         port: parseInt(process.env.PORT!),
         secret: process.env.APP_SECRET!,
         auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {
+            basic: () => ({
+                tokenLife: defaultTokenLife,
+                email: process.env.AUTH_BASIC_EMAIL!,
+                password: process.env.AUTH_BASIC_PASSWORD!,
+            }),
             saml: () => ({
                 tokenLife: defaultTokenLife,
                 callbackUrl: process.env.AUTH_SAML_CALLBACK_URL,

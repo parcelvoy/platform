@@ -6,7 +6,7 @@ import { FieldProps } from './Field'
 import './TextField.css'
 
 export interface TextFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
-    type?: 'text' | 'time' | 'date' | 'datetime-local' | 'number'
+    type?: 'text' | 'time' | 'date' | 'datetime-local' | 'number' | 'password'
     textarea?: boolean
     size?: 'small' | 'regular'
     value?: string | number | readonly string[] | undefined

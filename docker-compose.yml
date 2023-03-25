@@ -42,7 +42,7 @@ services:
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_PORT: 3306
+      DB_PORT: ${DB_PORT}
       DB_DATABASE: ${DB_DATABASE}
       STORAGE_DRIVER: ${STORAGE_DRIVER}
       STORAGE_BASE_URL: ${STORAGE_BASE_URL}
@@ -55,6 +55,8 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION}
       AUTH_DRIVER: ${AUTH_DRIVER}
+      AUTH_BASIC_EMAIL: ${AUTH_BASIC_EMAIL}
+      AUTH_BASIC_PASSWORD: ${AUTH_BASIC_PASSWORD}
       AUTH_SAML_CALLBACK_URL: ${AUTH_SAML_CALLBACK_URL}
       AUTH_SAML_ENTRY_POINT_URL: ${AUTH_SAML_ENTRY_POINT_URL}
       AUTH_SAML_ISSUER: ${AUTH_SAML_ISSUER}
@@ -75,7 +77,7 @@ services:
     environment:
       API_BASE_URL: ${API_BASE_URL}
     ports:
-      - 80:3000
+      - ${PORT}:3000
 volumes:
   mysql_data:
     driver: local

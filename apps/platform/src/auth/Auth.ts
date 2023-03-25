@@ -5,10 +5,11 @@ import SAMLProvider, { SAMLConfig } from './SAMLAuthProvider'
 import { DriverConfig } from '../config/env'
 import LoggerAuthProvider from './LoggerAuthProvider'
 import { logger } from '../config/logger'
+import BasicAuthProvider, { BasicAuthConfig } from './BasicAuthProvider'
 
-export type AuthProviderName = 'saml' | 'openid' | 'logger'
+export type AuthProviderName = 'basic' | 'saml' | 'openid' | 'logger'
 
-export type AuthConfig = SAMLConfig | OpenIDConfig
+export type AuthConfig = BasicAuthConfig | SAMLConfig | OpenIDConfig
 
 export interface AuthTypeConfig extends DriverConfig {
     tokenLife: number
@@ -19,7 +20,9 @@ export default class Auth {
     provider: AuthProvider
 
     constructor(config?: AuthConfig) {
-        if (config?.driver === 'saml') {
+        if (config?.driver === 'basic') {
+            this.provider = new BasicAuthProvider(config)
+        } else if (config?.driver === 'saml') {
             this.provider = new SAMLProvider(config)
         } else if (config?.driver === 'openid') {
             this.provider = new OpenIDProvider(config)

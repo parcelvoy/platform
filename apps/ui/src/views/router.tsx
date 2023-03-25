@@ -39,6 +39,7 @@ import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from 
 import { Projects } from './project/Projects'
 import { pushRecentProject } from '../utils'
 import { ProjectRoleRequired } from './project/ProjectRoleRequired'
+import LoginBasic from './auth/LoginBasic'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
     {
         path: '/login',
         element: <Login />,
+    },
+    {
+        path: '/login/basic',
+        element: <LoginBasic />,
     },
     {
         path: '*',

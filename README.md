@@ -12,4 +12,24 @@ Engage your customers through effortless communication.
 
 ## 🚀 Getting Started
 
-Documentation coming soon!
+You can run Parcelvoy locally or in the cloud easily using Docker.
+
+To get up and running quickly to try things out, copy our latest `docker-compose.yaml` and `.env` file onto your machine and go!
+```
+mkdir parcelvoy && cd parcelvoy
+wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env,docker-compose.yaml}
+docker compose up -d # run the Docker container
+```
+
+Login to the web app at http://localhost:3000 by entering the default credentials found in your .env file.
+
+```
+AUTH_BASIC_USERNAME=parcelvoy
+AUTH_BASIC_PASSWORD=password
+```
+
+We would recommend changing these default credentials as well as your `APP_SECRET` before ever using Parcelvoy in production.
+
+For full documentation on the platform and more information on deployment, check out our docs.
+
+**[Explore the Docs »](https://docs.parcelvoy.com)**
