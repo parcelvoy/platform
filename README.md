@@ -1,5 +1,18 @@
-# Parcelvoy
-Engage your customers through effortless communication.
+<br />
+<div align="center">
+  <a href="https://parcelvoy.com" target="_blank">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png#gh-dark-mode-only">
+        <img src=".github/assets/logo-light.png#gh-light-mode-only" width="360" alt="Logo"/>
+    </picture>
+  </a>
+</div>
+
+<h1 align="center">Open Source Multi-Channel Marketing</h1>
+
+<p align="center">Engage your customers through effortless communication.</p>
+
+<br />
 
 ## Features
 - 💬 **Cross Channel Messaging** Send data-driven emails, push notifications and text messages.
@@ -14,21 +27,22 @@ Engage your customers through effortless communication.
 
 You can run Parcelvoy locally or in the cloud easily using Docker.
 
-To get up and running quickly to try things out, copy our latest `docker-compose.yaml` and `.env` file onto your machine and go!
+To get up and running quickly to try things out, copy our latest `docker-compose.yml` and `.env` file onto your machine and go!
 ```
 mkdir parcelvoy && cd parcelvoy
-wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env,docker-compose.yaml}
+wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env.example,docker-compose.yml}
+mv .env.example .env
 docker compose up -d # run the Docker container
 ```
 
-Login to the web app at http://localhost:3000 by entering the default credentials found in your .env file.
+Login to the web app at http://localhost:3000 by entering the default credentials found in the copied `.env` file.
 
 ```
 AUTH_BASIC_USERNAME=parcelvoy
 AUTH_BASIC_PASSWORD=password
 ```
 
-We would recommend changing these default credentials as well as your `APP_SECRET` before ever using Parcelvoy in production.
+**Note:** We would recommend changing these default credentials as well as your `APP_SECRET` before ever using Parcelvoy in production.
 
 For full documentation on the platform and more information on deployment, check out our docs.
 
