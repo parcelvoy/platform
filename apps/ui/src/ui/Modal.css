@@ -15,7 +15,7 @@
     border-radius: var(--border-radius-outer);
     background: var(--color-background);
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     padding: 30px;
     box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.12);
     max-height: 90vh;

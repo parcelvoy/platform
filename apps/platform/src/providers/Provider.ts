@@ -11,6 +11,7 @@ export interface ProviderMeta {
     type: string
     channel: string
     schema?: any
+    paths?: Record<string, string>
 }
 
 export const ProviderSchema = <T extends ExternalProviderParams, D>(id: string, data: JSONSchemaType<D>): JSONSchemaType<T> => {
@@ -20,10 +21,6 @@ export const ProviderSchema = <T extends ExternalProviderParams, D>(id: string, 
         required: ['data'],
         properties: {
             name: {
-                type: 'string',
-                nullable: true,
-            },
-            external_id: {
                 type: 'string',
                 nullable: true,
             },
@@ -41,7 +38,6 @@ export default class Provider extends Model {
     type!: string
     name!: string
     project_id!: number
-    external_id?: string
     group!: ProviderGroup
     data!: Record<string, any>
     is_default!: boolean
@@ -53,13 +49,11 @@ export default class Provider extends Model {
         name: '',
         description: '',
         url: '',
+        paths: {},
     }
 
     static get cacheKey() {
         return {
-            external(externalId: string) {
-                return `providers:external:${externalId}`
-            },
             internal(id: number) {
                 return `providers:id:${id}`
             },

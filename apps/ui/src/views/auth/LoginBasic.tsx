@@ -33,12 +33,12 @@ export default function Login() {
             </div>
             <div className="auth-step">
                 <h1>Login</h1>
+                {error && (
+                    <Alert variant="error" title="Error">{error}</Alert>
+                )}
                 <FormWrapper<LoginBasicParams>
                     onSubmit={handleLogin}>
                     {form => <>
-                        {error && (
-                            <Alert variant="error" title="Error">{error}</Alert>
-                        )}
                         <TextField form={form} name="email" />
                         <TextField form={form} name="password" type="password" />
                     </>}

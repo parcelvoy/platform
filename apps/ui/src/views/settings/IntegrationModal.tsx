@@ -39,7 +39,12 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
 
     return <Modal
         {...props}
-        title={meta ? 'Setup Integration' : 'Integrations'}
+        title={meta
+            ? provider?.id
+                ? `${provider?.name} (${meta.name})`
+                : 'Setup Integration'
+            : 'Integrations'
+        }
         size="regular"
     >
         {!meta && <>
@@ -71,7 +76,20 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
                 defaultValues={provider}>
                 {form =>
                     <>
-                        <Alert title={meta.name} variant="plain">Fill out the fields below to setup this integration. For more information on this integration please see the documentation on our website</Alert>
+                        {provider?.id
+                            ? <>
+                                <h4>Details</h4>
+                                <TextField name="id" label="ID" value={provider.id} disabled />
+                                {meta.paths && Object.keys(meta.paths).map(key => {
+                                    const value = meta.paths?.[key]
+                                    const url = `${window.location.origin}/providers/${provider?.id}${value}`
+                                    return <TextField name="unsubscribe" key={key} label={key} value={url} disabled />
+                                })}
+                            </>
+                            : <Alert title={meta.name} variant="plain">Fill out the fields below to setup this integration. For more information on this integration please see the documentation on our website</Alert>
+                        }
+
+                        <h4>Config</h4>
                         <TextField form={form} name="name" required />
                         <SchemaFields parent="data" schema={meta.schema.properties.data} form={form} />
                     </>

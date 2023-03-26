@@ -6,7 +6,7 @@ Amazon SES is quite possibly the most cost effective email service available. If
 Once you are ready to use SES you must request approval to send emails in production. In general it is recommended you try and request access earlier than later as you may be denied. The process usually does not take longer than a day, but providing lots of context is important.
 
 To request access, do the following:
-1. Navigate to the AWS SES portal (https://console.aws.amazon.com/ses/home)
+1. Navigate to the [AWS SES portal](https://console.aws.amazon.com/ses/home)
 2. On your account dashboard you should see an alert informing you that your account is in sandbox mode. Hit the `Request Production Access` button.
 3. Fill out the form with the details of your product and submit. The more details the better as it will improve your chances of being approved.
 
@@ -40,14 +40,14 @@ To request access, do the following:
 Email sending is not hte only important part, you also need to keep track of things like email opens, clicks, unsubscribes, bounces and complaints. Parcelvoy automatically takes care of opens, clicks and unsubscribes for you, but bounces and complaints require notifications from SES.
 
 To setup inbound notifications, do the following:
-1. Open the [https://console.aws.amazon.com/sns/home](Amazon SNS console) and choose `Topics`.
+1. Open the [Amazon SNS console](https://console.aws.amazon.com/sns/home) and choose `Topics`.
 2. On the Topics page, choose Create topic.
 3. In the `Details` section of the Create topic page, choose Standard for type and provider a name. 
 4. Choose `Create topic`
 5. From the Topic details of the topic that you created, choose `Create subscription`
 6. For Protocol, select `HTTPS` and enter the Parcelvoy SES unsubscribe URL for your provider (which can be found on the provider details screen)
 7. Hit save
-8. Navigate to the [https://console.aws.amazon.com/ses/home]SES console) and choose `Verified identities`
+8. Navigate to the [SES console](https://console.aws.amazon.com/ses/home) and choose `Verified identities`
 9. Select your previously created identity and go to the `Notifications` tab.
 10. Disable Email feedback forwarding
 11. Under Feedback notifications, hit `Edit`

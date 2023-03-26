@@ -40,7 +40,9 @@ Find below a list of all environment variables that can be set at launch to conf
 ### Auth
 | key | type | required |
 |--|--|--|
-| AUTH_DRIVER | 'openid' or 'saml' | true |
+| AUTH_DRIVER | 'basic', 'openid' or 'saml' | true |
+| AUTH_BASIC_EMAIL | string | If driver is Basic |
+| AUTH_BASIC_PASSWORD | string | If driver is Basic |
 | AUTH_SAML_CALLBACK_URL | string | If driver is SAML |
 | AUTH_SAML_ENTRY_POINT_URL | string | If driver is SAML |
 | AUTH_SAML_ISSUER | string | If driver is SAML |

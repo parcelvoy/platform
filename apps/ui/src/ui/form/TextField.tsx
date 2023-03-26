@@ -45,7 +45,7 @@ export default function TextField<X extends FieldValues, P extends FieldPath<X>>
     const onBlur = formParams?.onBlur
 
     return (
-        <label ref={inputRef} className={clsx('ui-text-field', { 'hide-label': !form })}>
+        <label ref={inputRef} className={clsx('ui-text-field', { 'hide-label': !form && !label })}>
             {
                 (!!form || !!label) && (
                     <span>
@@ -87,6 +87,7 @@ export default function TextField<X extends FieldValues, P extends FieldPath<X>>
                                 id={id}
                                 min={min}
                                 max={max}
+                                disabled={disabled}
                             />
                         )
                 }

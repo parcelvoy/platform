@@ -154,6 +154,10 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
 }
 
+.theme-doc-markdown.markdown a {
+    text-decoration: underline;
+}
+
 .footer {
     background: var(--color-primary);
 }

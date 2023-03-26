@@ -8,10 +8,12 @@ import TextField from '../../ui/form/TextField'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import { ArchiveIcon, PlusIcon } from '../../ui/icons'
+import { ArchiveIcon, CopyIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
+import { toast } from 'react-hot-toast'
+import Alert from '../../ui/Alert'
 
 export default function ProjectApiKeys() {
 
@@ -27,6 +29,13 @@ export default function ProjectApiKeys() {
         }
     }
 
+    const handleCopy = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, value: string) => {
+        await navigator.clipboard.writeText(value)
+        event.stopPropagation()
+        toast.success('Copied API Key')
+
+    }
+
     return (
         <>
             <SearchTable
@@ -36,9 +45,17 @@ export default function ProjectApiKeys() {
                     { key: 'scope' },
                     {
                         key: 'role',
-                        cell: ({ item }) => item.scope === 'public' ? '--' : item.role,
+                        cell: ({ item }) => item.scope === 'public' ? undefined : item.role,
                     },
-                    { key: 'value' },
+                    {
+                        key: 'value',
+                        cell: ({ item }) => (
+                            <div className="cell-content">
+                                {item.value}
+                                <Button icon={<CopyIcon />} size="small" variant="plain" onClickCapture={async (e) => await handleCopy(e, item.value)} />
+                            </div>
+                        ),
+                    },
                     { key: 'description' },
                     {
                         key: 'options',
@@ -69,6 +86,7 @@ export default function ProjectApiKeys() {
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
+                <Alert variant="plain" title="Key Value">{editing?.value}</Alert>
                 {
                     editing && (
                         <FormWrapper<ProjectApiKey>
