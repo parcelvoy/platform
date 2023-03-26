@@ -1,5 +1,5 @@
 import { JourneyStepType } from '../../../types'
-import TextField from '../../../ui/form/TextField'
+import TextInput from '../../../ui/form/TextInput'
 import { ExperimentStepIcon } from '../../../ui/icons'
 import { round } from '../../../utils'
 
@@ -29,14 +29,14 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
         const totalRatio = siblingData.reduce((a, c) => a + c.ratio ?? 0, ratio)
         const percentage = totalRatio > 0 ? round(ratio / totalRatio * 100, 2) : 0
         return (
-            <TextField
+            <TextInput
                 name="ratio"
                 label="Ratio"
                 subtitle={`${percentage}% of users will follow this path.`}
                 type="number"
                 size="small"
                 value={value.ratio ?? 0}
-                onChange={str => onChange({ ...value, ratio: parseFloat(str) })}
+                onChange={ratio => onChange({ ...value, ratio })}
             />
         )
     },

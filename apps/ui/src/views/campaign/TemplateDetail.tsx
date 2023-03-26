@@ -9,7 +9,7 @@ import { InfoTable } from '../../ui/InfoTable'
 import Modal from '../../ui/Modal'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { EmailTemplateData, PushTemplateData, Template, TemplateUpdateParams, TextTemplateData } from '../../types'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
@@ -22,21 +22,21 @@ const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
 }} />
 
 const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.subject"
         label="Subject"
         textarea
         required />
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.preheader"
         label="Preheader"
         textarea />
-    <TextField form={form} name="data.from" label="From Email" required />
-    <TextField form={form} name="data.reply_to" label="Reply To" />
-    <TextField form={form} name="data.cc" label="CC" />
-    <TextField form={form} name="data.bcc" label="BCC" />
+    <TextInput.Field form={form} name="data.from" label="From Email" required />
+    <TextInput.Field form={form} name="data.reply_to" label="Reply To" />
+    <TextInput.Field form={form} name="data.cc" label="CC" />
+    <TextInput.Field form={form} name="data.bcc" label="BCC" />
 </>
 
 const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
@@ -51,7 +51,7 @@ const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
 }
 
 const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.text"
         label="Message"
@@ -66,18 +66,18 @@ const PushTable = ({ data }: { data: PushTemplateData }) => <InfoTable rows={{
 }} />
 
 const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.title"
         label="Title"
         required />
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.body"
         label="Body"
         textarea
         required />
-    <TextField
+    <TextInput.Field
         form={form}
         name="data.topic"
         label="Topic"

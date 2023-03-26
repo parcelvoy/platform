@@ -1,5 +1,5 @@
 import api from '../../api'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { Project } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
@@ -28,9 +28,9 @@ export default function ProjectForm({ onSave }: ProjectFormProps) {
             {
                 form => (
                     <>
-                        <TextField form={form} name="name" required />
-                        <TextField form={form} name="description" textarea />
-                        <TextField form={form}
+                        <TextInput.Field form={form} name="name" required />
+                        <TextInput.Field form={form} name="description" textarea />
+                        <TextInput.Field form={form}
                             name="locale"
                             label="Default Locale"
                             subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."

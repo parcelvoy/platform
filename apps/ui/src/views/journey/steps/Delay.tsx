@@ -1,5 +1,5 @@
 import { JourneyStepType } from '../../../types'
-import TextField from '../../../ui/form/TextField'
+import TextInput from '../../../ui/form/TextInput'
 import { DelayStepIcon } from '../../../ui/icons'
 import { snakeToTitle } from '../../../utils'
 
@@ -27,7 +27,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
             <>
                 {
                     ['days', 'hours', 'minutes'].map(name => (
-                        <TextField
+                        <TextInput
                             key={name}
                             name={name}
                             label={snakeToTitle(name)}
@@ -35,7 +35,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                             size="small"
                             min={0}
                             value={value[name as keyof DelayStepConfig] ?? 0}
-                            onChange={n => onChange({ ...value, [name]: parseInt(n) })}
+                            onChange={n => onChange({ ...value, [name]: n })}
                         />
                     ))
                 }

@@ -9,7 +9,7 @@ import PageContent from '../../ui/PageContent'
 import RuleBuilder from './RuleBuilder'
 import Modal from '../../ui/Modal'
 import FormWrapper from '../../ui/form/FormWrapper'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { ListTag } from './ListTable'
 import { InfoTable } from '../../ui/InfoTable'
 import { snakeToTitle } from '../../utils'
@@ -103,7 +103,7 @@ export default function ListDetail() {
                 >
                     {form => (
                         <>
-                            <TextField
+                            <TextInput.Field
                                 form={form}
                                 name="name"
                                 label="List Name"

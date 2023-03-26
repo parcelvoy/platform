@@ -4,7 +4,7 @@ import api from '../../api'
 import { ReactComponent as Logo } from '../../assets/logo.svg'
 import Alert from '../../ui/Alert'
 import FormWrapper from '../../ui/form/FormWrapper'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import './Auth.css'
 
 interface LoginBasicParams {
@@ -39,8 +39,8 @@ export default function Login() {
                 <FormWrapper<LoginBasicParams>
                     onSubmit={handleLogin}>
                     {form => <>
-                        <TextField form={form} name="email" />
-                        <TextField form={form} name="password" type="password" />
+                        <TextInput.Field form={form} name="email" />
+                        <TextInput.Field form={form} name="password" type="password" />
                     </>}
                 </FormWrapper>
             </div>

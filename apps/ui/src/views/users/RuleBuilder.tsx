@@ -2,7 +2,7 @@ import { Operator, Rule, RuleType, WrapperRule } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { PlusIcon, TrashIcon } from '../../ui/icons'
 import './RuleBuilder.css'
 
@@ -188,7 +188,7 @@ const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
                         value={rule.type}
                         onChange={type => handleUpdate({ type })}
                     />
-                    <TextField
+                    <TextInput
                         size="small"
                         type="text"
                         name="path"
@@ -200,7 +200,7 @@ const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
                         type={rule.type}
                         value={rule.operator}
                         onChange={operator => handleUpdate({ operator })} />
-                    <TextField
+                    <TextInput
                         size="small"
                         type="text"
                         name="value"
