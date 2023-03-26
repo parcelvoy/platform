@@ -16,15 +16,18 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
     type: 'array',
     items: {
         type: 'object',
-        required: ['event', 'type'],
+        required: ['type'],
         properties: {
-            event: { type: 'string' },
             type: { type: 'string' },
+            event: {
+                type: 'string',
+                nullable: true,
+            },
             anonymousId: {
                 type: 'string',
                 nullable: true,
             },
-            externalId: {
+            userId: {
                 type: 'string',
                 nullable: true,
             },
@@ -50,7 +53,7 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
                 required: ['anonymousId'],
             },
             {
-                required: ['externalId'],
+                required: ['userId'],
             },
         ],
     },

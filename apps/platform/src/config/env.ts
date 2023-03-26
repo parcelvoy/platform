@@ -56,6 +56,10 @@ export default (type?: EnvType): Env => {
                     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
                 },
             }),
+            redis: () => ({
+                host: process.env.REDIS_HOST!,
+                port: parseInt(process.env.REDIS_PORT!),
+            }),
         }),
         storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
             s3: () => ({
