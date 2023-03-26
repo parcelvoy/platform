@@ -1,4 +1,6 @@
 import knex, { Knex as Database } from 'knex'
+import { removeKey } from '../utilities'
+import { logger } from './logger'
 
 export { Database }
 
@@ -16,9 +18,9 @@ export interface DatabaseConfig {
 }
 
 const connect = (config: DatabaseConfig, withDB = true) => {
-    const connection = config.connection
+    let connection = config.connection
     if (!withDB) {
-        delete connection.database
+        connection = removeKey('database', connection)
     }
     return knex({
         client: config.client,
@@ -35,11 +37,13 @@ const connect = (config: DatabaseConfig, withDB = true) => {
     })
 }
 
-const migrate = async (db: Database, fresh = false) => {
-    if (fresh) await db.raw('CREATE DATABASE parcelvoy')
+const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
+    console.warn(fresh, config)
+    if (fresh) await db.raw(`CREATE DATABASE ${config.connection.database}`)
     return db.migrate.latest({
         directory: './db/migrations',
         tableName: 'migrations',
+        loadExtensions: ['.js', '.ts'],
     })
 }
 
@@ -48,15 +52,19 @@ export default async (config: DatabaseConfig) => {
     // Attempt to connect & migrate
     try {
         const db = connect(config)
-        await migrate(db)
+        await migrate(config, db)
         return db
-    } catch (error) {
+    } catch (error: any) {
 
-        console.error(error)
+        logger.error(error)
 
-        // On error, try to create the database and try again
-        const db = connect(config, false)
-        await migrate(db, true)
-        return connect(config)
+        if (error?.errno === 1049) {
+            // On error, try to create the database and try again
+            const db = connect(config, false)
+            await migrate(config, db, true)
+            return connect(config)
+        } else {
+            throw error
+        }
     }
 }
