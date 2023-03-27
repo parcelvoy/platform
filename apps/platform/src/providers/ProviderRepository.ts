@@ -52,9 +52,6 @@ export const updateProvider = async (id: number, params: ExternalProviderParams,
     const provider = await Provider.updateAndFetch(id, params)
     app.remove(Provider.cacheKey.internal(provider.id))
     app.remove(Provider.cacheKey.default(provider.project_id, provider.group))
-    if (provider.external_id) {
-        app.remove(Provider.cacheKey.external(provider.external_id))
-    }
     return provider
 }
 
@@ -62,8 +59,5 @@ export const cacheProvider = (provider: Provider, app = App.main) => {
     app.set(Provider.cacheKey.internal(provider.id), provider)
     if (provider.is_default) {
         app.set(Provider.cacheKey.default(provider.project_id, provider.group), provider)
-    }
-    if (provider.external_id) {
-        app.set(Provider.cacheKey.external(provider.external_id), provider)
     }
 }

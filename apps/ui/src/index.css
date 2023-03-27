@@ -175,3 +175,8 @@ label .switch .slider.round {
 label .switch .slider.round:before {
     border-radius: 50%;
 }
+
+.icon {
+    width: 16px;
+    height: 16px;
+}

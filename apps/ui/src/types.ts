@@ -416,6 +416,7 @@ export interface ProviderMeta {
     type: string
     channel: string
     schema: any
+    paths?: Record<string, string>
 }
 
 export interface Image {

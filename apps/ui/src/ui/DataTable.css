@@ -28,7 +28,7 @@
 
 .ui-table .table-cell, .ui-table .table-header-cell {
     display: table-cell;
-    padding:  10px 15px;
+    padding: 10px 15px;
     border-bottom: 1px solid var(--color-grey);
 }
 
@@ -42,6 +42,12 @@
 
 .ui-table .table-row:last-child .table-cell {
     border-bottom: 0px;
+}
+
+.ui-table .table-cell .cell-content {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .ui-table .table-header-cell {

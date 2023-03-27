@@ -28,7 +28,6 @@ export default function Integrations() {
                     { key: 'name' },
                     { key: 'type' },
                     { key: 'group' },
-                    { key: 'external_id' },
                     { key: 'created_at' },
                 ]}
                 itemKey={({ item }) => item.id}
