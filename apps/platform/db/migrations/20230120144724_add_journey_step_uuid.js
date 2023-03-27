@@ -1,7 +1,3 @@
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.up = async function(knex) {
     await knex.schema.alterTable('journey_steps', function(table) {
         table.uuid('uuid').defaultTo()
@@ -36,10 +32,6 @@ exports.up = async function(knex) {
     })
 }
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.down = function(knex) {
     return knex.schema
         .alterTable('journey_steps', function(table) {

@@ -100,7 +100,11 @@ class SchedulerLock {
         // Randomly run this job to reduce chance of deadlocks
         if (randomInt() < 10) {
             await sleep(randomInt(5, 20))
-            await JobLock.delete(qb => qb.where('expiration', '<=', new Date()).orderBy('id'))
+            const locks = await JobLock.all(
+                qb => qb.where('expiration', '<=', new Date())
+                    .orderBy('id'),
+            )
+            await JobLock.delete(qb => qb.whereIn('id', locks.map(item => item.id)))
         }
 
         return acquired

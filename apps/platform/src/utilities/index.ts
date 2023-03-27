@@ -74,6 +74,8 @@ export const combineURLs = (parts: string[], sep = '/'): string => {
 
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+export const removeKey = <T, O extends keyof T>(propKey: O, { [propKey]: propValue, ...rest }: T): Omit<T, O> => rest
+
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
     return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
         let values: string[]

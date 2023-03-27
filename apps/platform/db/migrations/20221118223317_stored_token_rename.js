@@ -1,7 +1,3 @@
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.up = async function(knex) {
     await knex.schema.renameTable('refresh_tokens', 'access_tokens')
     await knex.schema.alterTable('access_tokens', function(table) {
@@ -10,10 +6,6 @@ exports.up = async function(knex) {
     })
 }
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.down = function(knex) {
     return knex.schema.dropTable('revoked_access_tokens')
 }
