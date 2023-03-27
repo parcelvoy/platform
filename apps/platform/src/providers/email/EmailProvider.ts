@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { LoggerProviderName } from '../../config/logger'
+import { LoggerProviderName } from '../LoggerProvider'
 import Provider from '../Provider'
 import { Email } from './Email'
 
