@@ -11,6 +11,7 @@ export default class MemoryQueueProvider implements QueueProvider {
     queue: Queue
     backlog: Job[] = []
     loop: NodeJS.Timeout | undefined
+    batchSize = 1000 as const
 
     constructor(queue: Queue) {
         this.queue = queue
@@ -19,6 +20,10 @@ export default class MemoryQueueProvider implements QueueProvider {
 
     async enqueue(job: Job): Promise<void> {
         this.backlog.push(job)
+    }
+
+    async enqueueBatch(jobs: Job[]): Promise<void> {
+        this.backlog.push(...jobs)
     }
 
     start(): void {

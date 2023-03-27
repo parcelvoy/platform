@@ -38,7 +38,6 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 }
 
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
-    console.warn(fresh, config)
     if (fresh) await db.raw(`CREATE DATABASE ${config.connection.database}`)
     return db.migrate.latest({
         directory: './db/migrations',

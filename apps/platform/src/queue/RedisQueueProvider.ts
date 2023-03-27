@@ -1,5 +1,6 @@
 import { Queue as BullQueue, Worker } from 'bullmq'
 import { logger } from '../config/logger'
+import { batch } from '../utilities'
 import Job from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
@@ -16,6 +17,7 @@ export default class RedisQueueProvider implements QueueProvider {
     queue: Queue
     bull: BullQueue
     worker: Worker
+    batchSize = 50 as const
 
     constructor(config: RedisConfig, queue: Queue) {
         this.queue = queue
@@ -31,13 +33,28 @@ export default class RedisQueueProvider implements QueueProvider {
 
     async enqueue(job: Job): Promise<void> {
         try {
-            await this.bull.add(job.name, job, {
+            const { name, data, opts } = this.adaptJob(job)
+            await this.bull.add(name, data, opts)
+        } catch (error) {
+            logger.error(error, 'sqs:error:enqueue')
+        }
+    }
+
+    async enqueueBatch(jobs: Job[]): Promise<void> {
+        for (const part of batch(jobs, this.batchSize)) {
+            await this.bull.addBulk(part.map(item => this.adaptJob(item)))
+        }
+    }
+
+    private adaptJob(job: Job) {
+        return {
+            name: job.name,
+            data: job,
+            opts: {
                 removeOnComplete: 50,
                 removeOnFail: 50,
                 delay: job.options.delay,
-            })
-        } catch (error) {
-            logger.error(error, 'sqs:error:enqueue')
+            },
         }
     }
 

@@ -2,6 +2,7 @@ import * as AWS from '@aws-sdk/client-sqs'
 import { Consumer } from '@rxfork/sqs-consumer'
 import { logger } from '../config/logger'
 import { AWSConfig } from '../core/aws'
+import { batch, uuid } from '../utilities'
 import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
@@ -17,6 +18,7 @@ export default class SQSQueueProvider implements QueueProvider {
     queue: Queue
     app: Consumer
     sqs: AWS.SQS
+    batchSize = 10 as const
 
     constructor(config: SQSConfig, queue: Queue) {
         this.queue = queue
@@ -58,6 +60,24 @@ export default class SQSQueueProvider implements QueueProvider {
             await this.sqs.sendMessage(params)
         } catch (error) {
             logger.error(error, 'sqs:error:enqueue')
+        }
+    }
+
+    async enqueueBatch(jobs: Job[]): Promise<void> {
+        for (const part of batch(jobs, this.batchSize)) {
+            try {
+                const params = {
+                    QueueUrl: this.config.queueUrl,
+                    Entries: part.map(item => ({
+                        Id: uuid(),
+                        MessageBody: JSON.stringify(item),
+                        DelaySeconds: item.options.delay,
+                    })),
+                }
+                await this.sqs.sendMessageBatch(params)
+            } catch (error) {
+                logger.error(error, 'sqs:error:enqueue')
+            }
         }
     }
 

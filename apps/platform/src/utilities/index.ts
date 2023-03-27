@@ -76,6 +76,14 @@ export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve
 
 export const removeKey = <T, O extends keyof T>(propKey: O, { [propKey]: propValue, ...rest }: T): Omit<T, O> => rest
 
+export const batch = <T>(arr: T[], size: number) => {
+    const result: T[][] = []
+    for (let i = 0, len = arr.length; i < len; i += size) {
+        result.push(arr.slice(i, i + size))
+    }
+    return result
+}
+
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
     return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
         let values: string[]
