@@ -29,7 +29,7 @@ router.post('/logout', async ctx => {
     if (oauth) {
         await revokeAccessToken(oauth.access_token, ctx)
     }
-    ctx.body = {} // logout redirect env property?
+    ctx.redirect('/')
 })
 
 router.get('/logout', async ctx => {
@@ -37,7 +37,7 @@ router.get('/logout', async ctx => {
     if (oauth) {
         await revokeAccessToken(oauth.access_token, ctx)
     }
-    ctx.body = '<html><body>bye!</body></html>' // TODO redirect?
+    ctx.redirect('/')
 })
 
 export default router

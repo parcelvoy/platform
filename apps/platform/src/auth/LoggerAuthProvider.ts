@@ -43,7 +43,7 @@ export default class LoggerAuthProvider extends AuthProvider {
     }
 
     callbackUrl(token: string): string {
-        const baseUrl = combineURLs([App.main.env.baseUrl, 'auth/login'])
+        const baseUrl = combineURLs([App.main.env.baseUrl, 'api/auth/login'])
         const url = new URL(baseUrl)
         url.searchParams.set('token', token)
         return url.href

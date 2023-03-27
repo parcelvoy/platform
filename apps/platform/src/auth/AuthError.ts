@@ -35,4 +35,9 @@ export default {
         code: 1007,
         statusCode: 403,
     },
+    InvalidCredentials: {
+        message: 'The email and password combination provided is invalid.',
+        code: 1008,
+        statusCode: 400,
+    },
 } as Record<string, ErrorType>

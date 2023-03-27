@@ -122,6 +122,11 @@ const api = {
         window.location.href = env.api.baseURL + '/auth/logout'
     },
 
+    async basicAuth(email: string, password: string, redirect: string = '/') {
+        await client.post('/auth/login/callback', { email, password })
+        window.location.href = redirect
+    },
+
     profile: {
         get: async () => {
             if (!cache.profile) {
