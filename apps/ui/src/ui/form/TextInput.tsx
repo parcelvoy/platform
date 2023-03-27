@@ -48,7 +48,7 @@ export default function TextInput<X extends TextInputValue>({
     required,
     textarea,
     size = 'regular',
-    value,
+    value = '',
     onChange,
     onBlur,
     onFocus,
