@@ -4,7 +4,7 @@ import { useDebounceControl, useResolver } from '../hooks'
 import { SearchParams, SearchResult } from '../types'
 import { TagPicker } from '../views/settings/TagPicker'
 import { DataTable, DataTableProps } from './DataTable'
-import TextField from './form/TextField'
+import TextInput from './form/TextInput'
 import Heading from './Heading'
 import { SearchIcon } from './icons'
 import Pagination from './Pagination'
@@ -128,12 +128,13 @@ export function SearchTable<T extends Record<string, any>>({
 
     if (enableSearch) {
         filters.push(
-            <TextField
+            <TextInput
                 key="search"
                 name="search"
                 value={search}
                 placeholder={searchPlaceholder}
                 onChange={setSearch}
+                hideLabel={true}
                 icon={<SearchIcon />}
             />,
         )

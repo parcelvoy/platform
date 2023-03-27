@@ -3,7 +3,7 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Campaign, CampaignCreateParams, List, Project, Provider, SearchParams, Subscription } from '../../types'
 import { useController, UseFormReturn, useWatch } from 'react-hook-form'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
 import ListTable from '../users/ListTable'
@@ -222,7 +222,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
         >
             {form => (
                 <>
-                    <TextField form={form}
+                    <TextInput.Field form={form}
                         name="name"
                         label="Campaign Name"
                         required

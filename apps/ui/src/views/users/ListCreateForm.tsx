@@ -4,7 +4,7 @@ import { ProjectContext } from '../../contexts'
 import { List, ListCreateParams } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import OptionField from '../../ui/form/OptionField'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
 import { createWrapperRule } from './RuleBuilder'
 
@@ -31,7 +31,7 @@ export function ListCreateForm({ onCreated }: ListCreateFormProps) {
         >
             {form => (
                 <>
-                    <TextField
+                    <TextInput.Field
                         form={form}
                         name="name"
                         label="List Name"

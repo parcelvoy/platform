@@ -11,7 +11,7 @@ import LocaleSelector from './LocaleSelector'
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import { Column, Columns } from '../../ui/Columns'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import ButtonGroup from '../../ui/ButtonGroup'
 import Modal, { ModalProps } from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
@@ -25,7 +25,7 @@ interface UserLookupProps extends Omit<ModalProps, 'title'> {
 const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.users.search(project.id, params), [project]))
-    const [value, setValue] = useState('')
+    const [value, setValue] = useState<string>('')
 
     return <Modal
         title="User Lookup"
@@ -34,7 +34,7 @@ const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
         size="regular">
         <div className="user-lookup">
             <ButtonGroup>
-                <TextField name="search" placeholder="Enter email..." onChange={setValue} />
+                <TextInput<string> name="search" placeholder="Enter email..." onChange={setValue} />
                 <Button onClick={() => state.setParams({
                     ...state.params,
                     q: value,
@@ -70,7 +70,7 @@ const SendProof = ({ open, onClose, onSubmit, type }: SendProofProps) => {
             <FormWrapper<TemplateProofParams>
                 onSubmit={async ({ recipient }) => await onSubmit(recipient)}>
                 {form => (
-                    <TextField form={form} name="recipient" required />
+                    <TextInput.Field form={form} name="recipient" required />
                 )}
             </FormWrapper>
         </Modal>

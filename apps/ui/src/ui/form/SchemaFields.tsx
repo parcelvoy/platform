@@ -1,5 +1,5 @@
 import { snakeToTitle } from '../../utils'
-import TextField from './TextField'
+import TextInput from './TextInput'
 import './SchemaFields.css'
 import SwitchField from './SwitchField'
 
@@ -30,7 +30,7 @@ export default function SchemaFields({ title, parent, form, schema }: SchemaProp
                 const item = props[key]
                 const required = schema.required?.includes(key)
                 if (item.type === 'string' || item.type === 'number') {
-                    return <TextField
+                    return <TextInput.Field
                         key={key}
                         form={form}
                         name={`${parent}.${key}`}

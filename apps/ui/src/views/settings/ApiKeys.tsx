@@ -4,7 +4,7 @@ import { ProjectContext } from '../../contexts'
 import { ProjectApiKey, projectRoles } from '../../types'
 import Button from '../../ui/Button'
 import OptionField from '../../ui/form/OptionField'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
@@ -109,13 +109,13 @@ export default function ProjectApiKeys() {
                                     const scope = form.watch('scope')
                                     return (
                                         <>
-                                            <TextField
+                                            <TextInput.Field
                                                 form={form}
                                                 name="name"
                                                 label="Name"
                                                 required
                                             />
-                                            <TextField
+                                            <TextInput.Field
                                                 form={form}
                                                 name="description"
                                                 label="Description"

@@ -36,6 +36,7 @@ export default function UserDetailEvents() {
             }}
         />
         <Modal title={event?.name}
+            size="regular"
             open={event != null}
             onClose={() => setEvent(undefined)}
         >

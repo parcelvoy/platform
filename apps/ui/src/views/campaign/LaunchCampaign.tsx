@@ -5,7 +5,7 @@ import { CampaignContext, ProjectContext } from '../../contexts'
 import { CampaignLaunchParams } from '../../types'
 import OptionField from '../../ui/form/OptionField'
 import SwitchField from '../../ui/form/SwitchField'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import Alert from '../../ui/Alert'
@@ -52,7 +52,7 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
                     value={launchType}
                     onChange={setLaunchType} />
                 {launchType === 'later' && <>
-                    <TextField
+                    <TextInput.Field
                         type="datetime-local"
                         form={form}
                         name="send_at"

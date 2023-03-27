@@ -1,13 +1,13 @@
-.ui-text-field-icon-wrapper {
+.ui-text-input-icon-wrapper {
     position: relative;
 }
 
-.ui-text-field-icon-wrapper input,
-.ui-text-field-icon-wrapper textarea {
+.ui-text-input-icon-wrapper input,
+.ui-text-input-icon-wrapper textarea {
     padding-left: 36px;
 }
 
-.ui-text-field-icon {
+.ui-text-input-icon {
     position: absolute;
     top: 50%;
     left: 12px;

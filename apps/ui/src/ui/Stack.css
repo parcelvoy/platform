@@ -1,12 +1,9 @@
 .ui-stack {
-    --spacing: 20px;
+    --spacing: 10px;
     display: flex;
     flex-direction: row;
-    margin: calc(var(--spacing) / -2);
-}
-
-.ui-stack > * {
-    padding: calc(var(--spacing) / 2);
+    gap: var(--spacing);
+    padding-bottom: var(--spacing);
 }
 
 .ui-stack.ui-stack-vertical {

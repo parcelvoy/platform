@@ -32,7 +32,6 @@ export default class BasicAuthProvider extends AuthProvider {
 
     async validate(ctx: Context) {
 
-        console.log('basic auth!', ctx.request.body)
         const { email, password } = ctx.request.body
         if (!email || !password) throw new RequestError(AuthError.InvalidCredentials)
 

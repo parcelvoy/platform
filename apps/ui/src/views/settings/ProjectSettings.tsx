@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Project } from '../../types'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Heading from '../../ui/Heading'
 import { toast } from 'react-hot-toast'
@@ -25,15 +25,15 @@ export default function ProjectSettings() {
                 {
                     form => (
                         <>
-                            <TextField form={form} name="name" required />
-                            <TextField form={form} name="description" textarea />
-                            <TextField form={form}
+                            <TextInput.Field form={form} name="name" required />
+                            <TextInput.Field form={form} name="description" textarea />
+                            <TextInput.Field form={form}
                                 name="locale"
                                 label="Default Locale"
                                 subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."
                                 required
                             />
-                            <TextField form={form}
+                            <TextInput.Field form={form}
                                 name="timezone"
                                 label="Timezone"
                                 required

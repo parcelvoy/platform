@@ -4,7 +4,7 @@ import { ProjectContext } from '../../contexts'
 import { Tag } from '../../types'
 import Button from '../../ui/Button'
 import FormWrapper from '../../ui/form/FormWrapper'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { PlusIcon } from '../../ui/icons'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
@@ -67,7 +67,7 @@ export default function Tags() {
                             {
                                 form => (
                                     <>
-                                        <TextField form={form} name="name" required />
+                                        <TextInput.Field form={form} name="name" required />
                                     </>
                                 )
                             }

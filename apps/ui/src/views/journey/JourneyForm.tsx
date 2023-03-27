@@ -4,7 +4,7 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Journey } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
 
 interface JourneyFormProps {
@@ -28,12 +28,12 @@ export function JourneyForm({ journey, onSaved }: JourneyFormProps) {
             {
                 form => (
                     <>
-                        <TextField
+                        <TextInput.Field
                             form={form}
                             name="name"
                             required
                         />
-                        <TextField
+                        <TextInput.Field
                             form={form}
                             name="description"
                             textarea

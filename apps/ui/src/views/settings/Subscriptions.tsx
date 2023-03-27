@@ -6,7 +6,7 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { Subscription } from '../../types'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import Button from '../../ui/Button'
 import { PlusIcon } from '../../ui/icons'
@@ -59,7 +59,7 @@ export default function Subscriptions() {
                     {
                         form => (
                             <>
-                                <TextField
+                                <TextInput.Field
                                     form={form}
                                     name="name"
                                     required

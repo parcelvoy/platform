@@ -1,5 +1,5 @@
 import { Campaign } from '../../types'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { languageName } from '../../utils'
@@ -26,7 +26,7 @@ const LocaleTextField = ({ form }: { form: UseFormReturn<{ locale: string }> }) 
     }
 
     return <>
-        <TextField form={form}
+        <TextInput.Field form={form}
             name="locale"
             label="Locale"
             onChange={handlePreviewLanguage}

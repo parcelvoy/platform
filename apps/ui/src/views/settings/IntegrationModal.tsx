@@ -6,7 +6,7 @@ import { Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams } fr
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import SchemaFields from '../../ui/form/SchemaFields'
-import TextField from '../../ui/form/TextField'
+import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal, { ModalProps } from '../../ui/Modal'
 import Tile, { TileGrid } from '../../ui/Tile'
@@ -79,18 +79,22 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
                         {provider?.id
                             ? <>
                                 <h4>Details</h4>
-                                <TextField name="id" label="ID" value={provider.id} disabled />
+                                <TextInput
+                                    name="id"
+                                    label="ID"
+                                    value={provider.id}
+                                    disabled />
                                 {meta.paths && Object.keys(meta.paths).map(key => {
                                     const value = meta.paths?.[key]
                                     const url = `${window.location.origin}/providers/${provider?.id}${value}`
-                                    return <TextField name="unsubscribe" key={key} label={key} value={url} disabled />
+                                    return <TextInput name="unsubscribe" key={key} label={key} value={url} disabled />
                                 })}
                             </>
                             : <Alert title={meta.name} variant="plain">Fill out the fields below to setup this integration. For more information on this integration please see the documentation on our website</Alert>
                         }
 
                         <h4>Config</h4>
-                        <TextField form={form} name="name" required />
+                        <TextInput.Field form={form} name="name" required />
                         <SchemaFields parent="data" schema={meta.schema.properties.data} form={form} />
                     </>
                 }
