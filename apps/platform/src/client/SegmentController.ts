@@ -58,7 +58,7 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
         ],
     },
     minItems: 1,
-    maxItems: 200,
+    maxItems: 1000,
 } as any
 router.post('/segment', async ctx => {
     const events = validate(segmentEventsRequest, ctx.request.body)
