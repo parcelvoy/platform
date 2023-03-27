@@ -1,6 +1,4 @@
-import type { Knex } from 'knex'
-
-exports.up = async function(knex: Knex) {
+exports.up = async function(knex) {
     await knex.schema
         .alterTable('providers', function(table) {
             table.dropIndex('external_id')
@@ -8,7 +6,7 @@ exports.up = async function(knex: Knex) {
         })
 }
 
-exports.down = async function(knex: Knex) {
+exports.down = async function(knex) {
     await knex.schema
         .alterTable('providers', function(table) {
             table.string('external_id').index()

@@ -15,7 +15,6 @@ const migrationConfig = {
     directory: './db/migrations',
     tableName: 'migrations',
     stub: './db/migration.stub',
-    extension: 'ts',
 }
 
 const name = process.argv[2]
