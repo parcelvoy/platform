@@ -40,6 +40,14 @@ export default class Queue {
         return await this.provider.enqueue(job)
     }
 
+    async enqueueBatch(jobs: Job[]): Promise<void> {
+        return await this.provider.enqueueBatch(jobs)
+    }
+
+    get batchSize() {
+        return this.provider.batchSize
+    }
+
     register(job: typeof Job) {
         this.jobs[job.$name] = job.handler
     }

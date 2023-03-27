@@ -7,6 +7,7 @@ import { aliasUser } from '../users/UserRepository'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import UserPatchJob from '../users/UserPatchJob'
+import { Job } from '../queue'
 
 const router = new Router<ProjectState>()
 router.use(projectMiddleware)
@@ -63,6 +64,8 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
 router.post('/segment', async ctx => {
     const events = validate(segmentEventsRequest, ctx.request.body)
 
+    let chunks: Job[] = []
+
     for (const event of events) {
         const identity = {
             anonymous_id: event.anonymousId,
@@ -72,7 +75,7 @@ router.post('/segment', async ctx => {
             await aliasUser(ctx.state.project.id, identity)
         } else if (event.type === 'identify') {
 
-            await App.main.queue.enqueue(UserPatchJob.from({
+            chunks.push(UserPatchJob.from({
                 project_id: ctx.state.project.id,
                 user: {
                     ...identity,
@@ -83,7 +86,7 @@ router.post('/segment', async ctx => {
             }))
         } else if (event.type === 'track') {
 
-            await App.main.queue.enqueue(EventPostJob.from({
+            chunks.push(EventPostJob.from({
                 project_id: ctx.state.project.id,
                 event: {
                     ...identity,
@@ -92,6 +95,18 @@ router.post('/segment', async ctx => {
                 },
             }))
         }
+
+        // Based on queue max batch size, process in largest chunks
+        // possible
+        if (chunks.length > App.main.queue.batchSize) {
+            await App.main.queue.enqueueBatch(chunks)
+            chunks = []
+        }
+    }
+
+    // Insert any remaining items
+    if (chunks.length > 0) {
+        await App.main.queue.enqueueBatch(chunks)
     }
 
     ctx.status = 204
