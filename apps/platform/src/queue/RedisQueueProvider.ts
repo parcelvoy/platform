@@ -58,7 +58,7 @@ export default class RedisQueueProvider implements QueueProvider {
     start(): void {
         this.worker = new Worker('parcelvoy', async job => {
             await this.queue.dequeue(job.data)
-        }, { connection: this.config })
+        }, { connection: this.config, concurrency: 25 })
         this.worker.on('failed', (job, error) => {
             logger.error({ error }, 'sqs:error:processing')
         })
