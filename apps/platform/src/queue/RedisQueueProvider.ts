@@ -45,8 +45,11 @@ export default class RedisQueueProvider implements QueueProvider {
             name: job.name,
             data: job,
             opts: {
-                removeOnComplete: 50,
-                removeOnFail: 50,
+                removeOnComplete: true,
+                removeOnFail: {
+                    count: 50,
+                    age: 24 * 3600, // keep up to 24 hours
+                },
                 delay: job.options.delay,
             },
         }

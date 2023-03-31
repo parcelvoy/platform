@@ -64,7 +64,8 @@ export default class App {
         if (runners.includes('api')) {
             this.api = new Api(this)
             this.api?.listen(this.env.port)
-        } else if (runners.includes('worker')) {
+        }
+        if (runners.includes('worker')) {
             this.worker = new Worker(this)
             this.worker?.run()
         }

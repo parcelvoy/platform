@@ -36,6 +36,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV}
       BASE_URL: ${BASE_URL}
+      RUNNER: 'api'
       APP_SECRET: ${APP_SECRET}
       PORT: 3001
       DB_CLIENT: ${DB_CLIENT}
@@ -69,6 +70,50 @@ services:
       AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
     volumes:
       - uploads:/usr/src/app/public/uploads
+  worker:
+    image: 'ghcr.io/parcelvoy/api:latest'
+    restart: always
+    links:
+      - mysql:mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      BASE_URL: ${BASE_URL}
+      RUNNER: 'worker'
+      APP_SECRET: ${APP_SECRET}
+      DB_CLIENT: ${DB_CLIENT}
+      DB_HOST: mysql
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      STORAGE_DRIVER: ${STORAGE_DRIVER}
+      STORAGE_BASE_URL: ${STORAGE_BASE_URL}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      QUEUE_DRIVER: ${QUEUE_DRIVER}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AUTH_DRIVER: ${AUTH_DRIVER}
+      AUTH_BASIC_EMAIL: ${AUTH_BASIC_EMAIL}
+      AUTH_BASIC_PASSWORD: ${AUTH_BASIC_PASSWORD}
+      AUTH_SAML_CALLBACK_URL: ${AUTH_SAML_CALLBACK_URL}
+      AUTH_SAML_ENTRY_POINT_URL: ${AUTH_SAML_ENTRY_POINT_URL}
+      AUTH_SAML_ISSUER: ${AUTH_SAML_ISSUER}
+      AUTH_SAML_CERT: ${AUTH_SAML_CERT}
+      AUTH_SAML_IS_AUTHN_SIGNED: ${AUTH_SAML_IS_AUTHN_SIGNED}
+      AUTH_OPENID_ISSUER_URL: ${AUTH_OPENID_ISSUER_URL}
+      AUTH_OPENID_CLIENT_ID: ${AUTH_OPENID_CLIENT_ID}
+      AUTH_OPENID_CLIENT_SECRET: ${AUTH_OPENID_CLIENT_SECRET}
+      AUTH_OPENID_REDIRECT_URI: ${AUTH_OPENID_REDIRECT_URI}
+      AUTH_OPENID_DOMAIN_WHITELIST: ${AUTH_OPENID_DOMAIN_WHITELIST}
   ui:
     image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
