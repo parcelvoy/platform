@@ -168,7 +168,7 @@ export function SearchTable<T extends Record<string, any>>({
             }
             {
                 filters.length > 0 && (
-                    <Stack style={{ paddingBottom: 15 }}>
+                    <Stack>
                         {filters}
                     </Stack>
                 )
