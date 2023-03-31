@@ -9,6 +9,7 @@ import type Auth from './auth/Auth'
 import { uuid } from './utilities'
 import Api from './api'
 import Worker from './worker'
+import { logger } from './config/logger'
 
 export default class App {
     private static $main: App
@@ -63,11 +64,15 @@ export default class App {
         const runners = this.env.runners
         if (runners.includes('api')) {
             this.api = new Api(this)
-            this.api?.listen(this.env.port)
+            const server = this.api?.listen(this.env.port)
+            server.keepAliveTimeout = 65000
+            server.requestTimeout = 0
+            logger.info('parcelvoy:api ready')
         }
         if (runners.includes('worker')) {
             this.worker = new Worker(this)
             this.worker?.run()
+            logger.info('parcelvoy:worker ready')
         }
     }
 
