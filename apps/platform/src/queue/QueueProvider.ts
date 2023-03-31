@@ -8,5 +8,6 @@ export default interface QueueProvider {
     batchSize: number
     enqueue(job: Job): Promise<void>
     enqueueBatch(jobs: Job[]): Promise<void>
+    start(): void
     close(): void
 }

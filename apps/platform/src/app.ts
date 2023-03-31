@@ -1,14 +1,14 @@
-import Api from './api'
 import loadDatabase, { Database } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadAuth from './config/auth'
-import { Env } from './config/env'
-import scheduler from './config/scheduler'
-import Queue from './queue'
+import type { Env } from './config/env'
+import type Queue from './queue'
 import Storage from './storage'
-import Auth from './auth/Auth'
+import type Auth from './auth/Auth'
 import { uuid } from './utilities'
+import Api from './api'
+import Worker from './worker'
 
 export default class App {
     private static $main: App
@@ -44,8 +44,8 @@ export default class App {
     }
 
     uuid = uuid()
-    api: Api
-    scheduler: any
+    api?: Api
+    worker?: Worker
     #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
@@ -56,16 +56,23 @@ export default class App {
         public auth: Auth,
         public storage: Storage,
     ) {
-        this.api = new Api(this)
-        this.scheduler = scheduler(this)
         this.#registered = {}
     }
 
-    listen() {
-        this.api.listen(this.env.port)
+    async start() {
+        const runners = this.env.runners
+        if (runners.includes('api')) {
+            this.api = new Api(this)
+            this.api?.listen(this.env.port)
+        }
+        if (runners.includes('worker')) {
+            this.worker = new Worker(this)
+            this.worker?.run()
+        }
     }
 
     async close() {
+        await this.worker?.close()
         await this.db.destroy()
         await this.queue.close()
     }

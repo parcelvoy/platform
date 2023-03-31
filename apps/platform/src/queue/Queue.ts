@@ -1,5 +1,6 @@
 import { DriverConfig } from '../config/env'
-import { logger, LoggerConfig } from '../config/logger'
+import { logger } from '../config/logger'
+import { LoggerConfig } from '../providers/LoggerProvider'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { QueueProviderName } from './QueueProvider'
@@ -41,6 +42,7 @@ export default class Queue {
     }
 
     async enqueueBatch(jobs: Job[]): Promise<void> {
+        logger.info({ count: jobs.length }, 'queue:job:enqueuedBatch')
         return await this.provider.enqueueBatch(jobs)
     }
 
@@ -65,6 +67,10 @@ export default class Queue {
     async completed(job: EncodedJob) {
         // TODO: Do something about completion
         logger.info(job, 'queue:job:completed')
+    }
+
+    async start() {
+        this.provider.start()
     }
 
     async close() {

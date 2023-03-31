@@ -1,10 +1,12 @@
 import * as dotenv from 'dotenv'
-import { StorageConfig } from '../storage/Storage'
-import { QueueConfig } from '../queue/Queue'
-import { DatabaseConfig } from './database'
-import { AuthConfig } from '../auth/Auth'
+import type { StorageConfig } from '../storage/Storage'
+import type { QueueConfig } from '../queue/Queue'
+import type { DatabaseConfig } from './database'
+import type { AuthConfig } from '../auth/Auth'
 
+export type Runner = 'api' | 'worker'
 export interface Env {
+    runners: Runner[]
     db: DatabaseConfig
     queue: QueueConfig
     storage: StorageConfig
@@ -37,6 +39,7 @@ export default (type?: EnvType): Env => {
     dotenv.config({ path: `.env${type === 'test' ? '.test' : ''}` })
 
     return {
+        runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
         db: {
             client: process.env.DB_CLIENT as 'mysql2' | 'postgres',
             connection: {

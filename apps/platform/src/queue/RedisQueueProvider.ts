@@ -16,19 +16,13 @@ export default class RedisQueueProvider implements QueueProvider {
     config: RedisConfig
     queue: Queue
     bull: BullQueue
-    worker: Worker
+    worker?: Worker
     batchSize = 50 as const
 
     constructor(config: RedisConfig, queue: Queue) {
         this.queue = queue
         this.config = config
         this.bull = new BullQueue('parcelvoy', { connection: config })
-        this.worker = new Worker('parcelvoy', async job => {
-            await this.queue.dequeue(job.data)
-        }, { connection: config })
-        this.worker.on('failed', (job, error) => {
-            logger.error({ error }, 'sqs:error:processing')
-        })
     }
 
     async enqueue(job: Job): Promise<void> {
@@ -51,14 +45,27 @@ export default class RedisQueueProvider implements QueueProvider {
             name: job.name,
             data: job,
             opts: {
-                removeOnComplete: 50,
-                removeOnFail: 50,
+                removeOnComplete: true,
+                removeOnFail: {
+                    count: 50,
+                    age: 24 * 3600, // keep up to 24 hours
+                },
                 delay: job.options.delay,
             },
         }
     }
 
+    start(): void {
+        this.worker = new Worker('parcelvoy', async job => {
+            await this.queue.dequeue(job.data)
+        }, { connection: this.config })
+        this.worker.on('failed', (job, error) => {
+            logger.error({ error }, 'sqs:error:processing')
+        })
+    }
+
     close(): void {
-        this.worker.close()
+        this.bull.close()
+        this.worker?.close()
     }
 }

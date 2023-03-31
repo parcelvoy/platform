@@ -15,7 +15,6 @@ export default class MemoryQueueProvider implements QueueProvider {
 
     constructor(queue: Queue) {
         this.queue = queue
-        this.start()
     }
 
     async enqueue(job: Job): Promise<void> {

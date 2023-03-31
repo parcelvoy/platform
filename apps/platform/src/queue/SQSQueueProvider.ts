@@ -16,7 +16,7 @@ export default class SQSQueueProvider implements QueueProvider {
 
     config: SQSConfig
     queue: Queue
-    app: Consumer
+    app?: Consumer
     sqs: AWS.SQS
     batchSize = 10 as const
 
@@ -24,26 +24,6 @@ export default class SQSQueueProvider implements QueueProvider {
         this.queue = queue
         this.config = config
         this.sqs = new AWS.SQS({ region: this.config.region })
-        this.app = Consumer.create({
-            queueUrl: this.config.queueUrl,
-            handleMessage: async (message) => {
-                await this.queue.dequeue(this.parse(message))
-            },
-            sqs: this.sqs,
-        })
-
-        // Catches errors related to the queue / connection
-        this.app.on('error', (error, message) => {
-            logger.error({ error, message }, 'sqs:error:connection')
-            this.app.stop()
-            // TODO:  this.queue.errored(this.parse(message), error)
-        })
-
-        // Catches errors related to the job
-        this.app.on('processing_error', (error) => {
-            logger.error({ error }, 'sqs:error:processing')
-        })
-        this.app.start()
     }
 
     parse(message: AWS.Message): EncodedJob {
@@ -81,7 +61,31 @@ export default class SQSQueueProvider implements QueueProvider {
         }
     }
 
+    start(): void {
+        const app = Consumer.create({
+            queueUrl: this.config.queueUrl,
+            handleMessage: async (message) => {
+                await this.queue.dequeue(this.parse(message))
+            },
+            sqs: this.sqs,
+        })
+
+        // Catches errors related to the queue / connection
+        app.on('error', (error, message) => {
+            logger.error({ error, message }, 'sqs:error:connection')
+            app.stop()
+            // TODO:  this.queue.errored(this.parse(message), error)
+        })
+
+        // Catches errors related to the job
+        app.on('processing_error', (error) => {
+            logger.error({ error }, 'sqs:error:processing')
+        })
+        app.start()
+        this.app = app
+    }
+
     close(): void {
-        this.app.stop()
+        this.app?.stop()
     }
 }
