@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: row;
     gap: var(--spacing);
-    padding-bottom: var(--spacing);
+    margin-bottom: var(--spacing);
 }
 
 .ui-stack.ui-stack-vertical {
