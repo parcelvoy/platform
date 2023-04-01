@@ -20,7 +20,6 @@ export default function UserTabs() {
                 { key: 'phone' },
                 { key: 'locale' },
                 { key: 'created_at' },
-                { key: 'updated_at' },
             ]}
             onSelectRow={({ id }) => route(`users/${id}`)}
             enableSearch

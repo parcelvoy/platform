@@ -28,12 +28,15 @@
 
 .ui-table .table-cell, .ui-table .table-header-cell {
     display: table-cell;
-    padding: 10px 15px;
     border-bottom: 1px solid var(--color-grey);
 }
 
+.ui-table .table-header-cell {
+    padding: 10px 5px;
+}
+
 .ui-table .table-cell {
-    padding: 15px;
+    padding: 15px 5px;
 }
 
 .ui-table .table-cell:first-child, .ui-table .table-header-cell:first-child {
@@ -42,6 +45,7 @@
 
 .ui-table .table-row:last-child .table-cell {
     border-bottom: 0px;
+    padding-right: 15px;
 }
 
 .ui-table .table-cell .cell-content {
