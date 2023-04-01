@@ -85,8 +85,9 @@ export const batch = <T>(arr: T[], size: number) => {
 }
 
 export const parseLocale = (locale: string): string | undefined => {
-    const parts = locale.split('-')
-    return parts.length === 1 ? locale[0] : locale
+    return locale.slice(-1) === '-'
+        ? locale.slice(0, -1)
+        : locale
 }
 
 export const partialMatchLocale = (locale1?: string, locale2?: string) => {
