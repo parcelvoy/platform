@@ -1,5 +1,6 @@
 import { ClientIdentity } from '../client/Client'
 import Model, { ModelParams } from '../core/Model'
+import parsePhoneNumber from 'libphonenumber-js'
 
 export interface TemplateUser extends Record<string, any> {
     id: string
@@ -42,7 +43,6 @@ export class User extends Model {
     phone?: string
     devices?: Device[]
     data!: Record<string, any> // first_name, last_name live in data
-    attributes!: UserAttribute[] // ???
     timezone!: string
     locale!: string
 
@@ -80,6 +80,19 @@ export class User extends Model {
     get lastName() {
         return this.data.last_name ?? this.data.lastName
     }
+
+    toJSON() {
+        const json = super.toJSON()
+
+        if (this.phone) {
+            const parsedNumber = parsePhoneNumber(this.phone)
+            if (parsedNumber) {
+                json.phone = parsedNumber.formatInternational()
+            }
+        }
+
+        return json
+    }
 }
 
-export type UserParams = Partial<Pick<User, 'email' | 'phone' | 'data'>> & ClientIdentity
+export type UserParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' |'locale' | 'data'>> & ClientIdentity

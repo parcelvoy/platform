@@ -81,6 +81,8 @@ router.post('/segment', async ctx => {
                     ...identity,
                     email: event.traits.email,
                     phone: event.traits.phone,
+                    timezone: event.context.timezone,
+                    locale: event.locale,
                     data: event.traits,
                 },
             }))
@@ -92,6 +94,7 @@ router.post('/segment', async ctx => {
                     ...identity,
                     name: event.event,
                     data: { ...event.properties, ...event.context },
+                    created_at: new Date(event.timestamp),
                 },
             }))
         }

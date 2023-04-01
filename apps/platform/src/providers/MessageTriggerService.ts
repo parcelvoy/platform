@@ -5,6 +5,7 @@ import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
+import { partialMatchLocale } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
 
 interface MessageTriggerHydrated<T> {
@@ -34,8 +35,16 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         qb => qb.where('campaign_id', campaign_id),
     )
 
+    // Determine what template to send to the user based on the following:
+    // - Find an exact match of users locale with a template
+    // - Find a partial match (same root locale i.e. `en` vs `en-US`)
+    // - If a project locale is set and there is amtch, use that template
+    // - If there is a project locale and its a partial match, use
+    // - Otherwise return any template available
     const template = templates.find(item => item.locale === user.locale)
+        || templates.find(item => partialMatchLocale(item.locale, user.locale))
         || templates.find(item => item.locale === project.locale)
+        || templates.find(item => partialMatchLocale(item.locale, project.locale))
         || templates[0]
 
     // If campaign or template dont exist, log and abort

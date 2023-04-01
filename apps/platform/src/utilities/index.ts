@@ -84,6 +84,17 @@ export const batch = <T>(arr: T[], size: number) => {
     return result
 }
 
+export const parseLocale = (locale: string): string | undefined => {
+    const parts = locale.split('-')
+    return parts.length === 1 ? locale[0] : locale
+}
+
+export const partialMatchLocale = (locale1?: string, locale2?: string) => {
+    const locale1Root = locale1?.split('-')[0]
+    const locale2Root = locale2?.split('-')[0]
+    return locale1 === locale2 || locale1Root === locale2Root
+}
+
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
     return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
         let values: string[]
