@@ -8,6 +8,7 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import UserPatchJob from '../users/UserPatchJob'
 import { Job } from '../queue'
+import { parseLocale } from '../utilities'
 
 const router = new Router<ProjectState>()
 router.use(projectMiddleware)
@@ -82,7 +83,7 @@ router.post('/segment', async ctx => {
                     email: event.traits.email,
                     phone: event.traits.phone,
                     timezone: event.context.timezone,
-                    locale: event.context.locale,
+                    locale: parseLocale(event.context.locale),
                     data: event.traits,
                 },
             }))
