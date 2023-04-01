@@ -48,6 +48,14 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
                     type: 'string',
                     nullable: true,
                 },
+                timezone: {
+                    type: 'string',
+                    nullable: true,
+                },
+                locale: {
+                    type: 'string',
+                    nullable: true,
+                },
                 data: {
                     type: 'object',
                     nullable: true,
@@ -71,6 +79,14 @@ const patchUsersRequest: JSONSchemaType<UserParams[]> = {
                     nullable: true,
                 },
                 phone: {
+                    type: 'string',
+                    nullable: true,
+                },
+                timezone: {
+                    type: 'string',
+                    nullable: true,
+                },
+                locale: {
                     type: 'string',
                     nullable: true,
                 },
