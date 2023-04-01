@@ -2,6 +2,7 @@ import App from '../app'
 
 interface JobOptions {
     delay?: number
+    attempts?: number
 }
 
 export interface EncodedJob {
@@ -12,7 +13,10 @@ export interface EncodedJob {
 
 export default class Job implements EncodedJob {
     data: any
-    options: JobOptions = { delay: 0 }
+    options: JobOptions = {
+        delay: 0,
+        attempts: 3,
+    }
 
     static $name: string = Job.constructor.name
 

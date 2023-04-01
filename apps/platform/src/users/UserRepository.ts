@@ -42,7 +42,7 @@ export const getUserFromEmail = async (projectId: number, email: string): Promis
 export const pagedUsers = async (params: SearchParams, projectId: number) => {
     return await User.searchParams(
         params,
-        ['email', 'phone'],
+        ['external_id', 'email', 'phone'],
         b => b.where({ project_id: projectId }),
     )
 }
