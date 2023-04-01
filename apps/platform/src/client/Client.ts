@@ -13,7 +13,7 @@ export type ClientAliasParams = {
 
 export type ClientIdentity = RequireAtLeastOne<ClientAliasParams, 'anonymous_id' | 'external_id'>
 
-export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'data'>> & ClientIdentity
+export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' | 'data'>> & ClientIdentity
 
 export type ClientIdentifyUser = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>
 
@@ -24,6 +24,7 @@ export type ClientDeleteUsersRequest = string[]
 export type ClientPostEvent = {
     name: string
     data?: Record<string, unknown>
+    created_at?: Date
 } & ClientIdentity
 
 export type ClientPostEventsRequest = ClientPostEvent[]
@@ -52,6 +53,7 @@ export type SegmentPostEvent = {
     traits?: Record<string, any>
     type: 'track' | 'alias' | 'identify'
     timestamp: string
+    locale: string
 } & (
     {
         type: 'track',

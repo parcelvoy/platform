@@ -17,6 +17,8 @@ export default function UserTabs() {
                 { key: 'full_name', title: 'Name' },
                 { key: 'email' },
                 { key: 'phone' },
+                { key: 'timezone' },
+                { key: 'locale' },
                 { key: 'created_at' },
                 { key: 'updated_at' },
             ]}

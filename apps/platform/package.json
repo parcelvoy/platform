@@ -33,6 +33,7 @@
     "koa-body": "5.0.0",
     "koa-jwt": "^4.0.3",
     "koa-static": "^5.0.0",
+    "libphonenumber-js": "^1.10.24",
     "mysql2": "^2.3.3",
     "node-pushnotifications": "^2.0.3",
     "node-schedule": "^2.1.0",

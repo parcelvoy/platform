@@ -64,6 +64,14 @@ const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
             type: 'string',
             nullable: true,
         },
+        timezone: {
+            type: 'string',
+            nullable: true,
+        },
+        locale: {
+            type: 'string',
+            nullable: true,
+        },
         data: {
             type: 'object',
             nullable: true,
