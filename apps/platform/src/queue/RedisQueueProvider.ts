@@ -22,7 +22,16 @@ export default class RedisQueueProvider implements QueueProvider {
     constructor(config: RedisConfig, queue: Queue) {
         this.queue = queue
         this.config = config
-        this.bull = new BullQueue('parcelvoy', { connection: config })
+        this.bull = new BullQueue('parcelvoy', {
+            connection: config,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: {
+                    type: 'exponential',
+                    delay: 1000,
+                },
+            },
+        })
     }
 
     async enqueue(job: Job): Promise<void> {
@@ -51,6 +60,7 @@ export default class RedisQueueProvider implements QueueProvider {
                     age: 24 * 3600, // keep up to 24 hours
                 },
                 delay: job.options.delay,
+                attempts: job.options.attempts,
             },
         }
     }

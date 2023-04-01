@@ -41,9 +41,11 @@ export interface SegmentContext {
         name: string
         version: string
     }
-    timezone: string
+    locale: string
+    timezone?: string
 }
 
+// https://segment.com/docs/connections/spec/common/
 export type SegmentPostEvent = {
     event: string
     anonymousId: string
@@ -53,7 +55,6 @@ export type SegmentPostEvent = {
     traits?: Record<string, any>
     type: 'track' | 'alias' | 'identify'
     timestamp: string
-    locale: string
 } & (
     {
         type: 'track',

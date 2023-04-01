@@ -14,6 +14,11 @@ interface EventPostTrigger {
 export default class EventPostJob extends Job {
     static $name = 'event_post'
 
+    options = {
+        delay: 0,
+        attempts: 1,
+    }
+
     static from(data: EventPostTrigger): EventPostJob {
         return new this(data)
     }
@@ -23,7 +28,7 @@ export default class EventPostJob extends Job {
         const user = await getUserFromClientId(project_id, { anonymous_id, external_id } as ClientIdentity)
         if (!user) {
             logger.error({ project_id, event }, 'job:event_post:unknown-user')
-            return
+            throw new Error('job:event_post:unknown-user')
         }
 
         // Create event for given user
