@@ -2,13 +2,13 @@ import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import api from '../../api'
 import PageContent from '../../ui/PageContent'
-import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
+import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
 
 export default function UserTabs() {
     const { projectId = '' } = useParams()
     const route = useRoute()
-    const state = useSearchTableState(useCallback(async params => await api.users.search(projectId, params), [projectId]))
+    const state = useSearchTableQueryState(useCallback(async params => await api.users.search(projectId, params), [projectId]))
 
     return <PageContent title="Users">
         <SearchTable
@@ -19,7 +19,7 @@ export default function UserTabs() {
                 { key: 'email' },
                 { key: 'phone' },
                 { key: 'locale' },
-                { key: 'created_at' },
+                { key: 'created_at', sortable: true },
             ]}
             onSelectRow={({ id }) => route(`users/${id}`)}
             enableSearch

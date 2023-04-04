@@ -20,6 +20,13 @@ export function round(n: number, places?: number) {
     return Math.round(n)
 }
 
+export const prune = (obj: Record<string, any>): Record<string, any> => {
+    return Object.fromEntries(
+        Object.entries(obj)
+            .filter(([_, v]) => v != null && v !== ''),
+    )
+}
+
 export function snakeToTitle(snake: string) {
     return (snake ?? '').split('_').map(p => p.charAt(0).toUpperCase() + p.substring(1)).join(' ')
 }

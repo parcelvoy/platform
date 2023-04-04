@@ -6,7 +6,7 @@ import UserPatchJob from './UserPatchJob'
 import { JSONSchemaType, validate } from '../core/validate'
 import { User, UserParams } from './User'
 import { extractQueryParams } from '../utilities'
-import { searchParamsSchema } from '../core/searchParams'
+import { searchParamsSchema, SearchSchema } from '../core/searchParams'
 import { getUser, pagedUsers } from './UserRepository'
 import { getUserLists } from '../lists/ListService'
 import { getUserSubscriptions, toggleSubscription } from '../subscriptions/SubscriptionService'
@@ -21,7 +21,11 @@ const router = new Router<
 })
 
 router.get('/', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('usersSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await pagedUsers(params, ctx.state.project.id)
 })
 
