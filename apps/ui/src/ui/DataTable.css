@@ -33,6 +33,7 @@
 
 .ui-table .table-header-cell {
     padding: 10px 5px;
+    white-space: nowrap;
 }
 
 .ui-table .table-cell {

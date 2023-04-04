@@ -41,7 +41,7 @@ export default function UserDetailSubscriptions() {
             title="Subscriptions"
             actions={
                 <Button
-                    variant="secondary"
+                    size="small"
                     onClick={async () => await unsubscribeAll()}
                 >
                     Unsubscribe From All

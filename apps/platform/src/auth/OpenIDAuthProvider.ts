@@ -90,6 +90,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
                 email: claims.email,
                 first_name: claims.given_name ?? claims.name,
                 last_name: claims.family_name,
+                image_url: claims.picture,
             }
 
             await this.login(admin, ctx, state)

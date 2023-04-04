@@ -39,7 +39,7 @@ export default function Menu({ children, variant, size, placement }: PropsWithCh
         <Popover>
             <Popover.Button as={Button}
                 ref={setReferenceElement}
-                variant={variant ?? 'plain'}
+                variant={variant ?? 'secondary'}
                 size={size}
                 icon={<ThreeDotsIcon />}></Popover.Button>
 

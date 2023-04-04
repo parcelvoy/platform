@@ -180,3 +180,9 @@ label .switch .slider.round:before {
     width: 16px;
     height: 16px;
 }
+
+@media only screen and (max-width: 600px) {
+    .page-content {
+        padding: 0 20px 20px;
+    }
+}

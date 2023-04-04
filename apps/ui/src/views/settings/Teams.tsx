@@ -67,10 +67,10 @@ export default function Teams() {
                 enableSearch
             />
             <Modal
-                title={editing?.id ? 'Update Team Member Permissions' : 'Add Team Member'}
+                title={editing?.id ? 'Update Permissions' : 'Add Team Member'}
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
-                size="regular"
+                size="small"
             >
                 {
                     editing && (

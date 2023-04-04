@@ -67,7 +67,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
             disabled={disabled ?? isLoading}
             style={style}
         >
-            {icon && (<span className="button-icon">{icon}</span>)}
+            {icon && (<span className="button-icon" aria-hidden="true">{icon}</span>)}
             {children}
         </button>
     )
