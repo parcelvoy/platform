@@ -10,11 +10,11 @@
     z-index: 1;
 }
 
-.sidebar + * {
+main {
     margin-left: 225px;
 }
 
-.sidebar .sidebar-header {
+header, .sidebar .sidebar-header {
     display: flex;
     position: relative;
     border-bottom: 1px solid var(--color-grey);
@@ -23,12 +23,12 @@
     align-items: center;
 }
 
-.sidebar-header .logo {
+header .logo, .sidebar-header .logo {
     display: flex;
     align-items: center;
 }
 
-.sidebar-header .logo svg {
+header .logo svg, .sidebar-header .logo svg {
     height: 30px;
     flex-shrink: 0;
     fill: var(--color-primary);
@@ -50,6 +50,10 @@
     color: var(--color-primary);
     font-size: 14px;
     font-weight: 500;
+}
+
+header {
+    display: none;
 }
 
 nav {
@@ -95,8 +99,9 @@ nav a .nav-icon {
     grid-template-areas: "image name" "image role";
     grid-template-columns: 40px 1fr;
     grid-column-gap: 15px;
+    grid-row-gap: 5px;
     align-items: center;
-    padding: 20px;
+    padding: 15px 20px;
 }
 
 .sidebar-profile .profile-image {
@@ -105,14 +110,61 @@ nav a .nav-icon {
     background: var(--color-grey);
     border-radius: 20px;
     grid-area: image;
+    overflow: hidden;
+}
+
+.sidebar-profile .profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .sidebar-profile .profile-name {
     grid-area: name;
-    font-size: 14px;
+    font-size: 15px;
 }
 
-.profile .profile-role {
+.sidebar-profile .profile-role {
     grid-area: role;
     font-size: 12px;
+    display: flex;
+}
+
+@media only screen and (max-width: 600px) {
+    header {
+        background: var(--color-background);
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10;
+        gap: 15px;
+    }
+
+    .sidebar {
+        width: 90%;
+        top: 61px;
+        margin-left: -90%;
+        transition: margin-left 100ms ease-in-out;
+    }
+
+    main {
+        padding-top: 61px;
+        background-color: var(--color-background);
+        margin-left: 0;
+        transition: margin-left 100ms ease-in-out;
+    }
+
+    .sidebar.is-open {
+        margin-left: 0%;
+    }
+
+    main.is-open {
+        margin-left: 90%;
+    }
+
+    .sidebar .sidebar-header {
+        display: none;
+    }
 }

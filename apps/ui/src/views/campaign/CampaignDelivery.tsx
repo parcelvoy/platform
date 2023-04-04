@@ -1,14 +1,27 @@
 import { useCallback, useContext } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
+import { CampaignSendState } from '../../types'
 import Alert from '../../ui/Alert'
 import Heading from '../../ui/Heading'
 import { InfoTable } from '../../ui/InfoTable'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import Tag from '../../ui/Tag'
-import { formatDate } from '../../utils'
+import Tag, { TagVariant } from '../../ui/Tag'
+import { formatDate, snakeToTitle } from '../../utils'
 import { useRoute } from '../router'
+
+export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
+    const variant: Record<CampaignSendState, TagVariant> = {
+        pending: 'info',
+        sent: 'success',
+        failed: 'error',
+    }
+
+    return <Tag variant={variant[state]}>
+        {snakeToTitle(state)}
+    </Tag>
+}
 
 export default function CampaignDelivery() {
     const [project] = useContext(ProjectContext)
@@ -39,7 +52,7 @@ export default function CampaignDelivery() {
                             { key: 'phone' },
                             {
                                 key: 'state',
-                                cell: ({ item: { state } }) => <Tag>{state}</Tag>,
+                                cell: ({ item: { state } }) => CampaignSendTag({ state }),
                             },
                             { key: 'send_at' },
                         ]}

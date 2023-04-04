@@ -2,7 +2,7 @@ import './Sidebar.css'
 import NavLink from './NavLink'
 import { ReactComponent as Logo } from '../assets/logo.svg'
 import { Link, NavLinkProps, useNavigate } from 'react-router-dom'
-import { PropsWithChildren, ReactNode, useCallback, useContext } from 'react'
+import { PropsWithChildren, ReactNode, useCallback, useContext, useState } from 'react'
 import { AdminContext, ProjectContext } from '../contexts'
 import api from '../api'
 import { PreferencesContext } from './PreferencesContext'
@@ -10,9 +10,10 @@ import { useResolver } from '../hooks'
 import { SingleSelect } from './form/SingleSelect'
 import Button from './Button'
 import ButtonGroup from './ButtonGroup'
-import { MoonIcon, SunIcon } from './icons'
+import { MenuIcon, MoonIcon, SunIcon } from './icons'
 import { checkProjectRole, getRecentProjects } from '../utils'
 import { ProjectRole } from '../types'
+import clsx from 'clsx'
 
 interface SidebarProps {
     links?: Array<NavLinkProps & {
@@ -52,10 +53,17 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
             },
         ]
     }, [project]))
+    const [isOpen, setIsOpen] = useState(false)
 
     return (
         <>
-            <section className="sidebar">
+            <header className="header">
+                <Button onClick={() => setIsOpen(!isOpen)} icon={<MenuIcon />} aria-label="Menu" variant="secondary" size="small"/>
+                <Link className="logo" to="/">
+                    <Logo />
+                </Link>
+            </header>
+            <section className={clsx('sidebar', { 'is-open': isOpen })}>
                 <div className="sidebar-header">
                     <Link className="logo" to="/">
                         <Logo />
@@ -86,37 +94,39 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
                         links
                             ?.filter(({ minRole }) => !minRole || checkProjectRole(minRole, project.role))
                             .map(({ key, minRole, ...props }) => (
-                                <NavLink {...props} key={key} />
+                                <NavLink {...props} key={key} onClick={() => setIsOpen(false)} />
                             ))
                     }
                 </nav>
                 {
                     profile && (
                         <div className="sidebar-profile">
-                            <div className="profile-image"></div>
+                            <div className="profile-image">
+                                <img src={profile.image_url} referrerPolicy="no-referrer" />
+                            </div>
                             <span className="profile-name">{`${profile.first_name} ${profile.last_name}`}</span>
-                            <span className="profile-role">
+                            <div className="profile-role">
                                 <ButtonGroup>
                                     <Button
-                                        variant="plain"
+                                        variant="secondary"
                                         size="small"
                                         icon={preferences.mode === 'dark' ? <MoonIcon /> : <SunIcon />}
                                         onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}
                                     />
                                     <Button
-                                        variant="plain"
+                                        variant="secondary"
                                         size="small"
                                         onClick={async () => await api.logout()}
                                     >
                                         {'Sign Out'}
                                     </Button>
                                 </ButtonGroup>
-                            </span>
+                            </div>
                         </div>
                     )
                 }
             </section>
-            <main>
+            <main className={clsx({ 'is-open': isOpen })}>
                 {children}
             </main>
         </>
