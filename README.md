@@ -38,7 +38,7 @@ docker compose up -d # run the Docker container
 Login to the web app at http://localhost:3000 by entering the default credentials found in the copied `.env` file.
 
 ```
-AUTH_BASIC_USERNAME=parcelvoy
+AUTH_BASIC_EMAIL=test@parcelvoy.com
 AUTH_BASIC_PASSWORD=password
 ```
 
