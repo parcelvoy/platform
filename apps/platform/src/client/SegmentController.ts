@@ -83,7 +83,7 @@ router.post('/segment', async ctx => {
                     email: event.traits.email,
                     phone: event.traits.phone,
                     timezone: event.context.timezone,
-                    locale: parseLocale(event.context.locale),
+                    locale: event.context.locale && parseLocale(event.context.locale),
                     data: event.traits,
                 },
             }))
