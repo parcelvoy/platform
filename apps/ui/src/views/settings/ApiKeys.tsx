@@ -86,7 +86,7 @@ export default function ProjectApiKeys() {
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
-                <Alert variant="plain" title="Key Value">{editing?.value}</Alert>
+                {editing?.value && <Alert variant="plain" title="Key Value">{editing?.value}</Alert>}
                 {
                     editing && (
                         <FormWrapper<ProjectApiKey>

@@ -1,7 +1,7 @@
 import { Queue as BullQueue, Worker } from 'bullmq'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
-import Job from './Job'
+import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
 
@@ -39,7 +39,7 @@ export default class RedisQueueProvider implements QueueProvider {
             const { name, data, opts } = this.adaptJob(job)
             await this.bull.add(name, data, opts)
         } catch (error) {
-            logger.error(error, 'sqs:error:enqueue')
+            logger.error(error, 'redis:error:enqueue')
         }
     }
 
@@ -68,8 +68,13 @@ export default class RedisQueueProvider implements QueueProvider {
     start(): void {
         this.worker = new Worker('parcelvoy', async job => {
             await this.queue.dequeue(job.data)
-        }, { connection: this.config, concurrency: this.batchSize })
+        }, {
+            connection: this.config,
+            concurrency: this.batchSize,
+        })
+
         this.worker.on('failed', (job, error) => {
+            this.queue.errored(job?.data as EncodedJob, error)
             logger.error({ error }, 'redis:error:processing')
         })
     }

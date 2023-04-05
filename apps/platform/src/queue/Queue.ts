@@ -1,3 +1,4 @@
+import App from '../app'
 import { DriverConfig } from '../config/env'
 import { logger } from '../config/logger'
 import { LoggerConfig } from '../providers/LoggerProvider'
@@ -59,9 +60,9 @@ export default class Queue {
         logger.info(job, 'queue:job:started')
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async errored(job: EncodedJob, error: Error) {
-        // TODO: Do something about failure
+    async errored(job: EncodedJob | undefined, error: Error) {
+        logger.error({ error, job }, 'queue:job:errored')
+        App.main.error.notify(error)
     }
 
     async completed(job: EncodedJob) {

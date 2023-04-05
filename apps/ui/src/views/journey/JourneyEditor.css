@@ -125,6 +125,14 @@
     min-width: 200px;
 }
 
+.journey-step.entrance {
+    max-width: 400px;
+}
+
+.journey-step.flow {
+    max-width: 550px;
+}
+
 .journey-step.entrance.selected {
     border-color: var(--color-red-hard);
 }

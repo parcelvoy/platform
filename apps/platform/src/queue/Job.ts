@@ -11,6 +11,14 @@ export interface EncodedJob {
     name: string
 }
 
+export class JobError extends Error {
+    data?: Record<any, any>
+    constructor(message: string, data?: Record<any, any>) {
+        super(message)
+        this.data = data
+    }
+}
+
 export default class Job implements EncodedJob {
     data: any
     options: JobOptions = {

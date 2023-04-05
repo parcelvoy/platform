@@ -25,4 +25,8 @@ export default class BugSnagProvider implements ErrorHandlingProvider {
             api.on('error', middleware.errorHandler)
         }
     }
+
+    notify(error: Error) {
+        Bugsnag.notify(error)
+    }
 }

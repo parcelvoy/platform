@@ -21,4 +21,8 @@ export default class SentryProvider implements ErrorHandlingProvider {
             })
         })
     }
+
+    notify(error: Error) {
+        Sentry.captureException(error)
+    }
 }

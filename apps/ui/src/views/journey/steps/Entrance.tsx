@@ -29,7 +29,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
         return (
             <EntityIdPicker
                 label="List"
-                subtitle="Users added to this list will automatically start this journey."
+                subtitle="When users are added to this list they will automatically enter this journey."
                 required
                 get={getList}
                 search={searchLists}

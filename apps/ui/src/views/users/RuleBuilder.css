@@ -98,6 +98,7 @@
     color: var(--color-primary-soft);
 }
 
-.rule-inner input {
+.rule-inner input.small {
     font-weight: 500;
+    width: 100%;
 }
