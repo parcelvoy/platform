@@ -27,8 +27,8 @@ export default class EventPostJob extends Job {
         const { anonymous_id, external_id } = event
         const user = await getUserFromClientId(project_id, { anonymous_id, external_id } as ClientIdentity)
         if (!user) {
-            logger.error({ project_id, event }, 'job:event_post:unknown-user')
-            throw new Error('job:event_post:unknown-user')
+            logger.warn({ project_id, event }, 'job:event_post:unknown-user')
+            return
         }
 
         // Create event for given user

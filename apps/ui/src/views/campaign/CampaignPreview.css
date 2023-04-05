@@ -18,6 +18,6 @@
     margin-bottom: 10px;
 }
 
-.user-lookup .ui-button-group .ui-text-field {
+.user-lookup .ui-button-group .ui-text-input {
     flex-grow: 1;
 }

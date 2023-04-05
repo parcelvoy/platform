@@ -43,3 +43,9 @@
     margin: 0;
     color: var(--color-primary-soft);
 }
+
+@media only screen and (max-width: 600px) {
+    .ui-tile-grid {
+        grid-template-columns: 1fr;
+    }
+}

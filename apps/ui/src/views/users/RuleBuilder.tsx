@@ -194,6 +194,7 @@ const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
                         name="path"
                         placeholder="User Property..."
                         value={rule?.path}
+                        hideLabel={true}
                         onChange={path => handleUpdate({ path })}
                     />
                     <OperatorSelector
@@ -205,6 +206,7 @@ const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
                         type="text"
                         name="value"
                         placeholder="Value"
+                        hideLabel={true}
                         value={rule?.value?.toString()}
                         onChange={value => handleUpdate({ value })}
                     />

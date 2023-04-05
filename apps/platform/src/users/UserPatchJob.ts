@@ -22,30 +22,15 @@ export default class UserPatchJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, user: { external_id, anonymous_id, data, ...fields }, options }: UserPatchTrigger) {
+    static async handler(patch: UserPatchTrigger) {
 
-        const identity = { external_id, anonymous_id } as ClientIdentity
-
-        // Check for existing user
-        const existing = await getUserFromClientId(project_id, identity)
-
-        // If user, update otherwise insert
-        const user = existing
-            ? await User.updateAndFetch(existing.id, {
-                data: data ? { ...existing.data, ...data } : undefined,
-                ...fields,
-            })
-            : await createUser(project_id, {
-                ...identity,
-                data,
-                ...fields,
-            })
+        const user = await this.upsert(patch)
 
         const {
             join_list_id,
             skip_list_updating = false,
             skip_journey_updating = false,
-        } = options ?? {}
+        } = patch.options ?? {}
 
         // Use updated user to check for list membership
         if (!skip_list_updating) {
@@ -60,6 +45,31 @@ export default class UserPatchJob extends Job {
         // Check all journeys to update progress
         if (!skip_journey_updating) {
             await updateUsersJourneys(user)
+        }
+    }
+
+    static async upsert(patch: UserPatchTrigger, tries = 3): Promise<User> {
+        const { project_id, user: { external_id, anonymous_id, data, ...fields } } = patch
+        const identity = { external_id, anonymous_id } as ClientIdentity
+
+        // Check for existing user
+        const existing = await getUserFromClientId(project_id, identity)
+
+        // If user, update otherwise insert
+        try {
+            return existing
+                ? await User.updateAndFetch(existing.id, {
+                    data: data ? { ...existing.data, ...data } : undefined,
+                    ...fields,
+                })
+                : await createUser(project_id, {
+                    ...identity,
+                    data,
+                    ...fields,
+                })
+        } catch (error: any) {
+            // If there is an error (such as constraints, retry)
+            return this.upsert(patch, --tries)
         }
     }
 }

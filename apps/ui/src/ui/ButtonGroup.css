@@ -6,21 +6,21 @@
 
 .ui-button-group .ui-button,
 .ui-button-group .ui-select .select-button,
-.ui-button-group .ui-text-field input {
+.ui-button-group .ui-text-input input {
     box-shadow: none;
     margin: 0;
 }
 
 .ui-button-group .ui-button:not(:last-child),
 .ui-button-group .ui-select:not(:last-child) .select-button,
-.ui-button-group .ui-text-field:not(:last-child) input {
+.ui-button-group .ui-text-input:not(:last-child) input {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
 
 .ui-button-group .ui-button:not(:first-child),
 .ui-button-group .ui-select:not(:first-child) .select-button,
-.ui-button-group .ui-text-field:not(:first-child) input {
+.ui-button-group .ui-text-input:not(:first-child) input {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     
@@ -31,6 +31,6 @@
 }
 
 .ui-button-group .ui-select:not(:first-child),
-.ui-button-group .ui-text-field:not(:first-child) {
+.ui-button-group .ui-text-input:not(:first-child) {
     margin-left: -1px;
 }

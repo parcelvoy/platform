@@ -14,6 +14,32 @@ export default class Api extends Koa {
         this.proxy = process.env.NODE_ENV !== 'development'
 
         app.error.attach(this)
+        this.use(async (ctx, next) => {
+            try {
+                await next()
+            } catch (error: any) {
+                if (error instanceof RequestError) {
+                    ctx.status = error.statusCode ?? 400
+                    ctx.body = error
+                } else {
+                    ctx.status = 400
+                    ctx.body = process.env.NODE_ENV === 'production'
+                        ? {
+                            status: 'error',
+                            error: 'An error occurred with this request.',
+                        }
+                        : {
+                            status: 'error',
+                            error: {
+                                message: error.message,
+                                stack: error.stack,
+                            },
+                        }
+                }
+
+                ctx.app.emit('error', error, ctx)
+            }
+        })
 
         this.use(koaBody())
             .use(cors())
@@ -21,19 +47,6 @@ export default class Api extends Koa {
                 hidden: true,
                 defer: true,
             }))
-
-        this.use(async (ctx, next) => {
-            try {
-                await next()
-            } catch (error) {
-                if (error instanceof RequestError) {
-                    ctx.status = error.statusCode ?? 400
-                    ctx.body = error
-                } else {
-                    throw error
-                }
-            }
-        })
 
         controllers(this)
     }

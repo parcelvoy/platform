@@ -23,4 +23,8 @@ export default class ErrorHandler {
     attach(api: Koa) {
         this.provider?.attach(api)
     }
+
+    notify(error: Error) {
+        this.provider?.notify(error)
+    }
 }
