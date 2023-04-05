@@ -1,7 +1,9 @@
 import clsx from 'clsx'
 import { Key, ReactNode, useContext } from 'react'
 import { formatDate, snakeToTitle } from '../utils'
+import Button from './Button'
 import './DataTable.css'
+import { ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon } from './icons'
 import { PreferencesContext } from './PreferencesContext'
 
 type DataTableResolver<T, R> = (args: {
@@ -12,6 +14,49 @@ export interface DataTableCol<T> {
     key: string
     title?: ReactNode
     cell?: DataTableResolver<T, ReactNode>
+    sortable?: boolean
+}
+
+export interface ColSort {
+    sort: string
+    direction: string
+}
+
+interface HeaderCellProps<T> {
+    col: DataTableCol<T>
+    columnSort?: ColSort
+    onColumnSort?: (sort?: ColSort) => void
+}
+
+export function HeaderCell<T>({ col, columnSort, onColumnSort }: HeaderCellProps<T>) {
+    const { key, title, sortable } = col
+    const handleSort = () => {
+        if (columnSort?.sort !== key) {
+            onColumnSort?.({ sort: key, direction: 'asc' })
+        } else if (columnSort?.direction === 'desc') {
+            onColumnSort?.()
+        } else {
+            onColumnSort?.({ sort: key, direction: 'desc' })
+        }
+    }
+    return <div className="table-header-cell">
+        <div className="header-cell-content">
+            <span>{title ?? snakeToTitle(key)}</span>
+            {sortable && (
+                <Button
+                    size="tiny"
+                    variant="secondary"
+                    onClick={() => handleSort()}
+                    icon={
+                        columnSort?.sort === key
+                            ? columnSort?.direction === 'asc'
+                                ? <ChevronUpIcon />
+                                : <ChevronDownIcon />
+                            : <ChevronUpDownIcon />
+                    } />
+            )}
+        </div>
+    </div>
 }
 
 export interface DataTableProps<T, C = {}> {
@@ -22,6 +67,8 @@ export interface DataTableProps<T, C = {}> {
     emptyMessage?: ReactNode
     selectedRow?: Key
     onSelectRow?: (row: T) => void
+    columnSort?: ColSort
+    onColumnSort?: (sort?: ColSort) => void
     isLoading?: boolean
 }
 
@@ -32,6 +79,8 @@ export function DataTable<T>({
     itemKey,
     selectedRow,
     onSelectRow,
+    columnSort,
+    onColumnSort,
     isLoading = false,
 }: DataTableProps<T>) {
     const [preferences] = useContext(PreferencesContext)
@@ -40,9 +89,11 @@ export function DataTable<T>({
             <div className="table-header">
                 {
                     columns.map(col => (
-                        <div className="table-header-cell" key={col.key}>
-                            {col.title ?? snakeToTitle(col.key)}
-                        </div>
+                        <HeaderCell<T>
+                            key={col.key}
+                            col={col}
+                            onColumnSort={onColumnSort}
+                            columnSort={columnSort} />
                     ))
                 }
             </div>

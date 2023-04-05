@@ -34,6 +34,24 @@
 .ui-table .table-header-cell {
     padding: 10px 5px;
     white-space: nowrap;
+    vertical-align: center;
+}
+
+.ui-table .table-header-cell .header-cell-content {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.ui-table .table-header-cell .header-sort {
+    display: inline-flex;
+    border-radius: var(--border-radius-inner);
+    padding: 3px;
+    cursor: pointer;
+}
+
+.ui-table .table-header-cell .header-sort:hover {
+    background: var(--color-grey);
 }
 
 .ui-table .table-cell {
