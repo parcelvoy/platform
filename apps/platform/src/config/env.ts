@@ -3,6 +3,7 @@ import type { StorageConfig } from '../storage/Storage'
 import type { QueueConfig } from '../queue/Queue'
 import type { DatabaseConfig } from './database'
 import type { AuthConfig } from '../auth/Auth'
+import type { ErrorConfig } from '../error/ErrorHandler'
 
 export type Runner = 'api' | 'worker'
 export interface Env {
@@ -14,6 +15,7 @@ export interface Env {
     port: number
     secret: string
     auth: AuthConfig
+    error: ErrorConfig
     tracking: {
         linkWrap: boolean,
         deeplinkMirrorUrl: string | undefined,
@@ -105,6 +107,14 @@ export default (type?: EnvType): Env => {
             }),
             logger: () => ({
                 tokenLife: defaultTokenLife,
+            }),
+        }),
+        error: driver<ErrorConfig>(process.env.ERROR_DRIVER, {
+            bugsnag: () => ({
+                apiKey: process.env.ERROR_BUGSNAG_API_KEY,
+            }),
+            sentry: () => ({
+                dsn: process.env.ERROR_SENTRY_DSN,
             }),
         }),
         tracking: {

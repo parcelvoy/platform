@@ -2,6 +2,7 @@ import loadDatabase, { Database } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadAuth from './config/auth'
+import loadError, { logger } from './config/logger'
 import type { Env } from './config/env'
 import type Queue from './queue'
 import Storage from './storage'
@@ -9,7 +10,7 @@ import type Auth from './auth/Auth'
 import { uuid } from './utilities'
 import Api from './api'
 import Worker from './worker'
-import { logger } from './config/logger'
+import ErrorHandler from './error/ErrorHandler'
 
 export default class App {
     private static $main: App
@@ -21,6 +22,10 @@ export default class App {
     }
 
     static async init(env: Env): Promise<App> {
+
+        // Boot up error tracking
+        const error = await loadError(env.error)
+
         // Load & migrate database
         const database = await loadDatabase(env.db)
 
@@ -39,6 +44,7 @@ export default class App {
             queue,
             auth,
             storage,
+            error,
         )
 
         return App.$main
@@ -56,6 +62,7 @@ export default class App {
         public queue: Queue,
         public auth: Auth,
         public storage: Storage,
+        public error: ErrorHandler,
     ) {
         this.#registered = {}
     }

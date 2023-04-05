@@ -13,12 +13,10 @@ export default class Api extends Koa {
 
         this.proxy = process.env.NODE_ENV !== 'development'
 
+        app.error.attach(this)
+
         this.use(koaBody())
             .use(cors())
-            .use((ctx, next) => {
-                ctx.state.app = this.app
-                return next()
-            })
             .use(serve('./public', {
                 hidden: true,
                 defer: true,
