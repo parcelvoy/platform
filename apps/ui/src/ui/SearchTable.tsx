@@ -2,6 +2,7 @@ import { useState, ReactNode, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useDebounceControl, useResolver } from '../hooks'
 import { SearchParams, SearchResult } from '../types'
+import { prune } from '../utils'
 import { TagPicker } from '../views/settings/TagPicker'
 import { DataTable, DataTableProps } from './DataTable'
 import TextInput from './form/TextInput'
@@ -22,32 +23,35 @@ export interface SearchTableProps<T extends Record<string, any>> extends Omit<Da
     tagEntity?: 'journeys' | 'lists' | 'users' | 'campaigns' // anything else we want to tag?
 }
 
-const DEFAULT_ITEMS_PER_PAGE = 10
+const DEFAULT_ITEMS_PER_PAGE = 25
 const DEFAULT_PAGE = 0
 
 const toTableParams = (searchParams: URLSearchParams) => {
     return {
         page: parseInt(searchParams.get('page') ?? '0'),
         itemsPerPage: parseInt(searchParams.get('itemsPerPage') ?? '10'),
-        q: searchParams.get('q') ?? '',
+        q: searchParams.get('q') ?? undefined,
         tag: searchParams.getAll('tag'),
+        sort: searchParams.get('sort') ?? undefined,
+        direction: searchParams.get('direction') ?? undefined,
     }
 }
 
-const fromTableParams = (params: SearchParams) => {
-    return {
+const fromTableParams = (params: SearchParams): Record<string, string> => {
+    return prune({
         page: params.page.toString(),
         itemsPerPage: params.itemsPerPage.toString(),
         q: params.q,
         tag: params.tag ?? [],
-    }
+        sort: params.sort,
+        direction: params.direction,
+    })
 }
 
 export const useTableSearchParams = () => {
     const [searchParams, setSearchParams] = useSearchParams({
         page: DEFAULT_PAGE.toString(),
         itemsPerPage: DEFAULT_ITEMS_PER_PAGE.toString(),
-        q: '',
     })
 
     const setParams = useCallback<(params: SearchParams | ((prev: SearchParams) => SearchParams)) => void>(next => {
@@ -123,7 +127,9 @@ export function SearchTable<T extends Record<string, any>>({
 }: SearchTableProps<T>) {
 
     const [search, setSearch] = useDebounceControl(params.q ?? '', q => setParams({ ...params, q }))
-
+    const columnSort = params.sort
+        ? { sort: params.sort, direction: params.direction ?? 'asc' }
+        : undefined
     const filters: ReactNode[] = []
 
     if (enableSearch) {
@@ -173,7 +179,14 @@ export function SearchTable<T extends Record<string, any>>({
                     </Stack>
                 )
             }
-            <DataTable {...rest} items={results?.results} isLoading={!results} />
+            <DataTable {...rest}
+                items={results?.results}
+                isLoading={!results}
+                columnSort={columnSort}
+                onColumnSort={(onSort) => {
+                    const { sort, direction, ...prevParams } = params
+                    setParams({ ...prevParams, ...onSort })
+                }} />
             {results && (
                 <Pagination
                     page={results.page}

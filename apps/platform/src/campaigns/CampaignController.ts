@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignCreateParams, CampaignUpdateParams } from './Campaign'
 import { archiveCampaign, createCampaign, deleteCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
-import { searchParamsSchema } from '../core/searchParams'
+import { searchParamsSchema, SearchSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectRoleMiddleware } from '../projects/ProjectService'
@@ -14,7 +14,11 @@ const router = new Router<ProjectState & { campaign?: Campaign }>({
 router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('campaignSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await pagedCampaigns(params, ctx.state.project.id)
 })
 

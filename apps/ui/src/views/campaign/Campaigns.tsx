@@ -56,15 +56,15 @@ export default function Campaigns() {
                 <SearchTable
                     {...state}
                     columns={[
-                        {
-                            key: 'name',
-                        },
+                        { key: 'name', sortable: true },
                         {
                             key: 'state',
+                            sortable: true,
                             cell: ({ item: { state } }) => CampaignTag({ state }),
                         },
                         {
                             key: 'channel',
+                            sortable: true,
                             cell: ({ item: { channel } }) => ChannelTag({ channel }),
                         },
                         {
@@ -73,9 +73,10 @@ export default function Campaigns() {
                         },
                         {
                             key: 'send_at',
+                            sortable: true,
                             title: 'Launched At',
                         },
-                        { key: 'updated_at' },
+                        { key: 'updated_at', sortable: true },
                         {
                             key: 'options',
                             cell: ({ item: { id } }) => (

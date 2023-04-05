@@ -168,7 +168,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ) {
-        let { page, itemsPerPage, sort, q, id } = params
+        const { page, itemsPerPage, sort, direction, q, id } = params
         return await this.search(
             b => {
                 b = query(b)
@@ -188,12 +188,7 @@ export default class Model {
                     })
                 }
                 if (sort) {
-                    let desc = false
-                    if (sort.charAt(0) === '-') {
-                        desc = true
-                        sort = sort.substring(1)
-                    }
-                    b.orderBy(sort, desc ? 'desc' : 'asc')
+                    b.orderBy(sort, direction ?? 'asc')
                 }
                 if (id?.length) {
                     b.whereIn('id', id)

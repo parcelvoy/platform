@@ -34,18 +34,20 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
             title={title}
             itemKey={({ item }) => item.id}
             columns={[
-                { key: 'name' },
+                { key: 'name', sortable: true },
                 {
                     key: 'type',
                     cell: ({ item: { type } }) => snakeToTitle(type),
+                    sortable: true,
                 },
                 {
                     key: 'state',
                     cell: ({ item: { state } }) => ListTag({ state }),
+                    sortable: true,
                 },
                 { key: 'users_count' },
-                { key: 'created_at' },
-                { key: 'updated_at' },
+                { key: 'created_at', sortable: true },
+                { key: 'updated_at', sortable: true },
             ]}
             selectedRow={selectedRow}
             onSelectRow={list => handleOnSelectRow(list)}

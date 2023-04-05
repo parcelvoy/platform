@@ -80,7 +80,9 @@ export interface Preferences {
 export interface SearchParams {
     page: number
     itemsPerPage: number
-    q: string
+    q?: string
+    sort?: string
+    direction?: string
     tag?: string[]
     id?: Array<number | string>
 }
