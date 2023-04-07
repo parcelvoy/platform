@@ -7,6 +7,7 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import Model from '../core/Model'
 import { sleep, randomInt } from '../utilities'
+import CampaignStateJob from '../campaigns/CampaignStateJob'
 
 export default async (app: App) => {
     const scheduler = new Scheduler(app)
@@ -22,6 +23,7 @@ export default async (app: App) => {
         rule: '*/5 * * * *',
         callback: () => {
             app.queue.enqueue(ProcessListsJob.from())
+            app.queue.enqueue(CampaignStateJob.from())
         },
         lockLength: 360,
     })

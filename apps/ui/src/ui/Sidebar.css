@@ -4,6 +4,7 @@
     left: 0;
     bottom: 0;
     width: 225px;
+    background: var(--color-background);
     border-right: 1px solid var(--color-grey);
     display: flex;
     flex-direction: column;

@@ -9,6 +9,8 @@ export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'fin
 export interface CampaignDelivery {
     sent: number
     total: number
+    opens: number
+    clicks: number
 }
 
 export type CampaignProgress = CampaignDelivery & { pending: number }
@@ -44,12 +46,14 @@ export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'screensh
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
 
-export type CampaignSendState = 'pending' | 'sent' | 'failed' | 'aborted'
+export type CampaignSendState = 'pending' | 'sent' | 'failed' | 'bounced' | 'aborted'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number
     state!: CampaignSendState
     send_at!: string | Date
+    opened_at!: string | Date
+    clicks!: number
 }
 
 export type CampaignSendParams = Pick<CampaignSend, 'campaign_id' | 'user_id' | 'state' | 'send_at'>

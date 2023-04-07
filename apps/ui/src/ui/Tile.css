@@ -9,13 +9,13 @@
     border-radius: var(--border-radius);
     padding: 20px;
     transition: box-shadow ease-in .1s;
-    cursor: pointer;
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.ui-tile:hover {
+.ui-tile.interactive { cursor: pointer; }
+.ui-tile.interactive:hover {
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
@@ -44,8 +44,17 @@
     color: var(--color-primary-soft);
 }
 
+.ui-tile.large {
+    padding: 30px 20px;
+}
+
+.ui-tile.large h5 {
+    font-size: 30px;
+    margin: 0 0 10px;
+}
+
 @media only screen and (max-width: 600px) {
     .ui-tile-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 }

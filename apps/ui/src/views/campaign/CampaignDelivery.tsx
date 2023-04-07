@@ -1,13 +1,13 @@
 import { useCallback, useContext } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
-import { CampaignSendState } from '../../types'
+import { CampaignDelivery as Delivery, CampaignSendState } from '../../types'
 import Alert from '../../ui/Alert'
 import Heading from '../../ui/Heading'
-import { InfoTable } from '../../ui/InfoTable'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import Tag, { TagVariant } from '../../ui/Tag'
+import Tile, { TileGrid } from '../../ui/Tile'
 import { formatDate, snakeToTitle } from '../../utils'
 import { useRoute } from '../router'
 
@@ -21,6 +21,25 @@ export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
     return <Tag variant={variant[state]}>
         {snakeToTitle(state)}
     </Tag>
+}
+
+export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
+
+    const percent = new Intl.NumberFormat(undefined, { style: 'percent', minimumFractionDigits: 2 })
+
+    const sent = delivery.sent.toLocaleString()
+    const deliveryRate = percent.format(delivery.sent / delivery.total)
+    const openRate = percent.format(delivery.opens / delivery.total)
+    const clickRate = percent.format(delivery.clicks / delivery.total)
+
+    return (
+        <TileGrid numColumns={4}>
+            <Tile title={sent} size="large">Total sent</Tile>
+            <Tile title={deliveryRate} size="large">Delivery Rate</Tile>
+            <Tile title={openRate} size="large">Open Rate</Tile>
+            <Tile title={clickRate} size="large">Click Rate</Tile>
+        </TileGrid>
+    )
 }
 
 export default function CampaignDelivery() {
@@ -38,11 +57,7 @@ export default function CampaignDelivery() {
                     {state === 'scheduled'
                         && <Alert title="Scheduled">This campaign is pending delivery. It will begin to roll out at <strong>{formatDate(preferences, send_at)}</strong></Alert>
                     }
-                    <InfoTable rows={{
-                        Sent: delivery?.sent,
-                        Total: delivery?.total,
-                    }} direction="horizontal" />
-
+                    {delivery && <CampaignStats delivery={delivery} />}
                     <Heading title="Users" size="h4" />
                     <SearchTable
                         {...searchState}
@@ -55,6 +70,8 @@ export default function CampaignDelivery() {
                                 cell: ({ item: { state } }) => CampaignSendTag({ state }),
                             },
                             { key: 'send_at' },
+                            { key: 'opened_at' },
+                            { key: 'clicks' },
                         ]}
                         onSelectRow={({ id }) => route(`users/${id}`)}
                     />

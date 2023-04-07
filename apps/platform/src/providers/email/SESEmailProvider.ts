@@ -5,11 +5,11 @@ import EmailProvider from './EmailProvider'
 import Router = require('@koa/router')
 import Provider, { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
-import { createEvent } from '../../users/UserEventRepository'
-import { secondsAgo } from '../../utilities'
+import { decodeHashid, secondsAgo } from '../../utilities'
 import { getUserFromEmail } from '../../users/UserRepository'
-import { unsubscribe } from '../../subscriptions/SubscriptionService'
 import { RequestError } from '../../core/errors'
+import { getCampaign } from '../../campaigns/CampaignService'
+import { trackLinkEvent } from '../../render/LinkService'
 
 interface SESDataParams {
     config: AWSConfig
@@ -97,25 +97,17 @@ export default class SESEmailProvider extends EmailProvider {
         const json = JSON.parse(message) as Record<string, any>
         const { notificationType, mail: { destination, headers } } = json
         const email: string | undefined = destination[0]
-        const subscriptionId = getHeader(headers, 'X-Subscription-Id')
-        const campaignId = getHeader(headers, 'X-Campaign-Id')
+        const subscriptionId = decodeHashid(getHeader(headers, 'X-Subscription-Id'))
+        const campaignId = decodeHashid(getHeader(headers, 'X-Campaign-Id'))
 
-        if (!email || !subscriptionId) return
+        if (!email || !subscriptionId || !campaignId) return
 
         const user = await getUserFromEmail(projectId, email)
         if (!user) return
 
-        const name = notificationType === 'Bounce' ? 'bounce' : 'complaint'
-        await createEvent(user, {
-            name,
-            data: {
-                subscription_id: subscriptionId,
-                campaign_id: campaignId,
-            },
-        })
+        const campaign = await getCampaign(campaignId, projectId)
 
-        if (name === 'bounce' && subscriptionId) {
-            await unsubscribe(user.id, parseInt(subscriptionId))
-        }
+        const interaction = notificationType === 'Bounce' ? 'bounced' : 'complained'
+        await trackLinkEvent({ user, campaign }, interaction)
     }
 }

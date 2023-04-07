@@ -1,5 +1,6 @@
 import { Variables, Wrap } from '../../render'
 import { EmailTemplate } from '../../render/Template'
+import { encodeHashid } from '../../utilities'
 import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
@@ -29,8 +30,8 @@ export default class EmailChannel {
                 variables,
             }), // Add link and open tracking
             headers: {
-                'X-Campaign-Id': variables.context.campaign_id,
-                'X-Subscription-Id': variables.context.subscription_id,
+                'X-Campaign-Id': encodeHashid(variables.context.campaign_id),
+                'X-Subscription-Id': encodeHashid(variables.context.subscription_id),
             },
         }
         await this.provider.send(email)

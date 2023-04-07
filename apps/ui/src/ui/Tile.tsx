@@ -7,6 +7,7 @@ type TileProps = PropsWithChildren<{
     selected?: boolean
     iconUrl?: string
     title: ReactNode
+    size?: 'large' | 'regular'
 }> & JSX.IntrinsicElements['div']
 
 export default function Tile({
@@ -16,12 +17,13 @@ export default function Tile({
     className,
     iconUrl,
     title,
+    size = 'regular',
     ...rest
 }: TileProps) {
     return (
         <div
             {...rest}
-            className={clsx(className, 'ui-tile', { selected })}
+            className={clsx(className, 'ui-tile', { selected, interactive: onClick !== undefined }, size)}
             onClick={onClick}
             tabIndex={0}
         >
