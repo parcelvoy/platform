@@ -29,3 +29,14 @@
 .auth-step .form {
     padding: 10px 0;
 }
+
+@media only screen and (max-width: 600px) {
+    .auth {
+        padding: 40px 20px;
+    }
+
+    .auth-step {
+        min-width: auto;
+        width: 100%;
+    }
+}

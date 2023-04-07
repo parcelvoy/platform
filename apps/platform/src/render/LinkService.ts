@@ -1,6 +1,7 @@
 import { URL } from 'node:url'
 import App from '../app'
 import Campaign from '../campaigns/Campaign'
+import CampaignInteractJob from '../campaigns/CampaignInteractJob'
 import { getCampaign } from '../campaigns/CampaignService'
 import EventPostJob from '../client/EventPostJob'
 import { User } from '../users/User'
@@ -106,22 +107,36 @@ export const injectInBody = (html: string, injection: string, placement: 'start'
     return html
 }
 
-export const trackLinkEvent = async (parts: TrackedLinkExport, eventName: string) => {
+export const trackLinkEvent = async (
+    parts: Partial<TrackedLinkExport>,
+    interaction: 'opened' | 'clicked' | 'bounced' | 'complained',
+) => {
     const { user, campaign } = parts
     if (!user || !campaign) return
 
-    const job = EventPostJob.from({
+    const eventJob = EventPostJob.from({
         project_id: user.project_id,
         event: {
             external_id: user.external_id,
-            name: eventName,
+            name: interaction,
             data: {
                 campaign_id: campaign.id,
                 channel: campaign.channel,
                 url: parts.redirect,
+                subscription_id: campaign.subscription_id,
             },
         },
     })
 
-    await App.main.queue.enqueue(job)
+    const campaignJob = CampaignInteractJob.from({
+        campaign_id: campaign.id,
+        user_id: user.id,
+        subscription_id: campaign.subscription_id,
+        interaction,
+    })
+
+    await App.main.queue.enqueueBatch([
+        eventJob,
+        campaignJob,
+    ])
 }

@@ -66,7 +66,7 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
         throw new RequestError('Unable to find associated subscription', 404)
     }
 
-    const delivery = { sent: 0, total: 0 }
+    const delivery = { sent: 0, total: 0, opens: 0, clicks: 0 }
     if (params.list_ids) {
         delivery.total = await totalUsersCount(
             params.list_ids,
@@ -164,7 +164,7 @@ export const getCampaignUsers = async (id: number, params: SearchParams, project
         b => b.rightJoin('campaign_sends', 'campaign_sends.user_id', 'users.id')
             .where('project_id', projectId)
             .where('campaign_id', id)
-            .select('users.*', 'state', 'send_at'),
+            .select('users.*', 'state', 'send_at', 'opened_at', 'clicks'),
     )
 }
 
@@ -228,6 +228,8 @@ export const generateSendList = async (campaign: SentCampaign) => {
                 campaign.list_ids,
                 campaign.exclusion_list_ids ?? [],
             ),
+            opens: 0,
+            clicks: 0,
         },
     })
 
@@ -343,12 +345,14 @@ const totalUsersCount = async (listIds: number[], exclusionListIds: number[]): P
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
         .where('campaign_id', campaign.id)
-        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total"))
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
         .first()
     return {
-        sent: parseInt(progress.sent),
-        pending: parseInt(progress.pending),
-        total: parseInt(progress.total),
+        sent: parseInt(progress.sent ?? 0),
+        pending: parseInt(progress.pending ?? 0),
+        total: parseInt(progress.total ?? 0),
+        opens: parseInt(progress.opens ?? 0),
+        clicks: parseInt(progress.clicks ?? 0),
     }
 }
 
@@ -359,4 +363,15 @@ export const updateCampaignProgress = async (
     delivery: CampaignDelivery,
 ): Promise<void> => {
     await Campaign.update(qb => qb.where('id', id).where('project_id', projectId), { state, delivery })
+}
+
+export const getCampaignSend = async (campaignId: number, userId: number) => {
+    return CampaignSend.first(qb => qb.where('campaign_id', campaignId).where('user_id', userId))
+}
+
+export const updateCampaignSend = async (id: number, update: Partial<CampaignSend>) => {
+    await CampaignSend.update(
+        qb => qb.where('id', id),
+        update,
+    )
 }

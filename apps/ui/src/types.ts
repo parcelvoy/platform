@@ -265,16 +265,20 @@ export interface JourneyStepType<T = any, E = any> {
 
 export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'
 
+export interface CampaignDelivery {
+    sent: number
+    total: number
+    opens: number
+    clicks: number
+}
+
 export interface Campaign {
     id: number
     project_id: number
     name: string
     channel: ChannelType
     state: CampaignState
-    delivery: {
-        sent: number
-        total: number
-    }
+    delivery: CampaignDelivery
     provider_id: number
     provider: Provider
     subscription_id?: number
