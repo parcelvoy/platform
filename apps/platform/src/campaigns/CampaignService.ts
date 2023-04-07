@@ -348,11 +348,11 @@ export const campaignProgress = async (campaign: Campaign): Promise<CampaignProg
         .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
         .first()
     return {
-        sent: parseInt(progress.sent),
-        pending: parseInt(progress.pending),
-        total: parseInt(progress.total),
-        opens: parseInt(progress.opens),
-        clicks: parseInt(progress.clicks),
+        sent: parseInt(progress.sent ?? 0),
+        pending: parseInt(progress.pending ?? 0),
+        total: parseInt(progress.total ?? 0),
+        opens: parseInt(progress.opens ?? 0),
+        clicks: parseInt(progress.clicks ?? 0),
     }
 }
 
