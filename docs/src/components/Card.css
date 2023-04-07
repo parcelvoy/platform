@@ -1,3 +1,9 @@
+.cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
 .card {
     display: flex;
     border-radius: 8px;
@@ -10,6 +16,10 @@
     align-items: center;
 }
 
+a.card {
+    text-decoration: none !important;
+}
+
 a.card:hover {
     cursor: pointer;
     border-color: var(--color-primary);
@@ -18,4 +28,10 @@ a.card:hover {
 
 .card img {
     border-radius: 8px;
+}
+
+@media only screen and (max-width: 600px) {
+    .cards {
+        grid-template-columns: 1fr !important;
+    }
 }

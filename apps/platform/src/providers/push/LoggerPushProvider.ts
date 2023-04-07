@@ -10,7 +10,7 @@ export default class LoggerPushProvider extends PushProvider {
     static namespace = 'logger'
     static meta = {
         name: 'Logger',
-        icon: 'https://parcelvoy.com/images/logger.svg',
+        icon: 'https://parcelvoy.com/providers/logger.svg',
     }
 
     static schema = ProviderSchema<ExternalProviderParams, any>('loggerPushProviderParams', {

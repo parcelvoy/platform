@@ -24,7 +24,7 @@ export default class SESEmailProvider extends EmailProvider {
     static meta = {
         name: 'Amazon SES',
         url: 'https://aws.amazon.com/ses',
-        icon: 'https://parcelvoy.com/images/ses.svg',
+        icon: 'https://parcelvoy.com/providers/ses.svg',
         paths: {
             'Feedback URL': `/${this.namespace}`,
         },

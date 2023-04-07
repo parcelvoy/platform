@@ -1,13 +1,9 @@
 import React from 'react'
+import './Card.css'
 
 export default function Cards({ children }) {
     return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '20px'
-            }}>
+        <div className="cards">
             {children}
         </div>
     )

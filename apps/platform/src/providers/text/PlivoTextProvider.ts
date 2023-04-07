@@ -22,7 +22,7 @@ export default class PlivoTextProvider extends TextProvider {
     static meta = {
         name: 'Plivo',
         url: 'https://plivo.com',
-        icon: 'https://parcelvoy.com/images/plivo.svg',
+        icon: 'https://parcelvoy.com/providers/plivo.svg',
     }
 
     static schema = ProviderSchema<PlivoProviderParams, PlivoDataParams>('plivoTextProviderParams', {

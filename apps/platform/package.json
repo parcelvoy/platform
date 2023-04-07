@@ -42,6 +42,7 @@
     "node-pushnotifications": "^2.0.3",
     "node-schedule": "^2.1.0",
     "nodemailer": "^6.7.6",
+    "nodemailer-mailgun-transport": "^2.1.5",
     "openid-client": "^5.2.1",
     "pino": "^8.1.0",
     "pino-pretty": "^8.1.0"
@@ -68,6 +69,7 @@
     "@types/node-pushnotifications": "^1.0.4",
     "@types/node-schedule": "^2.1.0",
     "@types/nodemailer": "^6.4.4",
+    "@types/nodemailer-mailgun-transport": "^1.4.3",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "eslint": "^8.19.0",

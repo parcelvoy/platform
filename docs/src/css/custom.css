@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
     border-right-color: var(--color-grey-soft) !important;
 }
 
-.container {
+.main-wrapper .container {
     padding: 40px !important;
 }
 
@@ -152,6 +152,10 @@ h1, h2, h3, h4, h5, h6 {
 .table-of-contents__link:hover {
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.menu {
+    padding-bottom: 20px !important;
 }
 
 .theme-doc-markdown.markdown a {

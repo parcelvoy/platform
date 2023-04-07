@@ -11,7 +11,7 @@ export default class LoggerTextProvider extends TextProvider {
     static namespace = 'logger'
     static meta = {
         name: 'Logger',
-        icon: 'https://parcelvoy.com/images/logger.svg',
+        icon: 'https://parcelvoy.com/providers/logger.svg',
     }
 
     static schema = ProviderSchema<ProviderParams, any>('loggerTextProviderParams', {

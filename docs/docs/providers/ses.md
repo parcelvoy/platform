@@ -37,7 +37,7 @@ To request access, do the following:
 16. Hit save to create the provider.
 
 ## Inbound
-Email sending is not hte only important part, you also need to keep track of things like email opens, clicks, unsubscribes, bounces and complaints. Parcelvoy automatically takes care of opens, clicks and unsubscribes for you, but bounces and complaints require notifications from SES.
+Email sending is not the only important part, you also need to keep track of things like email opens, clicks, unsubscribes, bounces and complaints. Parcelvoy automatically takes care of opens, clicks and unsubscribes for you, but bounces and complaints require notifications from SES.
 
 To setup inbound notifications, do the following:
 1. Open the [Amazon SNS console](https://console.aws.amazon.com/sns/home) and choose `Topics`.

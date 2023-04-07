@@ -27,7 +27,7 @@ export default class TwilioTextProvider extends TextProvider {
         name: 'Twilio',
         description: '',
         url: 'https://twilio.com',
-        icon: 'https://parcelvoy.com/images/twilio.svg',
+        icon: 'https://parcelvoy.com/providers/twilio.svg',
         paths: {
             'Unsubscribe URL': `/${this.namespace}/unsubscribe`,
         },
