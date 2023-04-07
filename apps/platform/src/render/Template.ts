@@ -3,6 +3,8 @@ import { Webhook } from '../providers/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import { isValid, IsValidSchema } from '../core/validate'
+import { Email, NamedEmail } from '../providers/email/Email'
+import { htmlToText } from 'html-to-text'
 
 export default class Template extends Model {
     project_id!: number
@@ -44,26 +46,17 @@ export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl
 export type TemplateUpdateParams = Pick<Template, 'type' | 'data'>
 export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 
-export interface CompiledEmail {
-    from: string
-    cc?: string
-    bcc?: string
-    reply_to?: string
-    subject: string
-    preheader?: string
-    text: string
-    html: string
-}
+type CompiledEmail = Omit<Email, 'to' | 'headers'> & { preheader?: string }
 
 export class EmailTemplate extends Template {
     declare type: 'email'
-    from!: string
+    from!: string | NamedEmail
     cc?: string
     bcc?: string
     reply_to?: string
     subject!: string
     preheader?: string
-    text!: string
+    text?: string
     html!: string
 
     parseJson(json: any) {
@@ -75,17 +68,28 @@ export class EmailTemplate extends Template {
         this.reply_to = json?.data.reply_to
         this.subject = json?.data.subject ?? ''
         this.preheader = json?.data.preheader
-        this.text = json?.data.text ?? ''
+        this.text = json?.data.text
         this.html = json?.data.html ?? ''
     }
 
     compile(variables: Variables): CompiledEmail {
+        const html = Render(this.html, variables)
         const email: CompiledEmail = {
             subject: Render(this.subject, variables),
-            from: Render(this.from, variables),
-            html: Render(this.html, variables),
-            text: Render(this.text, variables),
+            from: typeof this.from === 'string'
+                ? Render(this.from, variables)
+                : {
+                    name: Render(this.from.name, variables),
+                    address: Render(this.from.address, variables),
+                },
+            html,
+
+            // If the text copy has been left empty, generate from HTML
+            text: this.text !== undefined && this.text !== ''
+                ? Render(this.text, variables)
+                : htmlToText(html),
         }
+
         if (this.preheader) email.preheader = Render(this.preheader, variables)
         if (this.reply_to) email.reply_to = Render(this.reply_to, variables)
         if (this.cc) email.cc = Render(this.cc, variables)

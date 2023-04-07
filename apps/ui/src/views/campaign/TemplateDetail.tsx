@@ -13,7 +13,8 @@ import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
-    'From Email': data.from,
+    'From Email': data.from?.address,
+    'From Name': data.from?.name,
     'Reply To': data.reply_to,
     CC: data.cc,
     BCC: data.bcc,
@@ -33,7 +34,8 @@ const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> })
         name="data.preheader"
         label="Preheader"
         textarea />
-    <TextInput.Field form={form} name="data.from" label="From Email" required />
+    <TextInput.Field form={form} name="data.from.address" label="From Email" required />
+    <TextInput.Field form={form} name="data.from.name" label="From Name" required />
     <TextInput.Field form={form} name="data.reply_to" label="Reply To" />
     <TextInput.Field form={form} name="data.cc" label="CC" />
     <TextInput.Field form={form} name="data.bcc" label="BCC" />

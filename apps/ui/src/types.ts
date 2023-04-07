@@ -300,7 +300,7 @@ export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_time
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }
 
 export interface EmailTemplateData {
-    from: string
+    from: { name: string, address: string }
     cc?: string
     bcc?: string
     reply_to?: string
