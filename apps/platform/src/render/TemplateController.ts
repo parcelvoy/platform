@@ -24,8 +24,18 @@ const templateDataEmailParams = {
     type: 'object',
     properties: {
         from: {
-            type: 'string',
+            type: 'object',
             nullable: true,
+            properties: {
+                name: {
+                    type: 'string',
+                    nullable: true,
+                },
+                address: {
+                    type: 'string',
+                    nullable: true,
+                },
+            },
         },
         cc: {
             type: 'string',

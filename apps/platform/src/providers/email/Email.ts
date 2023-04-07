@@ -1,6 +1,8 @@
+export type NamedEmail = { name: string, address: string }
+
 export interface Email {
     to: string
-    from: string
+    from: string | NamedEmail
     cc?: string
     bcc?: string
     reply_to?: string

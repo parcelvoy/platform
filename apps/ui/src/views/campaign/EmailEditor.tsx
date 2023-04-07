@@ -17,6 +17,7 @@ import ImageGalleryModal from './ImageGalleryModal'
 import Modal from '../../ui/Modal'
 import { ImageIcon } from '../../ui/icons'
 import EditLocalesModal from './EditLocalesModal'
+import { toast } from 'react-hot-toast'
 
 const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
 
@@ -26,6 +27,7 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
     const [data, setData] = useState(template.data)
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [showImages, setShowImages] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
 
     function handleMount(editor: Editor.IStandaloneCodeEditor) {
         setMonaco(editor)
@@ -63,9 +65,17 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
         }
     }
 
-    function handleSave() {
-        template.data = data
-        setTemplate(template)
+    async function handleSave() {
+        try {
+            setIsSaving(true)
+            template.data = data
+            await setTemplate(template)
+            toast.success('Saved!')
+        } catch (error) {
+            toast.error('Unable to save template.')
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     return (
@@ -120,7 +130,7 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                     <span className="publish-label">Last updated at</span>
                     <span className="publish-date">{formatDate(preferences, template.updated_at)}</span>
                 </div>
-                <Button onClick={() => handleSave()}>Save</Button>
+                <Button onClick={async () => await handleSave()} isLoading={isSaving}>Save</Button>
             </div>
 
             <ImageGalleryModal

@@ -27,6 +27,7 @@ interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
     project: Project
     title: string
     value?: List[]
+    required: boolean
 }
 
 const ListSelection = ({
@@ -35,6 +36,7 @@ const ListSelection = ({
     name,
     title,
     value,
+    required,
 }: ListSelectionProps) => {
     const [isOpen, setIsOpen] = useState(false)
     const [lists, setLists] = useState<List[]>(value ?? [])
@@ -57,7 +59,7 @@ const ListSelection = ({
         control,
         name,
         rules: {
-            required: true,
+            required,
         },
     })
 
@@ -243,6 +245,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                                     name="list_ids"
                                     value={campaign?.lists}
                                     control={form.control}
+                                    required={true}
                                 />
                                 <ListSelection
                                     project={project}
@@ -250,6 +253,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                                     name="exclusion_list_ids"
                                     value={campaign?.exclusion_lists}
                                     control={form.control}
+                                    required={false}
                                 />
                             </>
                         )
