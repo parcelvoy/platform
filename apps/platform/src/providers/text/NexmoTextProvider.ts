@@ -23,7 +23,7 @@ export default class NexmoTextProvider extends TextProvider {
     static meta = {
         name: 'Nexmo',
         url: 'https://nexmo.com',
-        icon: 'https://parcelvoy.com/images/vonage.svg',
+        icon: 'https://parcelvoy.com/providers/vonage.svg',
     }
 
     static schema = ProviderSchema<NexmoProviderParams, NexmoDataParams>('nexmoTextProviderParams', {

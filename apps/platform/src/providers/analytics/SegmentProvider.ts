@@ -24,7 +24,7 @@ export default class SegmentAnalyticsProvider extends AnalyticsProvider {
     static meta = {
         name: 'Segment',
         url: 'https://segment.com',
-        icon: 'https://parcelvoy.com/images/segment.svg',
+        icon: 'https://parcelvoy.com/providers/segment.svg',
     }
 
     static schema = ProviderSchema<SegmentProviderParams, SegmentDataParams>('segmentAnalyticsProviderParams', {

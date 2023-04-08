@@ -3,10 +3,12 @@ import { loadControllers } from '../ProviderService'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
 import LoggerEmailProvider from './LoggerEmailProvider'
+import MailgunEmailProvider from './MailgunEmailProvider'
 import SESEmailProvider from './SESEmailProvider'
 import SMTPEmailProvider from './SMPTEmailProvider'
 
 const typeMap = {
+    mailgun: MailgunEmailProvider,
     ses: SESEmailProvider,
     smtp: SMTPEmailProvider,
     logger: LoggerEmailProvider,

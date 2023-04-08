@@ -23,7 +23,7 @@ export default class SMTPEmailProvider extends EmailProvider {
     static namespace = 'smtp'
     static meta = {
         name: 'SMTP',
-        icon: 'https://parcelvoy.com/images/smtp.svg',
+        icon: 'https://parcelvoy.com/providers/smtp.svg',
     }
 
     static schema = ProviderSchema<SMTPEmailProviderParams, SMTPDataParams>('smtpProviderParams', {
