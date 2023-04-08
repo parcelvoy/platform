@@ -130,7 +130,7 @@ export class TextTemplate extends Template {
     }
 
     compile(variables: Variables): CompiledText {
-        return { text: Render(this.text, variables) }
+        return { text: Render(this.text ?? '', variables) }
     }
 
     validate() {

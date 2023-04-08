@@ -2,14 +2,17 @@ import Router from '@koa/router'
 import App from '../app'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
-import Subscription, { SubscriptionParams } from './Subscription'
-import { createSubscription, getSubscription, pagedSubscriptions, unsubscribe } from './SubscriptionService'
+import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
+import { createSubscription, getSubscription, pagedSubscriptions, toggleSubscription, unsubscribe } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
 import { ProjectState } from '../auth/AuthMiddleware'
-import { extractQueryParams } from '../utilities'
+import { decodeHashid, extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { projectRoleMiddleware } from '../projects/ProjectService'
+import { compileTemplate } from '../render'
+import { getUser } from '../users/UserRepository'
+import { User } from 'users/User'
 
 /**
  ***
@@ -39,16 +42,171 @@ export const emailUnsubscribeSchema: JSONSchemaType<EmailUnsubscribeParams> = {
     },
     additionalProperties: false,
 }
+
 publicRouter.post('/email', async ctx => {
 
     const { user, campaign } = await encodedLinkToParts(ctx.URL)
 
-    if (!user || !campaign) throw new RequestError(SubscriptionError.UnsubscribeFailed)
+    if (!user) throw new RequestError(SubscriptionError.UnsubscribeInvalidUser)
+    if (!campaign) throw new RequestError(SubscriptionError.UnsubscribeInvalidCampaign)
 
     await unsubscribe(user.id, campaign.subscription_id)
 
     ctx.status = 204
 })
+
+/**
+ ***
+ * User-facing subscription preferences page
+ ***
+ */
+const preferencesPage = new Router<{
+    app: App
+    user?: User
+    subscriptions?: SubscriptionPreferencesArgs['subscriptions']
+}>({
+    prefix: '/preferences/:encodedUserId',
+})
+
+preferencesPage.param('encodedUserId', async (value, ctx, next) => {
+
+    const userId = decodeHashid(value)
+    if (!userId) throw new RequestError(SubscriptionError.UnsubscribeInvalidUser)
+    const user = await getUser(userId)
+    if (!user) throw new RequestError(SubscriptionError.UnsubscribeInvalidUser)
+
+    ctx.state.user = user
+    ctx.state.subscriptions = await UserSubscription
+        .query()
+        .select('subscriptions.id as id')
+        .select('subscriptions.name as name')
+        .select('state')
+        .join('subscriptions', 'subscription_id', 'subscriptions.id')
+        .where('user_id', user.id)
+        .orderBy('subscriptions.name', 'asc')
+
+    return await next()
+})
+
+interface SubscriptionPreferencesArgs {
+    url: string
+    subscriptions: Array<{
+        id: number
+        name: string
+        state: SubscriptionState
+    }>
+    showUpdatedMessage?: boolean
+}
+
+const subscriptionPreferencesTemplate = compileTemplate<SubscriptionPreferencesArgs>(`
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Subscription Preferences</title>
+        <style>
+            body {
+                font-family: 'Inter', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+                font-size: 15px;
+                margin: 0;
+                padding: 0;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            main {
+                margin: 50px auto;
+                padding: 15px;
+                max-width: 500px;
+            }
+            label {
+                display: block;
+                margin-bottom: 10px;
+            }
+            input[type="submit"] {
+                display: inline-block;
+                padding: 10px 20px;
+                border-radius: 8px;
+                background-color: #151c2d;
+                color: #fff;
+                font-size: 15px;
+                border: 0;
+                cursor: pointer;
+                margin-top: 15px;
+            }
+            .alert-success {
+                background-color: #d1fadf;
+                color: #039855;
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            {{#if subscriptions}}
+            <form action="{{url}}" method="post">
+                <h1>Subscription Preferences</h1>
+                <p>Choose which notifications you would like to continue to receive.</p>
+                {{#if showUpdatedMessage}}
+                <div class="alert-success">
+                    Preferenced Saved Successfully!
+                </div>
+                {{/if}}
+                {{#each subscriptions}}
+                <label>
+                    <input
+                        type="checkbox"
+                        name="subscriptionIds"
+                        value="{{this.id}}"
+                        {{#ifEquals this.state 1}}checked{{/ifEquals}}
+                    />
+                    <span>
+                        {{this.name}}
+                    </span>
+                </label>
+                {{/each}}
+                <input type="submit" value="Save Preferences" />
+            </form>
+            {{else}}
+            <div>
+                You are not subscribed to any notifications.
+            </div>
+            {{/if}}
+        </main>
+    </body>
+</html>
+`)
+
+preferencesPage.get('/', async ctx => {
+    ctx.headers['content-type'] = 'text/html'
+    ctx.body = subscriptionPreferencesTemplate({
+        subscriptions: ctx.state.subscriptions ?? [],
+        url: App.main.env.baseUrl + ctx.URL.pathname,
+        showUpdatedMessage: ctx.query.u === '1',
+    })
+})
+
+preferencesPage.post('/', async ctx => {
+    const { subscriptionIds } = ctx.request.body
+    const ids = (Array.isArray(subscriptionIds) ? subscriptionIds : [subscriptionIds as string])
+        ?.map(Number)
+        .filter(n => !isNaN(n)) ?? []
+    for (const sub of ctx.state.subscriptions ?? []) {
+        await toggleSubscription(
+            ctx.state.user!.id,
+            sub.id,
+            ids.includes(sub.id)
+                ? SubscriptionState.subscribed
+                : SubscriptionState.unsubscribed,
+        )
+    }
+    return ctx.redirect(App.main.env.baseUrl + ctx.URL.pathname + '?u=1')
+})
+
+publicRouter.use(
+    preferencesPage.routes(),
+    preferencesPage.allowedMethods(),
+)
 
 export { publicRouter }
 
