@@ -31,9 +31,13 @@ export default class Queue {
     }
 
     async dequeue(job: EncodedJob): Promise<boolean> {
-        await this.started(job)
-        await this.jobs[job.name](job.data)
-        await this.completed(job)
+        try {
+            await this.started(job)
+            await this.jobs[job.name](job.data)
+            await this.completed(job)
+        } catch (error: any) {
+            this.errored(job, error)
+        }
         return true
     }
 
@@ -62,7 +66,7 @@ export default class Queue {
 
     async errored(job: EncodedJob | undefined, error: Error) {
         logger.error({ error, job }, 'queue:job:errored')
-        App.main.error.notify(error)
+        App.main.error.notify(error, job)
     }
 
     async completed(job: EncodedJob) {
