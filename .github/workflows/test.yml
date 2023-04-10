@@ -24,7 +24,6 @@ jobs:
         npm run lint
 
   test:
-    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,7 +77,6 @@ jobs:
         STORAGE_DRIVER: s3
 
   build:
-    needs: lint
     runs-on: ubuntu-latest
 
     strategy:
