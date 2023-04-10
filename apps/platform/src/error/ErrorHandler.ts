@@ -24,7 +24,7 @@ export default class ErrorHandler {
         this.provider?.attach(api)
     }
 
-    notify(error: Error) {
-        this.provider?.notify(error)
+    notify(error: Error, context?: Record<string, any>) {
+        this.provider?.notify(error, context)
     }
 }
