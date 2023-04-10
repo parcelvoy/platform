@@ -272,7 +272,7 @@ export class JourneyUpdate extends JourneyStep {
         if (this.template.trim()) {
             let value: any
             try {
-                value = JSON.parse(compileTemplate(this.template, {
+                value = JSON.parse(compileTemplate(this.template)({
                     user: user.flatten(),
                     event: event?.flatten(),
                 }))
