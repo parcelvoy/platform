@@ -26,7 +26,9 @@ export default class BugSnagProvider implements ErrorHandlingProvider {
         }
     }
 
-    notify(error: Error) {
-        Bugsnag.notify(error)
+    notify(error: Error, context?: Record<string, any>) {
+        Bugsnag.notify(error, (event) => {
+            context && event.addMetadata('context', context)
+        })
     }
 }
