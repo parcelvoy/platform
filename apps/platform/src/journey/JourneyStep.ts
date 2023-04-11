@@ -10,7 +10,7 @@ import { random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
 import { Database } from '../config/database'
-import { Compile } from '../render'
+import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
 
 export class JourneyUserStep extends Model {
@@ -272,7 +272,7 @@ export class JourneyUpdate extends JourneyStep {
         if (this.template.trim()) {
             let value: any
             try {
-                value = JSON.parse(Compile(this.template, {
+                value = JSON.parse(compileTemplate(this.template)({
                     user: user.flatten(),
                     event: event?.flatten(),
                 }))

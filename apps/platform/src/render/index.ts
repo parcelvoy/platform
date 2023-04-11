@@ -1,11 +1,12 @@
 import Handlebars from 'handlebars'
+import * as CommonHelpers from './Helpers/Common'
 import * as StrHelpers from './Helpers/String'
 import * as NumHelpers from './Helpers/Number'
 import * as DateHelpers from './Helpers/Date'
 import * as UrlHelpers from './Helpers/Url'
 import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
-import { unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
+import { preferencesLink, unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
 import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
 import App from '../app'
 
@@ -34,14 +35,15 @@ const loadHelper = (helper: Record<string, any>) => {
     }
 }
 
+loadHelper(CommonHelpers)
 loadHelper(StrHelpers)
 loadHelper(NumHelpers)
 loadHelper(DateHelpers)
 loadHelper(UrlHelpers)
 loadHelper(ArrayHelpers)
 
-export const Compile = (template: string, context: Record<string, any> = {}) => {
-    return Handlebars.compile(template)(context)
+export const compileTemplate = <T = any>(template: string) => {
+    return Handlebars.compile<T>(template)
 }
 
 interface WrapParams {
@@ -64,17 +66,14 @@ export const Wrap = ({ html, preheader, variables: { user, context } }: WrapPara
 }
 
 export default (template: string, { user, event, context }: Variables) => {
-    const trackingParams = { userId: user.id, campaignId: context?.campaign_id }
-    console.log('context', {
+    return compileTemplate(template)({
         user: user.flatten(),
         event,
         context,
-        unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
-    })
-    return Compile(template, {
-        user: user.flatten(),
-        event,
-        context,
-        unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
+        unsubscribeEmailUrl: unsubscribeEmailLink({
+            userId: user.id,
+            campaignId: context?.campaign_id,
+        }),
+        preferencesUrl: preferencesLink(user.id),
     })
 }

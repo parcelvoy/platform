@@ -6,6 +6,8 @@ import { User } from '../users/User'
 import { createEvent } from '../users/UserEventRepository'
 import { getUser, getUserFromPhone } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
+import App from '../app'
+import { combineURLs, encodeHashid } from '../utilities'
 
 export const pagedSubscriptions = async (params: SearchParams, projectId: number) => {
     return await Subscription.searchParams(
@@ -96,7 +98,11 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
     // If subscription exists, unsubscribe, otherwise subscribe
     const previous = await UserSubscription.first(qb => qb.where(condition))
     if (previous) {
-        await UserSubscription.update(qb => qb.where('id', previous.id), { state })
+        if (previous.state === state) {
+            return
+        } else {
+            await UserSubscription.update(qb => qb.where('id', previous.id), { state })
+        }
     } else {
         await UserSubscription.insert({
             ...condition,
@@ -144,4 +150,8 @@ export const subscribeAll = async (user: User): Promise<void> => {
 
 export const unsubscribeEmailLink = (params: TrackedLinkParams): string => {
     return paramsToEncodedLink({ ...params, path: 'unsubscribe/email' })
+}
+
+export const preferencesLink = (userId: number) => {
+    return combineURLs([App.main.env.baseUrl, 'unsubscribe/preferences', encodeHashid(userId)])
 }
