@@ -66,14 +66,14 @@ export const Wrap = ({ html, preheader, variables: { user, context } }: WrapPara
 }
 
 export default (template: string, { user, event, context }: Variables) => {
-    const trackingParams = { userId: user.id, campaignId: context?.campaign_id }
-    const data = {
+    return compileTemplate(template)({
         user: user.flatten(),
         event,
         context,
-        unsubscribeEmailUrl: unsubscribeEmailLink(trackingParams),
-        preferencesUrl: preferencesLink(trackingParams.userId),
-    }
-    console.log('context', data)
-    return compileTemplate(template)(data)
+        unsubscribeEmailUrl: unsubscribeEmailLink({
+            userId: user.id,
+            campaignId: context?.campaign_id,
+        }),
+        preferencesUrl: preferencesLink(user.id),
+    })
 }
