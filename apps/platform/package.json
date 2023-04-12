@@ -52,7 +52,7 @@
     "build": "tsc --build",
     "lint": "eslint --ext .ts --max-warnings 0 src/",
     "test": "jest --forceExit --runInBand --testTimeout 10000",
-    "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/api:latest ../../",
+    "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/api:latest -t ghcr.io/parcelvoy/api:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
     "migration:create": "node ./scripts/create-migration.mjs"
   },
