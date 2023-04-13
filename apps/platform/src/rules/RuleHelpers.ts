@@ -2,7 +2,7 @@ import jsonpath from 'jsonpath'
 import Rule, { AnyJson, Operator } from './Rule'
 import { Database } from '../config/database'
 import { RuleCheckInput, RuleEvalException } from './RuleEngine'
-import { Compile } from '../render'
+import { compileTemplate } from '../render'
 
 export const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: any) => T): T | undefined => {
     const inputValue = input[rule.group]
@@ -28,7 +28,7 @@ export const compile = <Y>(rule: Rule, cast: (item: AnyJson) => Y): Y => {
         throw new RuleEvalException(rule, 'value required for operator')
     }
     const compiledValue = typeof value === 'string' && value.includes('{')
-        ? Compile(value)
+        ? compileTemplate(value)({})
         : value
     return cast(compiledValue)
 }

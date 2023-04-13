@@ -66,7 +66,7 @@ const SendProof = ({ open, onClose, onSubmit, type }: SendProofProps) => {
             open={open}
             onClose={onClose}
             title="Send Proof"
-            description={`Enter the ${type === 'email' ? 'email address' : 'phone number'} of the recipient you want to receive the proof of this template.`}>
+            description={`Enter the ${type === 'email' ? 'email address' : 'email or phone number'} of the recipient you want to receive the proof of this template.`}>
             <FormWrapper<TemplateProofParams>
                 onSubmit={async ({ recipient }) => await onSubmit(recipient)}>
                 {form => (

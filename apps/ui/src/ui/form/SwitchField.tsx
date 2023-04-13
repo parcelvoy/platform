@@ -32,7 +32,7 @@ export default function SwitchField<X extends FieldValues, P extends FieldPath<X
                     id={id}
                     checked={checked}
                     onChange={(event) => onChange?.(event.target.checked)}
-                    {...form?.register(name, { disabled, required })}
+                    {...form?.register(name, { disabled })}
                 />
                 <div className="slider round"></div>
             </div>

@@ -130,7 +130,7 @@ export class TextTemplate extends Template {
     }
 
     compile(variables: Variables): CompiledText {
-        return { text: Render(this.text, variables) }
+        return { text: Render(this.text ?? '', variables) }
     }
 
     validate() {
@@ -167,7 +167,7 @@ export class PushTemplate extends Template {
         this.title = json?.data.title
         this.topic = json?.data.topic
         this.body = json?.data.body
-        this.custom = json?.data.custom
+        this.custom = json?.data.custom ?? {}
     }
 
     compile(variables: Variables): CompiledPush {

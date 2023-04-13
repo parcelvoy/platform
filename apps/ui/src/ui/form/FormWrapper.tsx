@@ -26,7 +26,6 @@ export default function FormWrapper<T extends FieldValues>({
     })
 
     const handleSubmit = form.handleSubmit(async data => {
-        console.log('submitting', data)
         setIsLoading(true)
         onSubmit(data, navigate).finally(() => {
             setIsLoading(false)

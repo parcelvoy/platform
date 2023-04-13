@@ -29,7 +29,10 @@ export default class PlivoTextProvider extends TextProvider {
         type: 'object',
         required: ['auth_id', 'auth_token', 'phone_number'],
         properties: {
-            auth_id: { type: 'string' },
+            auth_id: {
+                type: 'string',
+                title: 'Auth ID',
+            },
             auth_token: { type: 'string' },
             phone_number: { type: 'string' },
         },

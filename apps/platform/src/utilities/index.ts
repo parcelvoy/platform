@@ -98,7 +98,8 @@ export const partialMatchLocale = (locale1?: string, locale2?: string) => {
 
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {
     return validate(schema, Object.entries<JSONSchemaType<any>>(schema.properties).reduce((a, [name, def]) => {
-        let values: string[]
+        let values!: string[]
+
         if (search instanceof URLSearchParams) {
             values = search.getAll(name)
         } else {

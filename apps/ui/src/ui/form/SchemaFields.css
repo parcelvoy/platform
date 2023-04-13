@@ -3,3 +3,15 @@
     border-radius: var(--border-radius);
     padding: 10px;
 }
+
+.ui-schema-form > h5 {
+    margin-top: 15px;
+    margin-bottom: 2px;
+}
+
+.ui-schema-form > p {
+    margin: 2px 0 10px;
+    color: var(--color-primary-soft);
+    font-weight: 400;
+    font-size: 14px;
+}
