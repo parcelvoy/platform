@@ -37,7 +37,10 @@ export default class TwilioTextProvider extends TextProvider {
         type: 'object',
         required: ['account_sid', 'auth_token', 'phone_number'],
         properties: {
-            account_sid: { type: 'string' },
+            account_sid: {
+                type: 'string',
+                title: 'Account SID',
+            },
             auth_token: { type: 'string' },
             phone_number: { type: 'string' },
         },

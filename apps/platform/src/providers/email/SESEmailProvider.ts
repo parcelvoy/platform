@@ -43,8 +43,14 @@ export default class SESEmailProvider extends EmailProvider {
                         type: 'object',
                         required: ['accessKeyId', 'secretAccessKey'],
                         properties: {
-                            accessKeyId: { type: 'string' },
-                            secretAccessKey: { type: 'string' },
+                            accessKeyId: {
+                                type: 'string',
+                                title: 'Access Key ID',
+                            },
+                            secretAccessKey: {
+                                type: 'string',
+                                title: 'Secret Access Key',
+                            },
                         },
                     },
                 },

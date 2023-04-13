@@ -12,6 +12,7 @@ interface APNParams {
         teamId: string
     }
     production: boolean
+    bundleId: string
 }
 
 interface FCMParams {
@@ -46,18 +47,34 @@ export default class LocalPushProvider extends PushProvider {
                 type: 'object',
                 nullable: true,
                 required: ['production', 'token'],
+                title: 'APN',
+                description: 'Settings for Apple Push Notifications to send messages to iOS devices.',
                 properties: {
                     production: {
                         type: 'boolean',
+                        description: 'Leave unchecked if you are wanting to send to sandbox devices only.',
                     },
                     token: {
                         type: 'object',
                         required: ['key', 'keyId', 'teamId'],
                         properties: {
-                            key: { type: 'string' },
-                            keyId: { type: 'string' },
-                            teamId: { type: 'string' },
+                            key: {
+                                type: 'string',
+                                minLength: 80,
+                            },
+                            keyId: {
+                                type: 'string',
+                                title: 'Key ID',
+                            },
+                            teamId: {
+                                type: 'string',
+                                title: 'Team ID',
+                            },
                         },
+                    },
+                    bundleId: {
+                        type: 'string',
+                        title: 'Bundle ID',
                     },
                 },
             },
@@ -65,8 +82,14 @@ export default class LocalPushProvider extends PushProvider {
                 type: 'object',
                 nullable: true,
                 required: ['id'],
+                title: 'FCM',
+                description: 'Settings for Firebase Cloud Messaging to send messages to Android devices.',
                 properties: {
-                    id: { type: 'string' },
+                    id: {
+                        type: 'string',
+                        title: 'Server Key',
+                        minLength: 80,
+                    },
                 },
             },
         },
@@ -81,10 +104,11 @@ export default class LocalPushProvider extends PushProvider {
     }
 
     async send(push: Push): Promise<PushResponse> {
-        const { tokens, title, topic, body, custom } = push
+        // TODO: Need a better way of bubbling up errors
+        const { tokens, title, body, custom } = push
         const response = await this.transport.send(typeof tokens === 'string' ? [tokens] : tokens, {
             title,
-            topic,
+            topic: this.apn?.bundleId,
             body,
             custom,
         })
