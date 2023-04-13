@@ -9,6 +9,7 @@ import { validate } from '../core/validate'
 import { projectRoleMiddleware } from './ProjectService'
 import { ProjectAdminParams } from './ProjectAdmins'
 import { projectRoles } from './Project'
+import { RequestError } from '../core/errors'
 
 const router = new Router<
     ProjectState & { admin?: Admin }
@@ -37,8 +38,9 @@ const projectAdminParamsSchema: JSONSchemaType<ProjectAdminParams> = {
 
 router.put('/:adminId', async ctx => {
     const admin = await Admin.find(ctx.params.adminId)
-    if (!admin) return ctx.throw(404, 'invalid adminId')
+    if (!admin) throw new RequestError('Invalid admin ID', 404)
     const { role } = validate(projectAdminParamsSchema, ctx.request.body)
+    if (ctx.state.admin!.id !== admin.id) throw new RequestError('You cannot add yourself to a project')
     await addAdminToProject(ctx.state.project.id, admin.id, role)
     ctx.body = await getProjectAdmin(ctx.state.project.id, admin.id)
 })

@@ -51,4 +51,4 @@ Parcelvoy at its core is an orchestration service that lets you determine how, w
 Check out our [providers](../providers) section for instructions on how to get each one setup.
 
 ### How To
-For more indepth tutorials on all of the functionality in Parcelvoy, make sure to checkout our [How To](../how-to) section.
+For more indepth tutorials on all of the functionality in Parcelvoy, make sure to checkout our How To section.
