@@ -60,7 +60,7 @@ export default class LocalPushProvider extends PushProvider {
                         properties: {
                             key: {
                                 type: 'string',
-                                minLength: 81,
+                                minLength: 80,
                             },
                             keyId: {
                                 type: 'string',
