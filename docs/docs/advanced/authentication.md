@@ -45,4 +45,10 @@ AUTH_BASIC_PASSWORD=password
 ### Google Workspace
 You can utilize either SAML or OpenID to connect to your Google Account. We'll be highlighting how to setup SAML as it is slightly easier than OpenID to configure.
 
+1. Open the admin console for Google Workspace (https://admin.google.com)
+2. Navigate to Apps -> Web and mobile apps
+3. Click `Add app` and from the dropdown select `Add custom SAML app`
+4. Enter an app name and select an optional logo
+5. The SSO URL -> 
+
 ***Instructions coming soon.***
