@@ -32,7 +32,7 @@ AUTH_BASIC_EMAIL=test@parcelvoy.com
 AUTH_BASIC_PASSWORD=password
 ```
 
-### 3. Startup Docker
+### 3. Startup Docker Compose
 ```
 docker compose up -d # run the Docker container
 ```
@@ -40,7 +40,7 @@ docker compose up -d # run the Docker container
 ## Usage
 Once Docker Compose boots up, it will start the initial database migration to get everything up and running. This should only take a minute, after which you are ready to go!
 
-You can login to the web app at http://localhost:3000 by entering the default credentials you set your `.env` file.
+You can login to the web app at [http://localhost:3000](http://localhost:3000) by entering the default credentials you set in your `.env` file.
 
 ### Onboarding
 After login, you'll be prompted to go through onboarding. This will get you setup with your first project. 
@@ -48,3 +48,7 @@ After login, you'll be prompted to go through onboarding. This will get you setu
 ### Integrations
 Parcelvoy at its core is an orchestration service that lets you determine how, when and to whom to send messages. Different mediums of messages as well as different platforms require integrations in order for them to work. 
 
+Check out our [providers](../providers) section for instructions on how to get each one setup.
+
+### How To
+For more indepth tutorials on all of the functionality in Parcelvoy, make sure to checkout our [How To](../how-to) section.

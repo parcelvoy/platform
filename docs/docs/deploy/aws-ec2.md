@@ -25,17 +25,26 @@ sudo yum install -y docker-compose-plugin
 docker compose version
 ```
 
-4. Install Parcelvoy by running the following:
+4. Download Parcelvoy configuration:
 ```
 mkdir parcelvoy && cd parcelvoy
-wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env,docker-compose.yaml}
-docker compose up -d # run the Docker container
+wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env.example,docker-compose.yaml}
 ```
 
 5. Setup environment variables
 ```
-sudo vim .env
+mv .env.example .env
 ```
-The database and queue come pre-configured but SSO needs to be setup. Pick your authentication approach and set the required environment variables.
 
+For default installations, security is set to `basic` which only allows for a single user. Before proceeding please update the email, password and app secret to not be their default values.
+
+```
+APP_SECRET=//Please pick a random value at least 16 characters in length
+AUTH_BASIC_EMAIL=test@parcelvoy.com
+AUTH_BASIC_PASSWORD=password
+```
+
+This file also lets you use a separate database, change what queue is being used or setup SSO.
+
+By default the port is configured to use `3000` for the UI and API. You can modify this by setting `UI_PORT`.
 6. Setup security groups
