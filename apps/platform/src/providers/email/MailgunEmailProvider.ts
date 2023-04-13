@@ -38,7 +38,10 @@ export default class MailgunEmailProvider extends EmailProvider {
         type: 'object',
         required: ['api_key', 'domain'],
         properties: {
-            api_key: { type: 'string' },
+            api_key: {
+                type: 'string',
+                title: 'API Key',
+            },
             domain: { type: 'string' },
             webhook_signing_key: {
                 type: 'string',

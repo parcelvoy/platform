@@ -30,8 +30,14 @@ export default class NexmoTextProvider extends TextProvider {
         type: 'object',
         required: ['api_key', 'api_secret', 'phone_number'],
         properties: {
-            api_key: { type: 'string' },
-            api_secret: { type: 'string' },
+            api_key: {
+                type: 'string',
+                title: 'API Key',
+            },
+            api_secret: {
+                type: 'string',
+                title: 'API Secret',
+            },
             phone_number: { type: 'string' },
         },
     })

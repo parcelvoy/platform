@@ -64,7 +64,6 @@ const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
 const PushTable = ({ data }: { data: PushTemplateData }) => <InfoTable rows={{
     Title: data.title,
     Body: data.body,
-    Topic: data.topic,
 }} />
 
 const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
@@ -78,11 +77,6 @@ const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
         name="data.body"
         label="Body"
         textarea
-        required />
-    <TextInput.Field
-        form={form}
-        name="data.topic"
-        label="Topic"
         required />
 </>
 

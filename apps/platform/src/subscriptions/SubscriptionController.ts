@@ -255,7 +255,7 @@ export const subscriptionCreateSchema: JSONSchemaType<SubscriptionParams> = {
         },
         channel: {
             type: 'string',
-            enum: ['email', 'text', 'webhook'],
+            enum: ['email', 'text', 'push', 'webhook'],
         },
     },
     additionalProperties: false,
