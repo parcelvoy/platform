@@ -82,6 +82,10 @@
     opacity: 0;
 }
 
+.ui-select .select-options-wrapper {
+    z-index: 999;
+}
+
 .ui-select .select-options {
     background: var(--color-background);
     border: 1px solid var(--color-grey);
@@ -89,7 +93,6 @@
     border-radius: var(--border-radius);
     list-style: none;
     padding: 5px;
-    z-index: 999;
     max-height: 275px;
     overflow: scroll;
     margin: 0;

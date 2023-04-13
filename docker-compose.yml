@@ -11,9 +11,10 @@ services:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: "/usr/bin/mysql parcelvoy --user=root --password=$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'"
-      interval: 1s
-      retries: 120
+      test: ["CMD-SHELL", "exit | mysql parcelvoy -h localhost -P 3306 -u root -p$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'" ]
+      interval: 5s
+      timeout: 20s
+      retries: 30
   redis:
     image: redis
     expose:
@@ -24,6 +25,12 @@ services:
   api:
     image: 'ghcr.io/parcelvoy/api:latest'
     restart: always
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+      interval: 5s
+      retries: 30
+      start_period: 20s
+      timeout: 10s
     ports:
       - 3001:3001
     links:
@@ -124,7 +131,7 @@ services:
     image: 'ghcr.io/parcelvoy/ui:latest'
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
     environment:
       API_BASE_URL: ${API_BASE_URL}
     ports:

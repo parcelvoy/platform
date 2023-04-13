@@ -98,43 +98,43 @@ export function SingleSelect<T, U = T>({
                     </span>
                 )
             }
-            <Transition
-                as={Fragment}
-                leave="transition-leave"
-                leaveFrom="transition-leave-from"
-                leaveTo="transition-leave-to"
-                enter="transition-enter"
-                enterFrom="transition-enter-from"
-                enterTo="transition-enter-to"
-            >
-                <Listbox.Options
-                    className="select-options"
-                    ref={setPopperElement}
-                    style={styles.popper}
-                    {...attributes.popper}
+            <div className="select-options-wrapper"
+                ref={setPopperElement}
+                style={styles.popper}
+                {...attributes.popper}>
+                <Transition
+                    as={Fragment}
+                    leave="transition-leave"
+                    leaveFrom="transition-leave-from"
+                    leaveTo="transition-leave-to"
+                    enter="transition-enter"
+                    enterFrom="transition-enter-from"
+                    enterTo="transition-enter-to"
                 >
-                    {options.map((option) => {
-                        const value = toValue(option)
-                        return (
-                            <Listbox.Option
-                                key={getValueKey(value)}
-                                value={value}
-                                className={({ active, selected }) => clsx(
-                                    'select-option',
-                                    active && 'active',
-                                    selected && 'selected',
-                                )}
-                            >
-                                <span>{getOptionDisplay(option)}</span>
-                                <span className="option-icon">
-                                    <CheckIcon aria-hidden="true" />
-                                </span>
-                            </Listbox.Option>
-                        )
-                    })}
-                    {optionsFooter}
-                </Listbox.Options>
-            </Transition>
+                    <Listbox.Options className="select-options">
+                        {options.map((option) => {
+                            const value = toValue(option)
+                            return (
+                                <Listbox.Option
+                                    key={getValueKey(value)}
+                                    value={value}
+                                    className={({ active, selected }) => clsx(
+                                        'select-option',
+                                        active && 'active',
+                                        selected && 'selected',
+                                    )}
+                                >
+                                    <span>{getOptionDisplay(option)}</span>
+                                    <span className="option-icon">
+                                        <CheckIcon aria-hidden="true" />
+                                    </span>
+                                </Listbox.Option>
+                            )
+                        })}
+                        {optionsFooter}
+                    </Listbox.Options>
+                </Transition>
+            </div>
         </Listbox>
     )
 }
