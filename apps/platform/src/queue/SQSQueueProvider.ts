@@ -1,11 +1,11 @@
-import * as AWS from '@aws-sdk/client-sqs'
-import { Consumer } from '@rxfork/sqs-consumer'
+import { Consumer } from 'sqs-consumer'
 import { logger } from '../config/logger'
 import { AWSConfig } from '../core/aws'
 import { batch, uuid } from '../utilities'
 import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
+import { SQS, Message } from '@aws-sdk/client-sqs'
 
 export interface SQSConfig extends QueueTypeConfig, AWSConfig {
     driver: 'sqs'
@@ -17,16 +17,16 @@ export default class SQSQueueProvider implements QueueProvider {
     config: SQSConfig
     queue: Queue
     app?: Consumer
-    sqs: AWS.SQS
+    sqs: SQS
     batchSize = 10 as const
 
     constructor(config: SQSConfig, queue: Queue) {
         this.queue = queue
         this.config = config
-        this.sqs = new AWS.SQS({ region: this.config.region })
+        this.sqs = new SQS({ region: this.config.region })
     }
 
-    parse(message: AWS.Message): EncodedJob {
+    parse(message: Message): EncodedJob {
         return JSON.parse(message.Body ?? '')
     }
 
@@ -44,6 +44,9 @@ export default class SQSQueueProvider implements QueueProvider {
     }
 
     async enqueueBatch(jobs: Job[]): Promise<void> {
+
+        // If provided array of jobs is larger than max supported
+        // batch by AWS, batch the batch
         for (const part of batch(jobs, this.batchSize)) {
             try {
                 const params = {
@@ -66,15 +69,40 @@ export default class SQSQueueProvider implements QueueProvider {
             queueUrl: this.config.queueUrl,
             handleMessage: async (message) => {
                 await this.queue.dequeue(this.parse(message))
+                return message
             },
+            handleMessageBatch: async (messages) => {
+
+                // Map messages to job operations
+                const promises = messages.map(message =>
+                    this.queue.dequeue(this.parse(message))
+                )
+
+                // Execute each job and get results
+                const results = await Promise.allSettled(promises)
+
+                // Return the messages that have succeeded to awk them
+                return messages.reduce((acc: Message[], curr, index) => {
+                    const status = results[index].status === 'fulfilled'
+                    if (status) {
+                        acc.push(curr)
+                    }
+                    return acc
+                }, [])
+            },
+            batchSize: this.batchSize,
             sqs: this.sqs,
         })
 
         // Catches errors related to the queue / connection
         app.on('error', (error, message) => {
-            logger.error({ error, message }, 'sqs:error:connection')
-            app.stop()
-            // TODO:  this.queue.errored(this.parse(message), error)
+            if (Array.isArray(message)) {
+                message.forEach(message => this.queue.errored(error, this.parse(message)))
+            } else if (message) {
+                this.queue.errored(error, this.parse(message))
+            } else {
+                this.queue.errored(error)
+            }
         })
 
         // Catches errors related to the job

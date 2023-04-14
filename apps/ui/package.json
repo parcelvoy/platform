@@ -24,6 +24,7 @@
     "date-fns-tz": "^1.3.7",
     "http-proxy-middleware": "^2.0.6",
     "react": "^18.2.0",
+    "react-charts": "^3.0.0-beta.54",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.33.0",
     "react-hot-toast": "^2.4.0",

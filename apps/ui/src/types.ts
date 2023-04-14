@@ -442,3 +442,13 @@ export interface Tag {
     name: string
     count?: number
 }
+
+export interface QueueMetric {
+    data: Metric[]
+    waiting: number
+}
+
+export interface Metric {
+    date: string | Date
+    count: number
+}

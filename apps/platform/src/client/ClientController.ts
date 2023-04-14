@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import App from '../app'
 import EventPostJob from './EventPostJob'
 import { JSONSchemaType, validate } from '../core/validate'
-import { ClientAliasParams, ClientIdentifyParams, ClientPostEventsRequest } from './Client'
+import { ClientIdentifyParams, ClientIdentityKeys, ClientPostEventsRequest } from './Client'
 import { aliasUser, saveDevice } from '../users/UserRepository'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
@@ -18,7 +18,7 @@ router.use(projectMiddleware)
  * Used by client libraries to associate an anonymous user
  * to one as identified by their system
  */
-const aliasParams: JSONSchemaType<ClientAliasParams> = {
+const aliasParams: JSONSchemaType<ClientIdentityKeys> = {
     $id: 'aliasParams',
     type: 'object',
     required: ['external_id', 'anonymous_id'],

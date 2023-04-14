@@ -13,7 +13,6 @@
     "@koa/router": "^11.0.1",
     "@ladjs/country-language": "^1.0.3",
     "@node-saml/node-saml": "github:node-saml/node-saml",
-    "@rxfork/sqs-consumer": "^6.0.0",
     "@segment/analytics-node": "^1.0.0-beta.23",
     "@sentry/node": "^7.46.0",
     "@sentry/utils": "^7.46.0",
@@ -30,6 +29,7 @@
     "handlebars-utils": "^1.0.6",
     "hashids": "^2.2.10",
     "html-to-text": "^9.0.4",
+    "ioredis": "^5.3.1",
     "jsonpath": "^1.1.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^2.3.0",
@@ -45,7 +45,8 @@
     "nodemailer-mailgun-transport": "^2.1.5",
     "openid-client": "^5.2.1",
     "pino": "^8.1.0",
-    "pino-pretty": "^8.1.0"
+    "pino-pretty": "^8.1.0",
+    "sqs-consumer": "^7.0.0"
   },
   "scripts": {
     "start": "nodemon",
@@ -65,7 +66,7 @@
     "@types/koa__cors": "^3.3.0",
     "@types/koa__router": "^8.0.11",
     "@types/koa-static": "^4.0.2",
-    "@types/node": "^18.7.18",
+    "@types/node": "^18.15.11",
     "@types/node-pushnotifications": "^1.0.4",
     "@types/node-schedule": "^2.1.0",
     "@types/nodemailer": "^6.4.4",

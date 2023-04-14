@@ -47,10 +47,20 @@ export const pagedUsers = async (params: SearchParams, projectId: number) => {
     )
 }
 
-export const aliasUser = async (projectId: number, alias: ClientAliasParams): Promise<User | undefined> => {
-    const user = await getUserFromClientId(projectId, alias)
-    if (!user) return
-    return await User.updateAndFetch(user.id, { external_id: alias.external_id })
+export const aliasUser = async (projectId: number, {
+    external_id,
+    anonymous_id,
+    previous_id,
+}: ClientAliasParams): Promise<User | undefined> => {
+
+    // Previous is the one merging into userId
+    const previous = await getUserFromClientId(projectId, {
+        external_id: previous_id,
+        anonymous_id,
+    } as ClientIdentity)
+
+    if (!previous) return
+    return await User.updateAndFetch(previous.id, { external_id })
 }
 
 export const createUser = async (projectId: number, { external_id, anonymous_id, data, ...fields }: UserParams) => {

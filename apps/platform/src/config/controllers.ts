@@ -18,6 +18,7 @@ import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 import ProjectAdminController from '../projects/ProjectAdminController'
 import ProjectApiKeyController from '../projects/ProjectApiKeyController'
 import AdminController from '../auth/AdminController'
+import OrganizationController from '../organizations/OrganizationController'
 
 const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
@@ -53,6 +54,7 @@ export const adminRouter = () => {
         projectRouter(),
         ProfileController,
         AdminController,
+        OrganizationController,
     )
 }
 
