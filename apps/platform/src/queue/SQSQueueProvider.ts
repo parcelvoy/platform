@@ -75,7 +75,7 @@ export default class SQSQueueProvider implements QueueProvider {
 
                 // Map messages to job operations
                 const promises = messages.map(message =>
-                    this.queue.dequeue(this.parse(message))
+                    this.queue.dequeue(this.parse(message)),
                 )
 
                 // Execute each job and get results
