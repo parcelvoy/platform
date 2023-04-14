@@ -3,7 +3,7 @@ title: AWS EC2
 ---
 # Deploy Parcelvoy on AWS (Amazon EC2)
 
-This page guides you through deploying Parcelvoy Open-Source on an Amazon EC2 instance by setting up the deployment environment, installing and starting Airbyte, and connecting it to the Amazon EC2 instance.
+This page guides you through deploying Parcelvoy Open-Source on an Amazon EC2 instance by setting up the deployment environment, installing and starting Parcelvoy, and connecting it to the Amazon EC2 instance.
 
 ## Requirements​
 - A t3.medium instance or larger. While you can run it on smaller instances, performance may not be optimal.
@@ -28,7 +28,7 @@ docker compose version
 4. Download Parcelvoy configuration:
 ```
 mkdir parcelvoy && cd parcelvoy
-wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env.example,docker-compose.yaml}
+wget https://raw.githubusercontent.com/parcelvoy/platform/master/{.env.example,docker-compose.yml}
 ```
 
 5. Setup environment variables
@@ -47,4 +47,6 @@ AUTH_BASIC_PASSWORD=password
 This file also lets you use a separate database, change what queue is being used or setup SSO.
 
 By default the port is configured to use `3000` for the UI and API. You can modify this by setting `UI_PORT`.
+
 6. Setup security groups
+Based on what port you are using for the UI portion, you will want to make sure you have configured that port to be open as well in your security groups.

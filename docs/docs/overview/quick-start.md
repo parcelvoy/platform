@@ -14,7 +14,7 @@ Copy our latest `docker-compose.yml` and `.env.example` file onto your machine:
 
 ```
 mkdir parcelvoy && cd parcelvoy
-wget https://raw.githubusercontent.com/parcelvoy/parcelvoy/master/{.env.example,docker-compose.yml}
+wget https://raw.githubusercontent.com/parcelvoy/platform/master/{.env.example,docker-compose.yml}
 mv .env.example .env
 ```
 

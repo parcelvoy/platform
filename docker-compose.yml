@@ -23,7 +23,7 @@ services:
     volumes:
       - redis_data:/data
   api:
-    image: 'ghcr.io/parcelvoy/api:latest'
+    image: "ghcr.io/parcelvoy/api:${IMAGE_VERSION:-latest}"
     restart: always
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
@@ -35,6 +35,7 @@ services:
       - 3001:3001
     links:
       - mysql:mysql
+      - redis:redis
     depends_on:
       mysql:
         condition: service_healthy
@@ -81,10 +82,11 @@ services:
     volumes:
       - uploads:/usr/src/app/public/uploads
   worker:
-    image: 'ghcr.io/parcelvoy/api:latest'
+    image: "ghcr.io/parcelvoy/api:${IMAGE_VERSION:-latest}"
     restart: always
     links:
       - mysql:mysql
+      - redis:redis
     depends_on:
       mysql:
         condition: service_healthy
@@ -128,7 +130,7 @@ services:
       ERROR_BUGSNAG_API_KEY: ${ERROR_BUGSNAG_API_KEY}
       ERROR_SENTRY_DSN: ${ERROR_SENTRY_DSN}
   ui:
-    image: 'ghcr.io/parcelvoy/ui:latest'
+    image: "ghcr.io/parcelvoy/ui:${PARCELVOY_VERSION:-latest}"
     depends_on:
       api:
         condition: service_healthy

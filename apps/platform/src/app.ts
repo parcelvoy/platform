@@ -23,6 +23,8 @@ export default class App {
 
     static async init(env: Env): Promise<App> {
 
+        logger.info('parcelvoy initializing')
+
         // Boot up error tracking
         const error = await loadError(env.error)
 
