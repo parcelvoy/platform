@@ -6,12 +6,16 @@ type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
         [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
     }[Keys]
 
-export type ClientAliasParams = {
+export type ClientIdentityKeys = {
     anonymous_id: string
     external_id: string
 }
 
-export type ClientIdentity = RequireAtLeastOne<ClientAliasParams, 'anonymous_id' | 'external_id'>
+export type ClientIdentity = RequireAtLeastOne<ClientIdentityKeys, 'anonymous_id' | 'external_id'>
+
+export type ClientAliasParams = ClientIdentity & {
+    previous_id?: string
+}
 
 export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' | 'data'>> & ClientIdentity
 
@@ -50,6 +54,7 @@ export type SegmentPostEvent = {
     event: string
     anonymousId: string
     userId: string
+    previousId?: string
     context: Record<string, any> & SegmentContext
     properties: Record<string, any>
     traits?: Record<string, any>

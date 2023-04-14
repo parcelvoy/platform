@@ -3,12 +3,12 @@ import App from '../app'
 import EventPostJob from './EventPostJob'
 import { JSONSchemaType, validate } from '../core/validate'
 import { SegmentPostEventsRequest } from './Client'
-import { aliasUser } from '../users/UserRepository'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import UserPatchJob from '../users/UserPatchJob'
 import { Job } from '../queue'
 import { parseLocale } from '../utilities'
+import UserAliasJob from '../users/UserAliasJob'
 
 const router = new Router<ProjectState>()
 router.use(projectMiddleware)
@@ -30,6 +30,10 @@ const segmentEventsRequest: JSONSchemaType<SegmentPostEventsRequest> = {
                 nullable: true,
             },
             userId: {
+                type: 'string',
+                nullable: true,
+            },
+            previousId: {
                 type: 'string',
                 nullable: true,
             },
@@ -73,7 +77,12 @@ router.post('/segment', async ctx => {
             external_id: event.userId,
         }
         if (event.type === 'alias') {
-            await aliasUser(ctx.state.project.id, identity)
+
+            chunks.push(UserAliasJob.from({
+                project_id: ctx.state.project.id,
+                previous_id: event.previousId,
+                ...identity,
+            }))
         } else if (event.type === 'identify') {
 
             chunks.push(UserPatchJob.from({

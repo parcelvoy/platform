@@ -4,7 +4,7 @@ import { logger } from '../config/logger'
 import { LoggerConfig } from '../providers/LoggerProvider'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
-import QueueProvider, { QueueProviderName } from './QueueProvider'
+import QueueProvider, { MetricPeriod, QueueMetric, QueueProviderName } from './QueueProvider'
 import RedisQueueProvider, { RedisConfig } from './RedisQueueProvider'
 import SQSQueueProvider, { SQSConfig } from './SQSQueueProvider'
 
@@ -36,7 +36,7 @@ export default class Queue {
             await this.jobs[job.name](job.data)
             await this.completed(job)
         } catch (error: any) {
-            this.errored(job, error)
+            this.errored(error, job)
         }
         return true
     }
@@ -64,7 +64,7 @@ export default class Queue {
         logger.info(job, 'queue:job:started')
     }
 
-    async errored(job: EncodedJob | undefined, error: Error) {
+    async errored(error: Error, job?: EncodedJob) {
         logger.error({ error, job }, 'queue:job:errored')
         App.main.error.notify(error, job)
     }
@@ -80,5 +80,9 @@ export default class Queue {
 
     async close() {
         this.provider.close()
+    }
+
+    async metrics(period = MetricPeriod.FOUR_HOURS): Promise<QueueMetric | undefined> {
+        return await this.provider.metrics?.(period)
     }
 }

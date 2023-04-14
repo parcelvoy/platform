@@ -5,8 +5,6 @@ import ErrorPage from './ErrorPage'
 import Sidebar from '../ui/Sidebar'
 import { LoaderContextProvider, StatefulLoaderContextProvider } from './LoaderContextProvider'
 import { AdminContext, CampaignContext, JourneyContext, ListContext, ProjectContext, UserContext } from '../contexts'
-import PageContent from '../ui/PageContent'
-import { NavigationTabs } from '../ui/Tabs'
 import ApiKeys from './settings/ApiKeys'
 import EmailEditor from './campaign/EmailEditor'
 import Lists from './users/Lists'
@@ -38,8 +36,9 @@ import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
 import { pushRecentProject } from '../utils'
-import { ProjectRoleRequired } from './project/ProjectRoleRequired'
 import LoginBasic from './auth/LoginBasic'
+import Performance from './settings/Performance'
+import Settings from './settings/Settings'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -239,48 +238,7 @@ export const router = createBrowserRouter([
                     }),
                     {
                         path: 'settings',
-                        element: (
-                            <ProjectRoleRequired minRole="admin">
-                                <PageContent title="Settings">
-                                    <NavigationTabs
-                                        tabs={[
-                                            {
-                                                key: 'general',
-                                                to: '',
-                                                end: true,
-                                                children: 'General',
-                                            },
-                                            {
-                                                key: 'team',
-                                                to: 'team',
-                                                children: 'Team',
-                                            },
-                                            {
-                                                key: 'api-keys',
-                                                to: 'api-keys',
-                                                children: 'API Keys',
-                                            },
-                                            {
-                                                key: 'integrations',
-                                                to: 'integrations',
-                                                children: 'Integrations',
-                                            },
-                                            {
-                                                key: 'subscriptions',
-                                                to: 'subscriptions',
-                                                children: 'Subscriptions',
-                                            },
-                                            {
-                                                key: 'tags',
-                                                to: 'tags',
-                                                children: 'Tags',
-                                            },
-                                        ]}
-                                    />
-                                    <Outlet />
-                                </PageContent>
-                            </ProjectRoleRequired>
-                        ),
+                        element: <Settings />,
                         children: [
                             {
                                 index: true,
@@ -305,6 +263,10 @@ export const router = createBrowserRouter([
                             {
                                 path: 'tags',
                                 element: <Tags />,
+                            },
+                            {
+                                path: 'performance',
+                                element: <Performance />,
                             },
                         ],
                     },

@@ -1,29 +1,40 @@
-import { Queue as BullQueue, Worker } from 'bullmq'
+import { MetricsTime, Queue as BullQueue, Worker } from 'bullmq'
+import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
 import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
-import QueueProvider from './QueueProvider'
+import QueueProvider, { MetricPeriod, QueueMetric } from './QueueProvider'
+import IORedis, { Redis } from 'ioredis'
 
 export interface RedisConfig extends QueueTypeConfig {
     driver: 'redis'
     host: string
     port: number
+    tls: boolean
 }
 
 export default class RedisQueueProvider implements QueueProvider {
 
-    config: RedisConfig
+    redis: Redis
     queue: Queue
     bull: BullQueue
     worker?: Worker
-    batchSize = 50 as const
+    batchSize = 40 as const
+    queueName = 'parcelvoy' as const
 
     constructor(config: RedisConfig, queue: Queue) {
         this.queue = queue
-        this.config = config
-        this.bull = new BullQueue('parcelvoy', {
-            connection: config,
+        this.redis = new IORedis({
+            port: config.port,
+            host: config.host,
+            tls: config.tls
+                ? { rejectUnauthorized: false }
+                : undefined,
+            maxRetriesPerRequest: null,
+        })
+        this.bull = new BullQueue(this.queueName, {
+            connection: this.redis,
             defaultJobOptions: {
                 attempts: 3,
                 backoff: {
@@ -69,18 +80,36 @@ export default class RedisQueueProvider implements QueueProvider {
         this.worker = new Worker('parcelvoy', async job => {
             await this.queue.dequeue(job.data)
         }, {
-            connection: this.config,
+            connection: this.redis,
             concurrency: this.batchSize,
+            metrics: {
+                maxDataPoints: MetricsTime.TWO_WEEKS,
+            },
         })
 
         this.worker.on('failed', (job, error) => {
-            this.queue.errored(job?.data as EncodedJob, error)
-            logger.error({ error }, 'redis:error:processing')
+            this.queue.errored(error, job?.data as EncodedJob)
         })
     }
 
     close(): void {
         this.bull.close()
         this.worker?.close()
+    }
+
+    async metrics(period: MetricPeriod): Promise<QueueMetric> {
+        const waiting = await this.bull.getWaitingCount()
+        const completed = await this.bull.getMetrics('completed')
+        const data = completed.data
+            .slice(0, period)
+            .map((count, index) => ({
+                date: subMinutes(Date.now(), index),
+                count: Math.floor(count),
+            }))
+        data.reverse()
+        return {
+            data,
+            waiting,
+        }
     }
 }
