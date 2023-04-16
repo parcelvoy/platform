@@ -104,6 +104,15 @@
     fill: var(--color-green-soft);
 }
 
+.journey .react-flow__minimap {
+    background-color: var(--color-background-soft);
+}
+
+.journey .react-flow__minimap-mask {
+    fill: var(--color-background);
+    opacity: 0.8;
+}
+
 .component-title {
     grid-area: title;
     font-weight: bold;
