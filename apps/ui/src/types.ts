@@ -452,3 +452,8 @@ export interface Metric {
     date: string | Date
     count: number
 }
+
+export interface LocaleOption {
+    key: string
+    label: string
+}

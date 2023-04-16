@@ -59,7 +59,7 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
                 open={showAddLocale}
                 setIsOpen={setShowAddLocale}
                 campaign={campaign}
-                setCampaign={setCampaign} />
+                onCreate={setCampaign} />
         </Modal>
     )
 }

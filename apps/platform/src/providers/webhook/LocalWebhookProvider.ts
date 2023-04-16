@@ -20,11 +20,23 @@ export default class LocalWebhookProvider extends WebhookProvider {
         const { method, endpoint, headers, body } = options
         const response = await fetch(endpoint, {
             method,
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...headers
+            },
             body: JSON.stringify(body),
         })
+        
+        let responseBody: any | undefined
+        try {
+            responseBody = await response.json()
+        } catch {
+            try {
+                responseBody = await response.text()
+            } catch {}   
+        }
 
-        const responseBody = await response.json()
         if (response.ok) {
             return {
                 message: options,

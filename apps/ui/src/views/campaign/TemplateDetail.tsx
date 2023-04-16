@@ -8,9 +8,11 @@ import Preview from '../../ui/Preview'
 import { InfoTable } from '../../ui/InfoTable'
 import Modal from '../../ui/Modal'
 import FormWrapper from '../../ui/form/FormWrapper'
-import { EmailTemplateData, PushTemplateData, Template, TemplateUpdateParams, TextTemplateData } from '../../types'
+import { EmailTemplateData, PushTemplateData, Template, TemplateUpdateParams, TextTemplateData, WebhookTemplateData } from '../../types'
 import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
+import { SingleSelect } from '../../ui/form/SingleSelect'
+import JsonField from '../../ui/form/JsonField'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
     'From Email': data.from?.address,
@@ -80,6 +82,37 @@ const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
         required />
 </>
 
+const WebhookTable = ({ data }: { data: WebhookTemplateData }) => <InfoTable rows={{
+    Method: data.method,
+    Endpoint: data.endpoint,
+    headers: JSON.stringify(data.headers),
+    body: JSON.stringify(data.body),
+}} />
+
+const WebhookForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
+    <SingleSelect.Field
+        form={form}
+        name="data.method"
+        label="Method"
+        options={['DELETE', 'GET', 'PATCH', 'POST', 'PUT']}
+        required />
+    <TextInput.Field
+        form={form}
+        name="data.endpoint"
+        label="Endpoint"
+        required />
+    <JsonField
+        form={form}
+        name="data.headers"
+        label="Headers"
+        textarea />
+    <JsonField
+        form={form}
+        name="data.body"
+        label="Body"
+        textarea />
+</>
+
 interface TemplateDetailProps {
     template: Template
 }
@@ -113,7 +146,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                             email: <EmailTable data={data} />,
                             text: <TextTable data={data} />,
                             push: <PushTable data={data} />,
-                            webhook: <></>,
+                            webhook: <WebhookTable data={data} />,
                         }[type]
                     }
                 </Column>
@@ -141,7 +174,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                                 email: <EmailForm form={form} />,
                                 text: <TextForm form={form} />,
                                 push: <PushForm form={form} />,
-                                webhook: <></>,
+                                webhook: <WebhookForm form={form} />,
                             }[type]
                         }
                     </>}

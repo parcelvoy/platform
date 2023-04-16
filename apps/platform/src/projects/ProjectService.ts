@@ -39,6 +39,7 @@ export const createProject = async (adminId: number, params: ProjectParams) => {
     await createSubscription(project.id, { name: 'Default Email', channel: 'email' })
     await createSubscription(project.id, { name: 'Default SMS', channel: 'text' })
     await createSubscription(project.id, { name: 'Default Push', channel: 'push' })
+    await createSubscription(project.id, { name: 'Default Webhook', channel: 'webhook' })
 
     return project
 }

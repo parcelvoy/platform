@@ -118,7 +118,9 @@ export default function CampaignPreview() {
             recipient,
         })
         setIsSendProofOpen(false)
-        toast.success('Template proof has been successfully sent!')
+        template.type === 'webhook'
+            ? toast.success('Webhook test has been successfully sent!')
+            : toast.success('Template proof has been successfully sent!')
     }
 
     return (
@@ -150,10 +152,15 @@ export default function CampaignPreview() {
                 </Column>
                 <Column>
                     <Heading title="Preview" size="h4" actions={
-                        <Button
-                            size="small"
-                            variant="secondary"
-                            onClick={() => setIsSendProofOpen(true)}>Send Proof</Button>
+                        template.type === 'webhook'
+                            ? <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={async () => await handleSendProof('')}>Test Webhook</Button>
+                            : <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={() => setIsSendProofOpen(true)}>Send Proof</Button>
                     } />
                     <Preview template={{ type: template.type, data }} />
                 </Column>

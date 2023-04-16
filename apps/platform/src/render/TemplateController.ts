@@ -92,6 +92,26 @@ const templateDataPushParams = {
     nullable: true,
 }
 
+const templateDataWebhookParams = {
+    type: 'object',
+    required: ['method', 'endpoint'],
+    properties: {
+        method: { type: 'string' },
+        endpoint: { type: 'string' },
+        body: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
+        headers: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
+    },
+    nullable: true,
+}
+
 const templateCreateParams: JSONSchemaType<TemplateParams> = {
     $id: 'templateCreateParams',
     oneOf: [{
@@ -145,6 +165,24 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
                 type: 'string',
             },
             data: templateDataPushParams as any,
+        },
+        additionalProperties: false,
+    },
+    {
+        type: 'object',
+        required: ['type', 'campaign_id', 'locale'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['webhook'],
+            },
+            campaign_id: {
+                type: 'integer',
+            },
+            locale: {
+                type: 'string',
+            },
+            data: templateDataWebhookParams as any,
         },
         additionalProperties: false,
     }],
@@ -204,9 +242,22 @@ const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
             data: templateDataPushParams as any,
         },
         additionalProperties: false,
+    },
+    {
+        type: 'object',
+        required: ['type', 'data'],
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['webhook'],
+            },
+            data: templateDataWebhookParams as any,
+        },
+        additionalProperties: false,
     }],
 }
 router.patch('/:templateId', async ctx => {
+    console.log(ctx.request.body)
     const payload = validate(templateUpdateParams, ctx.request.body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
 })

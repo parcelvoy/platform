@@ -205,7 +205,7 @@ export default function EmailEditor() {
                 open={false}
                 setIsOpen={() => setIsAddLocaleOpen(false)}
                 campaign={campaign}
-                setCampaign={setCampaign} />
+                onCreate={setCampaign} />
         </>
     )
 }

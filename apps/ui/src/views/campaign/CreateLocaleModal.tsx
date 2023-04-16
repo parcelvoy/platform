@@ -1,17 +1,17 @@
-import { Campaign } from '../../types'
+import { Campaign, LocaleOption } from '../../types'
 import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { languageName } from '../../utils'
 import { UseFormReturn } from 'react-hook-form'
-import { createLocale } from './CampaignDetail'
+import { createLocale, localeOption } from './CampaignDetail'
 import { useState } from 'react'
 
 interface CreateLocaleParams {
     open: boolean
     setIsOpen: (state: boolean) => void
     campaign: Campaign
-    setCampaign: (campaign: Campaign) => void
+    onCreate: (campaign: Campaign, locale: LocaleOption) => void
 }
 
 const LocaleTextField = ({ form }: { form: UseFormReturn<{ locale: string }> }) => {
@@ -35,13 +35,13 @@ const LocaleTextField = ({ form }: { form: UseFormReturn<{ locale: string }> }) 
     </>
 }
 
-export default function CreateLocaleModal({ open, setIsOpen, campaign, setCampaign }: CreateLocaleParams) {
+export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate }: CreateLocaleParams) {
 
     async function handleCreateLocale(locale: string) {
         const template = await createLocale(locale, campaign)
         const newCampaign = { ...campaign }
         newCampaign.templates.push(template)
-        setCampaign(newCampaign)
+        onCreate(newCampaign, localeOption(locale))
         setIsOpen(false)
     }
 
