@@ -28,6 +28,7 @@ export default function FormWrapper<T extends FieldValues>({
     const handleSubmit = form.handleSubmit(async data => {
         setIsLoading(true)
         onSubmit(data, navigate).finally(() => {
+            console.log('saved!', data)
             setIsLoading(false)
         })
     })
@@ -35,6 +36,8 @@ export default function FormWrapper<T extends FieldValues>({
     const handleErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>): string | undefined => {
         const keys = Object.keys(errors)
         if (keys.length === 0) return undefined
+
+        console.log('error 1')
 
         const key = keys[0]
         const error = errors[key]

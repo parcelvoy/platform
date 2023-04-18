@@ -11,6 +11,7 @@ import { RequestError } from '../core/errors'
 import CampaignError from '../campaigns/CampaignError'
 import { loadPushChannel } from '../providers/push'
 import { getUserFromEmail, getUserFromPhone } from '../users/UserRepository'
+import { loadWebhookChannel } from '../providers/webhook'
 
 export const pagedTemplates = async (params: SearchParams, projectId: number) => {
     return await Template.searchParams(
@@ -92,6 +93,13 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
         user.data = { ...variables.user, ...user.data }
         await channel?.send(template, {
             user,
+            event,
+            context,
+        })
+    } else if (template.type === 'webhook') {
+        const channel = await loadWebhookChannel(campaign.provider_id, projectId)
+        await channel?.send(template, {
+            user: User.fromJson({ ...variables.user, data: variables.user }),
             event,
             context,
         })

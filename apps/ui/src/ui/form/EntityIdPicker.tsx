@@ -1,5 +1,5 @@
-import { Combobox, Transition } from '@headlessui/react'
-import { useCallback, useState, Fragment, RefCallback, ReactNode } from 'react'
+import { Combobox } from '@headlessui/react'
+import { useCallback, useState, RefCallback, ReactNode } from 'react'
 import { useResolver } from '../../hooks'
 import { ControlledInputProps, SearchResult } from '../../types'
 import clsx from 'clsx'
@@ -132,45 +132,33 @@ export function EntityIdPicker<T extends { id: number }>({
                     )
                 }
             </div>
-            <div className="select-options-wrapper"
+            <Combobox.Options className="select-options"
                 ref={setPopperElement}
                 style={styles.popper}
                 {...attributes.popper}>
-                <Transition
-                    as={Fragment}
-                    leave="transition-leave"
-                    leaveFrom="transition-leave-from"
-                    leaveTo="transition-leave-to"
-                    enter="transition-enter"
-                    enterFrom="transition-enter-from"
-                    enterTo="transition-enter-to"
-                >
-                    <Combobox.Options className="select-options">
-                        {
-                            result?.results.map((option) => (
-                                <Combobox.Option
-                                    key={option.id}
-                                    value={option}
-                                    className={({ active, disabled, selected }) => clsx(
-                                        'select-option',
-                                        active && 'active',
-                                        disabled && 'disabled',
-                                        selected && 'selected',
-                                    )}
-                                    disabled={!optionEnabled(option)}
-                                >
-                                    <span>
-                                        {displayValue(option)}
-                                    </span>
-                                    <span className="option-icon">
-                                        <CheckIcon aria-hidden="true" />
-                                    </span>
-                                </Combobox.Option>
-                            ))
-                        }
-                    </Combobox.Options>
-                </Transition>
-            </div>
+                {
+                    result?.results.map((option) => (
+                        <Combobox.Option
+                            key={option.id}
+                            value={option}
+                            className={({ active, disabled, selected }) => clsx(
+                                'select-option',
+                                active && 'active',
+                                disabled && 'disabled',
+                                selected && 'selected',
+                            )}
+                            disabled={!optionEnabled(option)}
+                        >
+                            <span>
+                                {displayValue(option)}
+                            </span>
+                            <span className="option-icon">
+                                <CheckIcon aria-hidden="true" />
+                            </span>
+                        </Combobox.Option>
+                    ))
+                }
+            </Combobox.Options>
         </Combobox>
     )
 }
