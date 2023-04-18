@@ -22,19 +22,19 @@ export default class LocalWebhookProvider extends WebhookProvider {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                ...headers
+                Accept: 'application/json',
+                ...headers,
             },
             body: JSON.stringify(body),
         })
-        
+
         let responseBody: any | undefined
         try {
             responseBody = await response.json()
         } catch {
             try {
                 responseBody = await response.text()
-            } catch {}   
+            } catch {}
         }
 
         if (response.ok) {

@@ -101,7 +101,7 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
         await channel?.send(template, {
             user: User.fromJson({ ...variables.user, data: variables.user }),
             event,
-            context
+            context,
         })
     } else {
         throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
