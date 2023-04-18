@@ -5,13 +5,10 @@ import { batch } from '../utilities'
 import Job, { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider, { MetricPeriod, QueueMetric } from './QueueProvider'
-import IORedis, { Redis } from 'ioredis'
+import { DefaultRedis, Redis, RedisConfig } from '../config/redis'
 
-export interface RedisConfig extends QueueTypeConfig {
+export interface RedisQueueConfig extends QueueTypeConfig, RedisConfig {
     driver: 'redis'
-    host: string
-    port: number
-    tls: boolean
 }
 
 export default class RedisQueueProvider implements QueueProvider {
@@ -23,14 +20,9 @@ export default class RedisQueueProvider implements QueueProvider {
     batchSize = 40 as const
     queueName = 'parcelvoy' as const
 
-    constructor(config: RedisConfig, queue: Queue) {
+    constructor(config: RedisQueueConfig, queue: Queue) {
         this.queue = queue
-        this.redis = new IORedis({
-            port: config.port,
-            host: config.host,
-            tls: config.tls
-                ? { rejectUnauthorized: false }
-                : undefined,
+        this.redis = DefaultRedis(config, {
             maxRetriesPerRequest: null,
         })
         this.bull = new BullQueue(this.queueName, {
@@ -89,6 +81,10 @@ export default class RedisQueueProvider implements QueueProvider {
 
         this.worker.on('failed', (job, error) => {
             this.queue.errored(error, job?.data as EncodedJob)
+        })
+
+        this.worker.on('error', error => {
+            this.queue.errored(error)
         })
     }
 

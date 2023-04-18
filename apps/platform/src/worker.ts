@@ -1,10 +1,10 @@
 import { loadWorker } from './config/queue'
-import scheduler from './config/scheduler'
+import scheduler, { Scheduler } from './config/scheduler'
 import Queue from './queue'
 
 export default class Worker {
     worker: Queue
-    scheduler: any
+    scheduler: Scheduler
     constructor(
         public app: import('./app').default,
     ) {
@@ -18,6 +18,6 @@ export default class Worker {
 
     async close() {
         await this.worker.close()
-        await this.scheduler.gracefulShutdown()
+        await this.scheduler.close()
     }
 }

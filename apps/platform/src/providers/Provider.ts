@@ -41,6 +41,7 @@ export default class Provider extends Model {
     group!: ProviderGroup
     data!: Record<string, any>
     is_default!: boolean
+    rate_limit!: number
 
     static jsonAttributes = ['data']
 

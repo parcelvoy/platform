@@ -3,6 +3,7 @@ import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadAuth from './config/auth'
 import loadError, { logger } from './config/logger'
+import loadRateLimit, { RateLimiter } from './config/rateLimit'
 import type { Env } from './config/env'
 import type Queue from './queue'
 import Storage from './storage'
@@ -55,6 +56,7 @@ export default class App {
     uuid = uuid()
     api?: Api
     worker?: Worker
+    rateLimiter: RateLimiter
     #registered: { [key: string | number]: unknown }
 
     // eslint-disable-next-line no-useless-constructor
@@ -67,6 +69,8 @@ export default class App {
         public error: ErrorHandler,
     ) {
         this.#registered = {}
+        this.rateLimiter = loadRateLimit(env.redis)
+        this.unhandledErrorListener()
     }
 
     async start() {
@@ -89,6 +93,7 @@ export default class App {
         await this.worker?.close()
         await this.db.destroy()
         await this.queue.close()
+        await this.rateLimiter.close()
     }
 
     get<T>(key: number | string): T {
@@ -101,5 +106,19 @@ export default class App {
 
     remove(key: number | string) {
         delete this.#registered[key]
+    }
+
+    unhandledErrorListener() {
+        ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM'].forEach((eventType) => {
+            process.on(eventType, async () => {
+                await this.close()
+                process.exit()
+            })
+        })
+        process.on('uncaughtException', async (error) => {
+            logger.error(error, 'uncaught error')
+            await this.close()
+            process.exit()
+        })
     }
 }

@@ -37,7 +37,7 @@ export default class Job implements EncodedJob {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    static async handler(_: any): Promise<any> {
+    static async handler(data: any, raw?: EncodedJob): Promise<any> {
         return Promise.reject(new Error('Handler not defined.'))
     }
 
