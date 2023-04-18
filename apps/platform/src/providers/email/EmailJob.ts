@@ -1,13 +1,13 @@
+import Job from '../../queue/Job'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from '.'
-import { loadSendJob } from '../MessageTriggerService'
+import { loadSendJob, requeueSend, throttleSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
-import SendJob from '../SendJob'
 import { EncodedJob } from '../../queue'
 
-export default class EmailJob extends SendJob {
+export default class EmailJob extends Job {
     static $name = 'email'
 
     static from(data: MessageTrigger): EmailJob {
@@ -29,9 +29,9 @@ export default class EmailJob extends SendJob {
 
         // Check current send rate, if exceeded then requeue job
         // at a time in the future
-        const rateCheck = await this.throttle(channel)
+        const rateCheck = await throttleSend(channel)
         if (rateCheck?.exceeded) {
-            await this.requeue(raw, rateCheck.msRemaining)
+            await requeueSend(raw, rateCheck.msRemaining)
             return
         }
 

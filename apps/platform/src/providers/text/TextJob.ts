@@ -1,13 +1,13 @@
+import Job from '../../queue/Job'
 import { TextTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob } from '../MessageTriggerService'
+import { loadSendJob, requeueSend, throttleSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
-import SendJob from '../SendJob'
 import { EncodedJob } from '../../queue'
 
-export default class TextJob extends SendJob {
+export default class TextJob extends Job {
     static $name = 'text'
 
     static from(data: MessageTrigger): TextJob {
@@ -30,9 +30,9 @@ export default class TextJob extends SendJob {
 
         // Check current send rate, if exceeded then requeue job
         // at a time in the future
-        const rateCheck = await this.throttle(channel)
+        const rateCheck = await throttleSend(channel)
         if (rateCheck?.exceeded) {
-            await this.requeue(raw, rateCheck.msRemaining)
+            await requeueSend(raw, rateCheck.msRemaining)
             return
         }
 
