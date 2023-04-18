@@ -7,10 +7,11 @@ export default class CampaignStateJob extends Job {
 
     static async handler() {
         const campaigns = await Campaign.query()
-            .whereIn('state', ['running', 'finished'])
+            .whereIn('state', ['scheduled', 'running', 'finished'])
         for (const campaign of campaigns) {
             const { sent, pending, total, opens, clicks } = await campaignProgress(campaign)
-            await updateCampaignProgress(campaign.id, campaign.project_id, pending <= 0 ? 'finished' : campaign.state, { sent, total, opens, clicks })
+            const state = pending <= 0 ? 'finished' : sent === 0 ? 'scheduled' : 'running'
+            await updateCampaignProgress(campaign.id, campaign.project_id, state, { sent, total, opens, clicks })
         }
     }
 }

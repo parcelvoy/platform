@@ -4,6 +4,7 @@ import type { QueueConfig } from '../queue/Queue'
 import type { DatabaseConfig } from './database'
 import type { AuthConfig } from '../auth/Auth'
 import type { ErrorConfig } from '../error/ErrorHandler'
+import { RedisConfig } from './redis'
 
 export type Runner = 'api' | 'worker'
 export interface Env {
@@ -16,6 +17,7 @@ export interface Env {
     secret: string
     auth: AuthConfig
     error: ErrorConfig
+    redis: RedisConfig
     tracking: {
         linkWrap: boolean,
         deeplinkMirrorUrl: string | undefined,
@@ -51,6 +53,11 @@ export default (type?: EnvType): Env => {
                 port: parseInt(process.env.DB_PORT!),
                 database: process.env.DB_DATABASE!,
             },
+        },
+        redis: {
+            host: process.env.REDIS_HOST!,
+            port: parseInt(process.env.REDIS_PORT!),
+            tls: process.env.REDIS_TLS === 'true',
         },
         queue: driver<QueueConfig>(process.env.QUEUE_DRIVER, {
             sqs: () => ({

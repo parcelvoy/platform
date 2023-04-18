@@ -1,12 +1,17 @@
+import App from '../app'
 import Campaign from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
+import { RateLimitResponse } from '../config/rateLimit'
 import Project from '../projects/Project'
+import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import { partialMatchLocale } from '../utilities'
+import EmailChannel from './email/EmailChannel'
 import { MessageTrigger } from './MessageTrigger'
+import TextChannel from './text/TextChannel'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -60,4 +65,22 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     }
 
     return { campaign, template: template.map() as T, user, project, event, context }
+}
+
+export const throttleSend = async (channel: EmailChannel | TextChannel): Promise<RateLimitResponse | undefined> => {
+    const provider = channel.provider
+
+    // If no rate limit, just break
+    if (!provider.rate_limit) return
+
+    // Otherwise consume points and check rate
+    return await App.main.rateLimiter.consume(
+        `ratelimit-${provider.id}`,
+        provider.rate_limit,
+    )
+}
+
+export const requeueSend = async (job: EncodedJob, delay: number): Promise<void> => {
+    job.options.delay = delay
+    return App.main.queue.enqueue(job)
 }

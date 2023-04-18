@@ -295,7 +295,7 @@ export interface Campaign {
     updated_at: string
 }
 
-export type CampaignSendState = 'pending' | 'sent' | 'failed'
+export type CampaignSendState = 'pending' | 'throttled' | 'sent' | 'failed'
 
 export type CampaignUpdateParams = Partial<Pick<Campaign, 'name' | 'state' | 'list_ids' | 'exclusion_list_ids' | 'subscription_id' | 'tags'>>
 export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
@@ -411,9 +411,10 @@ export interface Provider {
     type: string
     group: string
     data: any
+    rate_limit: number
 }
 
-export type ProviderCreateParams = Pick<Provider, 'name' | 'data' | 'type' | 'group'>
+export type ProviderCreateParams = Pick<Provider, 'name' | 'data' | 'type' | 'group' | 'rate_limit'>
 export type ProviderUpdateParams = ProviderCreateParams
 export interface ProviderMeta {
     name: string
