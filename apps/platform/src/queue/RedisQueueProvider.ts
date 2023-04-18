@@ -2,7 +2,7 @@ import { MetricsTime, Queue as BullQueue, Worker } from 'bullmq'
 import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
-import Job, { EncodedJob } from './Job'
+import { EncodedJob } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider, { MetricPeriod, QueueMetric } from './QueueProvider'
 import { DefaultRedis, Redis, RedisConfig } from '../config/redis'
@@ -37,7 +37,7 @@ export default class RedisQueueProvider implements QueueProvider {
         })
     }
 
-    async enqueue(job: Job): Promise<void> {
+    async enqueue(job: EncodedJob): Promise<void> {
         try {
             const { name, data, opts } = this.adaptJob(job)
             await this.bull.add(name, data, opts)
@@ -46,13 +46,13 @@ export default class RedisQueueProvider implements QueueProvider {
         }
     }
 
-    async enqueueBatch(jobs: Job[]): Promise<void> {
+    async enqueueBatch(jobs: EncodedJob[]): Promise<void> {
         for (const part of batch(jobs, this.batchSize)) {
             await this.bull.addBulk(part.map(item => this.adaptJob(item)))
         }
     }
 
-    private adaptJob(job: Job) {
+    private adaptJob(job: EncodedJob) {
         return {
             name: job.name,
             data: job,

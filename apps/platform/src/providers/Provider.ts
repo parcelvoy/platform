@@ -29,6 +29,11 @@ export const ProviderSchema = <T extends ExternalProviderParams, D>(id: string, 
                 nullable: true,
             },
             data,
+            rate_limit: {
+                type: 'number',
+                description: 'The per second maximum send rate.',
+                nullable: true,
+            },
         },
         additionalProperties: false,
     } as any

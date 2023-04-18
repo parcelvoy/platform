@@ -14,6 +14,7 @@ import { useRoute } from '../router'
 export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
     const variant: Record<CampaignSendState, TagVariant> = {
         pending: 'info',
+        throttled: 'warn',
         sent: 'success',
         failed: 'error',
     }

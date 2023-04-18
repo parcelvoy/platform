@@ -3,7 +3,7 @@ import Campaign from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
 import { RateLimitResponse } from '../config/rateLimit'
 import Project from '../projects/Project'
-import { EncodedJob, Job } from '../queue'
+import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
 import { User } from '../users/User'
@@ -77,11 +77,10 @@ export const throttleSend = async (channel: EmailChannel | TextChannel): Promise
     return await App.main.rateLimiter.consume(
         `ratelimit-${provider.id}`,
         provider.rate_limit,
-        30000,
     )
 }
 
 export const requeueSend = async (job: EncodedJob, delay: number): Promise<void> => {
     job.options.delay = delay
-    return Job.from(job).queue()
+    return App.main.queue.enqueue(job)
 }

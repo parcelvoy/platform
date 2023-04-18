@@ -31,6 +31,12 @@ export default class EmailJob extends Job {
         // at a time in the future
         const rateCheck = await throttleSend(channel)
         if (rateCheck?.exceeded) {
+
+            // Mark state as throttled so it is not continuously added
+            // to the queue
+            await updateSendState(campaign, user, 'throttled')
+
+            // Schedule the resend for after the throttle finishes
             await requeueSend(raw, rateCheck.msRemaining)
             return
         }

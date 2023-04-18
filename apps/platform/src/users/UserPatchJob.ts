@@ -30,6 +30,9 @@ export default class UserPatchJob extends Job {
             // Check for existing user
             const existing = await getUserFromClientId(project_id, identity)
 
+            // TODO: Utilize phone and email as backup identifiers
+            // to decrease the likelihood of future duplicates
+
             // If user, update otherwise insert
             try {
                 return existing
@@ -43,7 +46,9 @@ export default class UserPatchJob extends Job {
                         ...fields,
                     })
             } catch (error: any) {
-                // If there is an error (such as constraints, retry)
+                // If there is an error (such as constraints,
+                // retry up to three times)
+                if (tries <= 0) throw error
                 return upsert(patch, --tries)
             }
         }

@@ -27,11 +27,11 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
         setMeta(options?.find(item => item.channel === provider?.group && item.type === provider?.type))
     }, [provider])
 
-    async function handleCreate({ name, data = {} }: ProviderCreateParams | ProviderUpdateParams, meta: ProviderMeta) {
+    async function handleCreate({ name, rate_limit, data = {} }: ProviderCreateParams | ProviderUpdateParams, meta: ProviderMeta) {
 
         const value = provider?.id
-            ? await api.providers.update(project.id, provider?.id, { name, data, type: meta.type, group: meta.channel })
-            : await api.providers.create(project.id, { name, data, type: meta.type, group: meta.channel })
+            ? await api.providers.update(project.id, provider?.id, { name, data, type: meta.type, group: meta.channel, rate_limit })
+            : await api.providers.create(project.id, { name, data, type: meta.type, group: meta.channel, rate_limit })
 
         onChange(value)
         props.onClose(false)
@@ -96,6 +96,11 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
                         <h4>Config</h4>
                         <TextInput.Field form={form} name="name" required />
                         <SchemaFields parent="data" schema={meta.schema.properties.data} form={form} />
+                        <TextInput.Field
+                            form={form}
+                            type="number"
+                            name="rate_limit"
+                            subtitle="If you need to cap send rate, enter the maximum per second limit." />
                     </>
                 }
             </FormWrapper>

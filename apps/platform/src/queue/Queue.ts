@@ -41,12 +41,12 @@ export default class Queue {
         return true
     }
 
-    async enqueue(job: Job): Promise<void> {
-        logger.info(job.toJSON(), 'queue:job:enqueued')
+    async enqueue(job: Job | EncodedJob): Promise<void> {
+        logger.info(job instanceof Job ? job.toJSON() : job, 'queue:job:enqueued')
         return await this.provider.enqueue(job)
     }
 
-    async enqueueBatch(jobs: Job[]): Promise<void> {
+    async enqueueBatch(jobs: EncodedJob[]): Promise<void> {
         logger.info({ count: jobs.length }, 'queue:job:enqueuedBatch')
         return await this.provider.enqueueBatch(jobs)
     }

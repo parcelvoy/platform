@@ -12,14 +12,14 @@ export interface UserImport {
 export const importUsers = async ({ project_id, stream, list_id }: UserImport) => {
 
     const parser = stream.file.pipe(parse({ columns: true }))
-
-    for await (const { external_id, email, phone, ...data } of parser) {
+    for await (const { external_id, email, phone, timezone, ...data } of parser) {
         await App.main.queue.enqueue(UserPatchJob.from({
             project_id,
             user: {
                 external_id,
                 email,
-                phone,
+                phone: cleanNulls(timezone),
+                timezone: cleanNulls(timezone),
                 data,
             },
             options: {
@@ -27,4 +27,10 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
             },
         }))
     }
+}
+
+const cleanNulls = (value?: string, emptyIsNull = true) => {
+    if (value === 'NULL' || value == null) return undefined
+    if (value === '' && emptyIsNull) return undefined
+    return value
 }

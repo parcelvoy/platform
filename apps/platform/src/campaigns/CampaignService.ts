@@ -203,14 +203,24 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
     const userId = user instanceof User ? user.id : user
     const campaignId = campaign instanceof Campaign ? campaign.id : campaign
 
-    return await CampaignSend.query()
-        .insert({
-            user_id: userId,
-            campaign_id: campaignId,
-            state,
-        })
-        .onConflict(['user_id', 'list_id'])
-        .merge(['state'])
+    // Update send state
+    const records = await CampaignSend.update(
+        qb => qb.where('user_id', userId)
+            .where('campaign_id', campaignId),
+        { state },
+    )
+
+    // If no records were updated then try and create missing record
+    if (records <= 0) {
+        await CampaignSend.query()
+            .insert({
+                user_id: userId,
+                campaign_id: campaignId,
+                state,
+            })
+            .onConflict(['user_id', 'list_id'])
+            .merge(['state'])
+    }
 }
 
 export const generateSendList = async (campaign: SentCampaign) => {
@@ -345,7 +355,7 @@ const totalUsersCount = async (listIds: number[], exclusionListIds: number[]): P
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
         .where('campaign_id', campaign.id)
-        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state IN('pending', 'throttled'), 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
         .first()
     return {
         sent: parseInt(progress.sent ?? 0),
