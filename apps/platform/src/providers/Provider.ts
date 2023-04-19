@@ -81,7 +81,7 @@ export default class Provider extends Model {
 
     get setup(): ProviderSetupMeta[] { return [] }
 
-    static schema: JSONSchemaType<any> = ProviderSchema('providerParams', {
+    static schema: any = ProviderSchema('providerParams', {
         type: 'object',
         nullable: true,
         additionalProperties: true,

@@ -1,8 +1,8 @@
 import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { SearchParams } from '../core/searchParams'
-import { validate } from '../core/validate'
-import Provider, { ProviderControllers, ProviderGroup, ProviderMeta } from './Provider'
+import { JSONSchemaType, validate } from '../core/validate'
+import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
 import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
 
 export const allProviders = async (projectId: number) => {
@@ -51,9 +51,9 @@ export const createController = (group: ProviderGroup, type: typeof Provider): R
     // console.log('create controller', )
 
     router.post('/', async ctx => {
-        const payload = validate(type.schema, ctx.request.body)
+        const payload = validate(type.schema as JSONSchemaType<ProviderParams>, ctx.request.body)
 
-        ctx.body = await createProvider(ctx.state.project.id, { ...payload, type, group })
+        ctx.body = await createProvider(ctx.state.project.id, { ...payload, type: type.namespace, group })
     })
 
     router.param('providerId', async (value, ctx, next) => {
@@ -73,7 +73,7 @@ export const createController = (group: ProviderGroup, type: typeof Provider): R
     })
 
     router.patch('/:providerId', async ctx => {
-        const payload = validate(type.schema, ctx.request.body)
+        const payload = validate(type.schema as JSONSchemaType<ProviderParams>, ctx.request.body)
         ctx.body = updateProvider(ctx.state.provider!.id, payload)
     })
 
