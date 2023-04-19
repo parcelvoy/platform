@@ -62,7 +62,7 @@ export default class MailgunEmailProvider extends EmailProvider {
     }
 
     static controllers(): ProviderControllers {
-        const admin = createController('email', this.namespace, this.schema)
+        const admin = createController('email', this)
 
         const router = new Router<{ provider: Provider }>()
         router.post(`/${this.namespace}`, async ctx => {

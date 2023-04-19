@@ -31,6 +31,6 @@ export default class LoggerPushProvider extends PushProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('email', 'push', this.schema) }
+        return { admin: createController('push', this) }
     }
 }

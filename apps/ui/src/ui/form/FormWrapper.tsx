@@ -28,7 +28,6 @@ export default function FormWrapper<T extends FieldValues>({
     const handleSubmit = form.handleSubmit(async data => {
         setIsLoading(true)
         onSubmit(data, navigate).finally(() => {
-            console.log('saved!', data)
             setIsLoading(false)
         })
     })
@@ -36,8 +35,6 @@ export default function FormWrapper<T extends FieldValues>({
     const handleErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>): string | undefined => {
         const keys = Object.keys(errors)
         if (keys.length === 0) return undefined
-
-        console.log('error 1')
 
         const key = keys[0]
         const error = errors[key]
@@ -55,7 +52,7 @@ export default function FormWrapper<T extends FieldValues>({
         return 'Unable to submit the form an unknown error has occurred'
     }
 
-    const { errors } = form.formState
+    const { errors, isDirty, isValid } = form.formState
     const error = handleErrors(errors)
 
     return (
@@ -64,7 +61,10 @@ export default function FormWrapper<T extends FieldValues>({
                 {error && <Alert variant="error" title="Error">{error}</Alert>}
                 {children(form)}
                 <label className="form-submit">
-                    <Button type="submit" isLoading={isLoading}>
+                    <Button
+                        type="submit"
+                        isLoading={isLoading}
+                        disabled={!isDirty || !isValid}>
                         {submitLabel}
                     </Button>
                 </label>

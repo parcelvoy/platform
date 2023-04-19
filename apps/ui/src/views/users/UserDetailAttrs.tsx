@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { UserContext } from '../../contexts'
-import { JsonViewer } from '@textea/json-viewer'
 import Heading from '../../ui/Heading'
+import JsonPreview from '../../ui/JsonPreview'
 
 export default function UserDetail() {
 
@@ -10,7 +10,7 @@ export default function UserDetail() {
     return <>
         <Heading size="h3" title="Details" />
         <section className="container">
-            <JsonViewer value={{ external_id, email, phone, ...data }} rootName={false} />
+            <JsonPreview value={{ external_id, email, phone, ...data }} />
         </section>
     </>
 }

@@ -38,7 +38,9 @@
 }
 
 .ui-button:disabled {
-    cursor: default;
+    cursor: not-allowed;
+    opacity: 0.5 !important;
+    color: var(--color-grey-hard);
 }
 
 .ui-button:disabled:hover {

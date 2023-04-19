@@ -12,18 +12,14 @@ export default abstract class EmailProvider extends Provider {
     boot?(): void
 
     async send(message: Email): Promise<any> {
-        try {
-            const list = this.unsubscribe
-                ? { unsubscribe: [this.unsubscribe] }
-                : undefined
+        const list = this.unsubscribe
+            ? { unsubscribe: [this.unsubscribe] }
+            : undefined
 
-            return await this.transport?.sendMail({
-                ...message,
-                list,
-            })
-        } catch (err) {
-            console.log(err)
-        }
+        return await this.transport?.sendMail({
+            ...message,
+            list,
+        })
     }
 
     async verify(): Promise<boolean> {

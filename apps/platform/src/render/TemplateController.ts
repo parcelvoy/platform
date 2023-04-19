@@ -257,7 +257,6 @@ const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
     }],
 }
 router.patch('/:templateId', async ctx => {
-    console.log(ctx.request.body)
     const payload = validate(templateUpdateParams, ctx.request.body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
 })

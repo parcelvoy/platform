@@ -135,6 +135,6 @@ export default class LocalPushProvider extends PushProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('push', this.namespace, this.schema) }
+        return { admin: createController('push', this) }
     }
 }

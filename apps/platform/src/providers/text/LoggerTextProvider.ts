@@ -40,6 +40,6 @@ export default class LoggerTextProvider extends TextProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('text', this.namespace, this.schema) }
+        return { admin: createController('text', this) }
     }
 }

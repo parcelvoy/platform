@@ -27,9 +27,9 @@ export const getProjectAdmin = async (projectId: number, adminId: number) => {
 }
 
 export const addAdminToProject = async (projectId: number, adminId: number, role: ProjectRole) => {
-    const admin = await getProjectAdmin(adminId, projectId)
+    const admin = await getProjectAdmin(projectId, adminId)
     if (admin) {
-        return await ProjectAdmin.update(q => q.where('id', admin.id), { role })
+        return await ProjectAdmin.updateAndFetch(adminId, { role })
     }
     return await ProjectAdmin.insert({
         admin_id: adminId,

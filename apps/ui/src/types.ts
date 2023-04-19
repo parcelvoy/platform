@@ -412,6 +412,7 @@ export interface Provider {
     group: string
     data: any
     rate_limit: number
+    setup: ProviderSetupMeta[]
 }
 
 export type ProviderCreateParams = Pick<Provider, 'name' | 'data' | 'type' | 'group' | 'rate_limit'>
@@ -422,9 +423,14 @@ export interface ProviderMeta {
     url?: string
     icon?: string
     type: string
-    channel: string
+    group: string
     schema: any
     paths?: Record<string, string>
+}
+
+export interface ProviderSetupMeta {
+    name: string
+    value: string
 }
 
 export interface Image {
