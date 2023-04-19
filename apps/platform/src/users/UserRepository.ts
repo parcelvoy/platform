@@ -2,6 +2,7 @@ import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { SearchParams } from '../core/searchParams'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
+import { uuid } from '../utilities'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -75,7 +76,7 @@ export const aliasUser = async (projectId: number, {
 export const createUser = async (projectId: number, { external_id, anonymous_id, data, ...fields }: UserParams) => {
     const user = await User.insertAndFetch({
         project_id: projectId,
-        anonymous_id,
+        anonymous_id: anonymous_id ?? uuid(),
         external_id,
         data: data ?? {},
         ...fields,
