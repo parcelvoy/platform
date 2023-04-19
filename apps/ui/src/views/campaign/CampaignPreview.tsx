@@ -34,11 +34,17 @@ const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
         size="regular">
         <div className="user-lookup">
             <ButtonGroup>
-                <TextInput<string> name="search" placeholder="Enter email..." onChange={setValue} />
-                <Button onClick={() => state.setParams({
-                    ...state.params,
-                    q: value,
-                })}>Search</Button>
+                <TextInput<string>
+                    name="search"
+                    placeholder="Enter email..."
+                    hideLabel={true}
+                    onChange={setValue} />
+                <Button
+                    variant="secondary"
+                    onClick={() => state.setParams({
+                        ...state.params,
+                        q: value,
+                    })}>Search</Button>
             </ButtonGroup>
             <SearchTable
                 {...state}

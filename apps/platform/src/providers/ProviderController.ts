@@ -19,22 +19,18 @@ const publicRouter = new Router({
     prefix: '/providers/:hash',
 })
 publicRouter.param('hash', async (value, ctx, next) => {
-    try {
-        const providerId = decodeHashid(value)
-        if (!providerId) {
-            ctx.throw(404)
-            return
-        }
-
-        ctx.state.provider = await getProvider(providerId)
-        if (!ctx.state.provider) {
-            ctx.throw(404)
-            return
-        }
-        return await next()
-    } catch {
+    const providerId = decodeHashid(value)
+    if (!providerId) {
         ctx.throw(404)
+        return
     }
+
+    ctx.state.provider = await getProvider(providerId)
+    if (!ctx.state.provider) {
+        ctx.throw(404)
+        return
+    }
+    return await next()
 })
 
 const providers: ProviderMeta[] = []

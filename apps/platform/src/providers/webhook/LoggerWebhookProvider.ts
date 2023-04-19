@@ -32,6 +32,6 @@ export default class LoggerWebhookProvider extends WebhookProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('webhook', this.namespace, this.schema) }
+        return { admin: createController('webhook', this) }
     }
 }

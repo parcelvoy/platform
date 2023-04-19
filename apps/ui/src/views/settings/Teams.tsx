@@ -18,7 +18,7 @@ export default function Teams() {
     const admin = useContext(AdminContext)
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.projectAdmins.search(project.id, params), [project]))
-    const [editing, setEditing] = useState<null | EditFormData>(null)
+    const [editing, setEditing] = useState<null | Partial<EditFormData>>(null)
     const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, page: 0, itemsPerPage: 100 }), [])
 
     return (
@@ -31,7 +31,7 @@ export default function Teams() {
                         icon={<PlusIcon />}
                         size="small"
                         onClick={() => setEditing({
-                            admin_id: 0,
+                            admin_id: undefined,
                             role: 'support',
                         })}
                     >

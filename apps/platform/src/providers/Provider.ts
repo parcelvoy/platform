@@ -11,7 +11,11 @@ export interface ProviderMeta {
     type: string
     channel: string
     schema?: any
-    paths?: Record<string, string>
+}
+
+export interface ProviderSetupMeta {
+    name: string
+    value: string | number
 }
 
 export const ProviderSchema = <T extends ExternalProviderParams, D>(id: string, data: JSONSchemaType<D>): JSONSchemaType<T> => {
@@ -49,13 +53,13 @@ export default class Provider extends Model {
     rate_limit!: number
 
     static jsonAttributes = ['data']
+    static virtualAttributes = ['setup']
 
     static namespace = this.name
     static meta: Omit<ProviderMeta, 'channel' | 'type'> = {
         name: '',
         description: '',
         url: '',
-        paths: {},
     }
 
     static get cacheKey() {
@@ -75,7 +79,9 @@ export default class Provider extends Model {
         Object.assign(this, this.data)
     }
 
-    static schema: any = ProviderSchema('providerParams', {
+    get setup(): ProviderSetupMeta[] { return [] }
+
+    static schema: JSONSchemaType<any> = ProviderSchema('providerParams', {
         type: 'object',
         nullable: true,
         additionalProperties: true,

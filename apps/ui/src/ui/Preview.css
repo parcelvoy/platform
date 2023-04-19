@@ -145,5 +145,6 @@
 }
 
 .webhook-frame {
-    padding: 20px 10px;
+    padding: 20px;
+    width: 100%;
 }

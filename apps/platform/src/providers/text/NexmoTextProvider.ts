@@ -89,7 +89,7 @@ export default class NexmoTextProvider extends TextProvider {
     }
 
     static controllers(): ProviderControllers {
-        const admin = createController('text', this.namespace, this.schema)
+        const admin = createController('text', this)
         return { admin, public: this.unsubscribe(this.namespace) }
     }
 }

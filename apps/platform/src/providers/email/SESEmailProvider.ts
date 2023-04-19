@@ -3,9 +3,9 @@ import aws = require('@aws-sdk/client-ses')
 import { AWSConfig } from '../../core/aws'
 import EmailProvider from './EmailProvider'
 import Router = require('@koa/router')
-import Provider, { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
+import Provider, { ExternalProviderParams, ProviderSetupMeta, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
-import { decodeHashid, secondsAgo } from '../../utilities'
+import { decodeHashid, encodeHashid, secondsAgo } from '../../utilities'
 import { getUserFromEmail } from '../../users/UserRepository'
 import { RequestError } from '../../core/errors'
 import { getCampaign } from '../../campaigns/CampaignService'
@@ -59,6 +59,14 @@ export default class SESEmailProvider extends EmailProvider {
         additionalProperties: false,
     })
 
+    get setup(): ProviderSetupMeta[] {
+        const root = process.env.API_BASE_URL
+        return [{
+            name: 'Feedback URL',
+            value: `${root}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
+        }]
+    }
+
     boot() {
         const ses = new aws.SES({
             region: this.config.region,
@@ -73,13 +81,18 @@ export default class SESEmailProvider extends EmailProvider {
     }
 
     static controllers(): ProviderControllers {
-        const admin = createController('email', this.namespace, this.schema)
+
+        const admin = createController('email', this)
 
         const router = new Router<{ provider: Provider }>()
         router.post(`/${this.namespace}`, async ctx => {
-            const { Type, Message, SubscribeURL, Timestamp } = ctx.request.body
+            const body = ctx.get('Content-Type').includes('plain')
+                ? JSON.parse(ctx.request.body)
+                : ctx.request.body
+
+            const { Type, Message, SubscribeURL, Timestamp } = body
             const timestamp = Date.parse(Timestamp)
-            if (!Type || secondsAgo(timestamp) > 30) throw new RequestError('Unsupported SES Body')
+            if (!Type || secondsAgo(timestamp) > 300) throw new RequestError('Unsupported SES Body')
 
             ctx.status = 204
 

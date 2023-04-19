@@ -15,7 +15,6 @@ export interface LoggerAuthConfig extends AuthTypeConfig {
 export default class LoggerAuthProvider extends AuthProvider {
 
     async start(ctx: Context) {
-        console.log('body', ctx.request.body)
         const { email } = ctx.request.body
         if (!email) throw new Error()
 

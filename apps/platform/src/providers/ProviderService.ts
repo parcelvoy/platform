@@ -1,9 +1,9 @@
 import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { SearchParams } from '../core/searchParams'
-import { JSONSchemaType, validate } from '../core/validate'
-import Provider, { ExternalProviderParams, ProviderControllers, ProviderGroup, ProviderMeta } from './Provider'
-import { createProvider, getProvider, updateProvider } from './ProviderRepository'
+import { validate } from '../core/validate'
+import Provider, { ProviderControllers, ProviderGroup, ProviderMeta } from './Provider'
+import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
 
 export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
@@ -17,7 +17,7 @@ export const pagedProviders = async (params: SearchParams, projectId: number) =>
     )
 }
 
-export const loadControllers = <T extends Record<string, any>>(typeMap: T, channel: string) => {
+export const loadControllers = <T extends Record<string, any>>(typeMap: T, group: string) => {
     return async (routers: ProviderControllers, providers: ProviderMeta[]) => {
         for (const type of Object.values(typeMap)) {
             const { admin, public: publicRouter }: ProviderControllers = type.controllers()
@@ -34,28 +34,33 @@ export const loadControllers = <T extends Record<string, any>>(typeMap: T, chann
             providers.push({
                 ...type.meta,
                 type: type.namespace,
-                channel,
+                group,
                 schema: type.schema,
             })
         }
     }
 }
 
-export const createController = <T extends ExternalProviderParams>(group: ProviderGroup, type: string, schema: JSONSchemaType<T>): Router => {
+export const createController = (group: ProviderGroup, type: typeof Provider): Router => {
     const router = new Router<
         ProjectState & { provider?: Provider }
     >({
-        prefix: `/${group}/${type}`,
+        prefix: `/:group/${type.namespace}`,
     })
 
+    // console.log('create controller', )
+
     router.post('/', async ctx => {
-        const payload = validate(schema, ctx.request.body)
+        const payload = validate(type.schema, ctx.request.body)
 
         ctx.body = await createProvider(ctx.state.project.id, { ...payload, type, group })
     })
 
     router.param('providerId', async (value, ctx, next) => {
-        ctx.state.provider = await getProvider(parseInt(value, 10), ctx.state.project.id)
+        const map = (record: any) => {
+            return type.fromJson(record)
+        }
+        ctx.state.provider = await loadProvider(parseInt(value, 10), map, ctx.state.project.id)
         if (!ctx.state.provider) {
             ctx.throw(404)
             return
@@ -68,7 +73,7 @@ export const createController = <T extends ExternalProviderParams>(group: Provid
     })
 
     router.patch('/:providerId', async ctx => {
-        const payload = validate(schema, ctx.request.body)
+        const payload = validate(type.schema, ctx.request.body)
         ctx.body = updateProvider(ctx.state.provider!.id, payload)
     })
 
