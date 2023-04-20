@@ -1,7 +1,7 @@
 import { FileStream } from '../storage/FileStream'
 import { parse } from 'csv-parse'
 import UserPatchJob from './UserPatchJob'
-import App from '../app'
+import ListStatsJob from '../lists/ListStatsJob'
 
 export interface UserImport {
     project_id: number
@@ -11,26 +11,43 @@ export interface UserImport {
 
 export const importUsers = async ({ project_id, stream, list_id }: UserImport) => {
 
-    const parser = stream.file.pipe(parse({ columns: true }))
-    for await (const { external_id, email, phone, timezone, ...data } of parser) {
-        await App.main.queue.enqueue(UserPatchJob.from({
+    const parser = stream.file.pipe(parse({ columns: true, cast: true }))
+    for await (const row of parser) {
+        const { external_id, email, phone, timezone, ...data } = cleanRow(row)
+        await UserPatchJob.from({
             project_id,
             user: {
                 external_id,
                 email,
-                phone: cleanNulls(timezone),
-                timezone: cleanNulls(timezone),
+                phone,
+                timezone,
                 data,
             },
             options: {
                 join_list_id: list_id,
             },
-        }))
+        }).queue()
+    }
+
+    // Generate preliminary list count
+    if (list_id) {
+        await ListStatsJob.from(list_id, project_id).queue()
     }
 }
 
-const cleanNulls = (value?: string, emptyIsNull = true) => {
-    if (value === 'NULL' || value == null) return undefined
-    if (value === '' && emptyIsNull) return undefined
+const cleanRow = (row: Record<string, any>): Record<string, any> => {
+    return Object.keys(row).reduce((acc, curr) => {
+        acc[curr] = cleanCell(row[curr])
+        return acc
+    }, {} as Record<string, any>)
+}
+
+const cleanCell = (value: any) => {
+    if (typeof value === 'string') {
+        if (value.toLowerCase() === 'false') return false
+        if (value.toLowerCase() === 'true') return true
+        if (value === 'NULL' || value == null) return undefined
+        if (value === '') return undefined
+    }
     return value
 }
