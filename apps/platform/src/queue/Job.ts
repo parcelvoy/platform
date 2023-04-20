@@ -53,6 +53,11 @@ export default class Job implements EncodedJob {
         this.data = data
     }
 
+    delay(seconds: number) {
+        this.options.delay = seconds
+        return this
+    }
+
     toJSON() {
         return {
             name: this.name,

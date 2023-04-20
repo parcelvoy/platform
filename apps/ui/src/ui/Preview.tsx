@@ -12,10 +12,10 @@ export default function Preview({ template }: PreviewProps) {
     const { data, type } = template
 
     const EmailFrame = () => <div className="email-frame">
-        <div className="email-frame-header">
-            <span className="email-from">{data.from.name} &lt;{data.from.address}&gt;</span>
+        {data.from?.address && <div className="email-frame-header">
+            <span className="email-from">{data.from?.name} &lt;{data.from?.address}&gt;</span>
             <span className="email-subject">{data.subject}</span>
-        </div>
+        </div>}
         <Iframe content={data.html ?? ''} />
     </div>
 

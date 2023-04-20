@@ -45,7 +45,10 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
                     cell: ({ item: { state } }) => ListTag({ state }),
                     sortable: true,
                 },
-                { key: 'users_count' },
+                {
+                    key: 'users_count',
+                    cell: ({ item }) => item.users_count?.toLocaleString(),
+                },
                 { key: 'created_at', sortable: true },
                 { key: 'updated_at', sortable: true },
             ]}
