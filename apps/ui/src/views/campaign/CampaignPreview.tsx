@@ -38,6 +38,7 @@ const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
                     name="search"
                     placeholder="Enter email..."
                     hideLabel={true}
+                    value={value}
                     onChange={setValue} />
                 <Button
                     variant="secondary"
