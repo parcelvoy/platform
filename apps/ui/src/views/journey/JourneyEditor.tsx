@@ -332,7 +332,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
     }, {})
 }
 
-function cloneNodes(nodes: Node[], edges: Edge[], targets: Node[]) {
+function cloneNodes(edges: Edge[], targets: Node[]) {
     const mapping: { [prev: string]: string } = {}
     const nodeCopies: Node[] = []
     for (const node of targets) {
@@ -340,6 +340,10 @@ function cloneNodes(nodes: Node[], edges: Edge[], targets: Node[]) {
         mapping[node.id] = id
         nodeCopies.push({
             ...node,
+            data: {
+                ...node.data ?? {},
+                name: node.data.name ? node.data.name + ' (Copy)' : undefined,
+            },
             id,
             position: {
                 x: node.position.x + 50,
@@ -347,17 +351,18 @@ function cloneNodes(nodes: Node[], edges: Edge[], targets: Node[]) {
             },
         })
     }
-    const edgeCopies: Edge[] = nodeCopies
-        .flatMap(node => getConnectedEdges(nodes, edges)
-            .filter(edge => edge.source in mapping && edge.target in mapping)
-            .map((edge, index) => createEdge({
-                sourceId: mapping[edge.source],
-                targetId: mapping[edge.target],
-                index,
-                data: edge.data ?? {},
-                stepType: getStepType(node.data.type),
-            })),
-        )
+    const edgeCopies = getConnectedEdges(targets, edges)
+        .filter(edge => edge.source in mapping && edge.target in mapping)
+        .map((edge, index) => createEdge({
+            sourceId: mapping[edge.source],
+            targetId: mapping[edge.target],
+            index,
+            data: edge.data ?? {},
+            stepType: targets
+                .filter(n => n.id === edge.source)
+                .map(n => getStepType(n.data.type))
+                .at(0)!,
+        }))
     return { nodeCopies, edgeCopies }
 }
 
@@ -552,7 +557,7 @@ export default function JourneyEditor() {
                                         <Button
                                             icon={<CopyIcon />}
                                             onClick={() => {
-                                                const { nodeCopies, edgeCopies } = cloneNodes(nodes, edges, selected)
+                                                const { nodeCopies, edgeCopies } = cloneNodes(edges, selected)
                                                 setNodes([...nodes.map(n => ({ ...n, selected: false })), ...nodeCopies])
                                                 setEdges([...edges.map(e => ({ ...e, selected: false })), ...edgeCopies])
                                             }}

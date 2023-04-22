@@ -92,16 +92,32 @@
     fill: var(--color-red-soft);
 }
 
+.journey-minimap.entrance.selected {
+    fill: var(--color-red);
+}
+
 .journey-minimap.delay {
     fill: var(--color-yellow-soft);
+}
+
+.journey-minimap.delay.selected {
+    fill: var(--color-yellow);
 }
 
 .journey-minimap.action {
     fill: var(--color-blue-soft);
 }
 
+.journey-minimap.action.selected {
+    fill: var(--color-blue);
+}
+
 .journey-minimap.flow {
     fill: var(--color-green-soft);
+}
+
+.journey-minimap.flow.selected {
+    fill: var(--color-green);
 }
 
 .journey .react-flow__minimap {
@@ -110,7 +126,7 @@
 
 .journey .react-flow__minimap-mask {
     fill: var(--color-background);
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .component-title {
