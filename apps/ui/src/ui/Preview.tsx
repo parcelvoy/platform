@@ -1,3 +1,4 @@
+import { JsonViewer } from '@textea/json-viewer'
 import { format } from 'date-fns'
 import { Template } from '../types'
 import Iframe from './Iframe'
@@ -11,10 +12,10 @@ export default function Preview({ template }: PreviewProps) {
     const { data, type } = template
 
     const EmailFrame = () => <div className="email-frame">
-        <div className="email-frame-header">
-            <span className="email-from">{data.from.name} &lt;{data.from.address}&gt;</span>
+        {data.from?.address && <div className="email-frame-header">
+            <span className="email-from">{data.from?.name} &lt;{data.from?.address}&gt;</span>
             <span className="email-subject">{data.subject}</span>
-        </div>
+        </div>}
         <Iframe content={data.html ?? ''} />
     </div>
 
@@ -39,6 +40,12 @@ export default function Preview({ template }: PreviewProps) {
         </div>
     </div>
 
+    const WebhookFrame = () => (
+        <div className="webhook-frame">
+            <JsonViewer value={data} rootName={false} />
+        </div>
+    )
+
     return (
         <section className="preview">
             {
@@ -46,7 +53,7 @@ export default function Preview({ template }: PreviewProps) {
                     email: <EmailFrame />,
                     text: <TextFrame />,
                     push: <PushFrame />,
-                    webhook: <></>,
+                    webhook: <WebhookFrame />,
                 }[type]
             }
         </section>

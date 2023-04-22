@@ -9,7 +9,7 @@ import Model from '../core/Model'
 import { sleep, randomInt } from '../utilities'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 
-export default async (app: App) => {
+export default (app: App) => {
     const scheduler = new Scheduler(app)
     scheduler.schedule({
         rule: '* * * * *',
@@ -43,7 +43,7 @@ interface Schedule {
     lockLength?: number
 }
 
-class Scheduler {
+export class Scheduler {
     app: App
     constructor(app: App) {
         this.app = app
@@ -60,6 +60,10 @@ class Scheduler {
                 callback()
             }
         })
+    }
+
+    async close() {
+        return await nodeScheduler.gracefulShutdown()
     }
 }
 

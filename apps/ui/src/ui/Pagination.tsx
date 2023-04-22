@@ -73,7 +73,7 @@ export default function Pagination({
         return <button
             onClick={() => onChangePage(currPage)}
             className={`pagination-button ${currPage === page ? 'selected' : ''}`} key={index}>
-            {index}
+            {index.toLocaleString()}
         </button>
     }
 

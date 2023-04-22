@@ -34,11 +34,18 @@ const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
         size="regular">
         <div className="user-lookup">
             <ButtonGroup>
-                <TextInput<string> name="search" placeholder="Enter email..." onChange={setValue} />
-                <Button onClick={() => state.setParams({
-                    ...state.params,
-                    q: value,
-                })}>Search</Button>
+                <TextInput<string>
+                    name="search"
+                    placeholder="Enter email..."
+                    hideLabel={true}
+                    value={value}
+                    onChange={setValue} />
+                <Button
+                    variant="secondary"
+                    onClick={() => state.setParams({
+                        ...state.params,
+                        q: value,
+                    })}>Search</Button>
             </ButtonGroup>
             <SearchTable
                 {...state}
@@ -118,7 +125,9 @@ export default function CampaignPreview() {
             recipient,
         })
         setIsSendProofOpen(false)
-        toast.success('Template proof has been successfully sent!')
+        template.type === 'webhook'
+            ? toast.success('Webhook test has been successfully sent!')
+            : toast.success('Template proof has been successfully sent!')
     }
 
     return (
@@ -150,10 +159,15 @@ export default function CampaignPreview() {
                 </Column>
                 <Column>
                     <Heading title="Preview" size="h4" actions={
-                        <Button
-                            size="small"
-                            variant="secondary"
-                            onClick={() => setIsSendProofOpen(true)}>Send Proof</Button>
+                        template.type === 'webhook'
+                            ? <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={async () => await handleSendProof('')}>Test Webhook</Button>
+                            : <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={() => setIsSendProofOpen(true)}>Send Proof</Button>
                     } />
                     <Preview template={{ type: template.type, data }} />
                 </Column>

@@ -46,7 +46,7 @@ export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'screensh
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
 
-export type CampaignSendState = 'pending' | 'sent' | 'failed' | 'bounced' | 'aborted'
+export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number

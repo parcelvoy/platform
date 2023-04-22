@@ -1,5 +1,5 @@
 import Queue from './Queue'
-import Job from './Job'
+import { EncodedJob } from './Job'
 
 export type QueueProviderName = 'sqs' | 'redis' | 'memory' | 'logger'
 
@@ -24,8 +24,8 @@ export enum MetricPeriod {
 export default interface QueueProvider {
     queue: Queue
     batchSize: number
-    enqueue(job: Job): Promise<void>
-    enqueueBatch(jobs: Job[]): Promise<void>
+    enqueue(job: EncodedJob): Promise<void>
+    enqueueBatch(jobs: EncodedJob[]): Promise<void>
     start(): void
     close(): void
     metrics?(period: MetricPeriod): Promise<QueueMetric>

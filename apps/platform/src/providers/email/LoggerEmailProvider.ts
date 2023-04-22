@@ -31,6 +31,6 @@ export default class LoggerEmailProvider extends EmailProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('email', this.namespace, this.schema) }
+        return { admin: createController('email', this) }
     }
 }

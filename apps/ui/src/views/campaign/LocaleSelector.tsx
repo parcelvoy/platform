@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LocaleContext } from '../../contexts'
-import { Campaign, UseStateContext } from '../../types'
+import { Campaign, LocaleOption, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
@@ -19,8 +19,10 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
     const navigate = useNavigate()
     const [{ currentLocale, allLocales }, setLocale] = useContext(LocaleContext)
 
-    const handleCampaignCreate = (campaign: Campaign) => {
+    const handleTemplateCreate = (campaign: Campaign, locale: LocaleOption) => {
         setCampaign(campaign)
+        setLocale({ currentLocale: locale, allLocales })
+
         if (campaign.templates.length === 1 && campaign.channel === 'email') {
             navigate('../editor')
         }
@@ -54,7 +56,7 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
             open={open}
             setIsOpen={setOpen}
             campaign={campaign}
-            setCampaign={handleCampaignCreate}
+            onCreate={handleTemplateCreate}
         />
     </>
 }

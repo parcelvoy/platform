@@ -2,6 +2,7 @@ import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { SearchParams } from '../core/searchParams'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
+import { uuid } from '../utilities'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -60,13 +61,22 @@ export const aliasUser = async (projectId: number, {
     } as ClientIdentity)
 
     if (!previous) return
+
+    // Look up if there is a separate profile with the new ID
+    // If there is one, the client is not aliasing properly
+    // and is creating duplicates, just break
+    const current = await getUserFromClientId(projectId, {
+        external_id,
+    } as ClientIdentity)
+    if (current) return
+
     return await User.updateAndFetch(previous.id, { external_id })
 }
 
 export const createUser = async (projectId: number, { external_id, anonymous_id, data, ...fields }: UserParams) => {
     const user = await User.insertAndFetch({
         project_id: projectId,
-        anonymous_id,
+        anonymous_id: anonymous_id ?? uuid(),
         external_id,
         data: data ?? {},
         ...fields,

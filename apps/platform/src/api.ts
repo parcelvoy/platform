@@ -21,6 +21,7 @@ export default class Api extends Koa {
                 if (error instanceof RequestError) {
                     ctx.status = error.statusCode ?? 400
                     ctx.body = error
+                    return
                 } else {
                     ctx.status = 400
                     ctx.body = process.env.NODE_ENV === 'production'

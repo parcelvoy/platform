@@ -5,10 +5,10 @@ import { LoggerConfig } from '../providers/LoggerProvider'
 import Job, { EncodedJob } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { MetricPeriod, QueueMetric, QueueProviderName } from './QueueProvider'
-import RedisQueueProvider, { RedisConfig } from './RedisQueueProvider'
+import RedisQueueProvider, { RedisQueueConfig } from './RedisQueueProvider'
 import SQSQueueProvider, { SQSConfig } from './SQSQueueProvider'
 
-export type QueueConfig = SQSConfig | RedisConfig | MemoryConfig | LoggerConfig
+export type QueueConfig = SQSConfig | RedisQueueConfig | MemoryConfig | LoggerConfig
 
 export interface QueueTypeConfig extends DriverConfig {
     driver: QueueProviderName
@@ -16,7 +16,7 @@ export interface QueueTypeConfig extends DriverConfig {
 
 export default class Queue {
     provider: QueueProvider
-    jobs: Record<string, (data: any) => Promise<any>> = {}
+    jobs: Record<string, (data: any, raw?: EncodedJob) => Promise<any>> = {}
 
     constructor(config?: QueueConfig) {
         if (config?.driver === 'sqs') {
@@ -33,7 +33,7 @@ export default class Queue {
     async dequeue(job: EncodedJob): Promise<boolean> {
         try {
             await this.started(job)
-            await this.jobs[job.name](job.data)
+            await this.jobs[job.name](job.data, job)
             await this.completed(job)
         } catch (error: any) {
             this.errored(error, job)
@@ -41,12 +41,12 @@ export default class Queue {
         return true
     }
 
-    async enqueue(job: Job): Promise<void> {
-        logger.info(job.toJSON(), 'queue:job:enqueued')
+    async enqueue(job: Job | EncodedJob): Promise<void> {
+        logger.info(job instanceof Job ? job.toJSON() : job, 'queue:job:enqueued')
         return await this.provider.enqueue(job)
     }
 
-    async enqueueBatch(jobs: Job[]): Promise<void> {
+    async enqueueBatch(jobs: EncodedJob[]): Promise<void> {
         logger.info({ count: jobs.length }, 'queue:job:enqueuedBatch')
         return await this.provider.enqueueBatch(jobs)
     }

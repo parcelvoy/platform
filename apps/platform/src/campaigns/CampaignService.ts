@@ -13,9 +13,8 @@ import App from '../app'
 import { SearchParams } from '../core/searchParams'
 import { allLists, listUserCount } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
-import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
-import { pick } from '../utilities'
+import { crossTimezoneCopy, pick } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
@@ -111,7 +110,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     }
 
     // If we are rescheduling, abort sends to they are reset
-    if (data.send_at !== campaign.send_at) {
+    if (data.send_at && data.send_at !== campaign.send_at) {
         data.state = 'pending'
         await abortCampaign(campaign)
     }
@@ -203,14 +202,24 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
     const userId = user instanceof User ? user.id : user
     const campaignId = campaign instanceof Campaign ? campaign.id : campaign
 
-    return await CampaignSend.query()
-        .insert({
-            user_id: userId,
-            campaign_id: campaignId,
-            state,
-        })
-        .onConflict(['user_id', 'list_id'])
-        .merge(['state'])
+    // Update send state
+    const records = await CampaignSend.update(
+        qb => qb.where('user_id', userId)
+            .where('campaign_id', campaignId),
+        { state },
+    )
+
+    // If no records were updated then try and create missing record
+    if (records <= 0) {
+        await CampaignSend.query()
+            .insert({
+                user_id: userId,
+                campaign_id: campaignId,
+                state,
+            })
+            .onConflict(['user_id', 'list_id'])
+            .merge(['state'])
+    }
 }
 
 export const generateSendList = async (campaign: SentCampaign) => {
@@ -257,7 +266,11 @@ export const generateSendList = async (campaign: SentCampaign) => {
                     campaign_id: campaign.id,
                     state: 'pending',
                     send_at: campaign.send_in_user_timezone
-                        ? utcToZonedTime(campaign.send_at, timezone ?? project.timezone)
+                        ? crossTimezoneCopy(
+                            campaign.send_at,
+                            project.timezone,
+                            timezone ?? project.timezone,
+                        )
                         : campaign.send_at,
                 })
                 i++
@@ -345,7 +358,7 @@ const totalUsersCount = async (listIds: number[], exclusionListIds: number[]): P
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
         .where('campaign_id', campaign.id)
-        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state = 'pending', 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
+        .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state IN('pending', 'throttled'), 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
         .first()
     return {
         sent: parseInt(progress.sent ?? 0),

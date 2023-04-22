@@ -52,7 +52,7 @@ export default function FormWrapper<T extends FieldValues>({
         return 'Unable to submit the form an unknown error has occurred'
     }
 
-    const { errors } = form.formState
+    const { errors, isDirty, isValid } = form.formState
     const error = handleErrors(errors)
 
     return (
@@ -61,7 +61,10 @@ export default function FormWrapper<T extends FieldValues>({
                 {error && <Alert variant="error" title="Error">{error}</Alert>}
                 {children(form)}
                 <label className="form-submit">
-                    <Button type="submit" isLoading={isLoading}>
+                    <Button
+                        type="submit"
+                        isLoading={isLoading}
+                        disabled={!isDirty || !isValid}>
                         {submitLabel}
                     </Button>
                 </label>

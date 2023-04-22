@@ -43,16 +43,15 @@ export const emailUnsubscribeSchema: JSONSchemaType<EmailUnsubscribeParams> = {
     additionalProperties: false,
 }
 
-publicRouter.post('/email', async ctx => {
-
+publicRouter.get('/email', async ctx => {
     const { user, campaign } = await encodedLinkToParts(ctx.URL)
 
     if (!user) throw new RequestError(SubscriptionError.UnsubscribeInvalidUser)
     if (!campaign) throw new RequestError(SubscriptionError.UnsubscribeInvalidCampaign)
 
     await unsubscribe(user.id, campaign.subscription_id)
-
-    ctx.status = 204
+    ctx.headers['content-type'] = 'text/html'
+    ctx.body = '<html><body><h3>You have been unsubscribed!</h3></body></html>'
 })
 
 /**

@@ -52,6 +52,6 @@ export default class SegmentAnalyticsProvider extends AnalyticsProvider {
     }
 
     static controllers(): ProviderControllers {
-        return { admin: createController('analytics', this.namespace, this.schema) }
+        return { admin: createController('analytics', this) }
     }
 }

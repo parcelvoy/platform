@@ -1,4 +1,5 @@
-import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
+import { encodeHashid } from '../../utilities'
+import { ExternalProviderParams, ProviderControllers, ProviderSchema, ProviderSetupMeta } from '../Provider'
 import { createController } from '../ProviderService'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
@@ -28,9 +29,6 @@ export default class TwilioTextProvider extends TextProvider {
         description: '',
         url: 'https://twilio.com',
         icon: 'https://parcelvoy.com/providers/twilio.svg',
-        paths: {
-            'Unsubscribe URL': `/${this.namespace}/unsubscribe`,
-        },
     }
 
     static schema = ProviderSchema<TwilioProviderParams, TwilioDataParams>('twilioTextProviderParams', {
@@ -48,6 +46,14 @@ export default class TwilioTextProvider extends TextProvider {
 
     get apiKey(): string {
         return Buffer.from(`${this.account_sid}:${this.auth_token}`).toString('base64')
+    }
+
+    get setup(): ProviderSetupMeta[] {
+        const root = process.env.API_BASE_URL
+        return [{
+            name: 'Unsubscribe URL',
+            value: `${root}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
+        }]
     }
 
     async send(message: TextMessage): Promise<TextResponse> {
@@ -88,7 +94,7 @@ export default class TwilioTextProvider extends TextProvider {
     }
 
     static controllers(): ProviderControllers {
-        const admin = createController('text', this.namespace, this.schema)
+        const admin = createController('text', this)
         return { admin, public: this.unsubscribe(this.namespace) }
     }
 }

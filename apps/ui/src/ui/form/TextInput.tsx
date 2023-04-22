@@ -89,7 +89,7 @@ export default function TextInput<X extends TextInputValue>({
                                 className={size}
                                 placeholder={placeholder}
                                 onChange={(event) => {
-                                    const inputValue = typeof value === 'number'
+                                    const inputValue = typeof value === 'number' || type === 'number'
                                         ? event?.target.valueAsNumber
                                         : event?.target.value
                                     onChange?.(inputValue as X)

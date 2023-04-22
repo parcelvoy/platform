@@ -49,6 +49,7 @@ export default function ListDetail() {
     const uploadUsers = async (file: FileList) => {
         await api.lists.upload(project.id, list.id, file[0])
         setIsUploadOpen(false)
+        await state.reload()
     }
 
     return (
@@ -58,7 +59,7 @@ export default function ListDetail() {
                 <InfoTable rows={{
                     state: <ListTag state={list.state} />,
                     type: snakeToTitle(list.type),
-                    users_count: list.users_count,
+                    users_count: list.users_count.toLocaleString(),
                 }} direction="horizontal" />
             }
             actions={

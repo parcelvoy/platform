@@ -233,6 +233,9 @@ const api = {
         options: async (projectId: number | string) => await client
             .get<ProviderMeta[]>(`${projectUrl(projectId)}/providers/meta`)
             .then(r => r.data),
+        get: async (projectId: number | string, group: string, type: string, entityId: number | string) => await client
+            .get<Provider>(`${projectUrl(projectId)}/providers/${group}/${type}/${entityId}`)
+            .then(r => r.data),
         create: async (projectId: number | string, { group, type, ...provider }: ProviderCreateParams) => await client
             .post<Provider>(`${projectUrl(projectId)}/providers/${group}/${type}`, provider)
             .then(r => r.data),

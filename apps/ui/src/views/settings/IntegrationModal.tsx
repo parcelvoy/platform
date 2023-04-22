@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { useResolver } from '../../hooks'
-import { Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams } from '../../types'
+import { Project, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams } from '../../types'
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import SchemaFields from '../../ui/form/SchemaFields'
@@ -14,6 +14,73 @@ import { snakeToTitle } from '../../utils'
 import './IntegrationModal.css'
 import { ChevronLeftIcon } from '../../ui/icons'
 
+interface IntegrationFormParams {
+    project: Project
+    meta: ProviderMeta
+    provider?: Provider
+    onChange: (provider: Provider) => void
+}
+
+export function IntegrationForm({ project, provider: defaultProvider, onChange, meta }: IntegrationFormParams) {
+    const [provider, setProvider] = useState<Provider | undefined>(defaultProvider)
+    const { type, group } = meta
+    useEffect(() => {
+        if (defaultProvider) {
+            api.providers.get(project.id, defaultProvider.group, defaultProvider.type, defaultProvider.id)
+                .then(provider => {
+                    setProvider(provider)
+                })
+                .catch(() => {})
+        }
+    }, [defaultProvider])
+
+    async function handleCreate({ name, rate_limit, data = {} }: ProviderCreateParams | ProviderUpdateParams) {
+
+        const params = { name, data, rate_limit, type, group }
+        const value = provider?.id
+            ? await api.providers.update(project.id, provider?.id, params)
+            : await api.providers.create(project.id, params)
+
+        onChange(value)
+    }
+
+    return (
+        <FormWrapper<ProviderCreateParams>
+            onSubmit={async provider => await handleCreate(provider)}
+            submitLabel={provider?.id ? 'Update Integration' : 'Create Integration'}
+            defaultValues={provider}>
+            {form =>
+                <>
+                    {provider?.id
+                        ? <>
+                            <h4>Details</h4>
+                            {provider.setup?.map(item => {
+                                return (
+                                    <TextInput
+                                        name={item.name}
+                                        key={item.name}
+                                        value={item.value}
+                                        disabled />
+                                )
+                            })}
+                        </>
+                        : <Alert title={meta.name} variant="plain">Fill out the fields below to setup this integration. For more information on this integration please see the documentation on our website</Alert>
+                    }
+
+                    <h4>Config</h4>
+                    <TextInput.Field form={form} name="name" required />
+                    <SchemaFields parent="data" schema={meta.schema.properties.data} form={form} />
+                    <TextInput.Field
+                        form={form}
+                        type="number"
+                        name="rate_limit"
+                        subtitle="If you need to cap send rate, enter the maximum per second limit." />
+                </>
+            }
+        </FormWrapper>
+    )
+}
+
 interface IntegrationModalProps extends Omit<ModalProps, 'title'> {
     provider: Provider | undefined
     onChange: (provider: Provider) => void
@@ -23,18 +90,15 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
     const [project] = useContext(ProjectContext)
     const [options] = useResolver(useCallback(async () => await api.providers.options(project.id), [project, open]))
     const [meta, setMeta] = useState<ProviderMeta | undefined>()
+
     useEffect(() => {
-        setMeta(options?.find(item => item.channel === provider?.group && item.type === provider?.type))
+        setMeta(options?.find(item => item.group === provider?.group && item.type === provider?.type))
     }, [provider])
 
-    async function handleCreate({ name, data = {} }: ProviderCreateParams | ProviderUpdateParams, meta: ProviderMeta) {
-
-        const value = provider?.id
-            ? await api.providers.update(project.id, provider?.id, { name, data, type: meta.type, group: meta.channel })
-            : await api.providers.create(project.id, { name, data, type: meta.type, group: meta.channel })
-
-        onChange(value)
+    const handleChange = (provider: Provider) => {
+        onChange(provider)
         props.onClose(false)
+        setMeta(undefined)
     }
 
     return <Modal
@@ -47,58 +111,36 @@ export default function IntegrationModal({ onChange, provider, ...props }: Integ
         }
         size="regular"
     >
-        {!meta && <>
-            <p>To get started, pick one of the integrations from the list below.</p>
-            <TileGrid>
-                {options?.map(option => (
-                    <Tile
-                        key={`${option.channel}${option.type}`}
-                        title={option.name}
-                        onClick={() => setMeta(option)}
-                        iconUrl={option.icon}
-                    >
-                        {snakeToTitle(option.channel)}
-                    </Tile>
-                ))}
-            </TileGrid>
-        </>}
-        {meta && <>
-            {!provider?.id && <div style={{ marginBottom: '10px' }}>
-                <Button
-                    icon={<ChevronLeftIcon />}
-                    variant="secondary"
-                    size="small"
-                    onClick={() => setMeta(undefined)}>Integrations</Button>
-            </div>}
-            <FormWrapper<ProviderCreateParams>
-                onSubmit={async provider => await handleCreate(provider, meta)}
-                submitLabel={provider?.id ? 'Update Integration' : 'Create Integration'}
-                defaultValues={provider}>
-                {form =>
-                    <>
-                        {provider?.id
-                            ? <>
-                                <h4>Details</h4>
-                                <TextInput
-                                    name="id"
-                                    label="ID"
-                                    value={provider.id}
-                                    disabled />
-                                {meta.paths && Object.keys(meta.paths).map(key => {
-                                    const value = meta.paths?.[key]
-                                    const url = `${window.location.origin}/providers/${provider?.id}${value}`
-                                    return <TextInput name="unsubscribe" key={key} label={key} value={url} disabled />
-                                })}
-                            </>
-                            : <Alert title={meta.name} variant="plain">Fill out the fields below to setup this integration. For more information on this integration please see the documentation on our website</Alert>
-                        }
-
-                        <h4>Config</h4>
-                        <TextInput.Field form={form} name="name" required />
-                        <SchemaFields parent="data" schema={meta.schema.properties.data} form={form} />
-                    </>
-                }
-            </FormWrapper>
-        </>}
+        {!meta
+            ? (<>
+                <p>To get started, pick one of the integrations from the list below.</p>
+                <TileGrid>
+                    {options?.map(option => (
+                        <Tile
+                            key={`${option.group}${option.type}`}
+                            title={option.name}
+                            onClick={() => setMeta(option)}
+                            iconUrl={option.icon}
+                        >
+                            {snakeToTitle(option.group)}
+                        </Tile>
+                    ))}
+                </TileGrid>
+            </>)
+            : (<>
+                {!provider?.id && <div style={{ marginBottom: '10px' }}>
+                    <Button
+                        icon={<ChevronLeftIcon />}
+                        variant="secondary"
+                        size="small"
+                        onClick={() => setMeta(undefined)}>Integrations</Button>
+                </div>}
+                <IntegrationForm
+                    project={project}
+                    provider={provider}
+                    meta={meta}
+                    onChange={handleChange} />
+            </>)
+        }
     </Modal>
 }

@@ -8,6 +8,25 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 export declare namespace Intl {
     type Key = 'calendar' | 'collation' | 'currency' | 'numberingSystem' | 'timeZone' | 'unit'
     function supportedValuesOf(input: Key): string[]
+
+    interface DateTimeFormat {
+        // eslint-disable-next-line @typescript-eslint/method-signature-style
+        format(date?: Date | number): string
+        // eslint-disable-next-line @typescript-eslint/method-signature-style
+        resolvedOptions(): ResolvedDateTimeFormatOptions
+    }
+
+    interface ResolvedDateTimeFormatOptions {
+        locale: string
+        timeZone: string
+        timeZoneName?: string
+    }
+
+    // eslint-disable-next-line no-var
+    var DateTimeFormat: {
+        new(locales?: string | string[]): DateTimeFormat
+        (locales?: string | string[]): DateTimeFormat
+    }
 }
 
 interface ProjectFormProps {
@@ -16,8 +35,12 @@ interface ProjectFormProps {
 
 export default function ProjectForm({ onSave }: ProjectFormProps) {
     const timeZones = Intl.supportedValuesOf('timeZone')
+    const defaults = {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }
     return (
         <FormWrapper<Project>
+            defaultValues={defaults}
             onSubmit={async ({ id, name, description, locale, timezone }) => {
                 const project = id
                     ? await api.projects.update(id, { name, description, locale, timezone })

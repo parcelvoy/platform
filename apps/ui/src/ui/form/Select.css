@@ -96,6 +96,7 @@
     max-height: 275px;
     overflow: scroll;
     margin: 0;
+    z-index: 999;
 }
 
 .ui-select .select-option {

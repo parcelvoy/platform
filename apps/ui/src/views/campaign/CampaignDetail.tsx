@@ -5,21 +5,21 @@ import { NavigationTabs } from '../../ui/Tabs'
 import { useContext, useEffect, useState } from 'react'
 import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../contexts'
 import { languageName } from '../../utils'
-import { FieldOption } from '../../ui/form/Field'
-import { Campaign, Template } from '../../types'
+import { Campaign, LocaleOption, Template } from '../../types'
 import api from '../../api'
 import { CampaignTag } from './Campaigns'
 import LaunchCampaign from './LaunchCampaign'
 import { ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
 
-export const locales = (templates: Template[]) => templates?.map(item => {
-    const language = languageName(item.locale)
-    const locale = item.locale ?? ''
+export const localeOption = (locale: string): LocaleOption => {
+    const language = languageName(locale)
     return {
-        key: item.locale,
+        key: locale,
         label: language ? `${language} (${locale})` : locale,
-    } satisfies FieldOption
-})
+    }
+}
+
+export const locales = (templates: Template[]) => templates?.map(item => localeOption(item.locale))
 
 const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)

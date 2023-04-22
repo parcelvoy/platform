@@ -143,3 +143,8 @@
 .push-notification .notification-body {
     grid-area: body;
 }
+
+.webhook-frame {
+    padding: 20px;
+    width: 100%;
+}
