@@ -111,7 +111,7 @@ export default class SESEmailProvider extends EmailProvider {
         const getHeader = (
             headers: Array<{ name: string, value: string }>,
             key: string,
-        ) => (headers ?? []).find((item) => item.name === key)?.value
+        ) => (headers ?? []).find((item) => item.name.toLowerCase() === key.toLowerCase())?.value
 
         const json = JSON.parse(message) as Record<string, any>
         const { notificationType, mail: { destination, headers } } = json
