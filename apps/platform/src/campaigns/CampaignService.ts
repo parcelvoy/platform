@@ -13,9 +13,8 @@ import App from '../app'
 import { SearchParams } from '../core/searchParams'
 import { allLists, listUserCount } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
-import { utcToZonedTime } from 'date-fns-tz'
 import { getSubscription } from '../subscriptions/SubscriptionService'
-import { pick } from '../utilities'
+import { crossTimezoneCopy, pick } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
@@ -111,7 +110,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     }
 
     // If we are rescheduling, abort sends to they are reset
-    if (data.send_at !== campaign.send_at) {
+    if (data.send_at && data.send_at !== campaign.send_at) {
         data.state = 'pending'
         await abortCampaign(campaign)
     }
@@ -267,7 +266,11 @@ export const generateSendList = async (campaign: SentCampaign) => {
                     campaign_id: campaign.id,
                     state: 'pending',
                     send_at: campaign.send_in_user_timezone
-                        ? utcToZonedTime(campaign.send_at, timezone ?? project.timezone)
+                        ? crossTimezoneCopy(
+                            campaign.send_at,
+                            project.timezone,
+                            timezone ?? project.timezone,
+                        )
                         : campaign.send_at,
                 })
                 i++

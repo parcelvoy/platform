@@ -3,6 +3,7 @@ import { validate } from '../core/validate'
 import crypto from 'crypto'
 import Hashids from 'hashids'
 import { differenceInSeconds } from 'date-fns'
+import { utcToZonedTime } from 'date-fns-tz'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
@@ -94,6 +95,21 @@ export const partialMatchLocale = (locale1?: string, locale2?: string) => {
     const locale1Root = locale1?.split('-')[0]
     const locale2Root = locale2?.split('-')[0]
     return locale1 === locale2 || locale1Root === locale2Root
+}
+
+export const crossTimezoneCopy = (
+    date: Date,
+    fromTimezone: string,
+    toTimezone: string,
+) => {
+    const baseDate = utcToZonedTime(date, fromTimezone)
+
+    const utcDate = new Date(baseDate.toLocaleString('en-US', { timeZone: 'UTC' }))
+    const tzDate = new Date(baseDate.toLocaleString('en-US', { timeZone: toTimezone }))
+    const offset = utcDate.getTime() - tzDate.getTime()
+
+    baseDate.setTime(baseDate.getTime() + offset)
+    return baseDate
 }
 
 export function extractQueryParams<T extends Record<string, any>>(search: URLSearchParams | Record<string, undefined | string | string[]>, schema: JSONSchemaType<T>) {

@@ -29,7 +29,10 @@ describe('CampaignService', () => {
             last_name: uuid(),
             email: `${uuid()}@test.com`,
         })
-        const project = await createProject(adminId, { name: uuid() })
+        const project = await createProject(adminId, {
+            name: uuid(),
+            timezone: 'utc',
+        })
         const subscription = await createSubscription(project.id, {
             name: uuid(),
             channel: 'email',
@@ -40,6 +43,7 @@ describe('CampaignService', () => {
             data: {},
             name: uuid(),
             is_default: false,
+            rate_limit: 10,
         })
         return {
             project_id: project.id,
