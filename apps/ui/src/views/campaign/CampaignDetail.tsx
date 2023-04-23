@@ -80,11 +80,37 @@ export default function CampaignDetail() {
     ]
 
     const action = {
-        draft: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Launch Campaign</Button>,
-        aborted: <Button icon={<RestartIcon />} onClick={() => setIsLaunchOpen(true)}>Restart Campaign</Button>,
+        draft: (
+            <Button
+                icon={<SendIcon />}
+                onClick={() => setIsLaunchOpen(true)}
+            >Launch Campaign</Button>
+        ),
+        aborted: (
+            <Button
+                icon={<RestartIcon />}
+                onClick={() => setIsLaunchOpen(true)}
+            >Restart Campaign</Button>
+        ),
         pending: <></>,
-        scheduled: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Change Schedule</Button>,
-        running: <Button icon={<ForbiddenIcon />} onClick={async () => await handleAbort()}>Abort Campaign</Button>,
+        scheduled: (
+            <>
+                <Button
+                    icon={<SendIcon />}
+                    onClick={() => setIsLaunchOpen(true)}
+                >Change Schedule</Button>
+                <Button
+                    icon={<ForbiddenIcon />}
+                    onClick={async () => await handleAbort()}
+                >Abort Campaign</Button>
+            </>
+        ),
+        running: (
+            <Button
+                icon={<ForbiddenIcon />}
+                onClick={async () => await handleAbort()}
+            >Abort Campaign</Button>
+        ),
         finished: <></>,
     }
 
