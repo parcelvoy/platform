@@ -1,11 +1,10 @@
 import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { LocaleContext } from '../../contexts'
-import { Campaign, LocaleOption, UseStateContext } from '../../types'
+import { Campaign, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
-import CreateLocaleModal from './CreateLocaleModal'
+import EditLocalesModal from './EditLocalesModal'
 
 interface LocaleSelectorParams {
     campaignState: UseStateContext<Campaign>
@@ -16,17 +15,7 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
     const [open, setOpen] = openState
     const [campaign, setCampaign] = campaignState
 
-    const navigate = useNavigate()
     const [{ currentLocale, allLocales }, setLocale] = useContext(LocaleContext)
-
-    const handleTemplateCreate = (campaign: Campaign, locale: LocaleOption) => {
-        setCampaign(campaign)
-        setLocale({ currentLocale: locale, allLocales })
-
-        if (campaign.templates.length === 1 && campaign.channel === 'email') {
-            navigate('../editor')
-        }
-    }
 
     return <>
         <ButtonGroup>
@@ -47,16 +36,15 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
                         variant="secondary"
                         onClick={() => setOpen(true)}
                     >
-                        {'Add Locale'}
+                        {'View Locales'}
                     </Button>
                 )
             }
         </ButtonGroup>
-        <CreateLocaleModal
+        <EditLocalesModal
             open={open}
             setIsOpen={setOpen}
             campaign={campaign}
-            onCreate={handleTemplateCreate}
-        />
+            setCampaign={setCampaign} />
     </>
 }

@@ -312,8 +312,10 @@ export interface EmailTemplateData {
     reply_to?: string
     subject: string
     preheader?: string
+    editor: 'code' | 'visual'
     text: string
     html: string
+    mjml: string
 }
 
 export interface TextTemplateData {

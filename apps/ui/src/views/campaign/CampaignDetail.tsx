@@ -21,7 +21,7 @@ export const localeOption = (locale: string): LocaleOption => {
 
 export const locales = (templates: Template[]) => templates?.map(item => localeOption(item.locale))
 
-const localeState = (templates: Template[]) => {
+export const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)
     return {
         currentLocale: allLocales[0],
