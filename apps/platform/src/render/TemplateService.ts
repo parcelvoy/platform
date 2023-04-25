@@ -1,6 +1,6 @@
 import { SearchParams } from '../core/searchParams'
 import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
-import { pick, prune } from '../utilities'
+import { pick } from '../utilities'
 import { Variables } from '.'
 import { loadEmailChannel } from '../providers/email'
 import { getCampaign } from '../campaigns/CampaignService'
@@ -35,15 +35,16 @@ export const getTemplate = async (id: number, projectId: number) => {
 }
 
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
+    const json = Template.map(params.type).process(params)
     return await Template.insertAndFetch({
-        ...params,
-        data: params.data ?? {},
+        ...json,
         project_id: projectId,
     })
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
-    return await Template.updateAndFetch(templateId, prune(params))
+    const json = Template.map(params.type).process(params)
+    return await Template.updateAndFetch(templateId, json)
 }
 
 export const deleteTemplate = async (id: number, projectId: number) => {

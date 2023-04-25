@@ -5,6 +5,8 @@ import Model, { ModelParams } from '../core/Model'
 import { isValid, IsValidSchema } from '../core/validate'
 import { Email, NamedEmail } from '../providers/email/Email'
 import { htmlToText } from 'html-to-text'
+import mjml2html from 'mjml'
+import { prune } from '../utilities'
 
 export default class Template extends Model {
     project_id!: number
@@ -40,6 +42,22 @@ export default class Template extends Model {
         }
         return errors
     }
+
+    static map(type: ChannelType) {
+        if (type === 'email') {
+            return EmailTemplate
+        } else if (type === 'text') {
+            return TextTemplate
+        } else if (type === 'push') {
+            return PushTemplate
+        }
+        return WebhookTemplate
+    }
+
+    static process(json: Partial<Template>) {
+        if (!json.data) json.data = {}
+        return prune(json)
+    }
 }
 
 export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl' | 'validate' | 'requiredErrors'>
@@ -74,6 +92,14 @@ export class EmailTemplate extends Template {
         this.text = json?.data.text
         this.html = json?.data.html ?? ''
         this.mjml = json?.data.mjml
+    }
+
+    static process(json: Partial<Template>) {
+        const template = super.process(json)
+        if (template.data?.mjml) {
+            template.data.html = mjml2html(template.data?.mjml).html
+        }
+        return template
     }
 
     compile(variables: Variables): CompiledEmail {
