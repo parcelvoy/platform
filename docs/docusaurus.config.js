@@ -52,6 +52,8 @@ const config = {
     ],
   ],
 
+
+
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
@@ -78,6 +80,7 @@ const config = {
       prism: {
         theme: darkCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['swift', 'json', 'kotlin'],
       },
     }),
 };
