@@ -4,7 +4,8 @@
     gap: 20px;
 }
 
-.card {
+.cards a.card {
+    background: var(--color-background);
     display: flex;
     border-radius: 8px;
     border: 1px solid var(--color-grey);

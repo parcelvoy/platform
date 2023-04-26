@@ -20,6 +20,7 @@
 
     --color-background: var(--color-white);
 
+    --ifm-background-color: var(--color-background);
     --ifm-navbar-background-color: var(--color-white);
     --ifm-color-primary: var(--color-primary);
     --ifm-heading-color: var(--color-primary);
@@ -31,6 +32,10 @@
     --ifm-color-primary-lightest: #3cad6e;
     --ifm-code-font-size: 95%;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+    --ifm-line-height-base: 1.4;
+    --ifm-leading-desktop: 1.0;
+
+    --color-footer: var(--color-primary);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -52,6 +57,12 @@
     --ifm-color-primary-lighter: #32d8b4;
     --ifm-color-primary-lightest: #4fddbf;
     --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+    --color-footer: var(--color-grey-soft);
+}
+
+html {
+    background: var(--color-background);
 }
 
 body {
@@ -163,5 +174,34 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .footer {
-    background: var(--color-primary);
+    background: var(--color-footer);
+}
+
+.markdown h1:first-child {
+    --ifm-h1-font-size: 2.5rem;
+}
+
+.markdown > h2 {
+    --ifm-h2-font-size: 1.7rem;
+    border-bottom: 1px solid var(--color-grey);
+    padding-bottom: 10px;
+}
+
+.markdown > h3 {
+    --ifm-h3-font-size: 1.3rem;
+}
+
+.markdown > h2, .markdown > h3 {
+    margin-bottom: 10px;
+}
+
+.markdown a.hash-link {
+    color: var(--color-grey-hard);
+    font-size: 80%;
+    text-decoration: none;
+}
+
+.markdown a.hash-link:hover {
+    color: var(--color-primary);
+    /* text-decoration: underline; */
 }
