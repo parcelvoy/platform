@@ -126,6 +126,10 @@ export interface ProjectAdmin extends Omit<Admin, 'id'> {
 
 export type ProjectAdminParams = Pick<ProjectAdmin, 'role'>
 
+interface ProjectDefaults {
+    from: NamedEmail
+}
+
 export interface Project {
     id: number
     name: string
@@ -136,6 +140,7 @@ export interface Project {
     updated_at: string
     deleted_at?: string
     role?: ProjectRole
+    defaults: ProjectDefaults
 }
 
 export type ChannelType = 'email' | 'push' | 'text' | 'webhook'
@@ -305,8 +310,9 @@ export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_time
 // export type ListUpdateParams = Pick<List, 'name' | 'rule'>
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }
 
+interface NamedEmail { name: string, address: string }
 export interface EmailTemplateData {
-    from: { name: string, address: string }
+    from: NamedEmail
     cc?: string
     bcc?: string
     reply_to?: string

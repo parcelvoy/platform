@@ -27,7 +27,7 @@ export default function CampaignDesign() {
                 && <Alert
                     variant="plain"
                     title="Add Template"
-                    body="There are no templates yet for this campaign. Add a locale above or use the button below to get started"
+                    body="There are no templates yet for this campaign. Add a locale above or use the button below to get started."
                     actions={<Button onClick={() => openState[1](true)}>Create Template</Button>}
                 />
             }

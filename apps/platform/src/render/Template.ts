@@ -109,8 +109,8 @@ export class EmailTemplate extends Template {
             from: typeof this.from === 'string'
                 ? Render(this.from, variables)
                 : {
-                    name: Render(this.from.name, variables),
-                    address: Render(this.from.address, variables),
+                    name: Render(this.from?.name ?? '', variables),
+                    address: Render(this.from?.address ?? '', variables),
                 },
             html,
 

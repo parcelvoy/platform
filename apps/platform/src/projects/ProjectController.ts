@@ -4,7 +4,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { ParameterizedContext } from 'koa'
-import { createProject, getProject, requireProjectRole } from './ProjectService'
+import { createProject, getProject, requireProjectRole, updateProject } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
@@ -64,6 +64,21 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             nullable: true,
         },
         timezone: { type: 'string' },
+        defaults: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                from: {
+                    type: 'object',
+                    nullable: true,
+                    required: ['name', 'address'],
+                    properties: {
+                        name: { type: 'string' },
+                        address: { type: 'string' },
+                    },
+                },
+            },
+        },
     },
     additionalProperties: false,
 }
@@ -104,13 +119,30 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
             type: 'string',
             nullable: true,
         },
+        defaults: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                from: {
+                    type: 'object',
+                    nullable: true,
+                    required: ['name', 'address'],
+                    properties: {
+                        name: { type: 'string' },
+                        address: { type: 'string' },
+                    },
+                },
+            },
+        },
     },
     additionalProperties: false,
 }
 
 subrouter.patch('/', async ctx => {
     requireProjectRole(ctx, 'admin')
-    ctx.body = await Project.updateAndFetch(ctx.state.project!.id, validate(projectUpdateParams, ctx.request.body))
+    const { admin, project } = ctx.state
+    const payload = validate(projectUpdateParams, ctx.request.body)
+    ctx.body = await updateProject(project.id, admin!.id, payload)
 })
 
 export { subrouter as ProjectSubrouter }

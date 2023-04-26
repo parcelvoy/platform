@@ -43,6 +43,10 @@
     color: var(--color-grey-hard);
 }
 
+.ui-button:before {
+    display: none;
+}
+
 .ui-button:disabled:hover {
     transform: none;
 }

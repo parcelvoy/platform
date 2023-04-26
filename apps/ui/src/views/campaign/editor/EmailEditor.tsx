@@ -11,6 +11,7 @@ import VisualEditor from './VisualEditor'
 import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
 import Stack from '../../../ui/Stack'
+import { toast } from 'react-hot-toast'
 
 export default function EmailEditor() {
     const navigate = useNavigate()
@@ -21,17 +22,23 @@ export default function EmailEditor() {
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     const localeOpenState = useState(false)
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
+    const [isSaving, setIsSaving] = useState(false)
 
     async function handleTemplateSave({ id, type, data }: Template) {
-        const value = await api.templates.update(project.id, id, { type, data })
+        setIsSaving(true)
+        try {
+            const value = await api.templates.update(project.id, id, { type, data })
 
-        const newCampaign = { ...campaign }
-        newCampaign.templates = templates.map(obj => obj.id === id ? value : obj)
-        setCampaign(newCampaign)
+            const newCampaign = { ...campaign }
+            newCampaign.templates = templates.map(obj => obj.id === id ? value : obj)
+            setCampaign(newCampaign)
+            toast.success('Template saved!')
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     const campaignChange = (change: SetStateAction<Campaign>) => {
-        console.log('campaign change!', change)
         setCampaign(change)
     }
 
@@ -48,7 +55,13 @@ export default function EmailEditor() {
                             <LocaleSelector
                                 campaignState={[campaign, campaignChange]}
                                 openState={localeOpenState} />
-                            {template && <Button size="small" onClick={async () => await handleTemplateSave(template)}>Save Template</Button>}
+                            {template && (
+                                <Button
+                                    size="small"
+                                    isLoading={isSaving}
+                                    onClick={async () => await handleTemplateSave(template)}
+                                >Save Template</Button>
+                            )}
                         </Stack>
                     }
                 >

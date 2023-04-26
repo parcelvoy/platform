@@ -3,7 +3,7 @@ import Modal from '../../ui/Modal'
 import { DataTable } from '../../ui/DataTable'
 import Button from '../../ui/Button'
 import CreateLocaleModal from './CreateLocaleModal'
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import api from '../../api'
 import { LocaleContext } from '../../contexts'
 import { useNavigate } from 'react-router-dom'
@@ -14,13 +14,14 @@ interface EditLocalesParams {
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     setCampaign: (campaign: Campaign) => void
+    addOpen: boolean
+    setAddOpen: (state: boolean) => void
 }
 
-export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign }: EditLocalesParams) {
+export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, addOpen, setAddOpen }: EditLocalesParams) {
 
     const navigate = useNavigate()
     const [{ allLocales }, setLocale] = useContext(LocaleContext)
-    const [showAddLocale, setShowAddLocale] = useState(false)
 
     function handleTemplateCreate(campaign: Campaign, locale: LocaleOption) {
         setCampaign(campaign)
@@ -52,7 +53,8 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
     }
 
     return (
-        <Modal title="Locales"
+        <Modal title="Translations"
+            description="Manage the translations your email supports and will send to."
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
@@ -74,11 +76,11 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
                     },
                 ]} />
             <div className="modal-footer">
-                <Button size="small" onClick={() => setShowAddLocale(true)}>Add Locale</Button>
+                <Button size="small" onClick={() => setAddOpen(true)}>Add Locale</Button>
             </div>
             <CreateLocaleModal
-                open={showAddLocale}
-                setIsOpen={setShowAddLocale}
+                open={addOpen}
+                setIsOpen={setAddOpen}
                 campaign={campaign}
                 onCreate={handleTemplateCreate} />
         </Modal>

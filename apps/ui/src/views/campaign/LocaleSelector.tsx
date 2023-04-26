@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { LocaleContext } from '../../contexts'
 import { Campaign, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
@@ -11,11 +11,20 @@ interface LocaleSelectorParams {
     openState: UseStateContext<boolean>
 }
 
-export default function LocaleSelector({ campaignState, openState }: LocaleSelectorParams) {
+export default function LocaleSelector({
+    campaignState,
+    openState,
+}: LocaleSelectorParams) {
     const [open, setOpen] = openState
+    const [addOpen, setAddOpen] = useState(false)
     const [campaign, setCampaign] = campaignState
 
     const [{ currentLocale, allLocales }, setLocale] = useContext(LocaleContext)
+
+    const openModal = (showAdd = false) => {
+        setOpen(true)
+        setAddOpen(showAdd)
+    }
 
     return <>
         <ButtonGroup>
@@ -31,13 +40,17 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
             }
             {
                 campaign.state !== 'finished' && (
-                    <Button
-                        size="small"
-                        variant="secondary"
-                        onClick={() => setOpen(true)}
-                    >
-                        {'View Locales'}
-                    </Button>
+                    allLocales.length > 0
+                        ? <Button
+                            size="small"
+                            variant="secondary"
+                            onClick={() => openModal(false)}
+                        >Translations</Button>
+                        : <Button
+                            size="small"
+                            variant="secondary"
+                            onClick={() => openModal(true)}
+                        >Add Translation</Button>
                 )
             }
         </ButtonGroup>
@@ -45,6 +58,8 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
             open={open}
             setIsOpen={setOpen}
             campaign={campaign}
-            setCampaign={setCampaign} />
+            setCampaign={setCampaign}
+            addOpen={addOpen}
+            setAddOpen={setAddOpen} />
     </>
 }
