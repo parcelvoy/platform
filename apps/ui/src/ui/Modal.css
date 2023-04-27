@@ -70,6 +70,12 @@
     border-bottom: 1px solid var(--color-grey);
 }
 
+.modal.fullscreen .modal-header .modal-fullscreen-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .modal.fullscreen .modal-content {
     flex-grow: 1;
     position: relative;

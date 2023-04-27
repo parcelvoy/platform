@@ -10,7 +10,6 @@ import Modal from '../../../ui/Modal'
 import VisualEditor from './VisualEditor'
 import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
-import Stack from '../../../ui/Stack'
 import { toast } from 'react-hot-toast'
 
 export default function EmailEditor() {
@@ -51,7 +50,7 @@ export default function EmailEditor() {
                     open
                     onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
                     actions={
-                        <Stack>
+                        <>
                             <LocaleSelector campaignState={[campaign, campaignChange]} />
                             {template && (
                                 <Button
@@ -60,7 +59,7 @@ export default function EmailEditor() {
                                     onClick={async () => await handleTemplateSave(template)}
                                 >Save Template</Button>
                             )}
-                        </Stack>
+                        </>
                     }
                 >
                     <section className="email-editor">
