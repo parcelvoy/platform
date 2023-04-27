@@ -4,6 +4,10 @@ import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import Tag from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
 import { useRoute } from '../router'
+import Menu, { MenuItem } from '../../ui/Menu'
+import { ArchiveIcon, EditIcon } from '../../ui/icons'
+import api from '../../api'
+import { useParams } from 'react-router-dom'
 
 interface ListTableParams {
     search: (params: SearchParams) => Promise<SearchResult<List>>
@@ -22,8 +26,15 @@ export const ListTag = ({ state }: { state: ListState }) => {
 
 export default function ListTable({ search, selectedRow, onSelectRow, title }: ListTableParams) {
     const route = useRoute()
+    const { projectId = '' } = useParams()
+
     function handleOnSelectRow(list: List) {
         onSelectRow ? onSelectRow(list) : route(`lists/${list.id}`)
+    }
+
+    const handleArchiveList = async (id: number) => {
+        await api.lists.delete(projectId, id)
+        await state.reload()
     }
 
     const state = useSearchTableState(search)
@@ -51,6 +62,19 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
                 },
                 { key: 'created_at', sortable: true },
                 { key: 'updated_at', sortable: true },
+                {
+                    key: 'options',
+                    cell: ({ item }) => (
+                        <Menu size="small">
+                            <MenuItem onClick={() => handleOnSelectRow(item)}>
+                                <EditIcon />Edit
+                            </MenuItem>
+                            <MenuItem onClick={async () => await handleArchiveList(item.id)}>
+                                <ArchiveIcon />Archive
+                            </MenuItem>
+                        </Menu>
+                    ),
+                },
             ]}
             selectedRow={selectedRow}
             onSelectRow={list => handleOnSelectRow(list)}
