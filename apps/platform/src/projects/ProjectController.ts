@@ -64,21 +64,6 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             nullable: true,
         },
         timezone: { type: 'string' },
-        defaults: {
-            type: 'object',
-            nullable: true,
-            properties: {
-                from: {
-                    type: 'object',
-                    nullable: true,
-                    required: ['name', 'address'],
-                    properties: {
-                        name: { type: 'string' },
-                        address: { type: 'string' },
-                    },
-                },
-            },
-        },
     },
     additionalProperties: false,
 }
@@ -118,21 +103,6 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
         timezone: {
             type: 'string',
             nullable: true,
-        },
-        defaults: {
-            type: 'object',
-            nullable: true,
-            properties: {
-                from: {
-                    type: 'object',
-                    nullable: true,
-                    required: ['name', 'address'],
-                    properties: {
-                        name: { type: 'string' },
-                        address: { type: 'string' },
-                    },
-                },
-            },
         },
     },
     additionalProperties: false,

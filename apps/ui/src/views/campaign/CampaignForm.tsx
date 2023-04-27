@@ -65,7 +65,12 @@ const ListSelection = ({
 
     return (
         <>
-            <Heading size="h4" title={title} actions={
+            <Heading size="h4" title={
+                <>
+                    {title}
+                    {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                </>
+            } actions={
                 <Button
                     size="small"
                     onClick={() => setIsOpen(true)}>Add List</Button>

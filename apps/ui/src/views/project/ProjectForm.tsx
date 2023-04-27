@@ -3,7 +3,6 @@ import TextInput from '../../ui/form/TextInput'
 import { Project } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
-import Heading from '../../ui/Heading'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Intl {
@@ -43,10 +42,10 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     return (
         <FormWrapper<Project>
             defaultValues={defaults}
-            onSubmit={async ({ id, name, description, locale, timezone, defaults }) => {
+            onSubmit={async ({ id, name, description, locale, timezone }) => {
                 const project = id
-                    ? await api.projects.update(id, { name, description, locale, timezone, defaults })
-                    : await api.projects.create({ name, description, locale, timezone, defaults })
+                    ? await api.projects.update(id, { name, description, locale, timezone })
+                    : await api.projects.create({ name, description, locale, timezone })
                 onSave?.(project)
             }}
         >
@@ -67,22 +66,6 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                             name="timezone"
                             label="Timezone"
                             required
-                        />
-
-                        <Heading size="h4" title="Defaults">
-                            Values that will prefill campaigns as the defaults.
-                        </Heading>
-                        <TextInput.Field
-                            form={form}
-                            name="defaults.from.name"
-                            label="Email From Name"
-                            subtitle="The name emails will show as sent from."
-                        />
-                        <TextInput.Field
-                            form={form}
-                            name="defaults.from.address"
-                            label="Email From Address"
-                            subtitle="The email address emails will be sent from."
                         />
                     </>
                 )

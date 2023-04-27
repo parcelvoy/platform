@@ -20,7 +20,6 @@ export default function EmailEditor() {
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { templates } = campaign
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
-    const localeOpenState = useState(false)
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
     const [isSaving, setIsSaving] = useState(false)
 
@@ -34,6 +33,7 @@ export default function EmailEditor() {
             setCampaign(newCampaign)
             toast.success('Template saved!')
         } finally {
+            console.log('done saving')
             setIsSaving(false)
         }
     }
@@ -52,9 +52,7 @@ export default function EmailEditor() {
                     onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
                     actions={
                         <Stack>
-                            <LocaleSelector
-                                campaignState={[campaign, campaignChange]}
-                                openState={localeOpenState} />
+                            <LocaleSelector campaignState={[campaign, campaignChange]} />
                             {template && (
                                 <Button
                                     size="small"

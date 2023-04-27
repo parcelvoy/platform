@@ -1,12 +1,10 @@
-import { Campaign, LocaleOption } from '../../types'
+import { Campaign } from '../../types'
 import Modal from '../../ui/Modal'
 import { DataTable } from '../../ui/DataTable'
 import Button from '../../ui/Button'
-import CreateLocaleModal from './CreateLocaleModal'
 import { useContext } from 'react'
 import api from '../../api'
 import { LocaleContext } from '../../contexts'
-import { useNavigate } from 'react-router-dom'
 import { localeOption } from './CampaignDetail'
 
 interface EditLocalesParams {
@@ -14,26 +12,12 @@ interface EditLocalesParams {
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     setCampaign: (campaign: Campaign) => void
-    addOpen: boolean
     setAddOpen: (state: boolean) => void
 }
 
-export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, addOpen, setAddOpen }: EditLocalesParams) {
+export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, setAddOpen }: EditLocalesParams) {
 
-    const navigate = useNavigate()
     const [{ allLocales }, setLocale] = useContext(LocaleContext)
-
-    function handleTemplateCreate(campaign: Campaign, locale: LocaleOption) {
-        setCampaign(campaign)
-        const locales = [...allLocales, locale]
-        setLocale({ currentLocale: locale, allLocales: locales })
-
-        if (campaign.templates.length === 1 && campaign.channel === 'email') {
-            navigate('../editor')
-        } else {
-            setIsOpen(false)
-        }
-    }
 
     async function handleRemoveLocale(locale: string) {
         if (!confirm('Are you sure you want to delete this locale? The template cannot be recovered.')) return
@@ -44,12 +28,11 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
         const newCampaign = { ...campaign, templates }
         setCampaign(newCampaign)
 
-        const template = campaign.templates[0]
+        const template = templates[0]
         setLocale({
             currentLocale: template ? localeOption(template.locale) : undefined,
             allLocales: allLocales.filter(item => item.key !== locale),
         })
-        setIsOpen(false)
     }
 
     return (
@@ -78,11 +61,6 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
             <div className="modal-footer">
                 <Button size="small" onClick={() => setAddOpen(true)}>Add Locale</Button>
             </div>
-            <CreateLocaleModal
-                open={addOpen}
-                setIsOpen={setAddOpen}
-                campaign={campaign}
-                onCreate={handleTemplateCreate} />
         </Modal>
     )
 }

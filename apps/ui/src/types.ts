@@ -126,10 +126,6 @@ export interface ProjectAdmin extends Omit<Admin, 'id'> {
 
 export type ProjectAdminParams = Pick<ProjectAdmin, 'role'>
 
-interface ProjectDefaults {
-    from: NamedEmail
-}
-
 export interface Project {
     id: number
     name: string
@@ -140,7 +136,6 @@ export interface Project {
     updated_at: string
     deleted_at?: string
     role?: ProjectRole
-    defaults: ProjectDefaults
 }
 
 export type ChannelType = 'email' | 'push' | 'text' | 'webhook'
