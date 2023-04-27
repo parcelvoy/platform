@@ -5,12 +5,12 @@ import JsonPreview from '../../ui/JsonPreview'
 
 export default function UserDetail() {
 
-    const [{ external_id, email, phone, data }] = useContext(UserContext)
+    const [{ external_id, email, phone, timezone, locale, data }] = useContext(UserContext)
 
     return <>
         <Heading size="h3" title="Details" />
         <section className="container">
-            <JsonPreview value={{ external_id, email, phone, ...data }} />
+            <JsonPreview value={{ external_id, email, phone, timezone, locale, ...data }} />
         </section>
     </>
 }

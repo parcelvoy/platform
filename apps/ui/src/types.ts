@@ -159,6 +159,8 @@ export interface User {
     full_name?: string
     email?: string
     phone?: string
+    timezone?: string
+    locale?: string
     data: Record<string, any>
 }
 
