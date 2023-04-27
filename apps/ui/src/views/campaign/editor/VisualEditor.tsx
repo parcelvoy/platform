@@ -15,12 +15,12 @@ interface GrapesAssetManagerProps {
 
 interface GrapesReactProps {
     id: HTMLElement['id']
-    value?: string
-    onChange: (value: string, editor: Editor) => void
+    mjml?: string
+    onChange: (mjml: string, html: string, editor: Editor) => void
     setAssetState: (props: GrapesAssetManagerProps) => void
 }
 
-export function GrapesReact({ id, value, onChange, setAssetState }: GrapesReactProps) {
+export function GrapesReact({ id, mjml, onChange, setAssetState }: GrapesReactProps) {
     const [editor, setEditor] = useState<Editor | undefined>(undefined)
     useEffect(() => {
         if (!editor) {
@@ -28,10 +28,8 @@ export function GrapesReact({ id, value, onChange, setAssetState }: GrapesReactP
                 fromElement: false,
                 container: `#${id}`,
                 storageManager: false,
+                autorender: false,
                 plugins: [grapesJSMJML],
-                pluginsOpts: {
-                    [grapesJSMJML]: {/* ...options */},
-                },
                 height: '100%',
                 assetManager: {
                     custom: {
@@ -45,9 +43,14 @@ export function GrapesReact({ id, value, onChange, setAssetState }: GrapesReactP
                 },
             })
             setEditor(editor)
-            editor.setComponents(value ?? '<mjml><mj-body></mj-body></mjml>')
-            editor?.on('update', () => {
-                onChange(editor.getHtml(), editor)
+            editor.on('load', () => {
+                editor.Panels.getButton('views', 'open-blocks')
+                    .set('active', true)
+            })
+            editor.render()
+            editor.setComponents(mjml ?? '<mjml><mj-body></mj-body></mjml>')
+            editor.on('update', () => {
+                onChange(editor.getHtml(), editor.runCommand('mjml-code-to-html').html, editor)
             })
         }
     }, [])
@@ -59,8 +62,8 @@ export default function VisualEditor({ template, setTemplate }: { template: Temp
     const [showImages, setShowImages] = useState(false)
     const [assetManager, setAssetManager] = useState<GrapesAssetManagerProps | undefined>()
 
-    function handleSetTemplate(mjml: string) {
-        setTemplate({ ...template, data: { ...template.data, mjml, html: mjml } })
+    function handleSetTemplate(mjml: string, html: string) {
+        setTemplate({ ...template, data: { ...template.data, mjml, html } })
     }
 
     function handleImageInsert(image: Image) {
@@ -82,7 +85,7 @@ export default function VisualEditor({ template, setTemplate }: { template: Temp
         <>
             <GrapesReact
                 id={`grapes-editor-${template.id}`}
-                value={template.data.mjml}
+                mjml={template.data.mjml}
                 onChange={handleSetTemplate}
                 setAssetState={handleAssetState} />
             <ImageGalleryModal
