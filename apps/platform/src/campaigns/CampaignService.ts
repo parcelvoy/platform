@@ -27,6 +27,7 @@ export const pagedCampaigns = async (params: SearchParams, projectId: number) =>
         ['name'],
         b => {
             b.where({ project_id: projectId })
+                .whereNull('deleted_at')
             params.tag?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tag))
             return b
         },

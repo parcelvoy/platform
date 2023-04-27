@@ -13,6 +13,7 @@ export default class List extends Model {
     version!: number
     users_count?: number
     tags?: string[]
+    deleted_at?: Date
 
     static jsonAttributes = ['rule']
 }

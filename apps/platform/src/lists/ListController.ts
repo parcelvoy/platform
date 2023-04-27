@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListCreateParams, ListUpdateParams } from './List'
-import { createList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
+import { archiveList, createList, deleteList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
 import { searchParamsSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
@@ -139,6 +139,15 @@ const listUpdateParams: JSONSchemaType<ListUpdateParams> = {
 router.patch('/:listId', async ctx => {
     const payload = validate(listUpdateParams, ctx.request.body)
     ctx.body = await updateList(ctx.state.list!.id, payload)
+})
+
+router.delete('/:listId', async ctx => {
+    const { id, project_id, deleted_at } = ctx.state.list!
+    if (deleted_at) {
+        ctx.body = await deleteList(id, project_id)
+    } else {
+        ctx.body = await archiveList(id, project_id)
+    }
 })
 
 router.get('/:listId/users', async ctx => {

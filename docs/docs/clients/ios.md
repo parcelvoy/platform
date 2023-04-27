@@ -77,5 +77,5 @@ Parcelvoy links will now be automatically read and opened in your application.
 
 ## Example
 
-Explore our [example project](/Example) which includes basic usage.
+Explore our [example project](https://github.com/parcelvoy/ios-sdk/tree/main/Example) which includes basic usage.
 

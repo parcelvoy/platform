@@ -46,8 +46,7 @@ const cleanCell = (value: any) => {
     if (typeof value === 'string') {
         if (value.toLowerCase() === 'false') return false
         if (value.toLowerCase() === 'true') return true
-        if (value === 'NULL' || value == null) return undefined
-        if (value === '') return undefined
+        if (value === 'NULL' || value == null || value === 'undefined' || value === '') return undefined
     }
     return value
 }

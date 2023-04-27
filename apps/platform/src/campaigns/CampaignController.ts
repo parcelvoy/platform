@@ -150,8 +150,7 @@ router.get('/:campaignId/users', async ctx => {
 })
 
 router.delete('/:campaignId', async ctx => {
-    const campaign = ctx.state.campaign!
-    const { id, project_id, deleted_at } = campaign
+    const { id, project_id, deleted_at } = ctx.state.campaign!
     if (deleted_at) {
         ctx.body = await deleteCampaign(id, project_id)
     } else {
