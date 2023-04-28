@@ -39,15 +39,15 @@ export default function ImageGalleryModal({ open, onClose, onInsert }: ImageGall
                     isUploading={upload !== undefined}
                     required />
 
-                <div className="images">
-                    {results?.results.map(image => <>
+                {results && <div className="images">
+                    {results.results.map(image => <>
                         <div className="image"
-                            key={image.id}
+                            key={`image-${image.id}`}
                             onClick={() => onInsert?.(image) }>
                             <img src={image.url} alt={image.alt} />
                         </div>
                     </>)}
-                </div>
+                </div>}
             </div>
         </Modal>
     )

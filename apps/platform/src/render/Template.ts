@@ -56,8 +56,10 @@ export class EmailTemplate extends Template {
     reply_to?: string
     subject!: string
     preheader?: string
+    editor!: 'code' | 'visual'
     text?: string
     html!: string
+    mjml?: string
 
     parseJson(json: any) {
         super.parseJson(json)
@@ -68,8 +70,10 @@ export class EmailTemplate extends Template {
         this.reply_to = json?.data.reply_to
         this.subject = json?.data.subject ?? ''
         this.preheader = json?.data.preheader
+        this.editor = json?.data.type ?? 'code'
         this.text = json?.data.text
         this.html = json?.data.html ?? ''
+        this.mjml = json?.data.mjml
     }
 
     compile(variables: Variables): CompiledEmail {
@@ -79,8 +83,8 @@ export class EmailTemplate extends Template {
             from: typeof this.from === 'string'
                 ? Render(this.from, variables)
                 : {
-                    name: Render(this.from.name, variables),
-                    address: Render(this.from.address, variables),
+                    name: Render(this.from?.name ?? '', variables),
+                    address: Render(this.from?.address ?? '', variables),
                 },
             html,
 

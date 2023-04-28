@@ -1,0 +1,37 @@
+.gjs-pn-panel.gjs-one-bg:not(.gjs-pn-views-container) {
+    background: var(--color-background);
+    box-shadow: none;
+    border-bottom: 1px solid var(--color-grey);
+}
+
+.gjs-pn-views-container {
+    box-shadow: none;
+    border-left: 1px solid var(--color-primary-soft);
+}
+
+.gjs-pn-views {
+    border-left: 1px solid var(--color-grey);
+    padding: 5px 10px;
+}
+
+.gjs-pn-devices-c {
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+
+.gjs-cv-canvas {
+    width: calc(85% + 1px);
+}
+
+.gjs-pn-btn {
+    border: 1px solid transparent;
+    width: 30px;
+    height: 30px;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+    box-shadow: none;
+    background: var(--color-grey-soft);
+    color: var(--color-primary);
+    border: 1px solid var(--color-grey);
+}

@@ -30,12 +30,13 @@ export declare namespace Intl {
 }
 
 interface ProjectFormProps {
+    project?: Project
     onSave?: (project: Project) => void
 }
 
-export default function ProjectForm({ onSave }: ProjectFormProps) {
+export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     const timeZones = Intl.supportedValuesOf('timeZone')
-    const defaults = {
+    const defaults = project ?? {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }
     return (
@@ -53,7 +54,8 @@ export default function ProjectForm({ onSave }: ProjectFormProps) {
                     <>
                         <TextInput.Field form={form} name="name" required />
                         <TextInput.Field form={form} name="description" textarea />
-                        <TextInput.Field form={form}
+                        <TextInput.Field
+                            form={form}
                             name="locale"
                             label="Default Locale"
                             subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."

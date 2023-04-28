@@ -1,25 +1,17 @@
 import { useContext, useState } from 'react'
-import { CampaignContext, ProjectContext } from '../../contexts'
+import { Image, Template } from '../../../types'
+import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SourceEditor from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
-import './EmailEditor.css'
-import Button from '../../ui/Button'
-import api from '../../api'
-import { Image, Template } from '../../types'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import Preview from '../../ui/Preview'
-import { locales } from './CampaignDetail'
-import Tabs from '../../ui/Tabs'
-import { formatDate } from '../../utils'
-import { PreferencesContext } from '../../ui/PreferencesContext'
-import CreateLocaleModal from './CreateLocaleModal'
-import ImageGalleryModal from './ImageGalleryModal'
-import Modal from '../../ui/Modal'
-import { ImageIcon } from '../../ui/icons'
-import EditLocalesModal from './EditLocalesModal'
 import { toast } from 'react-hot-toast'
+import Button from '../../../ui/Button'
+import ImageGalleryModal from '../ImageGalleryModal'
+import { formatDate } from '../../../utils'
+import Preview from '../../../ui/Preview'
+import Tabs from '../../../ui/Tabs'
+import { ImageIcon } from '../../../ui/icons'
 
-const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) => {
+export default function HtmlEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
 
     const [monaco, setMonaco] = useState<Editor.IStandaloneCodeEditor | undefined>()
 
@@ -137,75 +129,6 @@ const HtmlEditor = ({ template, setTemplate }: { template: Template, setTemplate
                 open={showImages}
                 onClose={setShowImages}
                 onInsert={handleImageInsert} />
-        </>
-    )
-}
-
-export default function EmailEditor() {
-    const navigate = useNavigate()
-    const [params] = useSearchParams()
-    const [project] = useContext(ProjectContext)
-    const [campaign, setCampaign] = useContext(CampaignContext)
-    const { templates } = campaign
-    const allLocales = locales(templates)
-
-    const [isAddLocaleOpen, setIsAddLocaleOpen] = useState(false)
-
-    const tabs = templates.map(template => ({
-        ...allLocales.find(({ key }) => key === template.locale)!,
-        children: <HtmlEditor
-            template={template}
-            setTemplate={handleTemplateSave} />,
-    }))
-    const [selectedIndex, setSelectedIndex] = useState(templates.findIndex(template => template.locale === params.get('locale')))
-
-    if (tabs.length <= 0) {
-        return (<>No template</>)
-    }
-
-    async function handleTemplateSave({ id, type, data }: Template) {
-        const value = await api.templates.update(project.id, id, { type, data })
-
-        const newCampaign = { ...campaign }
-        newCampaign.templates = templates.map(obj => obj.id === id ? value : obj)
-        setCampaign(newCampaign)
-    }
-
-    return (
-        <>
-            <Modal
-                size="fullscreen"
-                title={campaign.name}
-                open
-                onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
-            >
-                <section className="email-editor">
-                    <Tabs
-                        selectedIndex={selectedIndex}
-                        onChange={setSelectedIndex}
-                        tabs={tabs}
-                        append={
-                            <Button
-                                size="small"
-                                variant="secondary"
-                                onClick={() => setIsAddLocaleOpen(true)}
-                            >
-                                {'Edit Locales'}
-                            </Button>
-                        }
-                    />
-                </section>
-            </Modal>
-            <EditLocalesModal
-                open={isAddLocaleOpen}
-                setIsOpen={() => setIsAddLocaleOpen(false)}
-                campaign={campaign}
-                setCampaign={setCampaign} />
-            <CreateLocaleModal
-                open={false}
-                setIsOpen={() => setIsAddLocaleOpen(false)}
-                campaign={campaign}
-                onCreate={setCampaign} />
         </>
     )
 }

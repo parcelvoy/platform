@@ -32,6 +32,10 @@
     margin: 0;
 }
 
+.ui-button:focus {
+    outline: none;
+}
+
 .ui-button:hover {
     transform: translateY(-1px);
     z-index: 2;
@@ -41,6 +45,10 @@
     cursor: not-allowed;
     opacity: 0.5 !important;
     color: var(--color-grey-hard);
+}
+
+.ui-button:before {
+    display: none;
 }
 
 .ui-button:disabled:hover {
