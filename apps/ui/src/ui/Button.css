@@ -32,6 +32,10 @@
     margin: 0;
 }
 
+.ui-button:focus {
+    outline: none;
+}
+
 .ui-button:hover {
     transform: translateY(-1px);
     z-index: 2;

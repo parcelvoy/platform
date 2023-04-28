@@ -11,10 +11,6 @@ body {
 
 * { box-sizing: border-box; }
 
-*:focus:not(.focus-visible) {
-    outline: none;
-}
-
 a {
     color: inherit;
 }
