@@ -16,7 +16,7 @@ export default class EmailChannel {
     }
 
     async send(template: EmailTemplate, variables: Variables) {
-        if (!variables.user.email) throw new Error('Unable to send a text message to a user with no email.')
+        if (!variables.user.email) throw new Error('Unable to send a message to a user with no email.')
 
         // TODO: Explore caching the Handlebars template
         // before passing in variables for better performance

@@ -6,6 +6,7 @@ import { loadEmailChannel } from '.'
 import { loadSendJob, requeueSend, throttleSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
+import App from '../../app'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -41,7 +42,14 @@ export default class EmailJob extends Job {
             return
         }
 
-        await channel.send(template, { user, event, context })
+        try {
+            await channel.send(template, { user, event, context })
+        } catch (error: any) {
+
+            // On error, mark as failed and notify just in case
+            await updateSendState(campaign, user, 'failed')
+            App.main.error.notify(error)
+        }
 
         // Update send record
         await updateSendState(campaign, user)
