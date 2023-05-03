@@ -45,10 +45,8 @@ export const createController = (group: ProviderGroup, type: typeof Provider): R
     const router = new Router<
         ProjectState & { provider?: Provider }
     >({
-        prefix: `/:group/${type.namespace}`,
+        prefix: `/${group}/${type.namespace}`,
     })
-
-    // console.log('create controller', )
 
     router.post('/', async ctx => {
         const payload = validate(type.schema as JSONSchemaType<ProviderParams>, ctx.request.body)

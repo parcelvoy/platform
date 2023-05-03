@@ -45,6 +45,8 @@ export default function FormWrapper<T extends FieldValues>({
                 return handleErrors(error)
             } else if (error.type === 'required') {
                 return `The \`${key}\` field is required`
+            } else if (error.type === 'minLength') {
+                return `The \`${key}\` field has not met the minimum length`
             } else if (error.message && typeof error.message === 'string') {
                 return error.message
             }

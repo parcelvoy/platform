@@ -20,7 +20,9 @@ export interface BaseTextInputProps<T extends TextInputValue> extends Partial<Co
     inputRef?: Ref<HTMLInputElement | HTMLTextAreaElement>
     hideLabel?: boolean
     min?: number
+    minLength?: number
     max?: number
+    maxLength?: number
     icon?: ReactNode
 }
 
@@ -43,7 +45,9 @@ export default function TextInput<X extends TextInputValue>({
     label,
     subtitle,
     min,
+    minLength,
     max,
+    maxLength,
     name,
     required,
     textarea,
@@ -79,6 +83,8 @@ export default function TextInput<X extends TextInputValue>({
                                 onBlur={onBlur}
                                 onFocus={onFocus}
                                 ref={inputRef}
+                                minLength={minLength}
+                                maxLength={maxLength}
                                 disabled={disabled}
                             />
                         )
@@ -98,7 +104,9 @@ export default function TextInput<X extends TextInputValue>({
                                 onFocus={onFocus}
                                 ref={inputRef}
                                 min={min}
+                                minLength={minLength}
                                 max={max}
+                                maxLength={maxLength}
                                 disabled={disabled}
                             />
                         )
@@ -125,11 +133,14 @@ TextInput.Field = function TextInputField<X extends FieldValues, P extends Field
     ...rest
 }: TextInputProps<P> & FieldProps<X, P>) {
 
+    const { minLength, maxLength } = rest
     const { field: { ref, ...field }, fieldState } = useController({
         control: form.control,
         name,
         rules: {
             required,
+            minLength,
+            maxLength,
         },
     })
 

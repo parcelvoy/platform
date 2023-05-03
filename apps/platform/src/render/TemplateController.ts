@@ -82,10 +82,9 @@ const templateDataTextParams = {
 
 const templateDataPushParams = {
     type: 'object',
-    required: ['title', 'topic', 'body'],
+    required: ['title', 'body'],
     properties: {
         title: { type: 'string' },
-        topic: { type: 'string' },
         body: { type: 'string' },
         custom: {
             type: 'object',

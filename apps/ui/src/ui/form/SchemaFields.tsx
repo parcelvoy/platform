@@ -44,6 +44,7 @@ export default function SchemaFields({ title, description, parent, form, schema 
                         subtitle={item.description}
                         required={required}
                         textarea={(item.minLength ?? 0) >= 80}
+                        minLength={item.minLength}
                     />
                 } else if (item.type === 'boolean') {
                     return <SwitchField
