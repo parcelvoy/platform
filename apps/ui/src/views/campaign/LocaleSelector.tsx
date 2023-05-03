@@ -1,30 +1,38 @@
-import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useContext, useState } from 'react'
 import { LocaleContext } from '../../contexts'
 import { Campaign, LocaleOption, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
+import EditLocalesModal from './EditLocalesModal'
+import { useNavigate } from 'react-router-dom'
 import CreateLocaleModal from './CreateLocaleModal'
 
 interface LocaleSelectorParams {
     campaignState: UseStateContext<Campaign>
-    openState: UseStateContext<boolean>
+    showAddState?: UseStateContext<boolean>
 }
 
-export default function LocaleSelector({ campaignState, openState }: LocaleSelectorParams) {
-    const [open, setOpen] = openState
+export default function LocaleSelector({
+    campaignState,
+    showAddState,
+}: LocaleSelectorParams) {
+    const [editOpen, setEditOpen] = useState(false)
+    const [addOpen, setAddOpen] = showAddState ?? useState(false)
     const [campaign, setCampaign] = campaignState
-
     const navigate = useNavigate()
+
     const [{ currentLocale, allLocales }, setLocale] = useContext(LocaleContext)
 
-    const handleTemplateCreate = (campaign: Campaign, locale: LocaleOption) => {
+    function handleTemplateCreate(campaign: Campaign, locale: LocaleOption) {
         setCampaign(campaign)
-        setLocale({ currentLocale: locale, allLocales })
+        const locales = [...allLocales, locale]
+        setLocale({ currentLocale: locale, allLocales: locales })
 
         if (campaign.templates.length === 1 && campaign.channel === 'email') {
             navigate('../editor')
+        } else {
+            setAddOpen(false)
         }
     }
 
@@ -42,21 +50,30 @@ export default function LocaleSelector({ campaignState, openState }: LocaleSelec
             }
             {
                 campaign.state !== 'finished' && (
-                    <Button
-                        size="small"
-                        variant="secondary"
-                        onClick={() => setOpen(true)}
-                    >
-                        {'Add Locale'}
-                    </Button>
+                    allLocales.length > 0
+                        ? <Button
+                            size="small"
+                            variant="secondary"
+                            onClick={() => setEditOpen(true)}
+                        >Translations</Button>
+                        : <Button
+                            size="small"
+                            variant="secondary"
+                            onClick={() => setAddOpen(true)}
+                        >Add Translation</Button>
                 )
             }
         </ButtonGroup>
-        <CreateLocaleModal
-            open={open}
-            setIsOpen={setOpen}
+        <EditLocalesModal
+            open={editOpen}
+            setIsOpen={setEditOpen}
             campaign={campaign}
-            onCreate={handleTemplateCreate}
-        />
+            setCampaign={setCampaign}
+            setAddOpen={setAddOpen} />
+        <CreateLocaleModal
+            open={addOpen}
+            setIsOpen={setAddOpen}
+            campaign={campaign}
+            onCreate={handleTemplateCreate} />
     </>
 }

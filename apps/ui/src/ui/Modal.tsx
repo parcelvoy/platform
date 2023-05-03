@@ -14,6 +14,7 @@ export interface ModalProps extends ModalStateProps {
     description?: ReactNode
     actions?: ReactNode
     size?: 'small' | 'regular' | 'large' | 'fullscreen'
+    zIndex?: number
 }
 
 export default function Modal({
@@ -24,11 +25,16 @@ export default function Modal({
     title,
     actions,
     size,
+    zIndex = 999,
 }: PropsWithChildren<ModalProps>) {
     const ref = useRef<HTMLDivElement>(null)
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className={`modal ${size ?? 'small'}`} onClose={onClose} initialFocus={ref}>
+            <Dialog as="div"
+                className={`modal ${size ?? 'small'}`}
+                onClose={onClose}
+                style={{ zIndex }}
+                initialFocus={ref}>
                 <Transition.Child
                     as={Fragment}
                     enter="transition-enter"

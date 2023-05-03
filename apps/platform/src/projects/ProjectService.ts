@@ -17,31 +17,39 @@ export const getProject = async (id: number, adminId?: number) => {
     return Project.first(
         qb => {
             qb.where('projects.id', id)
+                .select('projects.*')
             if (adminId != null) {
                 qb.leftJoin('project_admins', 'project_admins.project_id', 'projects.id')
                     .where('admin_id', adminId)
+                    .select('role')
             }
             return qb
         })
 }
 
-export const createProject = async (adminId: number, params: ProjectParams) => {
-    const project = await Project.insertAndFetch(params)
+export const createProject = async (adminId: number, params: ProjectParams): Promise<Project> => {
+    const projectId = await Project.insert(params)
 
     // Add the user creating the project to it
     await ProjectAdmin.insert({
-        project_id: project.id,
+        project_id: projectId,
         admin_id: adminId,
         role: 'admin',
     })
 
     // Create a single subscription for each type
-    await createSubscription(project.id, { name: 'Default Email', channel: 'email' })
-    await createSubscription(project.id, { name: 'Default SMS', channel: 'text' })
-    await createSubscription(project.id, { name: 'Default Push', channel: 'push' })
-    await createSubscription(project.id, { name: 'Default Webhook', channel: 'webhook' })
+    await createSubscription(projectId, { name: 'Default Email', channel: 'email' })
+    await createSubscription(projectId, { name: 'Default SMS', channel: 'text' })
+    await createSubscription(projectId, { name: 'Default Push', channel: 'push' })
+    await createSubscription(projectId, { name: 'Default Webhook', channel: 'webhook' })
 
-    return project
+    const project = await getProject(projectId, adminId)
+    return project!
+}
+
+export const updateProject = async (id: number, adminId: number, params: Partial<ProjectParams>) => {
+    await Project.update(qb => qb.where('id', id), params)
+    return await getProject(id, adminId)
 }
 
 export const pagedApiKeys = async (params: SearchParams, projectId: number) => {

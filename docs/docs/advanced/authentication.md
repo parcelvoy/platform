@@ -4,10 +4,10 @@ Parcelvoy comes with a few different types of authentication out of the box:
 - SAML
 - OpenID
 
-Whereas a lot of platforms will gate SSO as a luxury feature and charge extra for it (this is known as the ***SSO Tax***) we opted to go the opposite direction and lean in completely to SSO to make sure you understand that Parcelvoy takes your security seriously. SSO is not something that only Enterprise companies should have, but should be available at every level.
+Whereas a lot of platforms will gate SSO as a luxury feature and charge extra for it (this is known as the **SSO Tax**) we opted to go the opposite direction and lean in completely to SSO to make sure you understand that Parcelvoy takes your security seriously. SSO is not something that only Enterprise companies should have, but should be available at every level.
 
 ## Basic
-Right out of the gate Parcelvoy is setup to use a simple ***Basic*** auth that allows for a single user that can be set inside of the environment variables. This is a limited form of auth as it does not allow for multiple users and is largely meant for evaluation purposes.
+Right out of the gate Parcelvoy is setup to use a simple **Basic** auth that allows for a single user that can be set inside of the environment variables. This is a limited form of auth as it does not allow for multiple users and is largely meant for evaluation purposes.
 
 To change the credentials for basic auth, modify the following environment variables and restart your Parcelvoy instance.
 ```
@@ -17,7 +17,7 @@ AUTH_BASIC_PASSWORD=password
 
 
 ## SAML
-***Instructions coming soon.***
+**Instructions coming soon.**
 
 ### Config
 | key | type | required |
@@ -30,7 +30,7 @@ AUTH_BASIC_PASSWORD=password
 | AUTH_SAML_IS_AUTHN_SIGNED | boolean | false |
 
 ## OpenID
-***Instructions coming soon.***
+**Instructions coming soon.**
 
 ### Config
 | key | type | required |
@@ -51,4 +51,4 @@ You can utilize either SAML or OpenID to connect to your Google Account. We'll b
 4. Enter an app name and select an optional logo
 5. The SSO URL -> 
 
-***Instructions coming soon.***
+**Instructions coming soon.**

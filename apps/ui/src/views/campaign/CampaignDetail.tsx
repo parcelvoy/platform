@@ -11,6 +11,13 @@ import { CampaignTag } from './Campaigns'
 import LaunchCampaign from './LaunchCampaign'
 import { ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
 
+export interface LocaleParams {
+    locale: string
+    data: {
+        editor: string
+    }
+}
+
 export const localeOption = (locale: string): LocaleOption => {
     const language = languageName(locale)
     return {
@@ -21,7 +28,7 @@ export const localeOption = (locale: string): LocaleOption => {
 
 export const locales = (templates: Template[]) => templates?.map(item => localeOption(item.locale))
 
-const localeState = (templates: Template[]) => {
+export const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)
     return {
         currentLocale: allLocales[0],
@@ -29,15 +36,15 @@ const localeState = (templates: Template[]) => {
     }
 }
 
-export const createLocale = async (newLocale: string, campaign: Campaign): Promise<Template> => {
+export const createLocale = async ({ locale, data }: LocaleParams, campaign: Campaign): Promise<Template> => {
     // TODO: Get base locale from user preferences
     const baseLocale = 'en'
     const template = campaign.templates.find(template => template.locale === baseLocale) ?? campaign.templates[0]
     return await api.templates.create(campaign.project_id, {
         campaign_id: campaign.id,
         type: campaign.channel,
-        locale: newLocale,
-        data: template?.data,
+        locale,
+        data: template?.data ?? data,
     })
 }
 
@@ -80,11 +87,37 @@ export default function CampaignDetail() {
     ]
 
     const action = {
-        draft: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Launch Campaign</Button>,
-        aborted: <Button icon={<RestartIcon />} onClick={() => setIsLaunchOpen(true)}>Restart Campaign</Button>,
+        draft: (
+            <Button
+                icon={<SendIcon />}
+                onClick={() => setIsLaunchOpen(true)}
+            >Launch Campaign</Button>
+        ),
+        aborted: (
+            <Button
+                icon={<RestartIcon />}
+                onClick={() => setIsLaunchOpen(true)}
+            >Restart Campaign</Button>
+        ),
         pending: <></>,
-        scheduled: <Button icon={<SendIcon />} onClick={() => setIsLaunchOpen(true)}>Change Schedule</Button>,
-        running: <Button icon={<ForbiddenIcon />} onClick={async () => await handleAbort()}>Abort Campaign</Button>,
+        scheduled: (
+            <>
+                <Button
+                    icon={<SendIcon />}
+                    onClick={() => setIsLaunchOpen(true)}
+                >Change Schedule</Button>
+                <Button
+                    icon={<ForbiddenIcon />}
+                    onClick={async () => await handleAbort()}
+                >Abort Campaign</Button>
+            </>
+        ),
+        running: (
+            <Button
+                icon={<ForbiddenIcon />}
+                onClick={async () => await handleAbort()}
+            >Abort Campaign</Button>
+        ),
         finished: <></>,
     }
 

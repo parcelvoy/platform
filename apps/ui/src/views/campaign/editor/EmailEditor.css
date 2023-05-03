@@ -3,7 +3,7 @@
     position: absolute;
     display: flex;
     flex-direction: column;
-    grid-template-rows: 60px auto auto;
+    grid-template-rows: 60px auto;
     left: 0;
     right: 0;
     top: 0;
@@ -113,6 +113,7 @@
 }
 
 .source-editor .ui-tabs .tab.selected {
+    color: var(--color-white);
     border-color: var(--color-white);
 }
 

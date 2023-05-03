@@ -3,6 +3,7 @@ import { FieldPath, FieldValues, PathValue, useController } from 'react-hook-for
 import { RadioGroup } from '@headlessui/react'
 import { FieldProps, FieldOption } from './Field'
 import './OptionField.css'
+import { snakeToTitle } from '../../utils'
 
 interface OptionFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
     options: FieldOption[]
@@ -38,7 +39,12 @@ export default function OptionField<X extends FieldValues, P extends FieldPath<X
             id={id}
             className="options-group"
         >
-            <RadioGroup.Label><span>{label ?? name }</span></RadioGroup.Label>
+            <RadioGroup.Label>
+                <span>
+                    {label ?? snakeToTitle(name)}
+                    {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                </span>
+            </RadioGroup.Label>
             {subtitle && <span className="label-subtitle">{subtitle}</span>}
             <div className="options">
                 {options.map(({ key, label }) => (

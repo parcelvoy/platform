@@ -94,8 +94,8 @@ export default class OpenIDAuthProvider extends AuthProvider {
             }
 
             await this.login(admin, ctx, state)
-        } catch (x) {
-            logger.warn(x)
+        } catch (error) {
+            logger.warn(error)
             throw new RequestError(AuthError.OpenIdValidationError)
         }
     }

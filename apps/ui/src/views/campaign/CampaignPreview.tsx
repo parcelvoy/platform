@@ -89,7 +89,7 @@ export default function CampaignPreview() {
     const [project] = useContext(ProjectContext)
     const campaignState = useContext(CampaignContext)
     const [{ currentLocale }] = useContext(LocaleContext)
-    const openState = useState(false)
+    const showAddState = useState(false)
     const [isUserLookupOpen, setIsUserLookupOpen] = useState(false)
     const [isSendProofOpen, setIsSendProofOpen] = useState(false)
     const template = campaignState[0].templates.find(template => template.locale === currentLocale?.key)
@@ -99,13 +99,13 @@ export default function CampaignPreview() {
             <Heading title="Preview" size="h3" actions={
                 <LocaleSelector
                     campaignState={campaignState}
-                    openState={openState} />
+                    showAddState={showAddState} />
             } />
             <Alert
                 variant="plain"
                 title="Add Template"
                 body="There are no templates yet for this campaign. Add a locale above or use the button below to get started"
-                actions={<Button onClick={() => openState[1](true)}>Create Template</Button>}
+                actions={<Button onClick={() => showAddState[1](true)}>Create Template</Button>}
             />
         </>)
     }
@@ -135,7 +135,7 @@ export default function CampaignPreview() {
             <Heading title="Preview" size="h3" actions={
                 <LocaleSelector
                     campaignState={campaignState}
-                    openState={openState} />
+                    showAddState={showAddState} />
             } />
             <Columns>
                 <Column>

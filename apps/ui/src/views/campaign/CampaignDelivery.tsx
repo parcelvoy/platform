@@ -29,14 +29,17 @@ export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
     const percent = new Intl.NumberFormat(undefined, { style: 'percent', minimumFractionDigits: 2 })
 
     const sent = delivery.sent.toLocaleString()
+    const total = delivery.total.toLocaleString()
     const deliveryRate = percent.format(delivery.sent / delivery.total)
     const openRate = percent.format(delivery.opens / delivery.total)
     const clickRate = percent.format(delivery.clicks / delivery.total)
 
+    const SentSpan: React.ReactNode = <span>{sent}/<small>{total}</small></span>
+
     return (
         <TileGrid numColumns={4}>
-            <Tile title={sent} size="large">Total sent</Tile>
-            <Tile title={deliveryRate} size="large">Delivery Rate</Tile>
+            <Tile title={SentSpan} size="large">Sent</Tile>
+            <Tile title={deliveryRate} size="large">Delivery</Tile>
             <Tile title={openRate} size="large">Open Rate</Tile>
             <Tile title={clickRate} size="large">Click Rate</Tile>
         </TileGrid>
@@ -69,8 +72,9 @@ export default function CampaignDelivery() {
                             {
                                 key: 'state',
                                 cell: ({ item: { state } }) => CampaignSendTag({ state }),
+                                sortable: true,
                             },
-                            { key: 'send_at' },
+                            { key: 'send_at', sortable: true },
                             { key: 'opened_at' },
                             { key: 'clicks' },
                         ]}

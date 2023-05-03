@@ -2,13 +2,14 @@ import clsx from 'clsx'
 import { PropsWithChildren, ReactNode } from 'react'
 import './Tile.css'
 
-type TileProps = PropsWithChildren<{
+type TileProps = {
     onClick?: () => void
     selected?: boolean
     iconUrl?: string
     title: ReactNode
     size?: 'large' | 'regular'
-}> & JSX.IntrinsicElements['div']
+    children: ReactNode
+} & Omit<JSX.IntrinsicElements['div'], 'title'>
 
 export default function Tile({
     onClick,

@@ -25,6 +25,8 @@ const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
 }} />
 
 const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
+    <TextInput.Field form={form} name="data.from.name" label="From Name" required />
+    <TextInput.Field form={form} name="data.from.address" label="From Email" required />
     <TextInput.Field
         form={form}
         name="data.subject"
@@ -36,8 +38,6 @@ const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> })
         name="data.preheader"
         label="Preheader"
         textarea />
-    <TextInput.Field form={form} name="data.from.address" label="From Email" required />
-    <TextInput.Field form={form} name="data.from.name" label="From Name" required />
     <TextInput.Field form={form} name="data.reply_to" label="Reply To" />
     <TextInput.Field form={form} name="data.cc" label="CC" />
     <TextInput.Field form={form} name="data.bcc" label="BCC" />

@@ -17,6 +17,7 @@ export const pagedLists = async (params: SearchParams, projectId: number) => {
         ['name'],
         b => {
             b = b.where('project_id', projectId)
+                .whereNull('deleted_at')
             params.tag?.length && b.whereIn('id', createTagSubquery(List, projectId, params.tag))
             return b
         },
@@ -125,6 +126,19 @@ export const updateList = async (id: number, { tags, ...params }: Partial<List>)
     }
 
     return list
+}
+
+export const archiveList = async (id: number, projectId: number) => {
+    await List.update(qb =>
+        qb.where('id', id)
+            .where('project_id', projectId),
+    { deleted_at: new Date() },
+    )
+    return getList(id, projectId)
+}
+
+export const deleteList = async (id: number, projectId: number) => {
+    return await List.delete(qb => qb.where('id', id).where('project_id', projectId))
 }
 
 export const addUserToList = async (user: User | number, list: List | number, event?: UserEvent) => {

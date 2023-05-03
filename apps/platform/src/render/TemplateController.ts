@@ -61,6 +61,10 @@ const templateDataEmailParams = {
             type: 'string',
             nullable: true,
         },
+        mjml: {
+            type: 'string',
+            nullable: true,
+        },
     },
     nullable: true,
 }

@@ -159,6 +159,8 @@ export interface User {
     full_name?: string
     email?: string
     phone?: string
+    timezone?: string
+    locale?: string
     data: Record<string, any>
 }
 
@@ -303,15 +305,18 @@ export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_time
 // export type ListUpdateParams = Pick<List, 'name' | 'rule'>
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }
 
+interface NamedEmail { name: string, address: string }
 export interface EmailTemplateData {
-    from: { name: string, address: string }
+    from: NamedEmail
     cc?: string
     bcc?: string
     reply_to?: string
     subject: string
     preheader?: string
+    editor: 'code' | 'visual'
     text: string
     html: string
+    mjml: string
 }
 
 export interface TextTemplateData {

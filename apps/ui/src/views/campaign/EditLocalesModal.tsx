@@ -2,22 +2,22 @@ import { Campaign } from '../../types'
 import Modal from '../../ui/Modal'
 import { DataTable } from '../../ui/DataTable'
 import Button from '../../ui/Button'
-import { locales } from './CampaignDetail'
-import CreateLocaleModal from './CreateLocaleModal'
-import { useState } from 'react'
+import { useContext } from 'react'
 import api from '../../api'
+import { LocaleContext } from '../../contexts'
+import { localeOption } from './CampaignDetail'
 
 interface EditLocalesParams {
     open: boolean
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     setCampaign: (campaign: Campaign) => void
+    setAddOpen: (state: boolean) => void
 }
 
-export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign }: EditLocalesParams) {
+export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, setAddOpen }: EditLocalesParams) {
 
-    const allLocales = locales(campaign.templates)
-    const [showAddLocale, setShowAddLocale] = useState(false)
+    const [{ allLocales }, setLocale] = useContext(LocaleContext)
 
     async function handleRemoveLocale(locale: string) {
         if (!confirm('Are you sure you want to delete this locale? The template cannot be recovered.')) return
@@ -27,11 +27,17 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
         const templates = campaign.templates.filter(template => template.id !== id)
         const newCampaign = { ...campaign, templates }
         setCampaign(newCampaign)
-        setIsOpen(false)
+
+        const template = templates[0]
+        setLocale({
+            currentLocale: template ? localeOption(template.locale) : undefined,
+            allLocales: allLocales.filter(item => item.key !== locale),
+        })
     }
 
     return (
-        <Modal title="Locales"
+        <Modal title="Translations"
+            description="Manage the translations your email supports and will send to."
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
@@ -53,13 +59,8 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
                     },
                 ]} />
             <div className="modal-footer">
-                <Button size="small" onClick={() => setShowAddLocale(true)}>Add Locale</Button>
+                <Button size="small" onClick={() => setAddOpen(true)}>Add Locale</Button>
             </div>
-            <CreateLocaleModal
-                open={showAddLocale}
-                setIsOpen={setShowAddLocale}
-                campaign={campaign}
-                onCreate={setCampaign} />
         </Modal>
     )
 }

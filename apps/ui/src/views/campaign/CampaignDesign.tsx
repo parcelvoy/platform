@@ -10,14 +10,14 @@ export default function CampaignDesign() {
     const campaignState = useContext(CampaignContext)
     const { templates } = campaignState[0]
     const [{ currentLocale }] = useContext(LocaleContext)
-    const openState = useState(false)
+    const showAddState = useState(false)
 
     return (
         <>
             <Heading title="Design" size="h3" actions={
                 <LocaleSelector
                     campaignState={campaignState}
-                    openState={openState} />
+                    showAddState={showAddState} />
             } />
             {templates.filter(template => template.locale === currentLocale?.key)
                 .map(template => (
@@ -27,8 +27,8 @@ export default function CampaignDesign() {
                 && <Alert
                     variant="plain"
                     title="Add Template"
-                    body="There are no templates yet for this campaign. Add a locale above or use the button below to get started"
-                    actions={<Button onClick={() => openState[1](true)}>Create Template</Button>}
+                    body="There are no templates yet for this campaign. Add a locale above or use the button below to get started."
+                    actions={<Button onClick={() => showAddState[1](true)}>Create Template</Button>}
                 />
             }
         </>

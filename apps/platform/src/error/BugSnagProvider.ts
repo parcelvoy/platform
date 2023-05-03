@@ -14,6 +14,7 @@ export default class BugSnagProvider implements ErrorHandlingProvider {
         Bugsnag.start({
             apiKey: config.apiKey,
             logger: null,
+            enabledReleaseStages: ['staging', 'production'],
             plugins: [BugsnagPluginKoa],
         })
     }

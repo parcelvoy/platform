@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import api from '../../api'
-import { CampaignState } from '../../types'
+import { Campaign, CampaignState } from '../../types'
 import Button from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
@@ -33,6 +33,11 @@ export default function Campaigns() {
     const navigate = useNavigate()
     const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(projectId, params), [projectId]))
     const [isCreateOpen, setIsCreateOpen] = useState(false)
+
+    const handleCreateCampaign = (campaign: Campaign) => {
+        setIsCreateOpen(false)
+        navigate(`${campaign.id}/design`)
+    }
 
     const handleEditCampaign = (id: number) => {
         navigate(id.toString())
@@ -105,12 +110,7 @@ export default function Campaigns() {
                 title="Create Campaign"
                 size="large"
             >
-                <CampaignForm
-                    onSave={campaign => {
-                        setIsCreateOpen(false)
-                        navigate(campaign.id.toString())
-                    }}
-                />
+                <CampaignForm onSave={handleCreateCampaign} />
             </Modal>
         </>
     )

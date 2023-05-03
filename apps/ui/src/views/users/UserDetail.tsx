@@ -7,13 +7,13 @@ import { InfoTable } from '../../ui/InfoTable'
 
 export default function UserDetail() {
 
-    const [{ external_id, email, phone, full_name }] = useContext(UserContext)
+    const [{ external_id, email, phone, timezone, full_name }] = useContext(UserContext)
 
     return (
         <PageContent
             title={full_name ?? (email ?? 'No email')}
             desc={
-                <InfoTable rows={{ ID: external_id, email, phone }} direction="horizontal" />
+                <InfoTable rows={{ ID: external_id, email, phone, timezone }} direction="horizontal" />
             }
         >
             <NavigationTabs tabs={[

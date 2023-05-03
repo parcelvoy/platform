@@ -34,6 +34,7 @@ export default class CampaignInteractJob extends Job {
         }
 
         if (subscription_id && (interaction === 'bounced' || interaction === 'complained')) {
+            await updateCampaignSend(send.id, { state: 'bounced' })
             await unsubscribe(user_id, subscription_id)
         }
     }
