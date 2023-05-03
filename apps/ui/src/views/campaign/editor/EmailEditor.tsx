@@ -1,4 +1,4 @@
-import { SetStateAction, useContext, useState } from 'react'
+import { SetStateAction, Suspense, lazy, useContext, useState } from 'react'
 import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../../contexts'
 import './EmailEditor.css'
 import Button from '../../../ui/Button'
@@ -7,10 +7,11 @@ import { Campaign, Template } from '../../../types'
 import { useNavigate } from 'react-router-dom'
 import { localeState } from '../CampaignDetail'
 import Modal from '../../../ui/Modal'
-import VisualEditor from './VisualEditor'
 import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
 import { toast } from 'react-hot-toast'
+
+const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
 export default function EmailEditor() {
     const navigate = useNavigate()
@@ -66,10 +67,14 @@ export default function EmailEditor() {
                         {templates.filter(template => template.locale === locale.currentLocale?.key)
                             .map(template => (
                                 template.data.editor === 'visual'
-                                    ? <VisualEditor
-                                        template={template}
-                                        key={template.id}
-                                        setTemplate={setTemplate} />
+                                    ? (
+                                        <Suspense key={template.id} fallback={null}>
+                                            <VisualEditor
+                                                template={template}
+                                                setTemplate={setTemplate}
+                                            />
+                                        </Suspense>
+                                    )
                                     : <HtmlEditor
                                         template={template}
                                         key={template.id}
