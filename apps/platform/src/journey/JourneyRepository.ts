@@ -4,7 +4,6 @@ import { RequestError } from '../core/errors'
 import { SearchParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
-import { CampaignDelivery } from 'campaigns/Campaign'
 import { raw } from '../core/Model'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
@@ -246,15 +245,21 @@ export const lastJourneyStep = async (userId: number, journeyId: number): Promis
 
 interface JourneyStepStats {
     [external_id: string]: {
-        users: number
-        delivery?: CampaignDelivery
+        completions: number
+        waiting: number
     }
 }
 
 export const getJourneyStepStats = async (journeyId: number) => {
 
-    const [steps, userCounts] = await Promise.all([
+    const [steps, completions, waiting] = await Promise.all([
         getJourneySteps(journeyId),
+        (JourneyUserStep.query()
+            .select('step_id')
+            .count('* as users')
+            .where('journey_id', journeyId)
+            .groupBy('step_id')
+        ) as Promise<Array<{ step_id: number, users: number }>>,
         (JourneyUserStep.query()
             .with(
                 'latest_journey_steps',
@@ -264,12 +269,14 @@ export const getJourneyStepStats = async (journeyId: number) => {
             .count('* as users')
             .from('latest_journey_steps')
             .where('rn', 1)
-            .groupBy('step_id')) as Promise<Array<{ step_id: number, users: number }>>,
+            .groupBy('step_id')
+        ) as Promise<Array<{ step_id: number, users: number }>>,
     ])
 
     return steps.reduce<JourneyStepStats>((a, { external_id, id }) => {
         a[external_id] = {
-            users: userCounts.find(uc => uc.step_id === id)?.users ?? 0,
+            completions: completions.find(uc => uc.step_id)?.users ?? 0,
+            waiting: waiting.find(uc => uc.step_id === id)?.users ?? 0,
         }
         return a
     }, {})

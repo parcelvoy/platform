@@ -18,6 +18,7 @@ import ReactFlow, {
     NodeProps,
     NodeTypes,
     OnEdgeUpdateFunc,
+    Panel,
     Position,
     ReactFlowInstance,
     updateEdge,
@@ -41,6 +42,7 @@ import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast'
 import { JourneyForm } from './JourneyForm'
+import { CopyIcon } from '../../ui/icons'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -238,6 +240,35 @@ const DATA_FORMAT = 'application/parcelvoy-journey-step'
 
 const STEP_STYLE = 'smoothstep'
 
+interface CreateEdgeParams {
+    sourceId: string
+    targetId: string
+    data: any
+    index: number
+    stepType: JourneyStepType<any, any> | null
+}
+
+function createEdge({
+    data,
+    index,
+    sourceId,
+    stepType,
+    targetId,
+}: CreateEdgeParams): Edge {
+    return {
+        id: 'e-' + sourceId + '__' + targetId,
+        source: sourceId,
+        sourceHandle: (Array.isArray(stepType?.sources) ? index : 0) + '-s-' + sourceId,
+        target: targetId,
+        targetHandle: 't-' + targetId,
+        data,
+        type: STEP_STYLE,
+        markerEnd: {
+            type: MarkerType.ArrowClosed,
+        },
+    }
+}
+
 function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
 
     const nodes: Node[] = []
@@ -258,18 +289,13 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
             },
         })
         const stepType = getStepType(type)
-        children?.forEach(({ external_id, data }, index) => edges.push({
-            id: 'e-' + id + '-' + external_id,
-            source: id,
-            sourceHandle: (Array.isArray(stepType?.sources) ? index : 0) + '-s-' + id,
-            target: external_id,
-            targetHandle: 't-' + external_id,
+        children?.forEach(({ external_id, data }, index) => edges.push(createEdge({
+            sourceId: id,
+            targetId: external_id,
+            index,
             data,
-            type: STEP_STYLE,
-            markerEnd: {
-                type: MarkerType.ArrowClosed,
-            },
-        }))
+            stepType,
+        })))
     }
 
     return { nodes, edges }
@@ -304,6 +330,40 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         }
         return a
     }, {})
+}
+
+function cloneNodes(edges: Edge[], targets: Node[]) {
+    const mapping: { [prev: string]: string } = {}
+    const nodeCopies: Node[] = []
+    for (const node of targets) {
+        const id = createUuid()
+        mapping[node.id] = id
+        nodeCopies.push({
+            ...node,
+            data: {
+                ...node.data ?? {},
+                name: node.data.name ? node.data.name + ' (Copy)' : undefined,
+            },
+            id,
+            position: {
+                x: node.position.x + 50,
+                y: node.position.y + 50,
+            },
+        })
+    }
+    const edgeCopies = getConnectedEdges(targets, edges)
+        .filter(edge => edge.source in mapping && edge.target in mapping)
+        .map((edge, index) => createEdge({
+            sourceId: mapping[edge.source],
+            targetId: mapping[edge.target],
+            index,
+            data: edge.data ?? {},
+            stepType: targets
+                .filter(n => n.id === edge.source)
+                .map(n => getStepType(n.data.type))
+                .at(0)!,
+        }))
+    return { nodeCopies, edgeCopies }
 }
 
 export default function JourneyEditor() {
@@ -413,6 +473,8 @@ export default function JourneyEditor() {
 
     const [editOpen, setEditOpen] = useState(false)
 
+    const selected = nodes.filter(n => n.selected)
+
     return (
         <Modal
             size="fullscreen"
@@ -480,12 +542,35 @@ export default function JourneyEditor() {
                         elementsSelectable
                         onDragOver={onDragOver}
                         onDrop={onDrop}
+                        panOnScroll
+                        selectNodesOnDrag
                     >
                         <Background className="internal-canvas" />
                         <Controls />
                         <MiniMap
                             nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
                         />
+                        <Panel position="top-left">
+                            {
+                                selected.length
+                                    ? (
+                                        <Button
+                                            icon={<CopyIcon />}
+                                            onClick={() => {
+                                                const { nodeCopies, edgeCopies } = cloneNodes(edges, selected)
+                                                setNodes([...nodes.map(n => ({ ...n, selected: false })), ...nodeCopies])
+                                                setEdges([...edges.map(e => ({ ...e, selected: false })), ...edgeCopies])
+                                            }}
+                                            size="small"
+                                        >
+                                            {`Copy Selected Steps (${selected.length})`}
+                                        </Button>
+                                    )
+                                    : (
+                                        'Shift+Drag to Multi Select'
+                                    )
+                            }
+                        </Panel>
                     </ReactFlow>
                 </div>
             </div>
