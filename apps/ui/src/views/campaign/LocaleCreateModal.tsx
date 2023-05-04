@@ -11,7 +11,6 @@ import OptionField from '../../ui/form/OptionField'
 interface CreateLocaleParams {
     open: boolean
     setIsOpen: (state: boolean) => void
-    isTemplate?: boolean
     campaign: Campaign
     onCreate: (campaign: Campaign, locale: LocaleOption) => void
 }
@@ -37,7 +36,7 @@ const LocaleTextField = ({ form }: { form: UseFormReturn<LocaleParams> }) => {
     </>
 }
 
-export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate, isTemplate = true }: CreateLocaleParams) {
+export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate }: CreateLocaleParams) {
 
     async function handleCreateLocale(params: LocaleParams) {
         const template = await createLocale(params, campaign)
@@ -48,7 +47,7 @@ export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate,
     }
 
     return (
-        <Modal title={isTemplate ? 'Create Template' : 'Add Locale'}
+        <Modal title={'Create Template'}
             open={open}
             onClose={() => setIsOpen(false)}
             zIndex={1000}>
@@ -58,7 +57,7 @@ export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate,
                 {form => <>
                     <p>Each campaign can have one template per locale. Pick a locale to create a template for it.</p>
                     <LocaleTextField form={form} />
-                    { isTemplate && (
+                    { campaign.channel === 'email' && (
                         <OptionField
                             form={form}
                             name="data.editor"

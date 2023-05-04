@@ -13,6 +13,7 @@
     "lint": "lerna run lint",
     "test": "lerna run test",
     "docker:build": "lerna run docker:build",
-    "docker:build:push": "lerna run docker:build:push"
+    "docker:build:push": "lerna run docker:build:push",
+    "analyze:ui:bundle": "lerna run build && npx source-map-explorer './apps/ui/build/static/js/*.js'"
   }
 }

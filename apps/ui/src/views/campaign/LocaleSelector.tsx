@@ -4,9 +4,9 @@ import { Campaign, LocaleOption, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
-import EditLocalesModal from './EditLocalesModal'
+import LocaleEditModal from './LocaleEditModal'
 import { useNavigate } from 'react-router-dom'
-import CreateLocaleModal from './CreateLocaleModal'
+import LocaleCreateModal from './LocaleCreateModal'
 
 interface LocaleSelectorParams {
     campaignState: UseStateContext<Campaign>
@@ -64,13 +64,13 @@ export default function LocaleSelector({
                 )
             }
         </ButtonGroup>
-        <EditLocalesModal
+        <LocaleEditModal
             open={editOpen}
             setIsOpen={setEditOpen}
             campaign={campaign}
             setCampaign={setCampaign}
             setAddOpen={setAddOpen} />
-        <CreateLocaleModal
+        <LocaleCreateModal
             open={addOpen}
             setIsOpen={setAddOpen}
             campaign={campaign}
