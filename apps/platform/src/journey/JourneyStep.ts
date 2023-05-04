@@ -1,4 +1,4 @@
-import { add, isFuture } from 'date-fns'
+import { add, isBefore, isFuture } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
 import Rule from '../rules/Rule'
@@ -12,6 +12,8 @@ import JourneyProcessJob from './JourneyProcessJob'
 import { Database } from '../config/database'
 import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
+import { getProject } from '../projects/ProjectService'
+import { getTimezoneOffset } from 'date-fns-tz'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -121,6 +123,7 @@ export class JourneyDelay extends JourneyStep {
     minutes = 0
     hours = 0
     days = 0
+    time?: string
 
     parseJson(json: any) {
         super.parseJson(json)
@@ -128,6 +131,7 @@ export class JourneyDelay extends JourneyStep {
         this.minutes = json?.data?.minutes
         this.hours = json?.data?.hours
         this.days = json?.data?.days
+        this.time = json?.data?.time
     }
 
     async condition(user: User): Promise<boolean> {
@@ -142,16 +146,41 @@ export class JourneyDelay extends JourneyStep {
         }
 
         // If event, check that it's in the past
-        if (isFuture(this.offset(userJourneyStep.created_at))) return false
+        if (isFuture(await this.offset(userJourneyStep.created_at, user))) return false
         return true
     }
 
-    private offset(date: Date): Date {
-        return add(date, {
+    private async offset(date: Date, user: User): Promise<Date> {
+
+        let nextDate = add(date, {
             days: this.days,
             hours: this.hours,
             minutes: this.minutes,
         })
+
+        const time = this.time?.trim() // hh:mm
+        if (time?.length === 5) {
+            const [hours, minutes] = time.split(':').map(s => parseInt(s, 10))
+            if (!isNaN(hours) && !isNaN(minutes)) {
+                let tz = user.timezone
+                if (!tz) {
+                    const project = await getProject(user.project_id)
+                    tz = project!.timezone
+                }
+                if (tz) {
+                    const offset = getTimezoneOffset(tz, nextDate)
+                    nextDate = add(nextDate, { hours: offset })
+                }
+                nextDate.setHours(hours)
+                nextDate.setMinutes(minutes)
+                // if resulting time is before the visit date, push out to next day same time
+                if (isBefore(nextDate, date)) {
+                    nextDate = add(nextDate, { days: 1 })
+                }
+            }
+        }
+
+        return nextDate
     }
 }
 

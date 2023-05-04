@@ -7,6 +7,7 @@ interface DelayStepConfig {
     minutes: number
     hours: number
     days: number
+    time?: string
 }
 
 export const delayStep: JourneyStepType<DelayStepConfig> = {
@@ -39,6 +40,14 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                         />
                     ))
                 }
+                <TextInput
+                    name="time"
+                    label="Time"
+                    type="time"
+                    size="small"
+                    value={value.time ?? ''}
+                    onChange={time => onChange({ ...value, time })}
+                />
             </>
         )
     },
