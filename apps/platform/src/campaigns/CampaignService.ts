@@ -330,6 +330,16 @@ export const recipientQuery = (campaign: Campaign) => {
 
         // Filter out existing sends (handle aborts & reschedules)
         .whereNull('campaign_sends.id')
+
+        // Based on campaign type, filter out based on missing user
+        // criteria
+        .where(qb => {
+            if (campaign.channel === 'email') {
+                qb.whereNotNull('users.email')
+            } else if (campaign.channel === 'text') {
+                qb.whereNotNull('users.phone')
+            }
+        })
 }
 
 export const abortCampaign = async (campaign: Campaign) => {
