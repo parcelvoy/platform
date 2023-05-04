@@ -20,7 +20,7 @@ interface GrapesReactProps {
     setAssetState: (props: GrapesAssetManagerProps) => void
 }
 
-export function GrapesReact({ id, mjml, onChange, setAssetState }: GrapesReactProps) {
+function GrapesReact({ id, mjml, onChange, setAssetState }: GrapesReactProps) {
     const [editor, setEditor] = useState<Editor | undefined>(undefined)
     useEffect(() => {
         if (!editor) {
