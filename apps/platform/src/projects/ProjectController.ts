@@ -9,6 +9,8 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
+import App from 'app'
+import ProjectRulePathSyncJob from 'rules/ProjectRulePathSyncJob'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -113,6 +115,14 @@ subrouter.patch('/', async ctx => {
     const { admin, project } = ctx.state
     const payload = validate(projectUpdateParams, ctx.request.body)
     ctx.body = await updateProject(project.id, admin!.id, payload)
+})
+
+subrouter.post('/utils/rebuild-rule-paths', async ctx => {
+    requireProjectRole(ctx, 'admin')
+    App.main.queue.enqueue(ProjectRulePathSyncJob.from({
+        project_id: ctx.state.project.id,
+    }))
+    ctx.status = 204
 })
 
 export { subrouter as ProjectSubrouter }

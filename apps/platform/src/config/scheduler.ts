@@ -8,6 +8,7 @@ import ProcessListsJob from '../lists/ProcessListsJob'
 import Model from '../core/Model'
 import { sleep, randomInt } from '../utilities'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
+import ProjectRulePathSyncJob from '../rules/ProjectRulePathSyncJob'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -31,6 +32,7 @@ export default (app: App) => {
         rule: '0 * * * *',
         callback: () => {
             cleanupExpiredRevokedTokens(subDays(new Date(), 1))
+            app.queue.enqueue(ProjectRulePathSyncJob.from({ delta: new Date() }))
         },
     })
     return scheduler
