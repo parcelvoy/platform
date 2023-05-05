@@ -11,7 +11,7 @@ import { RequestError } from '../core/errors'
 import App from '../app'
 
 import { SearchParams } from '../core/searchParams'
-import { allLists, listUserCount } from '../lists/ListService'
+import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { crossTimezoneCopy, pick } from '../utilities'
@@ -67,14 +67,7 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
     }
 
     const delivery = { sent: 0, total: 0, opens: 0, clicks: 0 }
-    if (params.list_ids) {
-        delivery.total = await totalUsersCount(
-            params.list_ids,
-            params.exclusion_list_ids ?? [],
-        )
-    }
-
-    const id = await Campaign.insert({
+    const campaign = await Campaign.insertAndFetch({
         ...params,
         state: 'draft',
         delivery,
@@ -82,16 +75,24 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
         project_id: projectId,
     })
 
+    // Calculate initial users count
+    await Campaign.update(qb => qb.where('id', campaign.id), {
+        delivery: {
+            ...campaign.delivery,
+            total: await initialUsersCount(campaign),
+        },
+    })
+
     if (tags?.length) {
         await setTags({
             project_id: projectId,
             entity: Campaign.tableName,
-            entity_id: id,
+            entity_id: campaign.id,
             names: tags,
         })
     }
 
-    return await getCampaign(id, projectId) as Campaign
+    return await getCampaign(campaign.id, projectId) as Campaign
 }
 
 export const updateCampaign = async (id: number, projectId: number, { tags, ...params }: Partial<CampaignParams>): Promise<Campaign | undefined> => {
@@ -230,19 +231,6 @@ export const generateSendList = async (campaign: SentCampaign) => {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
-    // Update campaign state to show it's processing
-    await Campaign.update(qb => qb.where('id', campaign.id), {
-        delivery: {
-            sent: 0,
-            total: await totalUsersCount(
-                campaign.list_ids,
-                campaign.exclusion_list_ids ?? [],
-            ),
-            opens: 0,
-            clicks: 0,
-        },
-    })
-
     const insertChunk = async (chunk: CampaignSendParams[]) => {
         if (chunk.length <= 0) return
         return await CampaignSend.query()
@@ -298,7 +286,6 @@ export const campaignSendReadyQuery = (campaignId: number) => {
 }
 
 export const recipientQuery = (campaign: Campaign) => {
-
     return UserList.query()
         .select('user_list.user_id', 'users.timezone')
 
@@ -306,6 +293,12 @@ export const recipientQuery = (campaign: Campaign) => {
         .leftJoin('user_subscription', qb => {
             qb.on('user_list.user_id', 'user_subscription.user_id')
                 .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
+        })
+
+        // Join in the exclusion list
+        .leftJoin('user_list as ul2', qb => {
+            qb.on('ul2.user_id', 'user_list.user_id')
+                .onIn('ul2.list_id', campaign.exclusion_list_ids ?? [])
         })
 
         // Join users to get the timezone field
@@ -325,8 +318,8 @@ export const recipientQuery = (campaign: Campaign) => {
         })
 
         // Find all users in provided lists, removing ones in exclusion list
-        .whereIn('list_id', campaign.list_ids ?? [])
-        .whereNotIn('list_id', campaign.exclusion_list_ids ?? [])
+        .whereIn('user_list.list_id', campaign.list_ids ?? [])
+        .whereNull('ul2.list_id')
 
         // Filter out existing sends (handle aborts & reschedules)
         .whereNull('campaign_sends.id')
@@ -360,10 +353,12 @@ export const duplicateCampaign = async (campaign: Campaign) => {
     return await getCampaign(cloneId, campaign.project_id)
 }
 
-const totalUsersCount = async (listIds: number[], exclusionListIds: number[]): Promise<number> => {
-    const totalIncluded = await listUserCount(listIds)
-    const totalExcluded = await listUserCount(exclusionListIds)
-    return Math.max(0, (totalIncluded - totalExcluded))
+const initialUsersCount = async (campaign: Campaign): Promise<number> => {
+    const response = await recipientQuery(campaign)
+        .clearSelect()
+        .select(UserList.raw('COUNT(DISTINCT(users.id)) as count'))
+    const { count } = response[0]
+    return Math.max(0, count)
 }
 
 export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {

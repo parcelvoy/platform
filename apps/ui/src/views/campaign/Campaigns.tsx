@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import api from '../../api'
-import { Campaign, CampaignState } from '../../types'
+import { Campaign, CampaignDelivery, CampaignState } from '../../types'
 import Button from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
@@ -26,6 +26,12 @@ export const CampaignTag = ({ state }: { state: CampaignState }) => {
     return <Tag variant={variant[state]}>
         {snakeToTitle(state)}
     </Tag>
+}
+
+export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
+    const sent = (delivery?.sent ?? 0).toLocaleString()
+    const total = (delivery?.total ?? 0).toLocaleString()
+    return `${sent} / ${total}`
 }
 
 export default function Campaigns() {
@@ -74,7 +80,7 @@ export default function Campaigns() {
                         },
                         {
                             key: 'delivery',
-                            cell: ({ item }) => `${item.delivery?.sent ?? 0} / ${item.delivery?.total ?? 0}`,
+                            cell: ({ item: { delivery } }) => DeliveryRatio({ delivery }),
                         },
                         {
                             key: 'send_at',
