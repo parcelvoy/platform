@@ -9,7 +9,7 @@ import Modal from '../../ui/Modal'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
 import { CampaignForm } from './CampaignForm'
-import { CampaignTag } from './Campaigns'
+import { CampaignTag, DeliveryRatio } from './Campaigns'
 import ChannelTag from './ChannelTag'
 
 export default function CampaignOverview() {
@@ -56,7 +56,7 @@ export default function CampaignOverview() {
                 in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
                 send_lists: DelimitedLists({ lists: campaign.lists }),
                 exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
-                delivery: `${campaign.delivery?.sent ?? 0} / ${campaign.delivery?.total ?? 0}`,
+                delivery: DeliveryRatio({ delivery: campaign.delivery }),
             }} />
             <Modal
                 open={isEditOpen}
