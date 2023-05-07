@@ -69,6 +69,7 @@ describe('CampaignService', () => {
         return await User.insertAndFetch({
             project_id,
             external_id: uuid(),
+            email: `${uuid()}@test.com`,
             data: {},
         })
     }
