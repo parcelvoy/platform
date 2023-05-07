@@ -9,8 +9,8 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
-import App from 'app'
-import ProjectRulePathSyncJob from 'rules/ProjectRulePathSyncJob'
+import App from '../app'
+import ProjectRulePathSyncJob from '../rules/ProjectRulePathSyncJob'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 

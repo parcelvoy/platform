@@ -25,8 +25,6 @@ export default class ProjectRulePathSyncJob extends Job {
             ? [project_id]
             : await Project.query().select('id').then(rs => rs.map((r: any) => r.id))
 
-        console.log('projectIds', projectIds)
-
         for (const project_id of projectIds) {
             await syncProjectRulePaths({
                 project_id,
