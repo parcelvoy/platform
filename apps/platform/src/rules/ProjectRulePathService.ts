@@ -1,43 +1,24 @@
 import App from '../app'
-import { Database } from '../config/database'
 import { ProjectRulePath } from './ProjectRulePath'
 
-interface GetDistinctPathsParams {
-    source: 'users' | 'user_events'
-    project_id: number
-    db?: Database
-    delta?: Date // for loading delta
+export async function listUserPaths(project_id: number) {
+    const paths: Array<{ path: string }> = await ProjectRulePath.query()
+        .select('path')
+        .where('type', 'user')
+        .where('project_id', project_id)
+    return paths.map(p => p.path)
+}
+
+export async function listEventPaths(project_id: number, name: string) {
+    const paths: Array<{ path: string }> = await ProjectRulePath.query()
+        .select('path')
+        .where('type', 'event')
+        .where('name', name)
+        .where('project_id', project_id)
+    return paths.map(p => p.path)
 }
 
 const rx = /\[\d+\]/g
-
-export async function getDistinctPaths({
-    db = App.main.db,
-    delta,
-    project_id,
-    source,
-}: GetDistinctPathsParams) {
-
-    let sql = `
-        select distinct x.p
-        from :source:,
-            json_table(json_search(data, 'all', '%'), '$[*]' columns (p varchar(255) path '$')) x
-        where :source:.project_id = :project_id`
-
-    if (delta) {
-        sql += ' and updated_at >= :delta'
-    }
-
-    return await db.raw(sql, {
-        source,
-        project_id,
-        delta,
-    }).then(x => x[0].map((y: any) => y.p))
-        .then((paths: string[]) => paths
-            .map(p => p.replace(rx, '[*]'))
-            .filter((o, i, a) => a.indexOf(o) === i),
-        )
-}
 
 interface SyncProjectRulePathsParams {
     project_id: number
@@ -82,7 +63,12 @@ export async function syncProjectRulePaths({
             project_id,
             delta,
         }).then(x => x[0] as Array<{ name: string; path: string; }>)
-            .then(list => list.filter(({ name, path }, i, a) => a.findIndex(x => x.name === name && x.path === path) === i))
+            .then(list => list
+                .map(p => ({
+                    ...p,
+                    path: p.path.replace(rx, '[*]'),
+                }))
+                .filter(({ name, path }, i, a) => a.findIndex(x => x.name === name && x.path === path) === i))
 
         const existing = await ProjectRulePath.all(q => q.where('project_id', project_id), trx)
 

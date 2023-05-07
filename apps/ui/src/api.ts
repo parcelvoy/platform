@@ -143,6 +143,14 @@ const api = {
         all: async () => await client
             .get<Project[]>('/admin/projects/all')
             .then(r => r.data),
+        paths: {
+            user: async (projectId: number | string) => await client
+                .get<string[]>(`${projectUrl(projectId)}/data/paths/user`)
+                .then(r => r.data),
+            event: async (projectId: number | string, name: string) => await client
+                .get<string[]>(`${projectUrl(projectId)}/data/paths/event/${name}`)
+                .then(r => r.data),
+        },
     },
 
     apiKeys: createProjectEntityPath<ProjectApiKey, ProjectApiKeyParams, Omit<ProjectApiKeyParams, 'scope'>>('keys'),
