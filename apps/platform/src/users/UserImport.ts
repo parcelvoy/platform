@@ -1,7 +1,8 @@
 import { FileStream } from '../storage/FileStream'
-import { parse } from 'csv-parse'
+import { parse, Options } from 'csv-parse'
 import UserPatchJob from './UserPatchJob'
 import ListStatsJob from '../lists/ListStatsJob'
+import { RequestError } from '../core/errors'
 
 export interface UserImport {
     project_id: number
@@ -11,9 +12,15 @@ export interface UserImport {
 
 export const importUsers = async ({ project_id, stream, list_id }: UserImport) => {
 
-    const parser = stream.file.pipe(parse({ columns: true, cast: true }))
+    const options: Options = {
+        columns: true,
+        cast: true,
+        skip_empty_lines: true,
+    }
+    const parser = stream.file.pipe(parse(options))
     for await (const row of parser) {
         const { external_id, email, phone, timezone, ...data } = cleanRow(row)
+        if (!external_id) throw new RequestError('Every upload must contain a column `external_id` which contains the identifier for that user.')
         await UserPatchJob.from({
             project_id,
             user: {
