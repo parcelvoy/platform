@@ -110,6 +110,7 @@ export const injectInBody = (html: string, injection: string, placement: 'start'
 export const trackLinkEvent = async (
     parts: Partial<TrackedLinkExport>,
     interaction: 'opened' | 'clicked' | 'bounced' | 'complained',
+    extra?: any,
 ) => {
     const { user, campaign } = parts
     if (!user || !campaign) return
@@ -124,6 +125,7 @@ export const trackLinkEvent = async (
                 channel: campaign.channel,
                 url: parts.redirect,
                 subscription_id: campaign.subscription_id,
+                extra,
             },
         },
     })
