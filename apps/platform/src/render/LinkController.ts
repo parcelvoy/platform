@@ -7,7 +7,7 @@ const router = new Router<{app: App}>()
 router.get('/c', async ctx => {
 
     // If no redirect, just show a default page
-    if (!ctx.query.redirect) {
+    if (!ctx.query.r) {
         ctx.body = 'It looks like this link doesn\'t work properly!'
         ctx.status = 200
         return
