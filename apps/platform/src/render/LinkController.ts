@@ -8,7 +8,7 @@ router.get('/c', async ctx => {
 
     // If no redirect, just show a default page
     if (!ctx.query.redirect) {
-        ctx.body = `It looks like this link doesn't work properly!`
+        ctx.body = 'It looks like this link doesn\'t work properly!'
         ctx.status = 200
         return
     }
