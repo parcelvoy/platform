@@ -5,9 +5,18 @@ import { encodedLinkToParts, trackLinkEvent } from './LinkService'
 const router = new Router<{app: App}>()
 
 router.get('/c', async ctx => {
+
+    // If no redirect, just show a default page
+    if (!ctx.query.redirect) {
+        ctx.body = `It looks like this link doesn't work properly!`
+        ctx.status = 200
+        return
+    }
+
     const parts = await encodedLinkToParts(ctx.URL)
     await trackLinkEvent(parts, 'clicked')
     ctx.redirect(parts.redirect)
+    ctx.status = 303
 })
 
 router.get('/o', async ctx => {
