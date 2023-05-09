@@ -127,6 +127,6 @@ export default class SESEmailProvider extends EmailProvider {
         const campaign = await getCampaign(campaignId, projectId)
 
         const interaction = notificationType === 'Bounce' ? 'bounced' : 'complained'
-        await trackLinkEvent({ user, campaign }, interaction)
+        await trackLinkEvent({ user, campaign }, interaction, json)
     }
 }
