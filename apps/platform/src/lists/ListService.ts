@@ -157,11 +157,15 @@ export const addUserToList = async (user: User | number, list: List | number, ev
 export const importUsersToList = async (list: List, stream: FileStream) => {
     await updateList(list.id, { state: 'loading' })
 
-    await importUsers({
-        project_id: list.project_id,
-        list_id: list!.id,
-        stream,
-    })
+    try {
+        await importUsers({
+            project_id: list.project_id,
+            list_id: list!.id,
+            stream,
+        })
+    } finally {
+        await updateList(list.id, { state: 'ready' })
+    }
 
     await updateList(list.id, { state: 'ready' })
 }

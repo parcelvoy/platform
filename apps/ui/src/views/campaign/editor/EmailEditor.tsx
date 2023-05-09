@@ -33,7 +33,6 @@ export default function EmailEditor() {
             setCampaign(newCampaign)
             toast.success('Template saved!')
         } finally {
-            console.log('done saving')
             setIsSaving(false)
         }
     }
