@@ -162,6 +162,16 @@ export interface User {
     timezone?: string
     locale?: string
     data: Record<string, any>
+    devices?: Device[]
+}
+
+export interface Device {
+    device_id: string
+    token?: string
+    os: string
+    model: string
+    app_build: string
+    app_version: string
 }
 
 export interface UserEvent {

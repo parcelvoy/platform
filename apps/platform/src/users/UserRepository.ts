@@ -94,16 +94,17 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
     if (!user) return
 
     if (!user.devices) user.devices = []
-    const device = user.devices?.find(
-        device => device.device_id === params.device_id,
-    )
+    const device = user.devices?.find(device => {
+        return device.device_id === params.device_id
+            || (device.token === params.token && device.token != null)
+    })
     if (device) {
         Object.assign(device, params)
     } else {
-        user.devices.push(Device.fromJson({
+        user.devices.push({
             ...params,
             device_id: params.device_id,
-        }))
+        })
     }
     await User.updateAndFetch(user.id, { devices: user.devices })
     return device
@@ -113,7 +114,7 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
     const user = await User.find(userId)
     if (!user) return false
     const device = user.devices?.find(device => device.token && tokens.includes(device.token))
-    if (device) device.notifications_enabled = false
+    if (device) device.token = undefined
     await User.update(qb => qb.where('id', userId), {
         devices: user.devices,
     })

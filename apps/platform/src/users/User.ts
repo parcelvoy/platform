@@ -15,21 +15,16 @@ export interface UserAttribute {
     value: any
 }
 
-export class Device extends Model {
-    device_id!: string
+export interface Device {
+    device_id: string
     token?: string
-    notifications_enabled!: boolean
-    os!: string
-    model!: string
-    app_build!: string
-    app_version!: string
-
-    get isPushEnabled(): boolean {
-        return this.token != null && this.notifications_enabled
-    }
+    os: string
+    model: string
+    app_build: string
+    app_version: string
 }
 
-export type DeviceParams = Omit<Device, ModelParams | 'notifications_enabled' | 'isPushEnabled'> & ClientIdentity
+export type DeviceParams = Omit<Device, ModelParams> & ClientIdentity
 
 interface PushEnabledDevice extends Device {
     token: string
@@ -59,7 +54,7 @@ export class User extends Model {
     }
 
     get pushEnabledDevices(): PushEnabledDevice[] {
-        return this.devices?.filter(device => device.isPushEnabled) as PushEnabledDevice[]
+        return this.devices?.filter(device => device.token != null) as PushEnabledDevice[] ?? []
     }
 
     get fullName() {
