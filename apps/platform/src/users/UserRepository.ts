@@ -17,10 +17,10 @@ export const getUserFromClientId = async (projectId: number, identity: ClientIde
     return await User.first(
         qb => qb.where(sqb => {
             if (identity.external_id) {
-                sqb.where('external_id', identity.external_id)
+                sqb.where('external_id', `${identity.external_id}`)
             }
             if (identity.anonymous_id) {
-                sqb.orWhere('anonymous_id', identity.anonymous_id)
+                sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
             }
         }).where('project_id', projectId),
     )
