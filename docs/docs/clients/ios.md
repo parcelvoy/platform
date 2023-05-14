@@ -28,7 +28,7 @@ Parcelvoy.initialize(apiKey: "API_KEY", urlEndpoint: "URL_ENDPOINT")
 ```
 
 ### Identify
-You can handle the user identity of your users by using the `identify` method. This method works in combination either/or associate a given user to your internal user ID (`external_id`) or to associate attributes (traits) to the user. By default all events and traits are associated with an anonymous ID until a user is identified with an `external_id`. From that point moving forward, all updates to the user and events will be associated to your provider identifier.
+You can handle the user identity of your users by using the `identify` method. This method either associates a given user to your internal user ID (`external_id`) or to associates attributes (traits) to the user. By default all events and traits are associated with an anonymous ID until a user is identified with an `external_id`. From that point moving forward, all updates to the user and events will be associated to your provided identifier.
 ```swift
 Parcelvoy.shared.identify(id: "USER_ID", traits: [
     "first_name": "John",
@@ -37,7 +37,7 @@ Parcelvoy.shared.identify(id: "USER_ID", traits: [
 ```
 
 ### Events
-If you wnat to trigger journey and list updates off of things a user does within your app, you can pass up those events by using the `track` method.
+If you want to trigger journey and list updates off of things a user does within your app, you can pass up those events by using the `track` method.
 ```swift
 Parcelvoy.shared.track(
     event: "Event Name",
@@ -78,4 +78,3 @@ Parcelvoy links will now be automatically read and opened in your application.
 ## Example
 
 Explore our [example project](https://github.com/parcelvoy/ios-sdk/tree/main/Example) which includes basic usage.
-
