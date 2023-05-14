@@ -171,7 +171,7 @@ export const importUsersToList = async (list: List, stream: FileStream) => {
 }
 
 export const populateList = async (list: List, rule: Rule) => {
-    const { id, version: oldVersion } = list
+    const { id, version: oldVersion = 0 } = list
     const version = oldVersion + 1
     await updateList(id, { state: 'loading', version })
 

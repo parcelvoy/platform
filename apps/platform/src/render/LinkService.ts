@@ -107,10 +107,11 @@ export const injectInBody = (html: string, injection: string, placement: 'start'
     return html
 }
 
-export const trackLinkEvent = async (
+export const trackMessageEvent = async (
     parts: Partial<TrackedLinkExport>,
-    interaction: 'opened' | 'clicked' | 'bounced' | 'complained',
-    extra?: any,
+    type: 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed',
+    action?: 'unsubscribe',
+    context?: any,
 ) => {
     const { user, campaign } = parts
     if (!user || !campaign) return
@@ -119,13 +120,13 @@ export const trackLinkEvent = async (
         project_id: user.project_id,
         event: {
             external_id: user.external_id,
-            name: interaction,
+            name: type,
             data: {
                 campaign_id: campaign.id,
                 channel: campaign.channel,
                 url: parts.redirect,
                 subscription_id: campaign.subscription_id,
-                extra,
+                context,
             },
         },
     })
@@ -134,7 +135,8 @@ export const trackLinkEvent = async (
         campaign_id: campaign.id,
         user_id: user.id,
         subscription_id: campaign.subscription_id,
-        interaction,
+        type,
+        action,
     })
 
     await App.main.queue.enqueueBatch([
