@@ -9,7 +9,7 @@ import { decodeHashid } from '../../utilities'
 import { getUserFromEmail } from '../../users/UserRepository'
 import { RequestError } from '../../core/errors'
 import { getCampaign } from '../../campaigns/CampaignService'
-import { trackLinkEvent } from '../../render/LinkService'
+import { trackMessageEvent } from '../../render/LinkService'
 
 interface MailgunDataParams {
     api_key: string
@@ -85,7 +85,7 @@ export default class MailgunEmailProvider extends EmailProvider {
 
             // If event is not a bounce or complaint, break
             if (!['failed', 'complained'].includes(event)) return
-            const interaction = event === 'failed' ? 'bounced' : 'complained'
+            const type = event === 'failed' ? 'bounced' : 'complained'
 
             // Get values from webhook to identify user and campaign
             const campaignId = decodeHashid(headers['X-Campaign-Id'])
@@ -97,7 +97,7 @@ export default class MailgunEmailProvider extends EmailProvider {
             if (!user || !campaign) return
 
             // Create an event and process the unsubscribe
-            await trackLinkEvent({ user, campaign }, interaction)
+            await trackMessageEvent({ user, campaign }, type, 'unsubscribe')
         })
 
         return { admin, public: router }

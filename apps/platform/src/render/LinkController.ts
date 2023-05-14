@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import App from '../app'
-import { encodedLinkToParts, trackLinkEvent } from './LinkService'
+import { encodedLinkToParts, trackMessageEvent } from './LinkService'
 
 const router = new Router<{app: App}>()
 
@@ -14,14 +14,14 @@ router.get('/c', async ctx => {
     }
 
     const parts = await encodedLinkToParts(ctx.URL)
-    await trackLinkEvent(parts, 'clicked')
+    await trackMessageEvent(parts, 'clicked')
     ctx.redirect(parts.redirect)
     ctx.status = 303
 })
 
 router.get('/o', async ctx => {
     const parts = await encodedLinkToParts(ctx.URL)
-    await trackLinkEvent(parts, 'opened')
+    await trackMessageEvent(parts, 'opened')
     ctx.status = 204
 })
 

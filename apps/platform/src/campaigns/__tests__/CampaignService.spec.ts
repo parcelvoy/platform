@@ -24,12 +24,12 @@ describe('CampaignService', () => {
     }
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
-        const adminId = await Admin.insert({
+        const admin = await Admin.insertAndFetch({
             first_name: uuid(),
             last_name: uuid(),
             email: `${uuid()}@test.com`,
         })
-        const project = await createProject(adminId, {
+        const project = await createProject(admin, {
             name: uuid(),
             timezone: 'utc',
         })
@@ -166,7 +166,7 @@ describe('CampaignService', () => {
             const user = await createUser(campaign.project_id)
 
             const spy = jest.spyOn(App.main.queue, 'enqueue')
-            await sendCampaign(campaign, user)
+            await sendCampaign({ campaign, user })
 
             expect(spy).toHaveBeenCalledTimes(1)
             expect(spy.mock.calls[0][0]).toBeInstanceOf(EmailJob)

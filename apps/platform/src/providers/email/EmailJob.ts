@@ -21,7 +21,7 @@ export default class EmailJob extends Job {
 
         const { campaign, template, user, project, event, context } = data
 
-        // Send and render email
+        // Load email channel so its ready to send
         const channel = await loadEmailChannel(campaign.provider_id, project.id)
         if (!channel) {
             await updateSendState(campaign, user, 'failed')

@@ -73,7 +73,7 @@ export default function FormWrapper<T extends FieldValues>({
         return defaultError
     }
 
-    const { errors, isDirty, isValid } = form.formState
+    const { errors, isValid } = form.formState
     const error = handleFormErrors(errors) ?? handleServerErrors()
 
     return (
@@ -85,7 +85,7 @@ export default function FormWrapper<T extends FieldValues>({
                     <Button
                         type="submit"
                         isLoading={isLoading}
-                        disabled={!isDirty || !isValid}>
+                        disabled={!isValid}>
                         {submitLabel}
                     </Button>
                 </label>

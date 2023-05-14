@@ -1,5 +1,5 @@
 import App from '../app'
-import Campaign from '../campaigns/Campaign'
+import Campaign, { CampaignSend } from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
 import { RateLimitResponse } from '../config/rateLimit'
 import Project from '../projects/Project'
@@ -22,14 +22,18 @@ interface MessageTriggerHydrated<T> {
     context: RenderContext
 }
 
-export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
+export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
 
     const user = await User.find(user_id)
     const event = await UserEvent.find(event_id)
     const project = await Project.find(user?.project_id)
+    const send = await CampaignSend.find(send_id)
 
     // If user or project is deleted, abort and discard job
     if (!user || !project) return
+
+    // If there is a send and it's in an aborted state, abort
+    if (send && send.state === 'aborted') return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)
@@ -43,7 +47,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     // Determine what template to send to the user based on the following:
     // - Find an exact match of users locale with a template
     // - Find a partial match (same root locale i.e. `en` vs `en-US`)
-    // - If a project locale is set and there is amtch, use that template
+    // - If a project locale is set and there is match, use that template
     // - If there is a project locale and its a partial match, use
     // - Otherwise return any template available
     const template = templates.find(item => item.locale === user.locale)

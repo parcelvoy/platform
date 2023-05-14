@@ -197,7 +197,7 @@ export class JourneyAction extends JourneyStep {
     async complete(user: User, event?: UserEvent) {
         const campaign = await getCampaign(this.campaign_id, user.project_id)
         if (campaign) {
-            await sendCampaign(campaign, user, event)
+            await sendCampaign({ campaign, user, event })
         }
 
         super.complete(user, event)

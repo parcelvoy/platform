@@ -1,4 +1,4 @@
-import { formatISO } from 'date-fns'
+import { formatISO, isPast } from 'date-fns'
 import { useContext, useState } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
@@ -22,11 +22,13 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
     const [error, setError] = useState<string | undefined>()
 
     async function handleLaunchCampaign(params: CampaignLaunchParams) {
-        if (params.send_at) {
-            params.send_at = formatISO(Date.parse(params.send_at))
-        } else {
-            params.send_at = formatISO(new Date())
+        const sendAt = params.send_at ? Date.parse(params.send_at) : new Date()
+        if (launchType === 'later'
+            && isPast(sendAt)
+            && !confirm('Are you sure you want to launch a campaign in the past? Messages will go out immediately.')) {
+            return
         }
+        params.send_at = formatISO(sendAt)
 
         try {
             const value = await api.campaigns.update(project.id, campaign.id, params)
@@ -61,7 +63,7 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
                         form={form}
                         name="send_in_user_timezone"
                         label="Send In Users Timezone"
-                        subtitle="Should the campaign go out at the selected time in the users timezone or in the project timezone?" />
+                        subtitle="Should the campaign go out at the selected time in the users timezone or in the projects timezone?" />
                 </>}
             </>}
         </FormWrapper>

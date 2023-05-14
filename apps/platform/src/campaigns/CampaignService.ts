@@ -169,12 +169,14 @@ export const getCampaignUsers = async (id: number, params: SearchParams, project
     )
 }
 
-type SendCampaign = {
-    (campaign: Campaign, user: User, event?: UserEvent): Promise<void>,
-    (campaign: Campaign, userId: number, eventId?: number): Promise<void>,
+interface SendCampaign {
+    campaign: Campaign
+    user: User | number
+    event?: UserEvent | number
+    send_id?: number
 }
 
-export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User | number, event?: UserEvent | number): Promise<void> => {
+export const sendCampaign = async ({ campaign, user, event, send_id }: SendCampaign): Promise<void> => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
@@ -182,6 +184,7 @@ export const sendCampaign: SendCampaign = async (campaign: Campaign, user: User 
         campaign_id: campaign.id,
         user_id: user instanceof User ? user.id : user,
         event_id: event instanceof UserEvent ? event?.id : event,
+        send_id,
     }
 
     // TODO: Should filter out anyone who has already been through this
@@ -282,12 +285,12 @@ export const campaignSendReadyQuery = (campaignId: number) => {
         .where('campaign_sends.send_at', '<', CampaignSend.raw('NOW()'))
         .where('campaign_sends.state', 'pending')
         .where('campaign_id', campaignId)
-        .select('user_id')
+        .select('user_id', 'campaign_sends.id AS send_id')
 }
 
 export const recipientQuery = (campaign: Campaign) => {
     return UserList.query()
-        .select('user_list.user_id', 'users.timezone')
+        .select(UserList.raw('DISTINCT user_list.user_id'), 'users.timezone')
 
         // Join user subscriptions to filter out unsubscribes
         .leftJoin('user_subscription', qb => {
@@ -355,7 +358,7 @@ export const duplicateCampaign = async (campaign: Campaign) => {
 
 const initialUsersCount = async (campaign: Campaign): Promise<number> => {
     const response = await recipientQuery(campaign)
-        .clearSelect()
+        .clear('select')
         .select(UserList.raw('COUNT(DISTINCT(users.id)) as count'))
     const { count } = response[0]
     return Math.max(0, count)

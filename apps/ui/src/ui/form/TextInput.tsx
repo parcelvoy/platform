@@ -19,9 +19,9 @@ export interface BaseTextInputProps<T extends TextInputValue> extends Partial<Co
     labelRef?: Ref<HTMLLabelElement>
     inputRef?: Ref<HTMLInputElement | HTMLTextAreaElement>
     hideLabel?: boolean
-    min?: number
+    min?: number | string
     minLength?: number
-    max?: number
+    max?: number | string
     maxLength?: number
     icon?: ReactNode
 }

@@ -84,7 +84,10 @@ const ListSelection = ({
                         key: 'type',
                         cell: ({ item: { type } }) => snakeToTitle(type),
                     },
-                    { key: 'users_count' },
+                    {
+                        key: 'users_count',
+                        cell: ({ item }) => item.users_count?.toLocaleString(),
+                    },
                     { key: 'updated_at' },
                     {
                         key: 'options',
