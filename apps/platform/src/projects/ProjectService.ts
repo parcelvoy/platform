@@ -7,6 +7,7 @@ import { uuid } from '../utilities'
 import Project, { ProjectParams, ProjectRole, projectRoles } from './Project'
 import { ProjectAdmin } from './ProjectAdmins'
 import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
+import { Admin } from '../auth/Admin'
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
@@ -27,13 +28,16 @@ export const getProject = async (id: number, adminId?: number) => {
         })
 }
 
-export const createProject = async (adminId: number, params: ProjectParams): Promise<Project> => {
-    const projectId = await Project.insert(params)
+export const createProject = async (admin: Admin, params: ProjectParams): Promise<Project> => {
+    const projectId = await Project.insert({
+        ...params,
+        organization_id: admin.organization_id,
+    })
 
     // Add the user creating the project to it
     await ProjectAdmin.insert({
         project_id: projectId,
-        admin_id: adminId,
+        admin_id: admin.id,
         role: 'admin',
     })
 
@@ -43,7 +47,7 @@ export const createProject = async (adminId: number, params: ProjectParams): Pro
     await createSubscription(projectId, { name: 'Default Push', channel: 'push' })
     await createSubscription(projectId, { name: 'Default Webhook', channel: 'webhook' })
 
-    const project = await getProject(projectId, adminId)
+    const project = await getProject(projectId, admin.id)
     return project!
 }
 

@@ -1,4 +1,6 @@
 import { SearchParams } from '../core/searchParams'
+import Organization from '../organizations/Organization'
+import Project from '../projects/Project'
 import { Admin, AdminParams } from './Admin'
 
 export const pagedAdmins = async (params: SearchParams) => {
@@ -18,9 +20,32 @@ export const getAdminByEmail = async (email: string): Promise<Admin | undefined>
 
 export const createOrUpdateAdmin = async (params: AdminParams): Promise<Admin> => {
     const admin = await getAdminByEmail(params.email)
+
+    // TODO: Move organization ID to be dynamic.
+    // During migration to supporting organizations only a single
+    // org will be allowed.
+    let org = await Organization.find(1)
+    if (!org) org = await initOrganization(admin)
+
     if (admin?.id) {
         return Admin.updateAndFetch(admin.id, params)
     } else {
-        return Admin.insertAndFetch(params)
+        return Admin.insertAndFetch({
+            ...params,
+            organization_id: org.id,
+        })
     }
+}
+
+const initOrganization = async (admin?: Admin): Promise<Organization> => {
+    const domain = admin?.email.split('@').pop()
+    const org = await Organization.insertAndFetch({
+        id: 1,
+        name: domain,
+        domain,
+    })
+    await Project.update(qb => qb, { organization_id: org.id })
+    await Admin.update(qb => qb, { organization_id: org.id })
+
+    return org
 }

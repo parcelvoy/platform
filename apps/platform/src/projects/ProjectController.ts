@@ -9,6 +9,7 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
+import { getAdmin } from '../auth/AdminRepository'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -70,7 +71,8 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(projectCreateParams, ctx.request.body)
-    ctx.body = await createProject(ctx.state.admin!.id, payload)
+    const admin = await getAdmin(ctx.state.admin!.id)
+    ctx.body = await createProject(admin!, payload)
 })
 
 export default router
