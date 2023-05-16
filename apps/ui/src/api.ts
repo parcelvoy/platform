@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -143,14 +143,9 @@ const api = {
         all: async () => await client
             .get<Project[]>('/admin/projects/all')
             .then(r => r.data),
-        paths: {
-            user: async (projectId: number | string) => await client
-                .get<string[]>(`${projectUrl(projectId)}/data/paths/user`)
-                .then(r => r.data),
-            event: async (projectId: number | string, name: string) => await client
-                .get<string[]>(`${projectUrl(projectId)}/data/paths/event/${name}`)
-                .then(r => r.data),
-        },
+        pathSuggestions: async (projectId: number | string) => await client
+            .get<RuleSuggestions>(`${projectUrl(projectId)}/data/paths`)
+            .then(r => r.data),
     },
 
     apiKeys: createProjectEntityPath<ProjectApiKey, ProjectApiKeyParams, Omit<ProjectApiKeyParams, 'scope'>>('keys'),

@@ -9,6 +9,16 @@ export async function listUserPaths(project_id: number) {
     return paths.map(p => p.path)
 }
 
+export async function listEventNames(project_id: number) {
+    return await ProjectRulePath.query()
+        .distinct()
+        .where('project_id', project_id)
+        .where('type', 'event')
+        .orderBy('name')
+        .pluck('name')
+        .then(list => list.filter(Boolean) as string[])
+}
+
 export async function listEventPaths(project_id: number, name: string) {
     const paths: Array<{ path: string }> = await ProjectRulePath.query()
         .select('path')

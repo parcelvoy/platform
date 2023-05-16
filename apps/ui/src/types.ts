@@ -55,7 +55,7 @@ export type Rule = {
     group: RuleGroup
     path: string
     operator: Operator
-    value?: AnyJson
+    value?: string
     children?: Rule[]
 } & (
     | {
@@ -70,6 +70,13 @@ export type Rule = {
 )
 
 export type WrapperRule = Rule & { type: 'wrapper' }
+
+export interface RuleSuggestions {
+    userPaths: string[]
+    eventPaths: {
+        [name: string]: string[]
+    }
+}
 
 export interface Preferences {
     readonly lang: string

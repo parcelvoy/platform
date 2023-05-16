@@ -9,7 +9,7 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
-import { listEventPaths, listUserPaths } from '../rules/ProjectRulePathService'
+import { ProjectRulePath } from '../rules/ProjectRulePath'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -116,12 +116,23 @@ subrouter.patch('/', async ctx => {
     ctx.body = await updateProject(project.id, admin!.id, payload)
 })
 
-subrouter.get('/data/paths/user', async ctx => {
-    ctx.body = await listUserPaths(ctx.state.project.id)
-})
-
-subrouter.get('/data/paths/event/:eventName', async ctx => {
-    ctx.body = await listEventPaths(ctx.state.project.id, ctx.params.eventName!)
+subrouter.get('/data/paths', async ctx => {
+    ctx.body = await ProjectRulePath
+        .all(q => q.where('project_id', ctx.state.project.id))
+        .then(list => list.reduce((a, { type, name, path }) => {
+            if (type === 'event') {
+                (a.eventPaths[name!] ?? (a.eventPaths[name!] = [])).push(path)
+            } else {
+                a.userPaths.push(path)
+            }
+            return a
+        }, {
+            userPaths: [],
+            eventPaths: {},
+        } as {
+            userPaths: string[]
+            eventPaths: { [name: string]: string[] }
+        }))
 })
 
 export { subrouter as ProjectSubrouter }
