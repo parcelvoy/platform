@@ -59,7 +59,7 @@ To allow for click tracking links in emails can be click-wrapped in a Parcelvoy 
 
 Parcelvoy includes a method which checks to see if a given URL is a Parcelvoy URL and if so, unwraps the url, triggers the unwrapped URL and calls the Parcelvoy API to register that the URL was executed.
 
-To start using deeplinking in your app, add your Parcelvoy deployment URL in your activity `intent-filter`. Example in the sample project [dere](samples/kotlin-android-app/src/main/AndroidManifest.xml).
+To start using deeplinking in your app, add your Parcelvoy deployment URL in your activity `intent-filter`. Example in the sample project [dere](https://github.com/parcelvoy/android-sdk/tree/main/samples/kotlin-android-app/src/main/AndroidManifest.xml).
 
 Next, you'll need to update your apps code to support unwrapping the Parcelvoy URLs that open your app. To do so, use the `getUriRedirect(universalLink)` method. In your app delegate's `onNewIntent(intent)` method, unwrap the URL and pass it to the handler:
 
