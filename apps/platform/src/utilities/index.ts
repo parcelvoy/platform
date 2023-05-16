@@ -164,6 +164,9 @@ export function capitalizeFirstLetter(string: string) {
 }
 
 export function shallowEqual(object1: any, object2: any) {
+    if (object1 === object2) return true
+    if (!object1 || !object2) return false
+
     const keys1 = Object.keys(object1)
     const keys2 = Object.keys(object2)
 
