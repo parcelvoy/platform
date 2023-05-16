@@ -66,6 +66,7 @@ export default function CampaignOverview() {
             >
                 <CampaignForm
                     campaign={campaign}
+                    type={campaign.type}
                     onSave={campaign => {
                         setCampaign(campaign)
                         setIsEditOpen(false)
