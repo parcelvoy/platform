@@ -25,8 +25,12 @@ router.get('/', async ctx => {
 export const campaignCreateParams: JSONSchemaType<CampaignCreateParams> = {
     $id: 'campaignCreate',
     type: 'object',
-    required: ['subscription_id', 'provider_id'],
+    required: ['type', 'subscription_id', 'provider_id'],
     properties: {
+        type: {
+            type: 'string',
+            enum: ['blast', 'trigger'],
+        },
         name: {
             type: 'string',
         },

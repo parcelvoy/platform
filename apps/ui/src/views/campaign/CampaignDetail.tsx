@@ -125,7 +125,7 @@ export default function CampaignDetail() {
         <PageContent
             title={name}
             desc={state !== 'draft' && <CampaignTag state={campaign.state} />}
-            actions={action[state]}>
+            actions={campaign.type !== 'trigger' && action[state]}>
             <NavigationTabs tabs={tabs} />
             <LocaleContext.Provider value={[locale, setLocale]}>
                 <Outlet />

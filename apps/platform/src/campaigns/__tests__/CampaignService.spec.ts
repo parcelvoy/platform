@@ -57,6 +57,7 @@ describe('CampaignService', () => {
 
         const campaign = await createCampaign(params.project_id, {
             name: uuid(),
+            type: 'blast',
             channel: 'email',
             ...params,
             ...extras,
@@ -137,6 +138,7 @@ describe('CampaignService', () => {
             const campaign = await createCampaign(params.project_id, {
                 ...params,
                 channel: 'email',
+                type: 'blast',
                 name,
             })
 
@@ -151,6 +153,7 @@ describe('CampaignService', () => {
             const name = uuid()
             const promise = createCampaign(params.project_id, {
                 channel: 'email',
+                type: 'blast',
                 subscription_id: 0,
                 provider_id: params.provider_id,
                 name,

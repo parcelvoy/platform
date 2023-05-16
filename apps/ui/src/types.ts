@@ -284,9 +284,12 @@ export interface CampaignDelivery {
     clicks: number
 }
 
+export type CampaignType = 'blast' | 'trigger'
+
 export interface Campaign {
     id: number
     project_id: number
+    type: CampaignType
     name: string
     channel: ChannelType
     state: CampaignState
@@ -310,7 +313,7 @@ export interface Campaign {
 export type CampaignSendState = 'pending' | 'throttled' | 'bounced' | 'sent' | 'failed'
 
 export type CampaignUpdateParams = Partial<Pick<Campaign, 'name' | 'state' | 'list_ids' | 'exclusion_list_ids' | 'subscription_id' | 'tags'>>
-export type CampaignCreateParams = Pick<Campaign, 'name' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
+export type CampaignCreateParams = Pick<Campaign, 'name' | 'type' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>
 export type CampaignLaunchParams = Pick<Campaign, 'send_at' | 'send_in_user_timezone'>
 // export type ListUpdateParams = Pick<List, 'name' | 'rule'>
 export type CampaignUser = User & { state: CampaignSendState, send_at: string }

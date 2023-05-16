@@ -15,8 +15,11 @@ export interface CampaignDelivery {
 
 export type CampaignProgress = CampaignDelivery & { pending: number }
 
+type CampaignType = 'blast' | 'trigger'
+
 export default class Campaign extends Model {
     project_id!: number
+    type!: CampaignType
     name!: string
     list_ids?: number[]
     lists?: List[]
@@ -44,7 +47,7 @@ export type SentCampaign = Campaign & { send_at: Date }
 
 export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'screenshotUrl' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'deleted_at'>
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
-export type CampaignUpdateParams = Omit<CampaignParams, 'channel'>
+export type CampaignUpdateParams = Omit<CampaignParams, 'channel' | 'type'>
 
 export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted'
 export class CampaignSend extends Model {
