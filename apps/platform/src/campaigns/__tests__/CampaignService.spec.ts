@@ -166,7 +166,7 @@ describe('CampaignService', () => {
             const user = await createUser(campaign.project_id)
 
             const spy = jest.spyOn(App.main.queue, 'enqueue')
-            await sendCampaign(campaign, user)
+            await sendCampaign({ campaign, user })
 
             expect(spy).toHaveBeenCalledTimes(1)
             expect(spy.mock.calls[0][0]).toBeInstanceOf(EmailJob)

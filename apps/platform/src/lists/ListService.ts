@@ -157,17 +157,21 @@ export const addUserToList = async (user: User | number, list: List | number, ev
 export const importUsersToList = async (list: List, stream: FileStream) => {
     await updateList(list.id, { state: 'loading' })
 
-    await importUsers({
-        project_id: list.project_id,
-        list_id: list!.id,
-        stream,
-    })
+    try {
+        await importUsers({
+            project_id: list.project_id,
+            list_id: list!.id,
+            stream,
+        })
+    } finally {
+        await updateList(list.id, { state: 'ready' })
+    }
 
     await updateList(list.id, { state: 'ready' })
 }
 
 export const populateList = async (list: List, rule: Rule) => {
-    const { id, version: oldVersion } = list
+    const { id, version: oldVersion = 0 } = list
     const version = oldVersion + 1
     await updateList(id, { state: 'loading', version })
 
@@ -201,7 +205,9 @@ export const populateList = async (list: List, rule: Rule) => {
         })
 
     // Once list is regenerated, drop any users from previous version
-    await UserList.delete(qb => qb.where('version', '<', version))
+    await UserList.delete(qb => qb
+        .where('version', '<', version)
+        .where('list_id', list.id))
 
     await updateList(id, { state: 'ready' })
 }

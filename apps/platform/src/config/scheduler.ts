@@ -17,6 +17,7 @@ export default (app: App) => {
         callback: () => {
             app.queue.enqueue(JourneyDelayJob.from())
             app.queue.enqueue(CampaignTriggerJob.from())
+            app.queue.enqueue(CampaignStateJob.from())
         },
         lockLength: 120,
     })
@@ -24,7 +25,6 @@ export default (app: App) => {
         rule: '*/5 * * * *',
         callback: () => {
             app.queue.enqueue(ProcessListsJob.from())
-            app.queue.enqueue(CampaignStateJob.from())
         },
         lockLength: 360,
     })

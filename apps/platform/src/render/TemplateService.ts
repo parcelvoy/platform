@@ -69,40 +69,34 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
     const campaign = await getCampaign(template.campaign_id, template.project_id)
     if (!campaign) throw new RequestError(CampaignError.CampaignDoesNotExist)
     const event = UserEvent.fromJson(variables.event || {})
-    const context = variables.context || {}
+    const context = {
+        ...variables.context,
+        campaign_id: template.campaign_id,
+    }
     const projectId = template.project_id
+
+    const user = await getUserFromEmail(projectId, recipient)
+        ?? await getUserFromPhone(projectId, recipient)
+        ?? User.fromJson({ ...variables.user, email: recipient, phone: recipient })
+    user.data = { ...user?.data, ...variables.user }
+    variables = { user, event, context }
 
     if (template.type === 'email') {
         const channel = await loadEmailChannel(campaign.provider_id, projectId)
-        await channel?.send(template, {
-            user: User.fromJson({ ...variables.user, data: variables.user, email: recipient }),
-            event,
-            context,
-        })
+        await channel?.send(template, variables)
+
     } else if (template.type === 'text') {
         const channel = await loadTextChannel(campaign.provider_id, projectId)
-        await channel?.send(template, {
-            user: User.fromJson({ ...variables.user, data: variables.user, phone: recipient }),
-            event,
-            context,
-        })
+        await channel?.send(template, variables)
+
     } else if (template.type === 'push') {
         const channel = await loadPushChannel(campaign.provider_id, projectId)
-        const user = await getUserFromEmail(projectId, recipient) ?? await getUserFromPhone(projectId, recipient)
-        if (!user) throw new RequestError('Unable to find a user matching the criteria.')
-        user.data = { ...variables.user, ...user.data }
-        await channel?.send(template, {
-            user,
-            event,
-            context,
-        })
+        if (!user.id) throw new RequestError('Unable to find a user matching the criteria.')
+        await channel?.send(template, variables)
+
     } else if (template.type === 'webhook') {
         const channel = await loadWebhookChannel(campaign.provider_id, projectId)
-        await channel?.send(template, {
-            user: User.fromJson({ ...variables.user, data: variables.user }),
-            event,
-            context,
-        })
+        await channel?.send(template, variables)
     } else {
         throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
     }

@@ -7,7 +7,7 @@ RUN npm ci
 RUN npm run build
 
 # --------------> The production image
-FROM nginx:1.23.1-alpine
+FROM nginx:1.23.4-alpine
 EXPOSE 3000
 COPY --from=compile /usr/src/app/apps/ui/docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=compile /usr/src/app/apps/ui/build /usr/share/nginx/html

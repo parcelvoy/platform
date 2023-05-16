@@ -9,7 +9,7 @@ import { decodeHashid, encodeHashid, secondsAgo } from '../../utilities'
 import { getUserFromEmail } from '../../users/UserRepository'
 import { RequestError } from '../../core/errors'
 import { getCampaign } from '../../campaigns/CampaignService'
-import { trackLinkEvent } from '../../render/LinkService'
+import { trackMessageEvent } from '../../render/LinkService'
 
 interface SESDataParams {
     config: AWSConfig
@@ -114,7 +114,8 @@ export default class SESEmailProvider extends EmailProvider {
         ) => (headers ?? []).find((item) => item.name.toLowerCase() === key.toLowerCase())?.value
 
         const json = JSON.parse(message) as Record<string, any>
-        const { notificationType, mail: { destination, headers } } = json
+        const { mail: { destination, headers } } = json
+        const eventType = json.eventType ?? json.notificationType
         const email: string | undefined = destination[0]
         const subscriptionId = decodeHashid(getHeader(headers, 'X-Subscription-Id'))
         const campaignId = decodeHashid(getHeader(headers, 'X-Campaign-Id'))
@@ -126,7 +127,19 @@ export default class SESEmailProvider extends EmailProvider {
 
         const campaign = await getCampaign(campaignId, projectId)
 
-        const interaction = notificationType === 'Bounce' ? 'bounced' : 'complained'
-        await trackLinkEvent({ user, campaign }, interaction)
+        let type: 'bounced' | 'complained' | 'failed' = 'failed'
+        let context: any
+        let action: 'unsubscribe' | undefined
+        if (eventType === 'Bounce') {
+            type = 'bounced'
+            context = json.bounce
+            action = json.bounce.bounceType !== 'Transient' ? 'unsubscribe' : undefined
+        }
+        if (eventType === 'Complaint') {
+            type = 'complained'
+            context = json.complaint
+            action = 'unsubscribe'
+        }
+        await trackMessageEvent({ user, campaign }, type, action, context)
     }
 }

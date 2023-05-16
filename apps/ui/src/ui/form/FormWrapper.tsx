@@ -9,6 +9,7 @@ interface FormWrapperProps<T extends FieldValues> {
     defaultValues?: DeepPartial<T>
     submitLabel?: string
     onSubmit: (data: T, navigate: NavigateFunction) => Promise<void>
+    onError?: (error: Error) => void
 }
 
 export default function FormWrapper<T extends FieldValues>({
@@ -16,10 +17,12 @@ export default function FormWrapper<T extends FieldValues>({
     defaultValues,
     submitLabel = 'Submit',
     onSubmit,
+    onError,
 }: FormWrapperProps<T>) {
 
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
+    const [submitError, setSubmitError] = useState<Error | any | undefined>()
 
     const form = useForm<T>({
         defaultValues,
@@ -27,12 +30,18 @@ export default function FormWrapper<T extends FieldValues>({
 
     const handleSubmit = form.handleSubmit(async data => {
         setIsLoading(true)
-        onSubmit(data, navigate).finally(() => {
+        try {
+            await onSubmit(data, navigate)
+        } catch (error: any) {
+            setSubmitError(error)
+            onError?.(error)
+        } finally {
             setIsLoading(false)
-        })
+        }
     })
 
-    const handleErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>): string | undefined => {
+    const defaultError = 'Unable to submit the form an unknown error has occurred'
+    const handleFormErrors = (errors: Partial<FieldErrorsImpl<DeepRequired<T>>>): string | undefined => {
         const keys = Object.keys(errors)
         if (keys.length === 0) return undefined
 
@@ -42,7 +51,7 @@ export default function FormWrapper<T extends FieldValues>({
 
             // If nested, keep searching
             if (!error.type) {
-                return handleErrors(error)
+                return handleFormErrors(error)
             } else if (error.type === 'required') {
                 return `The \`${key}\` field is required`
             } else if (error.type === 'minLength') {
@@ -51,11 +60,21 @@ export default function FormWrapper<T extends FieldValues>({
                 return error.message
             }
         }
-        return 'Unable to submit the form an unknown error has occurred'
+        return defaultError
     }
 
-    const { errors, isDirty, isValid } = form.formState
-    const error = handleErrors(errors)
+    const handleServerErrors = (): string | undefined => {
+        if (!submitError) return undefined
+        if (submitError.error) {
+            return submitError.error
+        } else if (submitError.response?.data?.error) {
+            return submitError.response?.data?.error
+        }
+        return defaultError
+    }
+
+    const { errors, isValid } = form.formState
+    const error = handleFormErrors(errors) ?? handleServerErrors()
 
     return (
         <form onSubmit={handleSubmit} noValidate>
@@ -66,7 +85,7 @@ export default function FormWrapper<T extends FieldValues>({
                     <Button
                         type="submit"
                         isLoading={isLoading}
-                        disabled={!isDirty || !isValid}>
+                        disabled={!isValid}>
                         {submitLabel}
                     </Button>
                 </label>
