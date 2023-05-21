@@ -32,8 +32,9 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     // If user or project is deleted, abort and discard job
     if (!user || !project) return
 
-    // If there is a send and it's in an aborted state, abort
-    if (send && send.state === 'aborted') return
+    // If there is a send and it's in an aborted state or has already
+    // sent, abort this job to prevent duplicate sends
+    if (send && (send.state === 'aborted' || send.state === 'sent')) return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)

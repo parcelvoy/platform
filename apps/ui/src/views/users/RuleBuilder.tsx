@@ -41,7 +41,7 @@ const RuleSet = ({ group, onChange, onDelete }: RuleSetParams) => {
             children: [...group.children ?? [], {
                 path: '',
                 type: 'string',
-                group: 'user',
+                group: group.group,
                 value: null,
                 operator: '=',
             }],
