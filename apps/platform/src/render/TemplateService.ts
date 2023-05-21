@@ -16,7 +16,7 @@ import { loadWebhookChannel } from '../providers/webhook'
 export const pagedTemplates = async (params: PageParams, projectId: number) => {
     return await Template.search(
         params,
-        b => b.where('project_id', projectId),
+        qb => qb.where('project_id', projectId),
     )
 }
 
