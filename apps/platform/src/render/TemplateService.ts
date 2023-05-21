@@ -1,4 +1,4 @@
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
 import { pick, prune } from '../utilities'
 import { Variables } from '.'
@@ -13,11 +13,10 @@ import { loadPushChannel } from '../providers/push'
 import { getUserFromEmail, getUserFromPhone } from '../users/UserRepository'
 import { loadWebhookChannel } from '../providers/webhook'
 
-export const pagedTemplates = async (params: SearchParams, projectId: number) => {
-    return await Template.searchParams(
+export const pagedTemplates = async (params: PageParams, projectId: number) => {
+    return await Template.search(
         params,
-        [],
-        b => b.where({ project_id: projectId }),
+        b => b.where('project_id', projectId),
     )
 }
 

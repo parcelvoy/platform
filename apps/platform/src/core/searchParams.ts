@@ -1,29 +1,40 @@
 import { JSONSchemaType } from 'ajv'
+import Model from './Model'
 
-export interface SearchParams {
-    page: number
-    itemsPerPage: number
-    q?: string
+export interface PageParams {
+    limit: number
     sort?: string
     direction?: string
+    cursor?: string
+    page?: 'prev' | 'next'
+    q?: string
     tag?: string[]
     id?: number[]
 }
 
-export const SearchSchema = (id: string, defaults?: Partial<SearchParams>): JSONSchemaType<SearchParams> => {
+export interface PageQueryParams<T extends typeof Model> extends PageParams {
+    fields?: Array<keyof InstanceType<T> | string>
+    mode?: 'exact' | 'partial'
+}
+
+export const SearchSchema = (id: string, defaults?: Partial<PageParams>): JSONSchemaType<PageParams> => {
     return {
         $id: id,
         type: 'object',
-        required: ['page', 'itemsPerPage'],
+        required: ['limit'],
         properties: {
-            page: {
-                type: 'integer',
-                default: defaults?.page ?? 0,
-                minimum: 0,
+            cursor: {
+                type: 'string',
+                nullable: true,
             },
-            itemsPerPage: {
+            page: {
+                type: 'string',
+                enum: ['prev', 'next'],
+                nullable: true,
+            },
+            limit: {
                 type: 'integer',
-                default: defaults?.itemsPerPage ?? 25,
+                default: defaults?.limit ?? 25,
                 minimum: -1, // -1 for all
             },
             q: {
@@ -60,4 +71,4 @@ export const SearchSchema = (id: string, defaults?: Partial<SearchParams>): JSON
     }
 }
 
-export const searchParamsSchema: JSONSchemaType<SearchParams> = SearchSchema('searchParams')
+export const searchParamsSchema: JSONSchemaType<PageParams> = SearchSchema('searchParams')

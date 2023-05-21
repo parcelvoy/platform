@@ -33,8 +33,7 @@ export default function Sidebar({ children, links }: PropsWithChildren<SidebarPr
         const recents: Array<typeof project> = []
         if (recentIds.length) {
             const projects = await api.projects.search({
-                page: 0,
-                itemsPerPage: recentIds.length,
+                limit: recentIds.length,
                 id: recentIds,
             }).then(r => r.results ?? [])
             for (const id of recentIds) {

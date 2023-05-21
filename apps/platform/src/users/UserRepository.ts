@@ -1,5 +1,5 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
@@ -40,11 +40,14 @@ export const getUserFromEmail = async (projectId: number, email: string): Promis
     )
 }
 
-export const pagedUsers = async (params: SearchParams, projectId: number) => {
-    return await User.searchParams(
-        params,
-        ['external_id', 'email', 'phone'],
-        b => b.where({ project_id: projectId }),
+export const pagedUsers = async (params: PageParams, projectId: number) => {
+    return await User.search(
+        {
+            ...params,
+            fields: ['external_id', 'email', 'phone'],
+            mode: 'exact',
+        },
+        b => b.where('project_id', projectId),
     )
 }
 

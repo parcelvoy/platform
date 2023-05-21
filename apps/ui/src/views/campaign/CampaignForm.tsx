@@ -194,7 +194,7 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
     const [providers, setProviders] = useState<Provider[]>([])
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
     useEffect(() => {
-        const params: SearchParams = { page: 0, itemsPerPage: 9999, q: '' }
+        const params: SearchParams = { limit: 9999, q: '' }
         api.subscriptions.search(project.id, params)
             .then(({ results }) => {
                 setSubscriptions(results)

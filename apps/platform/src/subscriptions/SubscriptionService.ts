@@ -1,6 +1,6 @@
 import { TextProvider } from '../providers/text/TextProvider'
 import { ChannelType } from '../config/channels'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { User } from '../users/User'
 import { createEvent } from '../users/UserEventRepository'
@@ -9,18 +9,16 @@ import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription }
 import App from '../app'
 import { combineURLs, encodeHashid } from '../utilities'
 
-export const pagedSubscriptions = async (params: SearchParams, projectId: number) => {
-    return await Subscription.searchParams(
-        params,
-        ['name', 'channel'],
+export const pagedSubscriptions = async (params: PageParams, projectId: number) => {
+    return await Subscription.search(
+        { ...params, fields: ['name', 'channel'] },
         qb => qb.where('project_id', projectId),
     )
 }
 
-export const getUserSubscriptions = async (id: number, params: SearchParams, projectId: number) => {
-    return await UserSubscription.searchParams(
-        params,
-        ['name', 'channel'],
+export const getUserSubscriptions = async (id: number, params: PageParams, projectId: number) => {
+    return await UserSubscription.search(
+        { ...params, fields: ['name', 'channel'] },
         b => b.leftJoin('subscriptions', 'subscriptions.id', 'user_subscription.subscription_id')
             .where('project_id', projectId)
             .where('user_id', id)

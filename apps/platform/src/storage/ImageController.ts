@@ -5,7 +5,7 @@ import { getImage, pagedImages, updateImage, uploadImage } from './ImageService'
 import Image, { ImageParams } from './Image'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { extractQueryParams } from '../utilities'
-import { searchParamsSchema } from '../core/searchParams'
+import { SearchSchema } from '../core/searchParams'
 
 const router = new Router<
     ProjectState & { image?: Image }
@@ -45,7 +45,11 @@ router.post('/', async ctx => {
 })
 
 router.get('/', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('imagesSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await pagedImages(params, ctx.state.project.id)
 })
 

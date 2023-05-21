@@ -2,7 +2,7 @@ import App from '../app'
 import { snakeCase } from '../utilities'
 import Image, { ImageParams } from './Image'
 import { FileStream } from './FileStream'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 
 export const uploadImage = async (projectId: number, stream: FileStream): Promise<Image> => {
     const upload = await App.main.storage.save(stream)
@@ -17,11 +17,10 @@ export const allImages = async (projectId: number): Promise<Image[]> => {
     return await Image.all(qb => qb.where('project_id', projectId))
 }
 
-export const pagedImages = async (params: SearchParams, projectId: number) => {
-    return await Image.searchParams(
-        params,
-        ['name'],
-        b => b.where('project_id', projectId).orderBy('created_at', 'desc'),
+export const pagedImages = async (params: PageParams, projectId: number) => {
+    return await Image.search(
+        { ...params, fields: ['name'] },
+        b => b.where('project_id', projectId),
     )
 }
 

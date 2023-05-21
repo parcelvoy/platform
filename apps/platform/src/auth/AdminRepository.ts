@@ -1,10 +1,9 @@
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { Admin, AdminParams } from './Admin'
 
-export const pagedAdmins = async (params: SearchParams) => {
-    return await Admin.searchParams(
-        params,
-        ['first_name', 'last_name', 'email'],
+export const pagedAdmins = async (params: PageParams) => {
+    return await Admin.search(
+        { ...params, fields: ['first_name', 'last_name', 'email'] },
     )
 }
 

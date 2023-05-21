@@ -1,7 +1,7 @@
-import { ProjectState } from 'auth/AuthMiddleware'
+import { ProjectState } from '../auth/AuthMiddleware'
 import { Next, ParameterizedContext } from 'koa'
 import { RequestError } from '../core/errors'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { createSubscription } from '../subscriptions/SubscriptionService'
 import { uuid } from '../utilities'
 import Project, { ProjectParams, ProjectRole, projectRoles } from './Project'
@@ -15,10 +15,10 @@ export const adminProjectIds = async (adminId: number) => {
     return records.map(item => item.project_id)
 }
 
-export const pagedProjects = async (params: SearchParams, adminId: number) => {
+export const pagedProjects = async (params: PageParams, adminId: number) => {
     const admin = await getAdmin(adminId)
     const projectIds = await adminProjectIds(adminId)
-    return await Project.searchParams(params, ['name'], qb =>
+    return await Project.search({ ...params, fields: ['name'] }, qb =>
         qb.where(qb =>
             qb.where('organization_id', admin!.organization_id)
                 .orWhereIn('projects.id', projectIds),
@@ -79,10 +79,9 @@ export const updateProject = async (id: number, adminId: number, params: Partial
     return await getProject(id, adminId)
 }
 
-export const pagedApiKeys = async (params: SearchParams, projectId: number) => {
-    return await ProjectApiKey.searchParams(
-        params,
-        ['name', 'description'],
+export const pagedApiKeys = async (params: PageParams, projectId: number) => {
+    return await ProjectApiKey.search(
+        { ...params, fields: ['name', 'description'] },
         qb => qb.where('project_id', projectId),
     )
 }
