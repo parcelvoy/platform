@@ -1,7 +1,7 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import { check, query as ruleQuery } from '../rules/RuleEngine'
-import List, { ListCreateParams, UserList } from './List'
+import List, { DynamicList, ListCreateParams, UserList } from './List'
 import Rule from '../rules/Rule'
 import { enterJourneyFromList } from '../journey/JourneyService'
 import { SearchParams } from '../core/searchParams'
@@ -218,14 +218,26 @@ const getUsersListIds = async (user_id: number): Promise<number[]> => {
 }
 
 export const updateUsersLists = async (user: User, event?: UserEvent) => {
-    const lists = await List.all(qb => qb.where('project_id', user.project_id))
+    const lists = await List.all(
+        qb => qb.where('project_id', user.project_id)
+            .whereNotNull('rule'),
+    ) as DynamicList[]
     const existingLists = await getUsersListIds(user.id)
 
     for (const list of lists) {
 
-        if (!list.rule) continue
-
         // Check to see if user condition matches list requirements
+        await checkList(list, existingLists, user, event)
+    }
+}
+
+export const checkList = async (
+    list: DynamicList,
+    existingLists: number[],
+    user: User,
+    event?: UserEvent,
+) => {
+    try {
         const result = check({
             user: user.flatten(),
             event: event?.flatten(),
@@ -239,6 +251,8 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
             // Find all associated journeys based on list and enter user
             await enterJourneyFromList(list, user, event)
         }
+    } catch (error: any) {
+        App.main.error.notify(error)
     }
 }
 
