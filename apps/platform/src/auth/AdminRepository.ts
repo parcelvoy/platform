@@ -39,9 +39,12 @@ export const createOrUpdateAdmin = async (params: AdminParams): Promise<Admin> =
 
 const initOrganization = async (admin?: Admin): Promise<Organization> => {
     const domain = admin?.email.split('@').pop()
+    const username = domain
+        ? new URL(domain).hostname.split('.').pop()
+        : 'Organization'
     const org = await Organization.insertAndFetch({
         id: 1,
-        name: domain,
+        username,
         domain,
     })
     await Project.update(qb => qb, { organization_id: org.id })

@@ -1,7 +1,7 @@
 exports.up = async function(knex) {
     await knex.schema.createTable('organizations', function(table) {
         table.increments()
-        table.string('name')
+        table.string('username').unique()
         table.string('domain')
         table.json('auth')
         table.timestamp('created_at').defaultTo(knex.fn.now())
