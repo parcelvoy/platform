@@ -22,8 +22,9 @@ export const gateStep: JourneyStepType<GateConfig> = {
             <RuleBuilder
                 rule={value.rule as WrapperRule}
                 setRule={rule => onChange({ ...value, rule })}
+                headerPrefix="Does user match "
             />
         )
     },
-    sources: ['If', 'Else'],
+    sources: ['Yes', 'No'],
 }

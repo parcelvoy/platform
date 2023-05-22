@@ -96,6 +96,7 @@ interface RuleEditProps {
     eventName?: string
     depth?: number
     controls?: ReactNode
+    headerPrefix?: string
 }
 
 function RuleEdit({
@@ -103,6 +104,7 @@ function RuleEdit({
     depth = 0,
     eventName = '',
     group,
+    headerPrefix = 'Include users matching ',
     rule,
     setRule,
 }: RuleEditProps) {
@@ -119,12 +121,27 @@ function RuleEdit({
     const { path } = rule
 
     const pathSuggestions = useMemo<string[]>(() => {
-        let paths = group === 'event'
-            ? (eventName ? suggestions.eventPaths[eventName] ?? [] : [])
-            : suggestions.userPaths
+
+        let paths = (
+            group === 'event'
+                ? [
+                    ...(eventName ? suggestions.eventPaths[eventName] ?? [] : []),
+                    '$.name',
+                ]
+                : [
+                    ...suggestions.userPaths,
+                    '$.email',
+                    '$.external_id',
+                    '$.phone',
+                    '$.timezone',
+                    '$.locale',
+                ]
+        ).filter((p, i, a) => a.indexOf(p) === i).sort()
 
         if (path) {
-            const search = path.toLowerCase()
+            let search = path.toLowerCase()
+            if (search.startsWith('.')) search = '$' + search
+            if (!search.startsWith('$.')) search = '$.' + search
             paths = paths.filter(p => p.toLowerCase().startsWith(search))
         }
 
@@ -141,18 +158,52 @@ function RuleEdit({
                             ? (
                                 <>
                                     Did
-                                    <input
-                                        className="small"
-                                        type="text"
-                                        value={rule.value as string}
-                                        onChange={e => setRule({ ...rule, value: e.target.value })}
-                                    />
-                                    matching
+                                    <span className="ui-select">
+                                        <Combobox onChange={(value: string) => setRule({ ...rule, value })}>
+                                            <ButtonGroup>
+                                                <span className="ui-text-input">
+                                                    <Combobox.Input
+                                                        value={rule.value ?? ''}
+                                                        onChange={e => setRule({ ...rule, value: e.target.value })}
+                                                        required
+                                                        className="small"
+                                                        ref={setReferenceElement}
+                                                    />
+                                                </span>
+                                                <Combobox.Button className="ui-button secondary small">
+                                                    <ChevronUpDownIcon />
+                                                </Combobox.Button>
+                                            </ButtonGroup>
+                                            <Combobox.Options
+                                                className="select-options"
+                                                ref={setPopperElement}
+                                                style={styles.popper}
+                                                {...attributes.popper}
+                                            >
+                                                {
+                                                    Object.keys(suggestions.eventPaths)
+                                                        .sort()
+                                                        .filter(eventName => !rule.value || eventName.toLowerCase().startsWith(rule.value.toLowerCase()))
+                                                        .map(eventName => (
+                                                            <Combobox.Option
+                                                                key={eventName}
+                                                                value={eventName}
+                                                                className={({ active, selected }) => clsx('select-option', active && 'active', selected && 'selected')}
+                                                            >
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: highlightSearch(eventName, rule.value ?? ''),
+                                                                    }}
+                                                                />
+                                                            </Combobox.Option>
+                                                        ))
+                                                }
+                                            </Combobox.Options>
+                                        </Combobox>
+                                    </span>
                                 </>
                             )
-                            : (
-                                'Target users matching '
-                            )
+                            : headerPrefix
                     }
                     <SingleSelect
                         value={rule.operator}
@@ -227,7 +278,7 @@ function RuleEdit({
                                         path: '',
                                         type: 'wrapper',
                                         group: 'event',
-                                        value: 'Event',
+                                        value: '',
                                         operator: 'and',
                                         children: [],
                                     }],
@@ -262,6 +313,7 @@ function RuleEdit({
                     required
                     hideLabel
                     size="small"
+                    toValue={x => x.key as typeof rule.type}
                 />
                 <Combobox onChange={(path: string) => setRule({ ...rule, path })}>
                     <span className="ui-text-input">
@@ -302,7 +354,7 @@ function RuleEdit({
                 <SingleSelect
                     value={rule.operator}
                     onChange={operator => setRule({ ...rule, operator })}
-                    options={operatorTypes[rule.type]}
+                    options={operatorTypes[rule.type] ?? []}
                     required
                     hideLabel
                     size="small"
@@ -325,9 +377,10 @@ function RuleEdit({
 interface RuleBuilderParams {
     rule: Rule
     setRule: (rule: Rule) => void
+    headerPrefix?: string
 }
 
-export default function RuleBuilder({ rule, setRule }: RuleBuilderParams) {
+export default function RuleBuilder({ headerPrefix, rule, setRule }: RuleBuilderParams) {
     const [{ id: projectId }] = useContext(ProjectContext)
     const [suggestions] = useResolver(useCallback(async () => await api.projects.pathSuggestions(projectId), [projectId]))
     return (
@@ -336,6 +389,7 @@ export default function RuleBuilder({ rule, setRule }: RuleBuilderParams) {
                 rule={rule}
                 setRule={setRule}
                 group="user"
+                headerPrefix={headerPrefix}
             />
         </RuleEditContext.Provider>
     )
