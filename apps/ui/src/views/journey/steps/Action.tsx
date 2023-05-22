@@ -34,7 +34,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                 createModalSize="large"
                 renderCreateForm={onCreated => (
                     <CampaignForm
-                        disableListSelection
+                        type="trigger"
                         onSave={onCreated}
                     />
                 )}

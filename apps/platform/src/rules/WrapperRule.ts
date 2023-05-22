@@ -9,7 +9,12 @@ export default {
 
         // If wrapper is for events, evaluate event name alongside conditions
         if (isEventWrapper(rule)) {
-            const nameRule = make({ type: 'string', path: '$.name', value: rule.value })
+            const nameRule = make({
+                type: 'string',
+                path: '$.name',
+                value: rule.value,
+                group: 'event',
+            })
             if (!registry.get('string').check(input, nameRule, registry)) return false
         }
 

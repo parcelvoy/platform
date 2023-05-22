@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import { Campaign, CampaignCreateParams, List, Project, Provider, SearchParams, Subscription } from '../../types'
+import { Campaign, CampaignCreateParams, CampaignType, List, Project, Provider, SearchParams, Subscription } from '../../types'
 import { useController, UseFormReturn, useWatch } from 'react-hook-form'
 import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -20,7 +20,7 @@ import { DataTable } from '../../ui/DataTable'
 interface CampaignEditParams {
     campaign?: Campaign
     onSave: (campaign: Campaign) => void
-    disableListSelection?: boolean
+    type?: CampaignType
 }
 
 interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
@@ -188,7 +188,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
     )
 }
 
-export function CampaignForm({ campaign, disableListSelection, onSave }: CampaignEditParams) {
+export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
     const [providers, setProviders] = useState<Provider[]>([])
@@ -220,7 +220,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
         const params = { name, list_ids, exclusion_list_ids, subscription_id, tags }
         const value = campaign
             ? await api.campaigns.update(project.id, campaign.id, params)
-            : await api.campaigns.create(project.id, { channel, provider_id, ...params })
+            : await api.campaigns.create(project.id, { channel, provider_id, type, ...params })
         onSave(value)
     }
 
@@ -242,7 +242,7 @@ export function CampaignForm({ campaign, disableListSelection, onSave }: Campaig
                         name="tags"
                     />
                     {
-                        !disableListSelection && (
+                        type !== 'trigger' && (
                             <>
                                 <Heading size="h3" title="Lists">
                                     Select what lists to send this campaign to and what user lists you want to exclude from getting the campaign.

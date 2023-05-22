@@ -2,6 +2,25 @@ import { subDays } from 'date-fns'
 import { check, make } from '../RuleEngine'
 
 describe('RuleEngine', () => {
+    describe('wrapper', () => {
+        test('event name match', () => {
+            const name = 'Account Created'
+            const value = {
+                user: {
+                    id: 'abcd',
+                },
+                event: {
+                    name,
+                },
+            }
+            const shouldPass = check(value, [
+                make({ type: 'wrapper', path: '$.name', value: name }),
+            ])
+
+            expect(shouldPass).toBeTruthy()
+        })
+    })
+
     describe('string', () => {
         test('equals', () => {
             const email = 'test@test.com'
