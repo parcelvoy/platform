@@ -138,7 +138,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         })
     }
 
-    if (data.state === 'pending') {
+    if (data.state === 'pending' && data.type === 'blast') {
         await CampaignGenerateListJob.from(campaign).queue()
     }
 
