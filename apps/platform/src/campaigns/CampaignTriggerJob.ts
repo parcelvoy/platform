@@ -11,6 +11,7 @@ export default class CampaignTriggerJob extends Job {
         const campaigns = await Campaign.query()
             .whereIn('state', ['pending', 'scheduled', 'running'])
             .whereNotNull('send_at')
+            .where('type', 'blast')
         for (const campaign of campaigns) {
 
             // When pending we need to regenerate send list
