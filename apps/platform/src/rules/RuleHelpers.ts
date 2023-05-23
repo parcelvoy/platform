@@ -7,7 +7,7 @@ import { compileTemplate } from '../render'
 export const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: any) => T): T | undefined => {
     const inputValue = input[rule.group]
     if (!inputValue) return undefined
-    const pathValue = jsonpath.query(input[rule.group], rule.path)?.[0]
+    const pathValue = jsonpath.query(input[rule.group], rule.path.replace('.data', ''))?.[0]
     if (!pathValue) return undefined
     return cast(pathValue)
 }
