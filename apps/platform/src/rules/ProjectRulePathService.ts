@@ -50,7 +50,7 @@ export async function syncProjectRulePaths({
             select distinct x.p
             from users,
                 json_table(json_search(data, 'all', '%'), '$[*]' columns (p varchar(255) path '$')) x
-            where project_id = :project_id ${delta ? 'and update_date >= :delta' : ''};
+            where project_id = :project_id ${delta ? 'and updated_at >= :delta' : ''};
         `, {
             project_id,
             delta,
@@ -66,7 +66,7 @@ export async function syncProjectRulePaths({
                     select e.name as 'name', x.p as 'path'
                     from user_events e,
                         json_table(json_search(e.data, 'all', '%'), '$[*]' columns (p varchar(255) path '$')) x 
-                    where e.project_id = :project_id ${delta ? ' and e.update_date >= :delta' : ''}
+                    where e.project_id = :project_id ${delta ? ' and e.update_at >= :delta' : ''}
                 )
             select name, path from paths group by name, path;
         `, {
