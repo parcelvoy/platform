@@ -139,7 +139,7 @@ export const subscribeAll = async (user: User): Promise<void> => {
     if (user.phone) {
         channels.push('text')
     }
-    if (user.pushEnabledDevices) {
+    if (user.pushEnabledDevices.length) {
         channels.push('push')
     }
     const subscriptions = await allSubscriptions(user.project_id, channels)
