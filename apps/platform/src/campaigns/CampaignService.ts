@@ -346,7 +346,7 @@ export const abortCampaign = async (campaign: Campaign) => {
 }
 
 export const duplicateCampaign = async (campaign: Campaign) => {
-    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name'])
+    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name', 'type'])
     params.name = `Copy of ${params.name}`
     params.state = 'draft'
     const cloneId = await Campaign.insert(params)
