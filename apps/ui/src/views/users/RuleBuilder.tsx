@@ -130,8 +130,8 @@ function RuleEdit({
                 ]
                 : [
                     ...suggestions.userPaths,
+                    '$.id',
                     '$.email',
-                    '$.external_id',
                     '$.phone',
                     '$.timezone',
                     '$.locale',
@@ -212,6 +212,7 @@ function RuleEdit({
                         required
                         hideLabel
                         size="small"
+                        toValue={x => x.key}
                     />
                     of the following
                     {controls}
@@ -358,6 +359,7 @@ function RuleEdit({
                     required
                     hideLabel
                     size="small"
+                    toValue={x => x.key}
                 />
                 <TextInput
                     size="small"
