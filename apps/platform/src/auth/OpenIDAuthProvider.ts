@@ -1,10 +1,9 @@
 import { addSeconds } from 'date-fns'
-import { Context } from 'koa'
 import { Issuer, generators, BaseClient, IdTokenClaims } from 'openid-client'
 import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 import { AuthTypeConfig } from './Auth'
-import AuthProvider from './AuthProvider'
+import AuthProvider, { AuthContext } from './AuthProvider'
 import { firstQueryParam } from '../utilities'
 import { logger } from '../config/logger'
 
@@ -14,7 +13,7 @@ export interface OpenIDConfig extends AuthTypeConfig {
     clientId: string
     cliendSecret: string
     redirectUri: string
-    domainWhitelist: string[]
+    domain: string
 }
 
 export default class OpenIDAuthProvider extends AuthProvider {
@@ -28,7 +27,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
         this.getClient()
     }
 
-    async start(ctx: Context): Promise<void> {
+    async start(ctx: AuthContext): Promise<void> {
 
         const client = await this.getClient()
 
@@ -61,7 +60,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
         ctx.redirect(url)
     }
 
-    async validate(ctx: Context): Promise<void> {
+    async validate(ctx: AuthContext): Promise<void> {
         const client = await this.getClient()
 
         // Unsafe cast, but Koa and library don't play nicely
@@ -77,8 +76,8 @@ export default class OpenIDAuthProvider extends AuthProvider {
             }
 
             const claims = tokenSet.claims()
-
-            if (!this.isDomainWhitelisted(claims)) {
+            const domain = this.getDomain(claims)
+            if (!domain || !this.domainMatch(domain)) {
                 throw new RequestError(AuthError.InvalidDomain)
             }
 
@@ -86,11 +85,13 @@ export default class OpenIDAuthProvider extends AuthProvider {
                 throw new RequestError(AuthError.InvalidEmail)
             }
 
+            const organization = await this.loadAuthOrganization(ctx, domain)
             const admin = {
                 email: claims.email,
                 first_name: claims.given_name ?? claims.name,
                 last_name: claims.family_name,
                 image_url: claims.picture,
+                organization_id: organization.id,
             }
 
             await this.login(admin, ctx, state)
@@ -115,12 +116,15 @@ export default class OpenIDAuthProvider extends AuthProvider {
         return this.client
     }
 
-    private isDomainWhitelisted(claims: IdTokenClaims): boolean {
+    private domainMatch(domain?: string): boolean {
+        if (!this.config.domain) return true
+        return this.config.domain === domain
+    }
+
+    private getDomain(claims: IdTokenClaims): string | undefined {
         if (claims.hd && typeof claims.hd === 'string') {
-            return this.config.domainWhitelist.includes(claims.hd)
+            return claims.hd
         }
-        return this.config.domainWhitelist.find(
-            domain => claims.email?.endsWith(domain),
-        ) !== undefined
+        return claims.email?.split('@')[1]
     }
 }

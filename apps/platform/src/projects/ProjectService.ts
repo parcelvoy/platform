@@ -8,10 +8,33 @@ import Project, { ProjectParams, ProjectRole, projectRoles } from './Project'
 import { ProjectAdmin } from './ProjectAdmins'
 import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
 import { Admin } from '../auth/Admin'
+import { getAdmin } from '../auth/AdminRepository'
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
     return records.map(item => item.project_id)
+}
+
+export const pagedProjects = async (params: SearchParams, adminId: number) => {
+    const admin = await getAdmin(adminId)
+    const projectIds = await adminProjectIds(adminId)
+    return await Project.searchParams(params, ['name'], qb =>
+        qb.where(qb =>
+            qb.where('organization_id', admin!.organization_id)
+                .orWhereIn('projects.id', projectIds),
+        ),
+    )
+}
+
+export const allProjects = async (adminId: number) => {
+    const admin = await getAdmin(adminId)
+    const projectIds = await adminProjectIds(adminId)
+    return await Project.all(qb =>
+        qb.where(qb =>
+            qb.where('organization_id', admin!.organization_id)
+                .orWhereIn('projects.id', projectIds),
+        ),
+    )
 }
 
 export const getProject = async (id: number, adminId?: number) => {

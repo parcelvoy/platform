@@ -2,7 +2,7 @@ exports.up = async function(knex) {
     await knex.schema.createTable('organizations', function(table) {
         table.increments()
         table.string('username').unique()
-        table.string('domain')
+        table.string('domain').index()
         table.json('auth')
         table.timestamp('created_at').defaultTo(knex.fn.now())
         table.timestamp('updated_at').defaultTo(knex.fn.now())
@@ -25,6 +25,10 @@ exports.up = async function(knex) {
             .unsigned()
             .after('id')
     })
+
+    const orgId = await knex('organizations').insert({ id: 1, username: 'main' })
+    await knex.raw('UPDATE projects SET organization_id = ? WHERE organization_id IS NULL', [orgId])
+    await knex.raw('UPDATE admins SET organization_id = ? WHERE organization_id IS NULL', [orgId])
 }
 
 exports.down = async function(knex) {

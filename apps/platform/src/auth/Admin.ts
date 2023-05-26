@@ -8,4 +8,4 @@ export class Admin extends Model {
     image_url?: string
 }
 
-export type AdminParams = Omit<Admin, ModelParams | 'organization_id'>
+export type AdminParams = Omit<Admin, ModelParams>
