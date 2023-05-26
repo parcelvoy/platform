@@ -9,8 +9,8 @@ import Organization from '../organizations/Organization'
 import { State } from './AuthMiddleware'
 import { createOrganization, getOrganizationByDomain } from '../organizations/OrganizationService'
 
-type AuthState = State & { organization?: Organization }
-export type AuthContext = Context & { state: AuthState }
+type OrgState = State & { organization?: Organization }
+export type AuthContext = Context & { state: OrgState }
 
 export default abstract class AuthProvider {
 
@@ -32,11 +32,11 @@ export default abstract class AuthProvider {
 
         if (!admin) throw new RequestError(AuthError.AdminNotFound)
 
-        return this.generateOauth(admin, ctx, redirect)
+        return await this.generateOauth(admin, ctx, redirect)
     }
 
-    private generateOauth(admin: Admin, ctx?: AuthContext, redirect?: string) {
-        const oauth = generateAccessToken(admin, ctx)
+    private async generateOauth(admin: Admin, ctx?: AuthContext, redirect?: string) {
+        const oauth = await generateAccessToken(admin, ctx)
 
         if (ctx) {
             setTokenCookies(ctx, oauth)
