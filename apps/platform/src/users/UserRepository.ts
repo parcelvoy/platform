@@ -14,16 +14,24 @@ export const getUser = async (id: number, projectId?: number): Promise<User | un
 }
 
 export const getUserFromClientId = async (projectId: number, identity: ClientIdentity): Promise<User | undefined> => {
-    return await User.first(
-        qb => qb.where(sqb => {
-            if (identity.external_id) {
-                sqb.where('external_id', `${identity.external_id}`)
-            }
-            if (identity.anonymous_id) {
-                sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
-            }
-        }).where('project_id', projectId),
+    const users = await User.all(
+        qb => qb
+            .where(sqb => {
+                if (identity.external_id) {
+                    sqb.where('external_id', `${identity.external_id}`)
+                }
+                if (identity.anonymous_id) {
+                    sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
+                }
+            })
+            .where('project_id', projectId)
+            .limit(2),
     )
+
+    // There are circumstances in which both the external ID and
+    // the anonymous ID match but match different records in
+    // those cases, default to the one matching the external ID
+    return users.find(user => user.external_id === identity.external_id) ?? users[0]
 }
 
 export const getUserFromPhone = async (projectId: number, phone: string): Promise<User | undefined> => {
