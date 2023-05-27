@@ -1,14 +1,15 @@
 import Router from '@koa/router'
-import Project, { ProjectParams } from './Project'
+import { ProjectParams } from './Project'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { ParameterizedContext } from 'koa'
-import { createProject, getProject, requireProjectRole, updateProject } from './ProjectService'
+import { allProjects, createProject, getProject, pagedProjects, requireProjectRole, updateProject } from './ProjectService'
 import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
+import { getAdmin } from '../auth/AdminRepository'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -40,11 +41,12 @@ export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>,
 const router = new Router<AuthState>({ prefix: '/projects' })
 
 router.get('/', async ctx => {
-    ctx.body = await Project.searchParams(extractQueryParams(ctx.request.query, searchParamsSchema), ['name'])
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedProjects(params, ctx.state.admin!.id)
 })
 
 router.get('/all', async ctx => {
-    ctx.body = await Project.all()
+    ctx.body = await allProjects(ctx.state.admin!.id)
 })
 
 const projectCreateParams: JSONSchemaType<ProjectParams> = {
@@ -70,7 +72,8 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(projectCreateParams, ctx.request.body)
-    ctx.body = await createProject(ctx.state.admin!.id, payload)
+    const admin = await getAdmin(ctx.state.admin!.id)
+    ctx.body = await createProject(admin!, payload)
 })
 
 export default router

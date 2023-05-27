@@ -24,12 +24,12 @@ describe('CampaignService', () => {
     }
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
-        const adminId = await Admin.insert({
+        const admin = await Admin.insertAndFetch({
             first_name: uuid(),
             last_name: uuid(),
             email: `${uuid()}@test.com`,
         })
-        const project = await createProject(adminId, {
+        const project = await createProject(admin, {
             name: uuid(),
             timezone: 'utc',
         })

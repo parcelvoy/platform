@@ -73,6 +73,7 @@ jobs:
         DB_USERNAME: root
         DB_PORT: 3306
         BASE_URL: https://parcelvoy.com
+        AUTH_DRIVER: basic
         QUEUE_DRIVER: memory
         STORAGE_DRIVER: s3
 

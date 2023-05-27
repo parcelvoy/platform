@@ -25,15 +25,15 @@ export async function cleanupExpiredRevokedTokens(until: Date) {
     await AccessToken.delete(qb => qb.where('expires_at', '<=', until))
 }
 
-export const generateAccessToken = (input: Admin | number, ctx?: Context) => {
-    const id = typeof input === 'number' ? input : input.id
+export const generateAccessToken = async ({ id, organization_id }: Admin, ctx?: Context) => {
     const expires_at = addSeconds(Date.now(), App.main.env.auth.tokenLife)
     const token = sign({
         id,
+        organization_id,
         exp: Math.floor(expires_at.getTime() / 1000),
     }, App.main.env.secret)
 
-    AccessToken.insert({
+    await AccessToken.insert({
         admin_id: id,
         expires_at,
         token,

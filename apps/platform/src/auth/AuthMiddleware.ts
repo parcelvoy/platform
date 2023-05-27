@@ -10,6 +10,7 @@ import { getTokenCookies, isAccessTokenRevoked } from './TokenRepository'
 
 export interface JwtAdmin {
     id: number
+    organization_id: number
 }
 
 export interface State {
@@ -35,13 +36,13 @@ const parseAuth = async (ctx: Context) => {
     }
 
     if (token.startsWith('pk_')) {
-        // public key
+        // Public key
         return {
             scope: 'public',
             key: await getProjectApiKey(token),
         }
     } else if (token.startsWith('sk_')) {
-        // secret key
+        // Secret key
         return {
             scope: 'secret',
             key: await getProjectApiKey(token),
@@ -51,7 +52,7 @@ const parseAuth = async (ctx: Context) => {
         if (await isAccessTokenRevoked(token)) {
             throw new RequestError(AuthError.AccessDenied)
         }
-        // user jwt
+        // User JWT
         return {
             scope: 'admin',
             admin,
