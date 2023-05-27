@@ -1,6 +1,6 @@
 import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
 import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
@@ -9,11 +9,10 @@ export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
 }
 
-export const pagedProviders = async (params: SearchParams, projectId: number) => {
-    return await Provider.searchParams(
-        params,
-        ['name', 'group'],
-        b => b.where({ project_id: projectId }),
+export const pagedProviders = async (params: PageParams, projectId: number) => {
+    return await Provider.search(
+        { ...params, fields: ['name', 'group'] },
+        b => b.where('project_id', projectId),
     )
 }
 

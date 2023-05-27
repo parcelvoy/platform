@@ -26,10 +26,11 @@ export interface SearchTableProps<T extends Record<string, any>> extends Omit<Da
 const DEFAULT_ITEMS_PER_PAGE = 25
 const DEFAULT_PAGE = 0
 
-const toTableParams = (searchParams: URLSearchParams) => {
+const toTableParams = (searchParams: URLSearchParams): SearchParams => {
     return {
-        page: parseInt(searchParams.get('page') ?? '0'),
-        itemsPerPage: parseInt(searchParams.get('itemsPerPage') ?? '10'),
+        cursor: searchParams.get('cursor') ?? undefined,
+        page: searchParams.get('page') === 'prev' ? 'prev' : 'next',
+        limit: parseInt(searchParams.get('limit') ?? '25'),
         q: searchParams.get('q') ?? undefined,
         tag: searchParams.getAll('tag'),
         sort: searchParams.get('sort') ?? undefined,
@@ -39,8 +40,9 @@ const toTableParams = (searchParams: URLSearchParams) => {
 
 const fromTableParams = (params: SearchParams): Record<string, string> => {
     return prune({
-        page: params.page.toString(),
-        itemsPerPage: params.itemsPerPage.toString(),
+        cursor: params.cursor,
+        page: params.page,
+        limit: params.limit.toString(),
         q: params.q,
         tag: params.tag ?? [],
         sort: params.sort,
@@ -74,8 +76,7 @@ export const useTableSearchParams = () => {
 export function useSearchTableState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>) {
 
     const [params, setParams] = useState<SearchParams>({
-        page: 0,
-        itemsPerPage: 25,
+        limit: 25,
         q: '',
     })
 
@@ -189,10 +190,10 @@ export function SearchTable<T extends Record<string, any>>({
                 }} />
             {results && (
                 <Pagination
-                    page={results.page}
-                    total={results.pages}
-                    itemsPerPage={results.itemsPerPage}
-                    onChangePage={page => setParams({ ...params, page })} />
+                    nextCursor={results.nextCursor}
+                    prevCursor={results.prevCursor}
+                    onPrev={cursor => setParams({ ...params, cursor, page: 'prev' })}
+                    onNext={cursor => setParams({ ...params, cursor, page: 'next' })} />
             )}
         </>
     )

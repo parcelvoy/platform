@@ -78,23 +78,21 @@ export interface Preferences {
 }
 
 export interface SearchParams {
-    page: number
-    itemsPerPage: number
-    q?: string
+    cursor?: string
+    page?: 'next' | 'prev'
+    limit: number
     sort?: string
     direction?: string
+    q?: string
     tag?: string[]
     id?: Array<number | string>
 }
 
 export interface SearchResult<T> {
     results: T[]
-    start: number
-    end: number
-    total: number
-    page: number
-    itemsPerPage: number
-    pages: number
+    nextCursor: string
+    prevCursor?: string
+    limit: number
 }
 
 export type AuditFields = 'created_at' | 'updated_at' | 'deleted_at'

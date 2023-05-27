@@ -17,6 +17,16 @@ export interface DatabaseConfig {
     connection: DatabaseConnection
 }
 
+export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+
+knex.QueryBuilder.extend('when', function(
+    condition: boolean,
+    fnif: Query,
+    fnelse?: Query,
+) {
+    return condition ? fnif(this) : (fnelse ? fnelse(this) : this)
+})
+
 const connect = (config: DatabaseConfig, withDB = true) => {
     let connection = config.connection
     if (!withDB) {

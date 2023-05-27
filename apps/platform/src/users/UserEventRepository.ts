@@ -1,4 +1,4 @@
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { loadAnalytics } from '../providers/analytics'
 import { User } from '../users/User'
 import { UserEvent, UserEventParams } from './UserEvent'
@@ -27,10 +27,9 @@ export const createAndFetchEvent = async (user: User, event: UserEventParams, fo
     return userEvent!
 }
 
-export const getUserEvents = async (id: number, params: SearchParams, projectId: number) => {
-    return await UserEvent.searchParams(
-        params,
-        ['name'],
+export const getUserEvents = async (id: number, params: PageParams, projectId: number) => {
+    return await UserEvent.search(
+        { ...params, fields: ['name'] },
         b => b.where('project_id', projectId)
             .where('user_id', id)
             .orderBy('id', 'desc'),

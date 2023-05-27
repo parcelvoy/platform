@@ -1,5 +1,5 @@
 import { Database } from 'config/database'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { ProjectRole } from './Project'
 import { ProjectAdmin } from './ProjectAdmins'
 
@@ -14,10 +14,9 @@ const baseProjectAdminQuery = (builder: Database.QueryBuilder<any>, projectId: n
         .whereNull(`${ProjectAdmin.tableName}.deleted_at`)
 }
 
-export const pagedProjectAdmins = async (params: SearchParams, projectId: number) => {
-    return await ProjectAdmin.searchParams(
-        params,
-        adminSelectFields,
+export const pagedProjectAdmins = async (params: PageParams, projectId: number) => {
+    return await ProjectAdmin.search(
+        { ...params, fields: adminSelectFields },
         q => baseProjectAdminQuery(q, projectId),
     )
 }

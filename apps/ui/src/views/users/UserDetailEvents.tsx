@@ -11,8 +11,7 @@ export default function UserDetailEvents() {
     const [project] = useContext(ProjectContext)
     const [user] = useContext(UserContext)
     const [params, setParams] = useState<SearchParams>({
-        page: 0,
-        itemsPerPage: 10,
+        limit: 25,
         q: '',
     })
     const projectId = project.id
