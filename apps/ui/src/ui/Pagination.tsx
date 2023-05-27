@@ -3,7 +3,7 @@ import './Pagination.css'
 
 interface PaginationProps {
     prevCursor: string | undefined
-    nextCursor: string
+    nextCursor: string | undefined
     onPrev: (cursor: string | undefined) => void
     onNext: (cursor: string | undefined) => void
 }
@@ -14,6 +14,7 @@ export default function CursorPagination({
     onPrev,
     onNext,
 }: PaginationProps) {
+    if (!prevCursor && !nextCursor) return <></>
     return (
         <div className="ui-pagination">
             <button className="pagination-button prev"
@@ -23,7 +24,7 @@ export default function CursorPagination({
                 Previous
             </button>
             <button className="pagination-button next"
-                // disabled={nextCursor}
+                disabled={nextCursor === undefined}
                 onClick={() => onNext(nextCursor)}>
                 Next
                 <ChevronRightIcon />
