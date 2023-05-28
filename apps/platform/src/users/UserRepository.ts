@@ -104,20 +104,29 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity)
     if (!user) return
 
-    if (!user.devices) user.devices = []
-    const device = user.devices?.find(device => {
+    let isFirstDevice = false
+    if (!user.devices) {
+        user.devices = []
+        isFirstDevice = true
+    }
+    let device = user.devices?.find(device => {
         return device.device_id === params.device_id
             || (device.token === params.token && device.token != null)
     })
     if (device) {
         Object.assign(device, params)
     } else {
-        user.devices.push({
+        device = {
             ...params,
             device_id: params.device_id,
-        })
+        }
+        user.devices.push(device)
     }
     await User.updateAndFetch(user.id, { devices: user.devices })
+
+    if (isFirstDevice) {
+        await subscribeAll(user, ['push'])
+    }
     return device
 }
 

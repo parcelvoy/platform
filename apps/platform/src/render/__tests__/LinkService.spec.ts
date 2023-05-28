@@ -4,10 +4,6 @@ import { createUser } from '../../users/UserRepository'
 import { uuid } from '../../utilities'
 import { clickWrapHtml, encodedLinkToParts, openWrapHtml, paramsToEncodedLink, preheaderWrapHtml } from '../LinkService'
 
-afterEach(() => {
-    jest.clearAllMocks()
-})
-
 describe('LinkService', () => {
     describe('encodedLinkToParts', () => {
         test('a properly encoded link decodes to parts', async () => {
