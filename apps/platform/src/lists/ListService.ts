@@ -63,7 +63,7 @@ export const getListUsers = async (id: number, params: PageParams, projectId: nu
         b => b.rightJoin('user_list', 'user_list.user_id', 'users.id')
             .where('project_id', projectId)
             .where('list_id', id)
-            .select('users.*'),
+            .select('users.*', 'user_list.created_at'),
     )
 }
 

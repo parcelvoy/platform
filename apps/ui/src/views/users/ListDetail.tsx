@@ -79,10 +79,14 @@ export default function ListDetail() {
                 {...state}
                 columns={[
                     { key: 'full_name', title: 'Name' },
-                    { key: 'email' },
+                    { key: 'email', sortable: true },
                     { key: 'phone' },
-                    { key: 'created_at' },
-                    { key: 'updated_at' },
+                    {
+                        key: 'created_at',
+                        title: 'Joined List At',
+                        sortable: true,
+                        sortKey: 'user_list.created_at',
+                    },
                 ]}
                 onSelectRow={({ id }) => route(`users/${id}`)} />
 
