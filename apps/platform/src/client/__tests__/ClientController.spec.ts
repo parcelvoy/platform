@@ -1,32 +1,22 @@
 import supertest from 'supertest'
 import Api from '../../api'
 import App from '../../app'
-import env from '../../config/env'
-import { createProject, createProjectApiKey } from '../../projects/ProjectService'
+import { createProjectApiKey } from '../../projects/ProjectService'
 import { uuid } from '../../utilities'
-import { Admin } from '../../auth/Admin'
 import UserAliasJob from '../../users/UserAliasJob'
 import UserPatchJob from '../../users/UserPatchJob'
 import UserDeviceJob from '../../users/UserDeviceJob'
 import EventPostJob from '../EventPostJob'
+import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
 
 afterEach(() => {
     jest.clearAllMocks()
 })
 
 const setup = async () => {
-    const app = await App.init(env())
-    const api = new Api(app)
+    const api = new Api(App.main)
 
-    const admin = await Admin.insertAndFetch({
-        first_name: uuid(),
-        last_name: uuid(),
-        email: `${uuid()}@test.com`,
-    })
-    const project = await createProject(admin, {
-        name: uuid(),
-        timezone: 'utc',
-    })
+    const project = await createTestProject()
     const apiKey = await createProjectApiKey(project.id, {
         scope: 'public',
         name: uuid(),

@@ -2,14 +2,13 @@ import App from '../../app'
 import EmailJob from '../../providers/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
-import { createProject } from '../../projects/ProjectService'
 import { createSubscription, subscribe } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
 import { allCampaigns, createCampaign, getCampaign, sendCampaign, generateSendList } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
-import { Admin } from '../../auth/Admin'
+import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
 
 afterEach(() => {
     jest.clearAllMocks()
@@ -24,15 +23,7 @@ describe('CampaignService', () => {
     }
 
     const createCampaignDependencies = async (): Promise<CampaignRefs> => {
-        const admin = await Admin.insertAndFetch({
-            first_name: uuid(),
-            last_name: uuid(),
-            email: `${uuid()}@test.com`,
-        })
-        const project = await createProject(admin, {
-            name: uuid(),
-            timezone: 'utc',
-        })
+        const project = await createTestProject()
         const subscription = await createSubscription(project.id, {
             name: uuid(),
             channel: 'email',

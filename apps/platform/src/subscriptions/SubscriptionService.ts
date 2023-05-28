@@ -122,22 +122,22 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
 }
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
-    toggleSubscription(userId, subscriptionId, SubscriptionState.unsubscribed)
+    await toggleSubscription(userId, subscriptionId, SubscriptionState.unsubscribed)
 }
 
 export const subscribe = async (userId: number, subscriptionId: number): Promise<void> => {
-    toggleSubscription(userId, subscriptionId, SubscriptionState.subscribed)
+    await toggleSubscription(userId, subscriptionId, SubscriptionState.subscribed)
 }
 
-export const subscribeAll = async (user: User): Promise<void> => {
+export const subscribeAll = async (user: User, types = ['email', 'text', 'push']): Promise<void> => {
     const channels: ChannelType[] = []
-    if (user.email) {
+    if (user.email && types.includes('email')) {
         channels.push('email')
     }
-    if (user.phone) {
+    if (user.phone && types.includes('text')) {
         channels.push('text')
     }
-    if (user.pushEnabledDevices.length) {
+    if (user.pushEnabledDevices.length && types.includes('push')) {
         channels.push('push')
     }
     const subscriptions = await allSubscriptions(user.project_id, channels)
