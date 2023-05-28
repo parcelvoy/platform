@@ -1,16 +1,15 @@
 import Router from '@koa/router'
-import App from '../app'
 import EventPostJob from './EventPostJob'
 import { JSONSchemaType, validate } from '../core/validate'
 import { ClientIdentifyParams, ClientIdentityKeys, ClientPostEventsRequest } from './Client'
-import { aliasUser, saveDevice } from '../users/UserRepository'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectMiddleware } from '../projects/ProjectController'
 import { DeviceParams } from '../users/User'
 import UserPatchJob from '../users/UserPatchJob'
+import UserDeviceJob from '../users/UserDeviceJob'
+import UserAliasJob from '../users/UserAliasJob'
 
 const router = new Router<ProjectState>()
-
 router.use(projectMiddleware)
 
 /**
@@ -32,8 +31,11 @@ const aliasParams: JSONSchemaType<ClientIdentityKeys> = {
     },
 }
 router.post('/alias', async ctx => {
-    const payload = validate(aliasParams, ctx.request.body)
-    await aliasUser(ctx.state.project.id, payload)
+    const alias = validate(aliasParams, ctx.request.body)
+    await UserAliasJob.from({
+        project_id: ctx.state.project.id,
+        ...alias,
+    }).queue()
     ctx.status = 204
     ctx.body = ''
 })
@@ -90,10 +92,10 @@ const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
 } as any
 router.post('/identify', async ctx => {
     const user = validate(identifyParams, ctx.request.body)
-    await App.main.queue.enqueue(UserPatchJob.from({
+    await UserPatchJob.from({
         project_id: ctx.state.project.id,
         user,
-    }))
+    }).queue()
 
     ctx.status = 204
     ctx.body = ''
@@ -147,8 +149,11 @@ const deviceParams: JSONSchemaType<DeviceParams> = {
     ],
 } as any
 router.post('/devices', async ctx => {
-    const payload = validate(deviceParams, ctx.request.body)
-    await saveDevice(ctx.state.project.id, payload)
+    const device = validate(deviceParams, ctx.request.body)
+    await UserDeviceJob.from({
+        project_id: ctx.state.project.id,
+        ...device,
+    }).queue()
 
     ctx.status = 204
     ctx.body = ''
@@ -198,10 +203,10 @@ router.post('/events', async ctx => {
     const events = validate(postEventsRequest, ctx.request.body)
 
     for (const event of events) {
-        await App.main.queue.enqueue(EventPostJob.from({
+        await EventPostJob.from({
             project_id: ctx.state.project.id,
             event,
-        }))
+        }).queue()
     }
 
     ctx.status = 204
