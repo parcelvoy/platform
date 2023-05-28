@@ -15,6 +15,7 @@ export interface DataTableCol<T> {
     title?: ReactNode
     cell?: DataTableResolver<T, ReactNode>
     sortable?: boolean
+    sortKey?: string
 }
 
 export interface ColSort {
@@ -29,14 +30,15 @@ interface HeaderCellProps<T> {
 }
 
 export function HeaderCell<T>({ col, columnSort, onColumnSort }: HeaderCellProps<T>) {
-    const { key, title, sortable } = col
+    const { key, title, sortable, sortKey } = col
+    const sort = sortKey ?? key
     const handleSort = () => {
-        if (columnSort?.sort !== key) {
-            onColumnSort?.({ sort: key, direction: 'asc' })
+        if (columnSort?.sort !== sort) {
+            onColumnSort?.({ sort, direction: 'asc' })
         } else if (columnSort?.direction === 'desc') {
             onColumnSort?.()
         } else {
-            onColumnSort?.({ sort: key, direction: 'desc' })
+            onColumnSort?.({ sort, direction: 'desc' })
         }
     }
     return <div className="table-header-cell">
@@ -48,7 +50,7 @@ export function HeaderCell<T>({ col, columnSort, onColumnSort }: HeaderCellProps
                     variant="secondary"
                     onClick={() => handleSort()}
                     icon={
-                        columnSort?.sort === key
+                        columnSort?.sort === sort
                             ? columnSort?.direction === 'asc'
                                 ? <ChevronUpIcon />
                                 : <ChevronDownIcon />
