@@ -19,7 +19,7 @@ export default function Teams() {
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.projectAdmins.search(project.id, params), [project]))
     const [editing, setEditing] = useState<null | Partial<EditFormData>>(null)
-    const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, page: 0, itemsPerPage: 100 }), [])
+    const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, limit: 100 }), [])
 
     return (
         <>

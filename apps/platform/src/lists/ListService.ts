@@ -4,17 +4,16 @@ import { check, query as ruleQuery } from '../rules/RuleEngine'
 import List, { DynamicList, ListCreateParams, UserList } from './List'
 import Rule from '../rules/Rule'
 import { enterJourneyFromList } from '../journey/JourneyService'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import App from '../app'
 import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
-export const pagedLists = async (params: SearchParams, projectId: number) => {
-    const result = await List.searchParams(
-        params,
-        ['name'],
+export const pagedLists = async (params: PageParams, projectId: number) => {
+    const result = await List.search(
+        { ...params, fields: ['name'] },
         b => {
             b = b.where('project_id', projectId)
                 .whereNull('deleted_at')
@@ -58,21 +57,19 @@ export const getList = async (id: number, projectId: number) => {
     return list
 }
 
-export const getListUsers = async (id: number, params: SearchParams, projectId: number) => {
-    return await User.searchParams(
-        params,
-        ['email', 'phone'],
+export const getListUsers = async (id: number, params: PageParams, projectId: number) => {
+    return await User.search(
+        { ...params, fields: ['email', 'phone'], mode: 'exact' },
         b => b.rightJoin('user_list', 'user_list.user_id', 'users.id')
             .where('project_id', projectId)
             .where('list_id', id)
-            .select('users.*'),
+            .select('users.*', 'user_list.created_at'),
     )
 }
 
-export const getUserLists = async (id: number, params: SearchParams, projectId: number) => {
-    return await List.searchParams(
+export const getUserLists = async (id: number, params: PageParams, projectId: number) => {
+    return await List.search(
         params,
-        [],
         b => b.rightJoin('user_list', 'user_list.list_id', 'lists.id')
             .where('project_id', projectId)
             .where('user_id', id)

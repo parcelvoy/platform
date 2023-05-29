@@ -58,7 +58,7 @@ export class User extends Model {
     }
 
     get fullName() {
-        const parts = []
+        const parts: string[] = []
         if (this.firstName) {
             parts.push(this.firstName)
         }
@@ -68,11 +68,11 @@ export class User extends Model {
         return parts.join(' ') || null
     }
 
-    get firstName() {
+    get firstName(): string {
         return this.data.first_name ?? this.data.firstName ?? this.data.name
     }
 
-    get lastName() {
+    get lastName(): string {
         return this.data.last_name ?? this.data.lastName
     }
 

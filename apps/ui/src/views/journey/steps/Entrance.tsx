@@ -25,7 +25,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
         value,
     }) {
         const getList = useCallback(async (id: number) => await api.lists.get(projectId, id), [projectId])
-        const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])
+        const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, limit: 50 }), [projectId])
         return (
             <EntityIdPicker
                 label="List"

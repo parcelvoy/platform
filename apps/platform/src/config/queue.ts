@@ -19,19 +19,20 @@ import CampaignInteractJob from '../campaigns/CampaignInteractJob'
 import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
 import ProjectRulePathSyncJob from '../rules/ProjectRulePathSyncJob'
+import UserDeviceJob from '../users/UserDeviceJob'
 
 export type Queues = Record<number, Queue>
 
 export const loadJobs = (queue: Queue) => {
     queue.register(CampaignGenerateListJob)
     queue.register(CampaignInteractJob)
-    queue.register(CampaignTriggerJob)
     queue.register(CampaignSendJob)
     queue.register(CampaignStateJob)
+    queue.register(CampaignTriggerJob)
     queue.register(EmailJob)
     queue.register(EventPostJob)
-    queue.register(JourneyProcessJob)
     queue.register(JourneyDelayJob)
+    queue.register(JourneyProcessJob)
     queue.register(ListPopulateJob)
     queue.register(ListStatsJob)
     queue.register(ProcessListsJob)
@@ -39,8 +40,9 @@ export const loadJobs = (queue: Queue) => {
     queue.register(PushJob)
     queue.register(TextJob)
     queue.register(UserAliasJob)
-    queue.register(UserPatchJob)
     queue.register(UserDeleteJob)
+    queue.register(UserDeviceJob)
+    queue.register(UserPatchJob)
     queue.register(WebhookJob)
 }
 

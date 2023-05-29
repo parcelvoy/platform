@@ -1,16 +1,15 @@
 import App from '../app'
 import { Database } from 'config/database'
 import { RequestError } from '../core/errors'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
 import { raw } from '../core/Model'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
-export const pagedJourneys = async (params: SearchParams, projectId: number) => {
-    const result = await Journey.searchParams(
-        params,
-        ['name'],
+export const pagedJourneys = async (params: PageParams, projectId: number) => {
+    const result = await Journey.search(
+        { ...params, fields: ['name'] },
         b => {
             b = b.where({ project_id: projectId })
             params.tag?.length && b.whereIn('id', createTagSubquery(Journey, projectId, params.tag))

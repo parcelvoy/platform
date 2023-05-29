@@ -1,5 +1,5 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
@@ -14,16 +14,24 @@ export const getUser = async (id: number, projectId?: number): Promise<User | un
 }
 
 export const getUserFromClientId = async (projectId: number, identity: ClientIdentity): Promise<User | undefined> => {
-    return await User.first(
-        qb => qb.where(sqb => {
-            if (identity.external_id) {
-                sqb.where('external_id', `${identity.external_id}`)
-            }
-            if (identity.anonymous_id) {
-                sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
-            }
-        }).where('project_id', projectId),
+    const users = await User.all(
+        qb => qb
+            .where(sqb => {
+                if (identity.external_id) {
+                    sqb.where('external_id', `${identity.external_id}`)
+                }
+                if (identity.anonymous_id) {
+                    sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
+                }
+            })
+            .where('project_id', projectId)
+            .limit(2),
     )
+
+    // There are circumstances in which both the external ID and
+    // the anonymous ID match but match different records in
+    // those cases, default to the one matching the external ID
+    return users.find(user => user.external_id === identity.external_id) ?? users[0]
 }
 
 export const getUserFromPhone = async (projectId: number, phone: string): Promise<User | undefined> => {
@@ -40,11 +48,14 @@ export const getUserFromEmail = async (projectId: number, email: string): Promis
     )
 }
 
-export const pagedUsers = async (params: SearchParams, projectId: number) => {
-    return await User.searchParams(
-        params,
-        ['external_id', 'email', 'phone'],
-        b => b.where({ project_id: projectId }),
+export const pagedUsers = async (params: PageParams, projectId: number) => {
+    return await User.search(
+        {
+            ...params,
+            fields: ['external_id', 'email', 'phone'],
+            mode: 'exact',
+        },
+        b => b.where('project_id', projectId),
     )
 }
 
@@ -93,20 +104,29 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity)
     if (!user) return
 
-    if (!user.devices) user.devices = []
-    const device = user.devices?.find(device => {
+    let isFirstDevice = false
+    if (!user.devices) {
+        user.devices = []
+        isFirstDevice = true
+    }
+    let device = user.devices?.find(device => {
         return device.device_id === params.device_id
             || (device.token === params.token && device.token != null)
     })
     if (device) {
         Object.assign(device, params)
     } else {
-        user.devices.push({
+        device = {
             ...params,
             device_id: params.device_id,
-        })
+        }
+        user.devices.push(device)
     }
     await User.updateAndFetch(user.id, { devices: user.devices })
+
+    if (isFirstDevice) {
+        await subscribeAll(user, ['push'])
+    }
     return device
 }
 

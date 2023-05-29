@@ -27,7 +27,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                 label="Campaign"
                 subtitle="Send this campaign when users reach this step."
                 get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
-                search={useCallback(async q => await api.campaigns.search(projectId, { q, page: 0, itemsPerPage: 50 }), [projectId])}
+                search={useCallback(async q => await api.campaigns.search(projectId, { q, limit: 50 }), [projectId])}
                 value={value.campaign_id}
                 onChange={campaign_id => onChange({ ...value, campaign_id })}
                 required

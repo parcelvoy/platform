@@ -9,8 +9,7 @@ import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import App from '../app'
-
-import { SearchParams } from '../core/searchParams'
+import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
 import { getSubscription } from '../subscriptions/SubscriptionService'
@@ -21,12 +20,11 @@ import { getProject } from '../projects/ProjectService'
 import CampaignError from './CampaignError'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
 
-export const pagedCampaigns = async (params: SearchParams, projectId: number) => {
-    const result = await Campaign.searchParams(
-        params,
-        ['name'],
+export const pagedCampaigns = async (params: PageParams, projectId: number) => {
+    const result = await Campaign.search(
+        { ...params, fields: ['name'] },
         b => {
-            b.where({ project_id: projectId })
+            b.where('project_id', projectId)
                 .whereNull('deleted_at')
             params.tag?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tag))
             return b
@@ -138,7 +136,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         })
     }
 
-    if (data.state === 'pending') {
+    if (data.state === 'pending' && data.type === 'blast') {
         await CampaignGenerateListJob.from(campaign).queue()
     }
 
@@ -158,10 +156,9 @@ export const deleteCampaign = async (id: number, projectId: number) => {
     return await Campaign.delete(qb => qb.where('id', id).where('project_id', projectId))
 }
 
-export const getCampaignUsers = async (id: number, params: SearchParams, projectId: number) => {
-    return await User.searchParams(
-        params,
-        ['email', 'phone'],
+export const getCampaignUsers = async (id: number, params: PageParams, projectId: number) => {
+    return await User.search(
+        { ...params, fields: ['email', 'phone'], mode: 'exact' },
         b => b.rightJoin('campaign_sends', 'campaign_sends.user_id', 'users.id')
             .where('project_id', projectId)
             .where('campaign_id', id)
@@ -346,7 +343,7 @@ export const abortCampaign = async (campaign: Campaign) => {
 }
 
 export const duplicateCampaign = async (campaign: Campaign) => {
-    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name'])
+    const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name', 'type'])
     params.name = `Copy of ${params.name}`
     params.state = 'draft'
     const cloneId = await Campaign.insert(params)

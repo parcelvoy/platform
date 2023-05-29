@@ -4,10 +4,15 @@
     "module": "commonjs",                        
     "moduleResolution": "node",
     "baseUrl": "./src",
-    "outDir": "./build"
+    "outDir": "./build",
+    "typeRoots": [
+      "node_modules/@types",
+      "@types"
+    ]
   },
   "include": [
     "./src/**/*",
+    "@types",
     "tsconfig.json"
   ],
   "exclude": [

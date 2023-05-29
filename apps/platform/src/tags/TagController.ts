@@ -17,9 +17,10 @@ const router = new Router<
 })
 
 router.get('/', async ctx => {
-    ctx.body = await Tag.searchParams(
-        extractQueryParams(ctx.request.query, searchParamsSchema),
-        ['name'],
+    const params = extractQueryParams(ctx.request.query, searchParamsSchema)
+    ctx.body = await Tag.search(
+        { ...params, fields: ['name'] },
+        qb => qb.where('project_id', ctx.state.project!.id),
     )
 })
 

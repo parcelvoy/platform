@@ -26,7 +26,7 @@ export default class Queue {
         } else if (config?.driver === 'memory') {
             this.provider = new MemoryQueueProvider(this)
         } else {
-            throw new Error('A valid queue must be defined!')
+            throw new Error('A valid queue driver must be set!')
         }
     }
 

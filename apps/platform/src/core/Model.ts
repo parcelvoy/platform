@@ -1,33 +1,18 @@
+import { formatISO } from 'date-fns'
 import App from '../app'
-import { Database } from '../config/database'
+import { Database, Query } from '../config/database'
 import { snakeCase, pluralize } from '../utilities'
-import { SearchParams } from './searchParams'
+import { PageQueryParams } from './searchParams'
 
 export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
-export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
-
-export interface Page<T, B = number> {
-    results: T[]
-    since_id: B
-}
-
-export interface PageParams<B> {
-    sinceId: B
-    limit: number
-    query: Query
-}
-
 export interface SearchResult<T> {
     results: T[]
-    total: number
-    start: number
-    end: number
-    page: number
-    itemsPerPage: number
-    pages: number
+    nextCursor?: string
+    prevCursor?: string
+    limit: number
 }
 
 export default class Model {
@@ -137,84 +122,96 @@ export default class Model {
 
     static async search<T extends typeof Model>(
         this: T,
+        params: PageQueryParams<T>,
         query: Query = qb => qb,
-        page = 0,
-        itemsPerPage = 10,
         db: Database = App.main.db,
     ): Promise<SearchResult<InstanceType<T>>> {
-        const total = await this.count(query, db)
-        const start = page * itemsPerPage
-        const results: T[] = total > 0
-            ? await this.build(query, db)
-                .offset(start)
-                .limit(itemsPerPage)
-            : []
-        const end = Math.min(start + itemsPerPage, start + results.length)
+        const {
+            cursor,
+            page = 'next',
+            limit,
+            sort,
+            direction = 'asc',
+            mode = 'partial',
+            fields = [],
+            q,
+            id,
+        } = params
+
+        // Based on if we are moving forward or backward we need to
+        // change how the cursor `where` clause works
+        const cursorDir = page === 'next'
+            ? direction === 'asc' ? '>' : '<'
+            : direction === 'asc' ? '<=' : '>='
+
+        const data = await this.build(query, db)
+            .limit((limit + 1)) // Get one extra to check for more
+            .clear('order') // QB cannot contain order
+            .when(!!sort, qb =>
+                // If sort is provided, order by that first, then by id
+                // for consistency
+                qb.orderBy(sort!, direction)
+                    .orderBy('id', direction),
+            )
+            .when(!!cursor, qb => {
+                // To allow for sorting, `since` may contain either just
+                // a last token or a last token and the last value of
+                // the column you are sorting by
+                const [sinceId, sortSince] = cursor!.split(',')
+                if (sortSince) {
+                    qb.whereRaw(`(??, \`id\`) ${cursorDir} (?, ?)`, [sort, sortSince!, sinceId])
+                } else {
+                    qb.where('id', cursorDir, sinceId)
+                }
+                return qb
+            })
+            .when(!!q, qb => {
+                // Filter results by search query in either
+                // exact or partial mode
+                const filter = mode === 'exact'
+                    ? params.q
+                    : '%' + params.q + '%'
+                return qb.where(function() {
+                    fields.reduce((chain, field) => {
+                        if (typeof field === 'string') {
+                            return chain.orWhereILike(field, filter)
+                        }
+                        return chain
+                    }, this)
+                })
+            })
+            .when(!!id?.length, qb => qb.whereIn('id', id!))
+
+        const makeCursor = (result: any, sort?: string) => {
+            if (!sort || sort === 'id') return `${result.id}`
+            let sortCursor = result[sort]
+            if (sortCursor instanceof Date) {
+                sortCursor = formatISO(sortCursor)
+            }
+            return `${result.id},${sortCursor}`
+        }
+
+        // Slice off the extra result so that the true limit is provided
+        const results = data.slice(0, limit)
+        const resultCount = results.length
+        const hasMore = resultCount < data.length
+
+        // End result is either first or last result depending on direction
+        const endResult = page === 'next' ? results[resultCount - 1] : results[0]
+
+        // If there are more items fetched than after slicing we know
+        // there are more pages
+        const endCursor = endResult && hasMore
+            ? makeCursor(endResult, sort)
+            : undefined
+        const startCursor = cursor
+
+        // Return the results, cursors (they flip based on direction) and limit
         return {
             results: results.map((item: any) => this.fromJson(item)),
-            start,
-            end,
-            total,
-            page,
-            itemsPerPage,
-            pages: itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) : 1,
-        }
-    }
-
-    static async searchParams<T extends typeof Model>(
-        this: T,
-        params: SearchParams,
-        fields: Array<keyof InstanceType<T> | string>,
-        query: Query = qb => qb,
-        db: Database = App.main.db,
-    ) {
-        const { page, itemsPerPage, sort, direction, q, id } = params
-        return await this.search(
-            b => {
-                b = query(b)
-                if (q) {
-                    const filter = '%' + params.q + '%'
-                    b.where(function() {
-                        fields.reduce((chain, field, index) => {
-                            if (typeof field === 'string') {
-                                if (index === 0) {
-                                    chain = chain.whereILike(field, filter)
-                                } else {
-                                    chain = chain.orWhereILike(field, filter)
-                                }
-                            }
-                            return chain
-                        }, this)
-                    })
-                }
-                if (sort) {
-                    b.orderBy(sort, direction ?? 'asc')
-                }
-                if (id?.length) {
-                    b.whereIn('id', id)
-                }
-                return b
-            },
-            page,
-            itemsPerPage,
-            db,
-        )
-    }
-
-    static async page<T extends typeof Model, B = number>(
-        this: T,
-        params: PageParams<B>,
-        query: Query = qb => qb,
-        db: Database = App.main.db,
-    ): Promise<Page<InstanceType<T>, B>> {
-        const records = await this.build(query, db)
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            .where('id', '<', params.sinceId)
-            .limit(params.limit)
-        return {
-            results: records.map((item: any) => this.fromJson(item)),
-            since_id: params.sinceId,
+            nextCursor: page === 'next' ? endCursor : startCursor,
+            prevCursor: page === 'next' ? startCursor : endCursor,
+            limit,
         }
     }
 

@@ -75,7 +75,7 @@ export default class SAMLAuthProvider extends AuthProvider {
         const [response, state] = result
 
         // If there is no profile we take no action
-        if (!response.profile) return
+        if (!response.profile) throw new RequestError(AuthError.SAMLValidationError)
         if (response.loggedOut) {
             await this.logout({ email: response.profile.nameID }, ctx)
             return
@@ -83,7 +83,15 @@ export default class SAMLAuthProvider extends AuthProvider {
 
         // If we are logging in, grab profile and create tokens
         const { first_name, last_name, nameID: email } = response.profile
-        await this.login({ first_name, last_name, email }, ctx, state)
+        const domain = this.getDomain(email)
+        if (!email || !domain) throw new RequestError(AuthError.SAMLValidationError)
+
+        const { id } = await this.loadAuthOrganization(ctx, domain)
+        await this.login({ first_name, last_name, email, organization_id: id }, ctx, state)
+    }
+
+    private getDomain(email: string): string | undefined {
+        return email?.split('@')[1]
     }
 
     private async parseValidation(ctx: Context): Promise<[ValidatedSAMLResponse, string?] | undefined> {

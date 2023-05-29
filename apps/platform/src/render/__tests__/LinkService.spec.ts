@@ -4,19 +4,18 @@ import { createUser } from '../../users/UserRepository'
 import { uuid } from '../../utilities'
 import { clickWrapHtml, encodedLinkToParts, openWrapHtml, paramsToEncodedLink, preheaderWrapHtml } from '../LinkService'
 
-afterEach(() => {
-    jest.clearAllMocks()
-})
-
 describe('LinkService', () => {
     describe('encodedLinkToParts', () => {
         test('a properly encoded link decodes to parts', async () => {
-            const adminId = await Admin.insert({
+            const admin = await Admin.insertAndFetch({
                 first_name: uuid(),
                 last_name: uuid(),
                 email: `${uuid()}@test.com`,
             })
-            const project = await createProject(adminId, { name: uuid() })
+            const project = await createProject(admin, {
+                name: uuid(),
+                timezone: 'utc',
+            })
             const user = await createUser(project.id, {
                 anonymous_id: uuid(),
                 external_id: uuid(),
