@@ -6,9 +6,9 @@ import Project from '../projects/Project'
 import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
+import { templateInUserLocale } from '../render/TemplateService'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import { partialMatchLocale } from '../utilities'
 import EmailChannel from './email/EmailChannel'
 import { MessageTrigger } from './MessageTrigger'
 import TextChannel from './text/TextChannel'
@@ -45,17 +45,8 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         qb => qb.where('campaign_id', campaign_id),
     )
 
-    // Determine what template to send to the user based on the following:
-    // - Find an exact match of users locale with a template
-    // - Find a partial match (same root locale i.e. `en` vs `en-US`)
-    // - If a project locale is set and there is match, use that template
-    // - If there is a project locale and its a partial match, use
-    // - Otherwise return any template available
-    const template = templates.find(item => item.locale === user.locale)
-        || templates.find(item => partialMatchLocale(item.locale, user.locale))
-        || templates.find(item => item.locale === project.locale)
-        || templates.find(item => partialMatchLocale(item.locale, project.locale))
-        || templates[0]
+    // Determine what template to send to the user based on the following
+    const template = templateInUserLocale(templates, project, user)
 
     // If campaign or template dont exist, log and abort
     if (!template || !campaign) {

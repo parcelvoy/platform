@@ -36,6 +36,7 @@ export const pagedCampaigns = async (params: PageParams, projectId: number) => {
             campaign.tags = tags.get(campaign.id)
         }
     }
+
     return result
 }
 
@@ -67,7 +68,7 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
     const delivery = { sent: 0, total: 0, opens: 0, clicks: 0 }
     const campaign = await Campaign.insertAndFetch({
         ...params,
-        state: 'draft',
+        state: params.type === 'trigger' ? 'running' : 'draft',
         delivery,
         channel: subscription.channel,
         project_id: projectId,
@@ -121,6 +122,11 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
 
         // Set to pending if success so scheduling starts
         data.state = 'pending'
+    }
+
+    // If this is a trigger campaign, should always be running
+    if (data.type === 'trigger') {
+        data.state = 'running'
     }
 
     await Campaign.update(qb => qb.where('id', id), {

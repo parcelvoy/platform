@@ -1,13 +1,14 @@
 import { ChannelType } from '../../types'
 import { EmailIcon, PushIcon, TextIcon, WebhookIcon } from '../../ui/icons'
-import Tag from '../../ui/Tag'
+import Tag, { TagProps } from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
 
 interface ChannelTagParams {
     channel: ChannelType
+    showIcon?: boolean
 }
 
-export default function ChannelTag({ channel }: ChannelTagParams) {
+export function ChannelIcon({ channel }: Pick<ChannelTagParams, 'channel'>) {
     const Icon = channel === 'email'
         ? EmailIcon
         : channel === 'text'
@@ -15,8 +16,13 @@ export default function ChannelTag({ channel }: ChannelTagParams) {
             : channel === 'push'
                 ? PushIcon
                 : WebhookIcon
+    return <Icon />
+}
+
+export default function ChannelTag({ channel, showIcon = true, ...params }: ChannelTagParams & TagProps) {
     return Tag({
-        children: <><Icon />{snakeToTitle(channel)}</>,
+        ...params,
+        children: <>{showIcon && <ChannelIcon channel={channel} />}{snakeToTitle(channel)}</>,
         variant: 'plain',
     })
 }

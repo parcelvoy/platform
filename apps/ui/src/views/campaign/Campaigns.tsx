@@ -11,7 +11,7 @@ import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import Tag, { TagVariant } from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
 import { CampaignForm } from './CampaignForm'
-import ChannelTag from './ChannelTag'
+import { ChannelIcon } from './ChannelTag'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -67,16 +67,28 @@ export default function Campaigns() {
                 <SearchTable
                     {...state}
                     columns={[
-                        { key: 'name', sortable: true },
+                        {
+                            key: 'name',
+                            sortable: true,
+                            cell: ({ item: { name, channel, screenshot_url } }) => (
+                                <div className="multi-cell">
+                                    <object data={screenshot_url} type="image/jpeg">
+                                        <div className="placeholder">
+                                            <ChannelIcon channel={channel} />
+                                        </div>
+                                    </object>
+                                    <div className="text">
+                                        <div className="title">{name}</div>
+                                        <div className="subtitle">
+                                            {snakeToTitle(channel)}</div>
+                                    </div>
+                                </div>
+                            ),
+                        },
                         {
                             key: 'state',
                             sortable: true,
                             cell: ({ item: { state } }) => CampaignTag({ state }),
-                        },
-                        {
-                            key: 'channel',
-                            sortable: true,
-                            cell: ({ item: { channel } }) => ChannelTag({ channel }),
                         },
                         {
                             key: 'delivery',
