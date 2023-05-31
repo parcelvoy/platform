@@ -1,6 +1,7 @@
+import { Readable } from 'stream'
 import { PageParams } from '../core/searchParams'
-import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
-import { pick, prune } from '../utilities'
+import Template, { EmailTemplate, TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
+import { partialMatchLocale, pick, prune } from '../utilities'
 import { Variables } from '.'
 import { loadEmailChannel } from '../providers/email'
 import { getCampaign } from '../campaigns/CampaignService'
@@ -12,6 +13,10 @@ import CampaignError from '../campaigns/CampaignError'
 import { loadPushChannel } from '../providers/push'
 import { getUserFromEmail, getUserFromPhone } from '../users/UserRepository'
 import { loadWebhookChannel } from '../providers/webhook'
+import nodeHtmlToImage from 'node-html-to-image'
+import App from '../app'
+import TemplateSnapshotJob from './TemplateSnapshotJob'
+import Project from '../projects/Project'
 
 export const pagedTemplates = async (params: PageParams, projectId: number) => {
     return await Template.search(
@@ -34,15 +39,19 @@ export const getTemplate = async (id: number, projectId: number) => {
 }
 
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
-    return await Template.insertAndFetch({
+    const template = await Template.insertAndFetch({
         ...params,
         data: params.data ?? {},
         project_id: projectId,
     })
+    await TemplateSnapshotJob.from({ project_id: projectId, campaign_id: template.campaign_id }).queue()
+    return template
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
-    return await Template.updateAndFetch(templateId, prune(params))
+    const template = await Template.updateAndFetch(templateId, prune(params))
+    await TemplateSnapshotJob.from({ project_id: template.project_id, campaign_id: template.campaign_id }).queue()
+    return template
 }
 
 export const deleteTemplate = async (id: number, projectId: number) => {
@@ -53,6 +62,27 @@ export const duplicateTemplate = async (template: Template, campaignId: number) 
     const params: Partial<Template> = pick(template, ['project_id', 'locale', 'type', 'data'])
     params.campaign_id = campaignId
     return await Template.insert(params)
+}
+
+export const screenshotTemplate = async (template: EmailTemplate, path?: string) => {
+    const html = screenshotHtml(template)
+    const image = await nodeHtmlToImage({ html })
+    const stream = Readable.from(image)
+    await App.main.storage.upload({
+        stream,
+        url: path ?? `templates/${template.id}.jpg`,
+    })
+}
+
+const screenshotHtml = (template: TemplateType) => {
+    if (template.type === 'email') {
+        return template.html
+    } else if (template.type === 'text') {
+        return template.text
+    } else if (template.type === 'push') {
+        return `${template.title}<br/>${template.body}`
+    }
+    return ''
 }
 
 export const validateTemplates = async (projectId: number, campaignId: number) => {
@@ -99,4 +129,18 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
     } else {
         throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
     }
+}
+
+// Determine what template to send to the user based on the following:
+// - Find an exact match of users locale with a template
+// - Find a partial match (same root locale i.e. `en` vs `en-US`)
+// - If a project locale is set and there is match, use that template
+// - If there is a project locale and its a partial match, use
+// - Otherwise return any template available
+export const templateInUserLocale = (templates: Template[], project?: Project, user?: User) => {
+    return templates.find(item => item.locale === user?.locale)
+        || templates.find(item => partialMatchLocale(item.locale, user?.locale))
+        || templates.find(item => item.locale === project?.locale)
+        || templates.find(item => partialMatchLocale(item.locale, project?.locale))
+        || templates[0]
 }

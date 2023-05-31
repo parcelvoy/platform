@@ -1,12 +1,9 @@
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { Image, Template } from '../../../types'
-import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SourceEditor from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
-import { toast } from 'react-hot-toast'
 import Button from '../../../ui/Button'
 import ImageGalleryModal from '../ImageGalleryModal'
-import { formatDate } from '../../../utils'
 import Preview from '../../../ui/Preview'
 import Tabs from '../../../ui/Tabs'
 import { ImageIcon } from '../../../ui/icons'
@@ -15,22 +12,23 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
 
     const [monaco, setMonaco] = useState<Editor.IStandaloneCodeEditor | undefined>()
 
-    const [preferences] = useContext(PreferencesContext)
-    const [data, setData] = useState(template.data)
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [showImages, setShowImages] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
 
     function handleMount(editor: Editor.IStandaloneCodeEditor) {
         setMonaco(editor)
     }
 
     function handleHtmlChange(html?: string) {
-        setData({ ...data, html })
+        const newTemplate = { ...template }
+        newTemplate.data.html = html
+        setTemplate(newTemplate)
     }
 
     function handleTextChange(text?: string) {
-        setData({ ...data, text })
+        const newTemplate = { ...template }
+        newTemplate.data.text = text
+        setTemplate(template)
     }
 
     function handleImageInsert(image: Image) {
@@ -57,19 +55,6 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
         }
     }
 
-    async function handleSave() {
-        try {
-            setIsSaving(true)
-            template.data = data
-            await setTemplate(template)
-            toast.success('Saved!')
-        } catch (error) {
-            toast.error('Unable to save template.')
-        } finally {
-            setIsSaving(false)
-        }
-    }
-
     return (
         <>
             <section className="editor-html">
@@ -84,7 +69,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                 <SourceEditor
                                     height="100%"
                                     defaultLanguage="handlebars"
-                                    defaultValue={data.html}
+                                    defaultValue={template.data.html}
                                     onChange={handleHtmlChange}
                                     onMount={handleMount}
                                     options={{ wordWrap: 'on' }}
@@ -105,7 +90,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                             children: <SourceEditor
                                 height="100%"
                                 defaultLanguage="handlebars"
-                                defaultValue={data.text}
+                                defaultValue={template.data.text}
                                 onChange={handleTextChange}
                                 options={{ wordWrap: 'on' }}
                                 theme="vs-dark"
@@ -114,16 +99,9 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                     />
                 </div>
                 <div className="source-preview">
-                    <Preview template={{ type: 'email', data }} />
+                    <Preview template={{ type: 'email', data: template.data }} />
                 </div>
             </section>
-            <div className="email-editor-footer">
-                <div className="publish-details">
-                    <span className="publish-label">Last updated at</span>
-                    <span className="publish-date">{formatDate(preferences, template.updated_at)}</span>
-                </div>
-                <Button onClick={async () => await handleSave()} isLoading={isSaving}>Save</Button>
-            </div>
 
             <ImageGalleryModal
                 open={showImages}

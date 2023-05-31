@@ -41,3 +41,15 @@
     align-items: center;
     gap: 5px;
 }
+
+.ui-tag.tiny {
+    font-size: 12px;
+    padding: 2px 4px;
+    gap: 2px;
+    border-radius: var(--border-radius-inner);
+}
+
+.ui-tag.tiny .icon {
+    width: 12px;
+    height: 12px;
+}

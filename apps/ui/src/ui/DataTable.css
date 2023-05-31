@@ -84,24 +84,46 @@
 .ui-table .table-cell .multi-cell {
     display: grid;
     grid-template-areas: "image text";
-    grid-template-columns: 75px auto;
+    grid-template-columns: 50px auto;
     align-items: center;
     column-gap: 10px;
 }
 
-.ui-table .table-cell .multi-cell .title {
+.ui-table .table-cell .multi-cell .text {
     grid-area: text;
+}
+
+.ui-table .table-cell .multi-cell .title {
     font-weight: 500;
 }
 
-.ui-table .table-cell .multi-cell img {
+.ui-table .table-cell .multi-cell .subtitle {
+    font-size: 14px;
+    color: var(--color-primary-soft);
+    margin-top: 3px;
+}
+
+.ui-table .table-cell .multi-cell object,
+.ui-table .table-cell .multi-cell .placeholder {
     background-color: var(--color-background-soft);
     grid-area: image;
-    width: 75px;
-    height: 50px;
+    width: 100%;
+    height: 40px;
     object-fit: cover;
     object-position: 0px 0px;
     border-radius: var(--border-radius-inner);
+}
+
+.ui-table .table-cell .multi-cell .placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ui-table .table-cell .multi-cell .placeholder .icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-grey-hard);
 }
 
 .ui-table .table-cell .loader {
