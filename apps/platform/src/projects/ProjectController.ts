@@ -11,6 +11,8 @@ import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
 import { ProjectRulePath } from '../rules/ProjectRulePath'
 import { getAdmin } from '../auth/AdminRepository'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
+import App from '../app'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -136,6 +138,14 @@ subrouter.get('/data/paths', async ctx => {
             userPaths: string[]
             eventPaths: { [name: string]: string[] }
         }))
+})
+
+subrouter.post('/data/paths/sync', async ctx => {
+    App.main.queue.enqueue(UserSchemaSyncJob.from({
+        project_id: ctx.state.project.id,
+        // no delta, rebuild the whole thing
+    }))
+    ctx.status = 204
 })
 
 export { subrouter as ProjectSubrouter }

@@ -1,20 +1,20 @@
 import Project from '../projects/Project'
 import { Job } from '../queue'
-import { syncProjectRulePaths } from './ProjectRulePathService'
+import { syncUserDataPaths } from './UserSchemaService'
 
-interface ProjectRulePathSyncTrigger {
+interface UserSchemaSyncTrigger {
     project_id?: number
     delta?: Date
 }
 
-export default class ProjectRulePathSyncJob extends Job {
-    static $name = 'project_rule_path_sync'
+export default class UserSchemaSyncJob extends Job {
+    static $name = 'user_schema_sync'
 
-    static from(data: ProjectRulePathSyncTrigger): ProjectRulePathSyncJob {
+    static from(data: UserSchemaSyncTrigger): UserSchemaSyncJob {
         return new this(data)
     }
 
-    static async handler({ delta, project_id }: ProjectRulePathSyncTrigger) {
+    static async handler({ delta, project_id }: UserSchemaSyncTrigger) {
 
         if (delta && !(delta instanceof Date)) {
             delta = new Date(delta)
@@ -26,9 +26,9 @@ export default class ProjectRulePathSyncJob extends Job {
             : await Project.query().select('id').then(rs => rs.map((r: any) => r.id))
 
         for (const project_id of projectIds) {
-            await syncProjectRulePaths({
+            await syncUserDataPaths({
                 project_id,
-                delta,
+                updatedAfter: delta,
             })
         }
     }

@@ -1,5 +1,5 @@
 import { cleanupExpiredRevokedTokens } from '../auth/TokenRepository'
-import { addSeconds, subDays } from 'date-fns'
+import { addSeconds, subDays, subHours } from 'date-fns'
 import nodeScheduler from 'node-schedule'
 import App from '../app'
 import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
@@ -8,7 +8,7 @@ import ProcessListsJob from '../lists/ProcessListsJob'
 import Model from '../core/Model'
 import { sleep, randomInt } from '../utilities'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
-import ProjectRulePathSyncJob from '../rules/ProjectRulePathSyncJob'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -32,7 +32,9 @@ export default (app: App) => {
         rule: '0 * * * *',
         callback: () => {
             cleanupExpiredRevokedTokens(subDays(new Date(), 1))
-            app.queue.enqueue(ProjectRulePathSyncJob.from({ delta: new Date() }))
+            app.queue.enqueue(UserSchemaSyncJob.from({
+                delta: subHours(new Date(), 1),
+            }))
         },
     })
     return scheduler

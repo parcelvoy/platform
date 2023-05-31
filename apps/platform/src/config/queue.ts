@@ -18,7 +18,7 @@ import CampaignGenerateListJob from '../campaigns/CampaignGenerateListJob'
 import CampaignInteractJob from '../campaigns/CampaignInteractJob'
 import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
-import ProjectRulePathSyncJob from '../rules/ProjectRulePathSyncJob'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 
 export type Queues = Record<number, Queue>
@@ -36,7 +36,7 @@ export const loadJobs = (queue: Queue) => {
     queue.register(ListPopulateJob)
     queue.register(ListStatsJob)
     queue.register(ProcessListsJob)
-    queue.register(ProjectRulePathSyncJob)
+    queue.register(UserSchemaSyncJob)
     queue.register(PushJob)
     queue.register(TextJob)
     queue.register(UserAliasJob)

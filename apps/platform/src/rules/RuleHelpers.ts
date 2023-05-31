@@ -8,7 +8,7 @@ export const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: an
     const inputValue = input[rule.group]
     let path = rule.path
     if (!inputValue || !path) return undefined
-    if (!path.startsWith(path = '$.')) path = '$.' + path
+    if (!path.startsWith('$.')) path = '$.' + path
     const pathValue = jsonpath.query(inputValue, path)?.[0]
     if (!pathValue) return undefined
     return cast(pathValue)
