@@ -53,3 +53,11 @@ export const defaultToValue = (option: any) => option
 export const defaultGetValueKey = (option: any) => (typeof option === 'object' ? option.id ?? option.key : option) as Key
 
 export const defaultGetOptionDisplay = (option: any) => (typeof option === 'object' ? option.label ?? option.name : option) as string
+
+export const highlightSearch = (
+    text: string,
+    search: string,
+    matchClassName = 'match',
+) => (text && search)
+    ? text.replaceAll(search, `<strong class="${matchClassName}">$&</strong>`)
+    : (text ?? '')

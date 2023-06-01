@@ -18,6 +18,7 @@ import CampaignGenerateListJob from '../campaigns/CampaignGenerateListJob'
 import CampaignInteractJob from '../campaigns/CampaignInteractJob'
 import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 import TemplateSnapshotJob from '../render/TemplateSnapshotJob'
 
@@ -36,6 +37,7 @@ export const loadJobs = (queue: Queue) => {
     queue.register(ListPopulateJob)
     queue.register(ListStatsJob)
     queue.register(ProcessListsJob)
+    queue.register(UserSchemaSyncJob)
     queue.register(PushJob)
     queue.register(TextJob)
     queue.register(TemplateSnapshotJob)

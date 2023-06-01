@@ -9,7 +9,10 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
+import { ProjectRulePath } from '../rules/ProjectRulePath'
 import { getAdmin } from '../auth/AdminRepository'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
+import App from '../app'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -116,6 +119,33 @@ subrouter.patch('/', async ctx => {
     const { admin, project } = ctx.state
     const payload = validate(projectUpdateParams, ctx.request.body)
     ctx.body = await updateProject(project.id, admin!.id, payload)
+})
+
+subrouter.get('/data/paths', async ctx => {
+    ctx.body = await ProjectRulePath
+        .all(q => q.where('project_id', ctx.state.project.id))
+        .then(list => list.reduce((a, { type, name, path }) => {
+            if (type === 'event') {
+                (a.eventPaths[name!] ?? (a.eventPaths[name!] = [])).push(path)
+            } else {
+                a.userPaths.push(path)
+            }
+            return a
+        }, {
+            userPaths: [],
+            eventPaths: {},
+        } as {
+            userPaths: string[]
+            eventPaths: { [name: string]: string[] }
+        }))
+})
+
+subrouter.post('/data/paths/sync', async ctx => {
+    App.main.queue.enqueue(UserSchemaSyncJob.from({
+        project_id: ctx.state.project.id,
+        // no delta, rebuild the whole thing
+    }))
+    ctx.status = 204
 })
 
 export { subrouter as ProjectSubrouter }

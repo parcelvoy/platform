@@ -1,16 +1,17 @@
-import { Operator, Rule, RuleType, WrapperRule } from '../../types'
+import { Combobox } from '@headlessui/react'
+import { Operator, Rule, RuleSuggestions, RuleType, WrapperRule } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import TextInput from '../../ui/form/TextInput'
-import { PlusIcon, TrashIcon } from '../../ui/icons'
+import { ChevronUpDownIcon, PlusIcon, TrashIcon } from '../../ui/icons'
 import './RuleBuilder.css'
-
-interface RuleSetParams {
-    group: WrapperRule
-    onChange: (rule: WrapperRule) => void
-    onDelete?: () => void
-}
+import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react'
+import { ProjectContext } from '../../contexts'
+import { useResolver } from '../../hooks'
+import api from '../../api'
+import { highlightSearch, usePopperSelectDropdown } from '../../ui/utils'
+import clsx from 'clsx'
 
 export const createWrapperRule = (): WrapperRule => ({
     path: '$',
@@ -20,304 +21,388 @@ export const createWrapperRule = (): WrapperRule => ({
     children: [],
 })
 
-const RuleSet = ({ group, onChange, onDelete }: RuleSetParams) => {
-    // const handleAddGroup = () => {
-    //     const newGroup: WrapperRule = {
-    //         ...group,
-    //         children: [...group.children, {
-    //             path: '$',
-    //             type: 'wrapper',
-    //             group: 'user',
-    //             operator: 'and',
-    //             children: [],
-    //         }],
-    //     }
-    //     onChange(newGroup)
-    // }
-
-    const handleAddUserRule = () => {
-        const newGroup: WrapperRule = {
-            ...group,
-            children: [...group.children ?? [], {
-                path: '',
-                type: 'string',
-                group: group.group,
-                value: null,
-                operator: '=',
-            }],
-        }
-        onChange(newGroup)
-    }
-
-    const handleAddEventRule = () => {
-        const newGroup: WrapperRule = {
-            ...group,
-            children: [...group.children ?? [], {
-                path: '$.name',
-                type: 'wrapper',
-                group: 'event',
-                value: 'Event',
-                operator: 'and',
-                children: [],
-            }],
-        }
-        onChange(newGroup)
-    }
-
-    const handleRuleUpdate = (rule: Rule, index: number) => {
-        const newGroup: WrapperRule = { ...group }
-        newGroup.children[index] = rule
-        onChange(newGroup)
-    }
-
-    const handleRuleDelete = (index: number) => {
-        const newGroup: WrapperRule = {
-            ...group,
-            children: group.children.filter((_, i) => i !== index),
-        }
-        onChange(newGroup)
-    }
-
-    const handleGroupUpdate = (update: Partial<WrapperRule>) => {
-        const newGroup = { ...group, ...update }
-        onChange(newGroup)
-    }
-
-    const isEvent = group.value
-        && group.group === 'event'
-        && typeof group.value === 'string'
-
-    return <div className="rule-set">
-        {group && <div className="rule-set-header">
-            {!onDelete && 'Target users '}
-            {isEvent
-                ? <>
-                    Did
-                    <input
-                        className="small"
-                        type="text"
-                        value={group.value as string}
-                        onChange={e => handleGroupUpdate({ value: e.target.value }) } />
-                    matching
-                </>
-                : 'matching'
-            }
-            <OperatorSelector
-                type="wrapper"
-                value={group.operator}
-                onChange={operator => handleGroupUpdate({ operator })}
-            />
-            of the following
-            {onDelete && <Button
-                size="small"
-                variant="plain"
-                icon={<TrashIcon />}
-                onClick={onDelete}
-            />}
-        </div>}
-
-        <div className="rule-set-rules">
-            {group.children?.map((rule, index) => <RuleView
-                rule={rule}
-                key={index}
-                linker={index === 0 ? undefined : group.operator}
-                onChange={(rule) => handleRuleUpdate(rule, index)}
-                onDelete={() => handleRuleDelete(index)}
-            />) }
-        </div>
-
-        <div className="rule-set-actions">
-            {isEvent
-                ? <Button
-                    size="small"
-                    variant="secondary"
-                    icon={<PlusIcon />}
-                    onClick={() => handleAddUserRule()}
-                >Add Condition</Button>
-                : <>
-                    <Button
-                        size="small"
-                        variant="secondary"
-                        icon={<PlusIcon />}
-                        onClick={() => handleAddUserRule()}
-                    >Add User Condition</Button>
-                    <Button
-                        size="small"
-                        variant="secondary"
-                        icon={<PlusIcon />}
-                        onClick={() => handleAddEventRule()}
-                    >Add Event Condition</Button>
-                </>
-            }
-            {/* To be added once rule builder improves */}
-            {/* <Button
-                variant="plain"
-                size="small"
-                icon="plus"
-                onClick={() => handleAddGroup()}
-            >Add Group</Button> */}
-        </div>
-    </div>
+const emptySuggestions = {
+    userPaths: [],
+    eventPaths: {},
 }
 
-interface RuleParams {
+const RuleEditContext = createContext<{
+    suggestions: RuleSuggestions
+}>({
+    suggestions: emptySuggestions,
+})
+
+const ruleTypes: Array<{
+    key: RuleType
+    label: string
+}> = [
+    { key: 'string', label: 'String' },
+    { key: 'number', label: 'Number' },
+    { key: 'boolean', label: 'Boolean' },
+    { key: 'date', label: 'Date' },
+    { key: 'array', label: 'Array' },
+]
+
+const baseOperators: OperatorOption[] = [
+    { key: '=', label: 'equals' },
+    { key: '!=', label: 'does not equal' },
+    { key: 'is set', label: 'is set' },
+    { key: 'is not set', label: 'is not set' },
+]
+
+interface OperatorOption {
+    key: Operator
+    label: string
+}
+
+const operatorTypes: Record<RuleType, OperatorOption[]> = {
+    string: [
+        ...baseOperators,
+        { key: 'empty', label: 'is empty' },
+        { key: 'contains', label: 'contains' },
+    ],
+    number: [
+        ...baseOperators,
+        { key: '<', label: 'is less than' },
+        { key: '<=', label: 'is less than or equal to' },
+        { key: '>', label: 'is greater than' },
+        { key: '>=', label: 'is greater than or equal to' },
+    ],
+    boolean: [
+        { key: '=', label: 'is' },
+    ],
+    date: [
+        ...baseOperators,
+        { key: '<', label: 'is before' },
+        { key: '<=', label: 'is on or before' },
+        { key: '>', label: 'is after' },
+        { key: '>=', label: 'is on or after' },
+    ],
+    array: [
+        ...baseOperators,
+        { key: 'empty', label: 'is empty' },
+        { key: 'contains', label: 'contains' },
+    ],
+    wrapper: [
+        { key: 'or', label: 'any' },
+        { key: 'and', label: 'all' },
+    ],
+}
+
+interface RuleEditProps {
     rule: Rule
-    linker?: string
-    onChange: (rule: Rule) => void
-    onDelete: () => void
+    setRule: (value: Rule) => void
+    group: 'user' | 'event'
+    eventName?: string
+    depth?: number
+    controls?: ReactNode
+    headerPrefix?: string
 }
 
-const RuleView = ({ rule, onChange, onDelete }: RuleParams) => {
+function RuleEdit({
+    controls,
+    depth = 0,
+    eventName = '',
+    group,
+    headerPrefix = 'Include users matching ',
+    rule,
+    setRule,
+}: RuleEditProps) {
 
-    const handleUpdate = (value: Partial<Pick<Rule, 'path' | 'operator' | 'value' | 'type'>>) => {
-        const newRule: Rule = Object.assign(rule, value)
-        onChange(newRule)
-    }
+    const {
+        setReferenceElement,
+        setPopperElement,
+        attributes,
+        styles,
+    } = usePopperSelectDropdown()
 
-    return <div className="rule">
-        {rule.type === 'wrapper'
-            ? <>
-                <RuleSet
-                    group={rule}
-                    onChange={onChange}
-                    onDelete={onDelete} />
-            </>
-            : <div className="rule-inner">
-                <ButtonGroup>
-                    <TypeOperator
-                        value={rule.type}
-                        onChange={type => handleUpdate({ type })}
-                    />
-                    <TextInput
-                        size="small"
-                        type="text"
-                        name="path"
-                        placeholder="User Property..."
-                        value={rule?.path}
-                        hideLabel={true}
-                        onChange={path => handleUpdate({ path })}
-                    />
-                    <OperatorSelector
-                        type={rule.type}
-                        value={rule.operator}
-                        onChange={operator => handleUpdate({ operator })} />
-                    <TextInput
-                        size="small"
-                        type="text"
-                        name="value"
-                        placeholder="Value"
-                        hideLabel={true}
-                        value={rule?.value?.toString()}
-                        onChange={value => handleUpdate({ value })}
-                    />
+    const { suggestions } = useContext(RuleEditContext)
+
+    const { path } = rule
+
+    const pathSuggestions = useMemo<string[]>(() => {
+
+        let paths = (
+            group === 'event'
+                ? [
+                    ...(eventName ? suggestions.eventPaths[eventName] ?? [] : []),
+                    '$.name',
+                ]
+                : [
+                    ...suggestions.userPaths,
+                    '$.id',
+                    '$.email',
+                    '$.phone',
+                    '$.timezone',
+                    '$.locale',
+                ]
+        ).filter((p, i, a) => a.indexOf(p) === i).sort()
+
+        if (path) {
+            let search = path.toLowerCase()
+            if (search.startsWith('.')) search = '$' + search
+            if (!search.startsWith('$.')) search = '$.' + search
+            paths = paths.filter(p => p.toLowerCase().startsWith(search))
+        }
+
+        return paths
+    }, [suggestions, group, eventName, path])
+
+    if (rule.type === 'wrapper') {
+
+        let ruleSet = (
+            <div className="rule-set">
+                <div className="rule-set-header">
+                    {
+                        rule.group === 'event'
+                            ? (
+                                <>
+                                    Did
+                                    <span className="ui-select">
+                                        <Combobox onChange={(value: string) => setRule({ ...rule, value })}>
+                                            <ButtonGroup>
+                                                <span className="ui-text-input">
+                                                    <Combobox.Input
+                                                        value={rule.value ?? ''}
+                                                        onChange={e => setRule({ ...rule, value: e.target.value })}
+                                                        required
+                                                        className="small"
+                                                        ref={setReferenceElement}
+                                                    />
+                                                </span>
+                                                <Combobox.Button className="ui-button secondary small">
+                                                    <ChevronUpDownIcon />
+                                                </Combobox.Button>
+                                            </ButtonGroup>
+                                            <Combobox.Options
+                                                className="select-options"
+                                                ref={setPopperElement}
+                                                style={styles.popper}
+                                                {...attributes.popper}
+                                            >
+                                                {
+                                                    Object.keys(suggestions.eventPaths)
+                                                        .sort()
+                                                        .filter(eventName => !rule.value || eventName.toLowerCase().startsWith(rule.value.toLowerCase()))
+                                                        .map(eventName => (
+                                                            <Combobox.Option
+                                                                key={eventName}
+                                                                value={eventName}
+                                                                className={({ active, selected }) => clsx('select-option', active && 'active', selected && 'selected')}
+                                                            >
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: highlightSearch(eventName, rule.value ?? ''),
+                                                                    }}
+                                                                />
+                                                            </Combobox.Option>
+                                                        ))
+                                                }
+                                            </Combobox.Options>
+                                        </Combobox>
+                                    </span>
+                                    {
+                                        !!rule.children?.length && ' matching '
+                                    }
+                                </>
+                            )
+                            : headerPrefix
+                    }
+                    {
+                        Boolean(rule.group === 'user' || rule.children?.length) && (
+                            <>
+                                <SingleSelect
+                                    value={rule.operator}
+                                    onChange={operator => setRule({ ...rule, operator })}
+                                    options={operatorTypes.wrapper}
+                                    required
+                                    hideLabel
+                                    size="small"
+                                    toValue={x => x.key}
+                                />
+                                of the following
+                            </>
+                        )
+                    }
+                    <div style={{ flexGrow: 1 }} />
+                    {controls}
+                </div>
+                <div className="rule-set-rules">
+                    {
+                        rule.children?.map((child, index, arr) => (
+                            <RuleEdit
+                                key={index}
+                                rule={child}
+                                setRule={child => setRule({
+                                    ...rule,
+                                    children: rule.children?.map((c, i) => i === index ? child : c),
+                                })}
+                                group={rule.group}
+                                eventName={rule.value}
+                                depth={depth + 1}
+                                controls={
+                                    <Button
+                                        size="small"
+                                        icon={<TrashIcon />}
+                                        variant="secondary"
+                                        onClick={() => setRule({
+                                            ...rule,
+                                            children: arr.filter((_, i) => i !== index),
+                                        })}
+                                    />
+                                }
+                            />
+                        ))
+                    }
+                </div>
+                <div className="rule-set-actions">
                     <Button
                         size="small"
-                        icon={<TrashIcon />}
                         variant="secondary"
-                        onClick={onDelete} />
-                </ButtonGroup>
+                        icon={<PlusIcon />}
+                        onClick={() => setRule({
+                            ...rule,
+                            children: [...rule.children ?? [], {
+                                path: '',
+                                type: 'string',
+                                group: 'user',
+                                value: '',
+                                operator: '=',
+                            }],
+                        })}
+                    >
+                        {
+                            rule.group === 'event'
+                                ? 'Add Condition'
+                                : 'Add User Condition'
+                        }
+                    </Button>
+                    {
+                        depth === 0 && (
+                            <Button
+                                size="small"
+                                variant="secondary"
+                                icon={<PlusIcon />}
+                                onClick={() => setRule({
+                                    ...rule,
+                                    children: [...rule.children ?? [], {
+                                        path: '',
+                                        type: 'wrapper',
+                                        group: 'event',
+                                        value: '',
+                                        operator: 'and',
+                                        children: [],
+                                    }],
+                                })}
+                            >
+                                Add Event Condition
+                            </Button>
+                        )
+                    }
+                </div>
             </div>
+        )
+
+        if (depth > 0) {
+            ruleSet = (
+                <div className="rule">
+                    {ruleSet}
+                </div>
+            )
         }
-    </div>
-}
 
-interface OperatorParams {
-    type: RuleType
-    value: Operator
-    onChange: (operator: Operator) => void
-}
-
-const OperatorSelector = ({ type, value, onChange }: OperatorParams) => {
-    const baseOperators: OperatorOption[] = [
-        { key: '=', label: 'equals' },
-        { key: '!=', label: 'does not equal' },
-        { key: 'is set', label: 'is set' },
-        { key: 'is not set', label: 'is not set' },
-    ]
-
-    interface OperatorOption { key: Operator, label: string }
-    const types: Record<RuleType, OperatorOption[]> = {
-        string: [
-            ...baseOperators,
-            { key: 'empty', label: 'is empty' },
-            { key: 'contains', label: 'contains' },
-        ],
-        number: [
-            ...baseOperators,
-            { key: '<', label: 'is less than' },
-            { key: '<=', label: 'is less than or equal to' },
-            { key: '>', label: 'is greater than' },
-            { key: '>=', label: 'is greater than or equal to' },
-        ],
-        boolean: [
-            { key: '=', label: 'is' },
-        ],
-        date: [
-            ...baseOperators,
-            { key: '<', label: 'is before' },
-            { key: '<=', label: 'is on or before' },
-            { key: '>', label: 'is after' },
-            { key: '>=', label: 'is on or after' },
-        ],
-        array: [
-            ...baseOperators,
-            { key: 'empty', label: 'is empty' },
-            { key: 'contains', label: 'contains' },
-        ],
-        wrapper: [
-            { key: 'or', label: 'any' },
-            { key: 'and', label: 'all' },
-        ],
+        return ruleSet
     }
 
-    const operators = types[type]
-
     return (
-        <SingleSelect
-            options={operators}
-            size="small"
-            toValue={o => o.key}
-            value={value}
-            onChange={onChange}
-            hideLabel
-        />
-    )
-}
-
-interface TypeParams {
-    value: RuleType
-    onChange: (type: RuleType) => void
-}
-
-const TypeOperator = ({ value, onChange }: TypeParams) => {
-    const types: Array<{
-        key: RuleType
-        label: string
-    }> = [
-        { key: 'string', label: 'String' },
-        { key: 'number', label: 'Number' },
-        { key: 'boolean', label: 'Boolean' },
-        { key: 'date', label: 'Date' },
-        { key: 'array', label: 'Array' },
-    ]
-
-    return (
-        <SingleSelect
-            options={types}
-            size="small"
-            toValue={o => o.key}
-            value={value}
-            onChange={onChange}
-            hideLabel
-        />
+        <div className="rule">
+            <ButtonGroup className="ui-select">
+                <SingleSelect
+                    value={rule.type}
+                    onChange={type => setRule({ ...rule, type })}
+                    options={ruleTypes}
+                    required
+                    hideLabel
+                    size="small"
+                    toValue={x => x.key as typeof rule.type}
+                />
+                <Combobox onChange={(path: string) => setRule({ ...rule, path })}>
+                    <span className="ui-text-input">
+                        <Combobox.Input
+                            value={rule.path}
+                            onChange={e => setRule({ ...rule, path: e.target.value })}
+                            required
+                            ref={setReferenceElement}
+                            className="small"
+                        />
+                    </span>
+                    <Combobox.Button className="ui-button small secondary">
+                        <ChevronUpDownIcon />
+                    </Combobox.Button>
+                    <Combobox.Options
+                        className="select-options"
+                        ref={setPopperElement}
+                        style={styles.popper}
+                        {...attributes.popper}
+                    >
+                        {
+                            pathSuggestions.map(s => (
+                                <Combobox.Option
+                                    key={s}
+                                    value={s}
+                                    className={({ active, selected }) => clsx('select-option', active && 'active', selected && 'selected')}
+                                >
+                                    <span
+                                        dangerouslySetInnerHTML={{
+                                            __html: highlightSearch(s, rule.path),
+                                        }}
+                                    />
+                                </Combobox.Option>
+                            ))
+                        }
+                    </Combobox.Options>
+                </Combobox>
+                <SingleSelect
+                    value={rule.operator}
+                    onChange={operator => setRule({ ...rule, operator })}
+                    options={operatorTypes[rule.type] ?? []}
+                    required
+                    hideLabel
+                    size="small"
+                    toValue={x => x.key}
+                />
+                <TextInput
+                    size="small"
+                    type="text"
+                    name="value"
+                    placeholder="Value"
+                    hideLabel={true}
+                    value={rule?.value?.toString()}
+                    onChange={value => setRule({ ...rule, value })}
+                />
+                {controls}
+            </ButtonGroup>
+        </div>
     )
 }
 
 interface RuleBuilderParams {
-    rule: WrapperRule
-    setRule: (rule: WrapperRule) => void
+    rule: Rule
+    setRule: (rule: Rule) => void
+    headerPrefix?: string
 }
 
-export default function RuleBuilder({ rule, setRule }: RuleBuilderParams) {
-    return <RuleSet group={rule} onChange={setRule} />
+export default function RuleBuilder({ headerPrefix, rule, setRule }: RuleBuilderParams) {
+    const [{ id: projectId }] = useContext(ProjectContext)
+    const [suggestions] = useResolver(useCallback(async () => await api.projects.pathSuggestions(projectId), [projectId]))
+    return (
+        <RuleEditContext.Provider value={useMemo(() => ({ suggestions: suggestions ?? emptySuggestions }), [suggestions])}>
+            <RuleEdit
+                rule={rule}
+                setRule={setRule}
+                group="user"
+                headerPrefix={headerPrefix}
+            />
+        </RuleEditContext.Provider>
+    )
 }
