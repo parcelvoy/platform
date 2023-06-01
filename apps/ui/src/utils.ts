@@ -1,5 +1,5 @@
 import { parseISO, formatDuration as dateFnsFormatDuration } from 'date-fns'
-import { format } from 'date-fns-tz'
+import { format, utcToZonedTime } from 'date-fns-tz'
 import { Preferences, ProjectRole, projectRoles } from './types'
 import { v4 } from 'uuid'
 
@@ -77,11 +77,9 @@ function parseDate(date: DateArg) {
     return date
 }
 
-export function formatDate(preferences: Preferences, date: DateArg, fmt: string = 'Pp') {
-    return format(parseDate(date), fmt, {
-        // TODO: locale
-        timeZone: preferences.timeZone,
-    })
+export function formatDate(preferences: Preferences, date: DateArg, fmt: string = 'Pp', timeZone = preferences.timeZone) {
+    const zonedDate = utcToZonedTime(parseDate(date), timeZone)
+    return format(zonedDate, fmt)
 }
 
 export function formatDuration(_preferences: Preferences, duration: Duration) {

@@ -9,6 +9,74 @@ import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import Alert from '../../ui/Alert'
+import { zonedTimeToUtc } from 'date-fns-tz'
+import { Column, Columns } from '../../ui/Columns'
+import { useController } from 'react-hook-form'
+import { SelectionProps } from '../../ui/form/Field'
+
+interface DateTimeFieldProps extends SelectionProps<CampaignLaunchParams> {
+    label: string
+    required?: boolean
+}
+
+function DateTimeField({ label, name, control, required }: DateTimeFieldProps) {
+    const [project] = useContext(ProjectContext)
+    const [date, setDate] = useState('')
+    const [time, setTime] = useState('')
+
+    const { field: { onChange } } = useController({
+        control,
+        name,
+        rules: {
+            required,
+        },
+    })
+
+    const handleOnChange = () => {
+        if (!date || !time) return
+        const localDate = new Date(`${date}T${time}`)
+        const utcDate = zonedTimeToUtc(localDate, project.timezone)
+        onChange(utcDate.toISOString())
+    }
+
+    const handleSetDate = (value: string) => {
+        setDate(value)
+        handleOnChange()
+    }
+
+    const handleSetTime = (value: string) => {
+        setTime(value)
+        handleOnChange()
+    }
+
+    return <div className="date-time">
+        <Columns>
+            <Column>
+                <TextInput<string>
+                    type="date"
+                    name="date"
+                    label={`${label} Date`}
+                    onChange={handleSetDate}
+                    onBlur={handleOnChange}
+                    value={date}
+                    required={required} />
+            </Column>
+            <Column>
+                <TextInput<string>
+                    type="time"
+                    name="time"
+                    label={`${label} Time`}
+                    onChange={handleSetTime}
+                    onBlur={handleOnChange}
+                    value={time}
+                    required={required} />
+            </Column>
+        </Columns>
+        <span className="label-subtitle">
+            {"The selected date and time will be in the project's timezone not your own."}
+        </span>
+    </div>
+}
 
 interface LaunchCampaignParams {
     open: boolean
@@ -54,11 +122,11 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
                     value={launchType}
                     onChange={setLaunchType} />
                 {launchType === 'later' && <>
-                    <TextInput.Field
-                        type="datetime-local"
-                        form={form}
+                    <DateTimeField
+                        control={form.control}
                         name="send_at"
-                        label="Send At" />
+                        label="Send At"
+                        required />
                     <SwitchField
                         form={form}
                         name="send_in_user_timezone"
