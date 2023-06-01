@@ -1,6 +1,6 @@
 import { ReactNode, useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CampaignContext } from '../../contexts'
+import { CampaignContext, ProjectContext } from '../../contexts'
 import { List } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
@@ -13,7 +13,7 @@ import { CampaignTag, DeliveryRatio } from './Campaigns'
 import ChannelTag from './ChannelTag'
 
 export default function CampaignOverview() {
-
+    const [project] = useContext(ProjectContext)
     const [preferences] = useContext(PreferencesContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -52,7 +52,7 @@ export default function CampaignOverview() {
             <Heading title="Delivery" size="h4" />
             <InfoTable rows={{
                 state: CampaignTag({ state: campaign.state }),
-                launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at) : undefined,
+                launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
                 in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
                 send_lists: DelimitedLists({ lists: campaign.lists }),
                 exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
