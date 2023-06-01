@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from 'react'
 import api from '../../api'
 import { ListContext, ProjectContext } from '../../contexts'
-import { DynamicList, ListUpdateParams, WrapperRule } from '../../types'
+import { DynamicList, ListUpdateParams, Rule } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import Dialog from '../../ui/Dialog'
@@ -19,8 +19,8 @@ import { useRoute } from '../router'
 import { EditIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 
-const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: WrapperRule) => void }) => {
-    const [rule, setRule] = useState<WrapperRule>(list.rule)
+const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: Rule) => void }) => {
+    const [rule, setRule] = useState<Rule>(list.rule)
     return <>
         <Heading size="h3" title="Rules" actions={
             <Button size="small" onClick={() => onRuleSave(rule) }>Save Rules</Button>
@@ -73,7 +73,7 @@ export default function ListDetail() {
                 </>
             }>
 
-            {list.type === 'dynamic' && <RuleSection list={list} onRuleSave={async (rule) => await saveList({ name: list.name, rule })} />}
+            {list.type === 'dynamic' && <RuleSection list={list} onRuleSave={async (rule: any) => await saveList({ name: list.name, rule })} />}
 
             <SearchTable title="Users"
                 {...state}

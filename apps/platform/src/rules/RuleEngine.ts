@@ -28,7 +28,11 @@ export interface RuleCheckInput {
 }
 
 export interface RuleCheck {
-    check(value: RuleCheckInput, rule: Rule, registry: Registry<RuleCheck>): boolean
+    check(
+        value: RuleCheckInput,
+        rule: Rule,
+        registry: Registry<RuleCheck>
+    ): boolean
     query(
         builder: Database.QueryBuilder<any>,
         rule: Rule,

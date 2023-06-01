@@ -6,8 +6,10 @@ import { compileTemplate } from '../render'
 
 export const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: any) => T): T | undefined => {
     const inputValue = input[rule.group]
-    if (!inputValue) return undefined
-    const pathValue = jsonpath.query(input[rule.group], rule.path.replace('.data', ''))?.[0]
+    let path = rule.path
+    if (!inputValue || !path) return undefined
+    if (!path.startsWith('$.')) path = '$.' + path
+    const pathValue = jsonpath.query(inputValue, path)?.[0]
     if (!pathValue) return undefined
     return cast(pathValue)
 }
@@ -31,16 +33,6 @@ export const compile = <Y>(rule: Rule, cast: (item: AnyJson) => Y): Y => {
         ? compileTemplate(value)({})
         : value
     return cast(compiledValue)
-}
-
-export const isJsonPath = (path: string): boolean => {
-    return path.includes('data')
-}
-
-export const jsonPathPrune = (isJson: boolean, path: string): string => {
-    return isJson
-        ? path.replace('$.data', '$')
-        : path.replace('$.', '')
 }
 
 export const whereQuery = <T extends AnyJson>({ builder, isJson, column, path, wrapper }: QueryRuleParams, operator: string, value: T): Database.QueryBuilder<any> => {
@@ -93,15 +85,40 @@ interface QueryRuleParams {
     wrapper: 'and' | 'or'
 }
 
+const reservedPaths = {
+    user: [
+        'external_id',
+        'email',
+        'phone',
+        'timezone',
+        'locale',
+    ],
+    event: [
+        'name',
+    ],
+}
+
 export const queryRuleParams = (
     builder: Database.QueryBuilder<any>,
     rule: Rule,
     wrapper: 'and' | 'or',
 ): QueryRuleParams => {
     const table = rule.group === 'user' ? 'users' : 'user_events'
-    const isJson = isJsonPath(rule.path)
-    const path = jsonPathPrune(isJson, rule.path)
+
+    // check to see if the the path is a reserved top-level field
+    let path = rule.path ?? ''
+    if (path.startsWith('$.')) path = path.substring(2)
+
+    // 'external_id' is exposed as 'id' in TemplateUser
+    if (path === 'id') path = 'external_id'
+
+    // add back the json path prefix if this is non-reserved custom json field
+    const isJson = !reservedPaths[rule.group]?.includes(path)
+    if (isJson) {
+        path = '$.' + path
+    }
     const column = `${table}.${isJson ? 'data' : path}`
+
     return { builder, table, isJson, column, path, wrapper }
 }
 
