@@ -201,20 +201,30 @@ function RuleEdit({
                                             </Combobox.Options>
                                         </Combobox>
                                     </span>
+                                    {
+                                        !!rule.children?.length && ' matching '
+                                    }
                                 </>
                             )
                             : headerPrefix
                     }
-                    <SingleSelect
-                        value={rule.operator}
-                        onChange={operator => setRule({ ...rule, operator })}
-                        options={operatorTypes.wrapper}
-                        required
-                        hideLabel
-                        size="small"
-                        toValue={x => x.key}
-                    />
-                    of the following
+                    {
+                        Boolean(rule.group === 'user' || rule.children?.length) && (
+                            <>
+                                <SingleSelect
+                                    value={rule.operator}
+                                    onChange={operator => setRule({ ...rule, operator })}
+                                    options={operatorTypes.wrapper}
+                                    required
+                                    hideLabel
+                                    size="small"
+                                    toValue={x => x.key}
+                                />
+                                of the following
+                            </>
+                        )
+                    }
+                    <div style={{ flexGrow: 1 }} />
                     {controls}
                 </div>
                 <div className="rule-set-rules">
