@@ -1,6 +1,6 @@
 import { Job } from '../queue'
 import { shallowEqual } from '../utilities'
-import Campaign from './Campaign'
+import Campaign, { CampaignDelivery } from './Campaign'
 import { campaignProgress, updateCampaignProgress } from './CampaignService'
 
 export default class CampaignStateJob extends Job {
@@ -9,11 +9,17 @@ export default class CampaignStateJob extends Job {
     static async handler() {
         const campaigns = await Campaign.query()
             .whereIn('state', ['scheduled', 'running', 'finished'])
+
+        const currentState = (campaign: Campaign, pending: number, delivery: CampaignDelivery) => {
+            if (campaign.type === 'trigger') return 'running'
+            if (pending <= 0) return 'finished'
+            if (delivery.sent === 0) return 'scheduled'
+            return 'running'
+        }
+
         for (const campaign of campaigns) {
             const { pending, ...delivery } = await campaignProgress(campaign)
-            const state = pending <= 0
-                ? 'finished'
-                : delivery.sent === 0 ? 'scheduled' : 'running'
+            const state = currentState(campaign, pending, delivery)
 
             // If nothing has changed, continue otherwise update
             if (shallowEqual(campaign.delivery, delivery) && state === campaign.state) continue

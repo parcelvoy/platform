@@ -4,6 +4,7 @@ import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
+import Storage from '../storage/Storage'
 
 export type CampaignState = 'draft' | 'scheduled' | 'pending' | 'running' | 'finished' | 'aborted'
 export interface CampaignDelivery {
@@ -41,6 +42,19 @@ export default class Campaign extends Model {
     deleted_at?: Date
 
     static jsonAttributes = ['delivery', 'list_ids', 'exclusion_list_ids']
+    static virtualAttributes = ['screenshotUrl']
+
+    get screenshotUrl(): string {
+        return Campaign.screenshotUrl(this.id)
+    }
+
+    static screenshotUrl(id: number): string {
+        return Storage.url(this.screenshotPath(id))
+    }
+
+    static screenshotPath(id: number): string {
+        return `campaigns/${id}.jpg`
+    }
 }
 
 export type SentCampaign = Campaign & { send_at: Date }

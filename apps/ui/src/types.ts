@@ -311,6 +311,7 @@ export interface Campaign {
     tags?: string[]
     send_in_user_timezone: boolean
     send_at: string
+    screenshot_url: string
     created_at: string
     updated_at: string
 }
