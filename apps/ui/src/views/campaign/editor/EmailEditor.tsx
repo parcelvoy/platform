@@ -15,7 +15,6 @@ const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
 export default function EmailEditor() {
     const navigate = useNavigate()
-    // const [params] = useSearchParams()
     const [project] = useContext(ProjectContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { templates } = campaign

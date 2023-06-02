@@ -39,7 +39,6 @@
     "koa-static": "^5.0.0",
     "libphonenumber-js": "^1.10.24",
     "mysql2": "^2.3.3",
-    "node-html-to-image": "^3.3.0",
     "node-pushnotifications": "^2.0.3",
     "node-schedule": "^2.1.0",
     "nodemailer": "^6.7.6",
