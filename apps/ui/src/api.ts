@@ -84,6 +84,7 @@ export interface ProjectEntityPath<T, C = Omit<T, OmitFields>, U = Omit<T, OmitF
 }
 
 const projectUrl = (projectId: number | string) => `/admin/projects/${projectId}`
+export const apiUrl = (projectId: number | string, path: string) => `${env.api.baseURL}/admin/projects/${projectId}/${path}`
 
 function createProjectEntityPath<T, C = Omit<T, OmitFields>, U = Omit<T, OmitFields>>(prefix: string): ProjectEntityPath<T, C, U> {
     return {

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import api from '../../api'
+import api, { apiUrl } from '../../api'
 import { Campaign, CampaignDelivery, CampaignState } from '../../types'
 import Button from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
@@ -74,7 +74,7 @@ export default function Campaigns() {
                             cell: ({ item: { id, name, channel } }) => (
                                 <div className="multi-cell">
                                     { channel === 'email'
-                                        ? <PreviewImage url={`/api/admin/projects/1/campaigns/${id}/preview`} width={50} height={40}>
+                                        ? <PreviewImage url={apiUrl(projectId, `campaigns/${id}/preview`)} width={50} height={40}>
                                             <div className="placeholder">
                                                 <ChannelIcon channel={channel} />
                                             </div>
