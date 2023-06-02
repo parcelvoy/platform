@@ -1,6 +1,5 @@
-import { Readable } from 'stream'
 import { PageParams } from '../core/searchParams'
-import Template, { EmailTemplate, TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
+import Template, { TemplateParams, TemplateType, TemplateUpdateParams } from './Template'
 import { partialMatchLocale, pick, prune } from '../utilities'
 import { Variables } from '.'
 import { loadEmailChannel } from '../providers/email'
@@ -13,9 +12,6 @@ import CampaignError from '../campaigns/CampaignError'
 import { loadPushChannel } from '../providers/push'
 import { getUserFromEmail, getUserFromPhone } from '../users/UserRepository'
 import { loadWebhookChannel } from '../providers/webhook'
-import nodeHtmlToImage from 'node-html-to-image'
-import App from '../app'
-import TemplateSnapshotJob from './TemplateSnapshotJob'
 import Project from '../projects/Project'
 
 export const pagedTemplates = async (params: PageParams, projectId: number) => {
@@ -44,13 +40,11 @@ export const createTemplate = async (projectId: number, params: TemplateParams) 
         data: params.data ?? {},
         project_id: projectId,
     })
-    await TemplateSnapshotJob.from({ project_id: projectId, campaign_id: template.campaign_id }).queue()
     return template
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
     const template = await Template.updateAndFetch(templateId, prune(params))
-    await TemplateSnapshotJob.from({ project_id: template.project_id, campaign_id: template.campaign_id }).queue()
     return template
 }
 
@@ -64,17 +58,7 @@ export const duplicateTemplate = async (template: Template, campaignId: number) 
     return await Template.insert(params)
 }
 
-export const screenshotTemplate = async (template: EmailTemplate, path?: string) => {
-    const html = screenshotHtml(template)
-    const image = await nodeHtmlToImage({ html })
-    const stream = Readable.from(image)
-    await App.main.storage.upload({
-        stream,
-        url: path ?? `templates/${template.id}.jpg`,
-    })
-}
-
-const screenshotHtml = (template: TemplateType) => {
+export const screenshotHtml = (template: TemplateType) => {
     if (template.type === 'email') {
         return template.html
     } else if (template.type === 'text') {

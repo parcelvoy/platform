@@ -11,7 +11,7 @@ import { RequestError } from '../core/errors'
 import App from '../app'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
-import { allTemplates, duplicateTemplate, validateTemplates } from '../render/TemplateService'
+import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
 import { getSubscription } from '../subscriptions/SubscriptionService'
 import { crossTimezoneCopy, pick } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
@@ -19,6 +19,8 @@ import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
 import CampaignError from './CampaignError'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
+import Project from '../projects/Project'
+import Template from '../render/Template'
 
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
     const result = await Campaign.search(
@@ -399,4 +401,15 @@ export const updateCampaignSend = async (id: number, update: Partial<CampaignSen
         qb => qb.where('id', id),
         update,
     )
+}
+
+export const campaignPreview = async (project: Project, campaign: Campaign) => {
+    const templates = await Template.all(
+        qb => qb.where('campaign_id', campaign.id),
+    )
+
+    if (templates.length <= 0) return ''
+    const template = templateInUserLocale(templates, project)
+    const mapped = template.map()
+    return screenshotHtml(mapped)
 }

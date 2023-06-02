@@ -1,0 +1,15 @@
+.preview-image {
+    border-radius: var(--border-radius-inner);
+    overflow: hidden;
+}
+
+.preview-image iframe {
+    transform-origin: top left;
+    overflow: hidden;
+}
+
+@media only screen and (max-width: 600px) {
+    .preview-image {
+        display: none;
+    }
+}
