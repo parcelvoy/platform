@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import Campaign, { CampaignCreateParams, CampaignUpdateParams } from './Campaign'
-import { archiveCampaign, createCampaign, deleteCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
+import { archiveCampaign, campaignPreview, createCampaign, deleteCampaign, duplicateCampaign, getCampaign, getCampaignUsers, pagedCampaigns, updateCampaign } from './CampaignService'
 import { searchParamsSchema, SearchSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -164,6 +164,10 @@ router.delete('/:campaignId', async ctx => {
 
 router.post('/:campaignId/duplicate', async ctx => {
     ctx.body = await duplicateCampaign(ctx.state.campaign!)
+})
+
+router.get('/:campaignId/preview', async ctx => {
+    ctx.body = await campaignPreview(ctx.state.project, ctx.state.campaign!)
 })
 
 export default router

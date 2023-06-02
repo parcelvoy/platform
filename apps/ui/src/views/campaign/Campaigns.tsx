@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import api from '../../api'
+import api, { apiUrl } from '../../api'
 import { Campaign, CampaignDelivery, CampaignState } from '../../types'
 import Button from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
@@ -12,6 +12,7 @@ import Tag, { TagVariant } from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
 import { CampaignForm } from './CampaignForm'
 import { ChannelIcon } from './ChannelTag'
+import PreviewImage from '../../ui/PreviewImage'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -70,13 +71,18 @@ export default function Campaigns() {
                         {
                             key: 'name',
                             sortable: true,
-                            cell: ({ item: { name, channel, screenshot_url } }) => (
+                            cell: ({ item: { id, name, channel } }) => (
                                 <div className="multi-cell">
-                                    <object data={screenshot_url} type="image/jpeg">
-                                        <div className="placeholder">
+                                    { channel === 'email'
+                                        ? <PreviewImage url={apiUrl(projectId, `campaigns/${id}/preview`)} width={50} height={40}>
+                                            <div className="placeholder">
+                                                <ChannelIcon channel={channel} />
+                                            </div>
+                                        </PreviewImage>
+                                        : <div className="placeholder">
                                             <ChannelIcon channel={channel} />
                                         </div>
-                                    </object>
+                                    }
                                     <div className="text">
                                         <div className="title">{name}</div>
                                         <div className="subtitle">
