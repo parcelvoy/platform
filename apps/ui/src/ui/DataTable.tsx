@@ -3,7 +3,7 @@ import { Key, ReactNode, useContext } from 'react'
 import { formatDate, snakeToTitle } from '../utils'
 import Button from './Button'
 import './DataTable.css'
-import { ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon } from './icons'
+import { CheckIcon, ChevronDownIcon, ChevronUpDownIcon, ChevronUpIcon, CloseIcon } from './icons'
 import { PreferencesContext } from './PreferencesContext'
 
 type DataTableResolver<T, R> = (args: {
@@ -126,6 +126,9 @@ export function DataTable<T>({
                                             && value
                                         ) {
                                             value = formatDate(preferences, value)
+                                        }
+                                        if (typeof value === 'boolean') {
+                                            value = value ? <CheckIcon /> : <CloseIcon />
                                         }
                                         return (
                                             <div className="table-cell" key={col.key}>

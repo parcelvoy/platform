@@ -43,6 +43,7 @@ import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast'
 import { JourneyForm } from './JourneyForm'
 import { CopyIcon } from '../../ui/icons'
+import Tag from '../../ui/Tag'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -483,6 +484,9 @@ export default function JourneyEditor() {
             onClose={() => navigate('../journeys')}
             actions={
                 <>
+                    <Tag variant={journey.published ? 'success' : 'plain'}>
+                        {journey.published ? 'Published' : 'Draft'}
+                    </Tag>
                     <Button
                         variant="secondary"
                         style={{ marginRight: 5 }}

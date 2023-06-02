@@ -40,6 +40,9 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
             },
             nullable: true,
         },
+        published: {
+            type: 'boolean',
+        },
     },
     additionalProperties: false,
 }
