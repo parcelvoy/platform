@@ -74,16 +74,11 @@ services:
       mountPath: /var/lib/mysql
       sizeGB: 10
     envVars:
-    - fromGroup: mysql
-
-envVarGroups:
-- name: mysql
-  envVars:
-  - key: MYSQL_DATABASE
-    value: parcelvoy
-  - key: MYSQL_USER
-    value: parcelvoy
-  - key: MYSQL_PASSWORD
-    generateValue: true
-  - key: MYSQL_ROOT_PASSWORD
-    generateValue: true
+    - key: MYSQL_DATABASE
+      value: parcelvoy
+    - key: MYSQL_USER
+      value: parcelvoy
+    - key: MYSQL_PASSWORD
+      generateValue: true
+    - key: MYSQL_ROOT_PASSWORD
+      generateValue: true
