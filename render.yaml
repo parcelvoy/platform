@@ -66,9 +66,8 @@ services:
   - type: pserv
     name: mysql
     plan: standard
-    env: image
-    image:
-      url: docker.io/mysql/mysql-server:8.0.24
+    env: docker
+    repo: https://github.com/render-examples/mysql
     autoDeploy: false
     disk:
       name: mysql
