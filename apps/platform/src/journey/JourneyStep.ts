@@ -198,15 +198,7 @@ export class JourneyAction extends JourneyStep {
         const campaign = await getCampaign(this.campaign_id, user.project_id)
 
         if (campaign) {
-            if ((campaign.channel === 'email' && !user.email) || (campaign.channel === 'text' && !user.phone)) {
-                // TODO: centralize this check, delegate to channel type?
-                // TODO: devices check for push notifications?
-                return await this.step(user, 'error')
-            }
-            // TODO: delay until confirmed that campaign is sent?
             await sendCampaign({ campaign, user, event })
-        } else {
-            return await this.step(user, 'error') // invalid campaign id
         }
 
         await super.complete(user, event)
