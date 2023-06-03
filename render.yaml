@@ -24,7 +24,7 @@ services:
       - key: DB_USERNAME
         fromDatabase:
           name: prod
-          property: username
+          property: user
       - key: DB_PASSWORD
         fromDatabase:
           name: prod
@@ -32,7 +32,7 @@ services:
       - key: DB_PORT
         fromDatabase:
           name: prod
-          property: post
+          property: port
       - key: DB_DATABASE
         value: parcelvoy
       - key: STORAGE_DRIVER
