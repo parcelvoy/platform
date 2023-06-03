@@ -23,9 +23,18 @@
 - 🔒 **Secure** SSO (SAML/OpenID) is provided out of the box, no extra bolts or add-ons.
 - 📦 **Open Source** Easy to setup and get running in your own cloud.
 
-## 🚀 Getting Started
+## 🚀 Deployment
 
 You can run Parcelvoy locally or in the cloud easily using Docker.
+
+### Railway
+
+You can do a one-click deploy on Railway using the button below:
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/cuqZ_N)
+
+
+### Docker Compose
 
 To get up and running quickly to try things out, copy our latest `docker-compose.yml` and `.env` file onto your machine and go!
 ```
@@ -47,5 +56,3 @@ AUTH_BASIC_PASSWORD=password
 For full documentation on the platform and more information on deployment, check out our docs.
 
 **[Explore the Docs »](https://docs.parcelvoy.com)**
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/JbOXKf)
