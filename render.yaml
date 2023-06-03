@@ -16,22 +16,26 @@ services:
       - key: APP_SECRET
         generateValue: true
       - key: DB_CLIENT
-        value: pg
+        value: mysql2
       - key: DB_HOST
-        fromDatabase:
-          name: database
+        fromService:
+          type: pserv
+          name: mysql
           property: host
       - key: DB_USERNAME
-        fromDatabase:
-          name: database
-          property: user
+        fromService:
+          type: pserv
+          name: mysql
+          envVarKey: MYSQL_USERNAME
       - key: DB_PASSWORD
-        fromDatabase:
-          name: database
-          property: password
+        fromService:
+          type: pserv
+          name: mysql
+          envVarKey: MYSQL_PASSWORD
       - key: DB_PORT
-        fromDatabase:
-          name: database
+        fromService:
+          type: pserv
+          name: mysql
           property: port
       - key: DB_DATABASE
         value: parcelvoy
@@ -58,9 +62,28 @@ services:
   - type: redis
     name: lightning
     ipAllowList: []
+    autoDeploy: false
     maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
+  - type: pserv
+    name: mysql
+    plan: standard
+    env: docker
+    autoDeploy: false
+    disk:
+      name: mysql
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+    - fromGroup: mysql
 
-databases:
-  - name: database
-    databaseName: parcelvoy
-    ipAllowList: [] # only allow internal connections
+envVarGroups:
+- name: mysql
+  envVars:
+  - key: MYSQL_DATABASE
+    value: parcelvoy
+  - key: MYSQL_USER
+    value: parcelvoy
+  - key: MYSQL_PASSWORD
+    generateValue: true
+  - key: MYSQL_ROOT_PASSWORD
+    generateValue: true
