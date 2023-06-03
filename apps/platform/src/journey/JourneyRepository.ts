@@ -1,5 +1,5 @@
 import App from '../app'
-import { Database } from 'config/database'
+import { Database } from '../config/database'
 import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
