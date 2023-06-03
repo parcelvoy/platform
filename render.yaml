@@ -58,7 +58,6 @@ services:
   - type: redis
     name: lightning
     ipAllowList: []
-    plan: free # optional (defaults to starter instance type)
     maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
 
 databases:
