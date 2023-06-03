@@ -62,7 +62,6 @@ services:
   - type: redis
     name: lightning
     ipAllowList: []
-    autoDeploy: false
     maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
   - type: pserv
     name: mysql
