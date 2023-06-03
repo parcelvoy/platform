@@ -31,7 +31,7 @@ services:
         fromService:
           type: pserv
           name: mysql
-          envVarKey: MYSQL_PASSWORD
+          envVarKey: MYSQL_ROOT_PASSWORD
       - key: DB_PORT
         fromService:
           type: pserv
