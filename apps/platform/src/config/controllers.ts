@@ -1,4 +1,5 @@
 import Router from '@koa/router'
+import send from 'koa-send'
 import ProjectController, { ProjectSubrouter, projectMiddleware } from '../projects/ProjectController'
 import ClientController from '../client/ClientController'
 import SegmentController from '../client/SegmentController'
@@ -38,6 +39,20 @@ export default (api: import('../api').default) => {
 
     api.use(root.routes())
         .use(root.allowedMethods())
+
+    // If we are running in mono mode, we need to also serve the UI
+    if (api.app.env.mono) {
+        const ui = new Router()
+        ui.get('/(.*)', async (ctx, next) => {
+            try {
+                await send(ctx, './public/index.html')
+            } catch {
+                return next()
+            }
+        })
+        api.use(ui.routes())
+            .use(ui.allowedMethods())
+    }
 }
 
 /**

@@ -9,6 +9,7 @@ import { RedisConfig } from './redis'
 export type Runner = 'api' | 'worker'
 export interface Env {
     runners: Runner[]
+    mono: boolean
     db: DatabaseConfig
     queue: QueueConfig
     storage: StorageConfig
@@ -42,8 +43,12 @@ type EnvType = 'production' | 'test'
 export default (type?: EnvType): Env => {
     dotenv.config({ path: `.env${type === 'test' ? '.test' : ''}` })
 
+    const port = parseInt(process.env.PORT ?? '3000')
+    const baseUrl = process.env.BASE_URL ?? `http://localhost:${port}`
+
     return {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
+        mono: (process.env.MONO ?? 'false') === 'true',
         db: {
             client: process.env.DB_CLIENT as 'mysql2' | 'postgres',
             connection: {
@@ -88,8 +93,8 @@ export default (type?: EnvType): Env => {
                 baseUrl: process.env.STORAGE_BASE_URL,
             }),
         }),
-        baseUrl: process.env.BASE_URL!,
-        port: parseInt(process.env.PORT!),
+        baseUrl,
+        port,
         secret: process.env.APP_SECRET!,
         auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {
             basic: () => ({

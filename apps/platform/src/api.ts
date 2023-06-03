@@ -46,7 +46,7 @@ export default class Api extends Koa {
             .use(cors())
             .use(serve('./public', {
                 hidden: true,
-                defer: true,
+                defer: !app.env.mono,
             }))
 
         controllers(this)
