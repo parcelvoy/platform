@@ -1,6 +1,6 @@
 exports.up = async function(knex) {
     await knex.schema.alterTable('journey_steps', function(table) {
-        table.uuid('uuid').defaultTo()
+        table.uuid('uuid')
         table.integer('x')
             .notNullable()
             .defaultTo(0)

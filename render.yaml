@@ -50,7 +50,7 @@ services:
           name: lightning
           property: port
       - key: AUTH_DRIVER
-        value: local
+        value: basic
       - key: AUTH_BASIC_EMAIL
         sync: false
       - key: AUTH_BASIC_PASSWORD

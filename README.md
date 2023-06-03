@@ -47,3 +47,5 @@ AUTH_BASIC_PASSWORD=password
 For full documentation on the platform and more information on deployment, check out our docs.
 
 **[Explore the Docs »](https://docs.parcelvoy.com)**
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/JbOXKf)
