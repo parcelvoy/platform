@@ -19,19 +19,19 @@ services:
         value: pg
       - key: DB_HOST
         fromDatabase:
-          name: prod
+          name: database
           property: host
       - key: DB_USERNAME
         fromDatabase:
-          name: prod
+          name: database
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: prod
+          name: database
           property: password
       - key: DB_PORT
         fromDatabase:
-          name: prod
+          name: database
           property: port
       - key: DB_DATABASE
         value: parcelvoy
