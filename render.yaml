@@ -23,10 +23,7 @@ services:
           name: mysql
           property: host
       - key: DB_USERNAME
-        fromService:
-          type: pserv
-          name: mysql
-          envVarKey: MYSQL_USER
+        value: root
       - key: DB_PASSWORD
         fromService:
           type: pserv
@@ -75,6 +72,4 @@ services:
       sizeGB: 10
     envVars:
     - key: MYSQL_DATABASE
-      value: parcelvoy
-    - key: MYSQL_USER
       value: parcelvoy
