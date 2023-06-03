@@ -9,21 +9,6 @@ services:
     autoDeploy: false
     healthCheckPath: /api/health
     envVars:
-      - fromGroup: platform
-  - type: redis
-    name: lightning
-    ipAllowList: []
-    plan: free # optional (defaults to starter instance type)
-    maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
-
-databases:
-  - name: database
-    databaseName: parcelvoy
-    ipAllowList: [] # only allow internal connections
-
-envVarGroups:
-  - name: platform
-    envVars:
       - key: NODE_ENV
         value: production
       - key: BASE_URL
@@ -70,3 +55,13 @@ envVarGroups:
         sync: false
       - key: AUTH_BASIC_PASSWORD
         sync: false
+  - type: redis
+    name: lightning
+    ipAllowList: []
+    plan: free # optional (defaults to starter instance type)
+    maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
+
+databases:
+  - name: database
+    databaseName: parcelvoy
+    ipAllowList: [] # only allow internal connections
