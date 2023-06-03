@@ -35,19 +35,19 @@ envVarGroups:
       - key: DB_HOST
         fromDatabase:
           name: prod
-          envVarKey: host
+          property: host
       - key: DB_USERNAME
         fromDatabase:
           name: prod
-          envVarKey: username
+          property: username
       - key: DB_PASSWORD
         fromDatabase:
           name: prod
-          envVarKey: password
+          property: password
       - key: DB_PORT
         fromDatabase:
           name: prod
-          envVarKey: post
+          property: post
       - key: DB_DATABASE
         value: parcelvoy
       - key: STORAGE_DRIVER
