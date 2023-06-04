@@ -13,6 +13,8 @@ services:
         value: production
       - key: BASE_URL
         sync: false
+      - key: MONO
+        value: true
       - key: APP_SECRET
         generateValue: true
       - key: DB_CLIENT
