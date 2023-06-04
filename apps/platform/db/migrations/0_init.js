@@ -44,7 +44,7 @@ exports.up = function(knex) {
                 .references('id')
                 .inTable('projects')
                 .onDelete('CASCADE')
-            table.string('anonymous_id').defaultTo(knex.raw('(UUID())'))
+            table.string('anonymous_id')
             table.string('external_id', 255).notNullable()
             table.string('email', 255).nullable()
             table.string('phone', 64).nullable()
