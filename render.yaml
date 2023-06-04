@@ -61,7 +61,9 @@ services:
       - key: AUTH_DRIVER
         value: basic
       - key: AUTH_BASIC_EMAIL
+        sync: false
       - key: AUTH_BASIC_PASSWORD
+        sync: false
   - type: redis
     name: lightning
     ipAllowList: []
