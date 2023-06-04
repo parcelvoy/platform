@@ -33,7 +33,7 @@ export default class BasicAuthProvider extends AuthProvider {
     async validate(ctx: Context) {
 
         const { email, password } = ctx.request.body
-        if (!email || !password) throw new RequestError(AuthError.InvalidCredentials)
+        if (!email || !password) throw new RequestError(AuthError.MissingCredentials)
 
         // Check email and password match
         if (email !== this.config.email || password !== this.config.password) {

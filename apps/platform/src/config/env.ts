@@ -117,9 +117,6 @@ export default (type?: EnvType): Env => {
                 clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
                 redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
             }),
-            logger: () => ({
-                tokenLife: defaultTokenLife,
-            }),
         }),
         error: driver<ErrorConfig>(process.env.ERROR_DRIVER, {
             bugsnag: () => ({

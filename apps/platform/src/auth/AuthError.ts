@@ -35,6 +35,11 @@ export default {
         code: 1007,
         statusCode: 403,
     },
+    MissingCredentials: {
+        message: 'An email and password must be provided to login.',
+        code: 1008,
+        statusCode: 400,
+    },
     InvalidCredentials: {
         message: 'The email and password combination provided is invalid.',
         code: 1008,
