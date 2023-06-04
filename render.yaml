@@ -3,7 +3,6 @@ services:
     name: parcelvoy
     env: docker
     repo: https://github.com/parcelvoy/platform.git
-    branch: 'render'
     dockerfilePath: ./docker/Dockerfile.render
     dockerContext: .
     autoDeploy: false

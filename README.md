@@ -27,11 +27,11 @@
 
 You can run Parcelvoy locally or in the cloud easily using Docker.
 
-### Railway
+### Render
 
-You can do a one-click deploy on Railway using the button below:
+You can do a one-click deploy on Render using the button below:
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/cuqZ_N)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/parcelvoy/platform)
 
 
 ### Docker Compose
