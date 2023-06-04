@@ -41,7 +41,7 @@ services:
         fromService:
           type: pserv
           name: mysql
-          property: MYSQL_DATABASE
+          envVarKey: MYSQL_DATABASE
       - key: STORAGE_DRIVER
         value: local
       - key: QUEUE_DRIVER
