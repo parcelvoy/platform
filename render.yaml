@@ -23,19 +23,25 @@ services:
           name: mysql
           property: host
       - key: DB_USERNAME
-        value: root
+        fromService:
+          type: pserv
+          name: mysql
+          envVarKey: MYSQL_USER
       - key: DB_PASSWORD
         fromService:
           type: pserv
           name: mysql
-          envVarKey: MYSQL_ROOT_PASSWORD
+          envVarKey: MYSQL_PASSWORD
       - key: DB_PORT
         fromService:
           type: pserv
           name: mysql
           property: port
       - key: DB_DATABASE
-        value: parcelvoy
+        fromService:
+          type: pserv
+          name: mysql
+          property: MYSQL_DATABASE
       - key: STORAGE_DRIVER
         value: local
       - key: QUEUE_DRIVER
@@ -71,5 +77,11 @@ services:
       mountPath: /var/lib/mysql
       sizeGB: 10
     envVars:
+    - key: MYSQL_ROOT_PASSWORD
+      generateValue: true
     - key: MYSQL_DATABASE
       value: parcelvoy
+    - key: MYSQL_USER
+      value: parcelvoy
+    - key: MYSQL_PASSWORD
+      generateValue: true
