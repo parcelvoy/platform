@@ -129,6 +129,9 @@ const deviceParams: JSONSchemaType<DeviceParams> = {
         os: {
             type: 'string',
         },
+        os_version: {
+            type: 'string',
+        },
         model: {
             type: 'string',
         },
