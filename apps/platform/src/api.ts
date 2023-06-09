@@ -4,6 +4,7 @@ import cors from '@koa/cors'
 import serve from 'koa-static'
 import controllers from './config/controllers'
 import { RequestError } from './core/errors'
+import { logger } from './config/logger'
 
 export default class Api extends Koa {
     constructor(
@@ -18,6 +19,8 @@ export default class Api extends Koa {
             try {
                 await next()
             } catch (error: any) {
+
+                logger.error({ error, ctx }, 'error')
                 if (error instanceof RequestError) {
                     ctx.status = error.statusCode ?? 400
                     ctx.body = error

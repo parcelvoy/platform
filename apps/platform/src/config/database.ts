@@ -65,7 +65,7 @@ export default async (config: DatabaseConfig) => {
         return db
     } catch (error: any) {
 
-        logger.error(error)
+        logger.error(error, 'database error')
 
         if (error?.errno === 1049) {
             // On error, try to create the database and try again
