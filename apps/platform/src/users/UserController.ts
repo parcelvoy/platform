@@ -162,7 +162,11 @@ router.get('/:userId/lists', async ctx => {
 })
 
 router.get('/:userId/events', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('userEventSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await getUserEvents(ctx.state.user!.id, params, ctx.state.project.id)
 })
 
