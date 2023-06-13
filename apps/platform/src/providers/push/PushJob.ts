@@ -40,7 +40,7 @@ export default class PushJob extends Job {
                 data: context,
             })
 
-        } catch (error) {
+        } catch (error: any) {
             if (error instanceof PushError) {
 
                 // If the push is unable to send, find invalidated tokens
