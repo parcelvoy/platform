@@ -50,14 +50,11 @@ export default (type?: EnvType): Env => {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
         mono: (process.env.MONO ?? 'false') === 'true',
         db: {
-            client: process.env.DB_CLIENT as 'mysql2' | 'postgres',
-            connection: {
-                host: process.env.DB_HOST!,
-                user: process.env.DB_USERNAME!,
-                password: process.env.DB_PASSWORD!,
-                port: parseInt(process.env.DB_PORT!),
-                database: process.env.DB_DATABASE!,
-            },
+            host: process.env.DB_HOST!,
+            user: process.env.DB_USERNAME!,
+            password: process.env.DB_PASSWORD!,
+            port: parseInt(process.env.DB_PORT!),
+            database: process.env.DB_DATABASE!,
         },
         redis: {
             host: process.env.REDIS_HOST!,

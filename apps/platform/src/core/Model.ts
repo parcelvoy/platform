@@ -159,9 +159,9 @@ export default class Model {
                 // the column you are sorting by
                 const [sinceId, sortSince] = cursor!.split(',')
                 if (sortSince) {
-                    qb.whereRaw(`(??, \`id\`) ${cursorDir} (?, ?)`, [sort, sortSince!, sinceId])
+                    qb.whereRaw(`(??, \`${this.tableName}\`.\`id\`) ${cursorDir} (?, ?)`, [sort, sortSince!, sinceId])
                 } else {
-                    qb.where('id', cursorDir, sinceId)
+                    qb.where(`${this.tableName}.id`, cursorDir, sinceId)
                 }
                 return qb
             })

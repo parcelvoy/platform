@@ -70,16 +70,16 @@ export const aliasUser = async (projectId: number, {
         external_id: previous_id,
         anonymous_id,
     } as ClientIdentity)
-
     if (!previous) return
 
     // Look up if there is a separate profile with the new ID
-    // If there is one, the client is not aliasing properly
-    // and is creating duplicates, just break
+    // If there is one, update that clients anonymous ID
     const current = await getUserFromClientId(projectId, {
         external_id,
     } as ClientIdentity)
-    if (current) return
+    if (current) {
+        return await User.updateAndFetch(current.id, { anonymous_id })
+    }
 
     return await User.updateAndFetch(previous.id, { external_id })
 }
