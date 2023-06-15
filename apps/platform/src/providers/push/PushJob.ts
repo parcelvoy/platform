@@ -7,6 +7,7 @@ import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
+import App from '../../app'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -19,12 +20,7 @@ export default class PushJob extends Job {
         const data = await loadSendJob<PushTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event } = data
-        const context = {
-            campaign_id: campaign.id,
-            template_id: template.id,
-            subscription_id: campaign.subscription_id,
-        }
+        const { campaign, template, user, project, event, context } = data
 
         try {
             // Send and render push
@@ -44,7 +40,7 @@ export default class PushJob extends Job {
                 data: context,
             })
 
-        } catch (error) {
+        } catch (error: any) {
             if (error instanceof PushError) {
 
                 // If the push is unable to send, find invalidated tokens
@@ -62,6 +58,8 @@ export default class PushJob extends Job {
                         tokens: error.invalidTokens,
                     },
                 })
+            } else {
+                App.main.error.notify(error)
             }
         }
     }

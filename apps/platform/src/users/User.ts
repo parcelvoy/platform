@@ -19,6 +19,7 @@ export interface Device {
     device_id: string
     token?: string
     os: string
+    os_version?: string
     model: string
     app_build: string
     app_version: string

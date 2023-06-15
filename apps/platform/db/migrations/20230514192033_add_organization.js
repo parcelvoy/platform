@@ -27,8 +27,8 @@ exports.up = async function(knex) {
     })
 
     const orgId = await knex('organizations').insert({ id: 1, username: 'main' })
-    await knex.raw('UPDATE projects SET organization_id = ? WHERE organization_id IS NULL', [orgId])
-    await knex.raw('UPDATE admins SET organization_id = ? WHERE organization_id IS NULL', [orgId])
+    await knex('projects').update({ organization_id: orgId }).whereNull('organization_id')
+    await knex('admins').update({ organization_id: orgId }).whereNull('organization_id')
 }
 
 exports.down = async function(knex) {

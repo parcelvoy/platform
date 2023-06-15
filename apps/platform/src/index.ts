@@ -1,5 +1,5 @@
 import App from './app'
 import env from './config/env'
 
-App.init(env())
+export default App.init(env())
     .then(app => app.start())

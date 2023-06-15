@@ -4,17 +4,12 @@ import { logger } from './logger'
 
 export { Database }
 
-export interface DatabaseConnection {
+export interface DatabaseConfig {
     host: string
     port: number
     user: string
     password: string
     database?: string
-}
-
-export interface DatabaseConfig {
-    client: 'mysql2' | 'postgres'
-    connection: DatabaseConnection
 }
 
 export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
@@ -28,12 +23,12 @@ knex.QueryBuilder.extend('when', function(
 })
 
 const connect = (config: DatabaseConfig, withDB = true) => {
-    let connection = config.connection
+    let connection = config
     if (!withDB) {
         connection = removeKey('database', connection)
     }
     return knex({
-        client: config.client,
+        client: 'mysql2',
         connection: {
             ...connection,
             typeCast(field: any, next: any) {
@@ -48,7 +43,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 }
 
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
-    if (fresh) await db.raw(`CREATE DATABASE ${config.connection.database}`)
+    if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
     return db.migrate.latest({
         directory: './db/migrations',
         tableName: 'migrations',
@@ -65,7 +60,7 @@ export default async (config: DatabaseConfig) => {
         return db
     } catch (error: any) {
 
-        logger.error(error)
+        logger.error(error, 'database error')
 
         if (error?.errno === 1049) {
             // On error, try to create the database and try again

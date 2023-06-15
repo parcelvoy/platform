@@ -36,6 +36,7 @@
     "koa": "^2.13.4",
     "koa-body": "5.0.0",
     "koa-jwt": "^4.0.3",
+    "koa-send": "^5.0.1",
     "koa-static": "^5.0.0",
     "libphonenumber-js": "^1.10.24",
     "mysql2": "^2.3.3",
@@ -44,6 +45,7 @@
     "nodemailer": "^6.7.6",
     "nodemailer-mailgun-transport": "^2.1.5",
     "openid-client": "^5.2.1",
+    "pg": "^8.11.0",
     "pino": "^8.1.0",
     "pino-pretty": "^8.1.0",
     "sqs-consumer": "^7.0.0"

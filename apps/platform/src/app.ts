@@ -87,6 +87,7 @@ export default class App {
             this.worker?.run()
             logger.info('parcelvoy:worker ready')
         }
+        return this
     }
 
     async close() {
