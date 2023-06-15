@@ -5,7 +5,7 @@ import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { lastJourneyStep, setJourneyStepMap } from '../JourneyRepository'
 import JourneyService, { enterJourneyFromList } from '../JourneyService'
-import { JourneyEntrance, JourneyUpdate } from '../JourneyStep'
+import { JourneyEntrance, JourneyUpdate, JourneyUserStep } from '../JourneyStep'
 
 describe('Run', () => {
     describe('step progression', () => {
@@ -23,6 +23,7 @@ describe('Run', () => {
             const journey = await Journey.insertAndFetch({
                 project_id: project.id,
                 name: `Test Journey ${Date.now()}`,
+                published: true,
             })
             return { project, journey }
         }
@@ -258,6 +259,54 @@ describe('Run', () => {
             lastStep = await lastJourneyStep(user.id, journey.id)
             expect(lastStep).toBeDefined()
             expect(lastStep!.step_id).toEqual(gateStep!.id)
+        })
+    })
+    describe('enter journey from list', () => {
+
+        test('only enter published journeys', async () => {
+
+            const project = await Project.insertAndFetch({
+                name: Date.now().toString(),
+            })
+
+            const list = await List.insertAndFetch({
+                project_id: project.id,
+                name: 'list',
+            })
+
+            const activeJourney = await Journey.insertAndFetch({
+                project_id: project.id,
+                name: 'Active Journey',
+                published: true,
+            })
+
+            const inactiveJourney = await Journey.insertAndFetch({
+                project_id: project.id,
+                name: 'Inactive Journey',
+            })
+
+            await Promise.all([activeJourney, inactiveJourney].map(journey => setJourneyStepMap(journey.id, {
+                entrance: {
+                    type: 'entrance',
+                    x: 0,
+                    y: 0,
+                    data: {
+                        list_id: list.id,
+                    },
+                },
+            })))
+
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'abc',
+            })
+
+            await enterJourneyFromList(list, user)
+
+            const userSteps = await JourneyUserStep.all(q => q.where('user_id', user.id))
+
+            expect(userSteps.some(s => s.journey_id === activeJourney.id)).toBeTruthy()
+            expect(userSteps.some(s => s.journey_id === inactiveJourney.id)).toBeFalsy()
         })
     })
 })

@@ -216,6 +216,7 @@ export interface Journey {
     id: number
     name: string
     description?: string
+    published: boolean
     tags?: string[]
     created_at: string
     updated_at: string

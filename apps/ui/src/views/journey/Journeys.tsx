@@ -30,6 +30,9 @@ export default function Journeys() {
                         key: 'name',
                     },
                     {
+                        key: 'published',
+                    },
+                    {
                         key: 'created_at',
                     },
                     {

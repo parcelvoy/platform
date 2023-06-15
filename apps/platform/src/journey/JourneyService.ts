@@ -24,6 +24,7 @@ export const enterJourneyFromList = async (list: List, user: User, event?: UserE
     const steps = await JourneyStep.all(
         qb => qb.leftJoin('journeys', 'journeys.id', 'journey_steps.journey_id')
             .where('journeys.project_id', list.project_id)
+            .where('journeys.published', true)
             .where('type', JourneyEntrance.type)
             .whereJsonPath('data', '$.list_id', '=', list.id),
     )
