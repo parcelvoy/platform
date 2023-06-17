@@ -36,7 +36,7 @@ export default class PushJob extends Job {
 
             // Create an event on the user about the push
             await createEvent(user, {
-                name: 'push_sent',
+                name: campaign.eventName('sent'),
                 data: context,
             })
 

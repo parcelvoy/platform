@@ -1,9 +1,6 @@
 
 import { DriverConfig } from '../../config/env'
 import { AnalyticsProvider, AnalyticsProviderName, AnalyticsUserEvent } from './AnalyticsProvider'
-import { SegmentConfig } from './SegmentProvider'
-
-export type AnalyticsConfig = SegmentConfig
 
 export interface AnalyticsTypeConfig extends DriverConfig {
     driver: AnalyticsProviderName

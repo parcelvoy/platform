@@ -9,6 +9,7 @@ import { createAndFetchEvent } from '../users/UserEventRepository'
 interface EventPostTrigger {
     project_id: number
     event: ClientPostEvent
+    forward?: boolean
 }
 
 export default class EventPostJob extends Job {
@@ -23,7 +24,7 @@ export default class EventPostJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, event }: EventPostTrigger) {
+    static async handler({ project_id, event, forward = false }: EventPostTrigger) {
         const { anonymous_id, external_id } = event
         const user = await getUserFromClientId(project_id, { anonymous_id, external_id } as ClientIdentity)
         if (!user) {
@@ -35,7 +36,7 @@ export default class EventPostJob extends Job {
         const dbEvent = await createAndFetchEvent(user, {
             name: event.name,
             data: event.data || {},
-        })
+        }, forward)
 
         // Check to see if a user has any lists
         await updateUsersLists(user, dbEvent)

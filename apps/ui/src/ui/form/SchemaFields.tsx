@@ -2,9 +2,11 @@ import { snakeToTitle } from '../../utils'
 import TextInput from './TextInput'
 import './SchemaFields.css'
 import SwitchField from './SwitchField'
+import OptionField from './OptionField'
 
 interface Schema {
     type: 'string' | 'number' | 'boolean' | 'object'
+    enum?: string[]
     title?: string
     description?: string
     properties?: Record<string, Schema>
@@ -35,7 +37,17 @@ export default function SchemaFields({ title, description, parent, form, schema 
                 const item = props[key]
                 const required = schema.required?.includes(key)
                 const title = item.title ?? snakeToTitle(key)
-                if (item.type === 'string' || item.type === 'number') {
+                if (item.enum) {
+                    return <OptionField
+                        key={key}
+                        form={form}
+                        name={`${parent}.${key}`}
+                        label={title}
+                        subtitle={item.description}
+                        required={required}
+                        options={item.enum.map((value: string) => ({ key: value, label: snakeToTitle(value) }))}
+                    />
+                } else if (item.type === 'string' || item.type === 'number') {
                     return <TextInput.Field
                         key={key}
                         form={form}

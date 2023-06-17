@@ -120,15 +120,18 @@ export const trackMessageEvent = async (
         project_id: user.project_id,
         event: {
             external_id: user.external_id,
-            name: type,
+            name: campaign.eventName(type),
             data: {
                 campaign_id: campaign.id,
+                campaign_name: campaign.name,
+                campaign_type: campaign.type,
                 channel: campaign.channel,
-                url: parts.redirect,
                 subscription_id: campaign.subscription_id,
+                url: parts.redirect,
                 context,
             },
         },
+        forward: true,
     })
 
     const campaignJob = CampaignInteractJob.from({

@@ -56,7 +56,7 @@ export default class EmailJob extends Job {
 
         // Create an event on the user about the email
         await createEvent(user, {
-            name: 'email_sent',
+            name: campaign.eventName('sent'),
             data: context,
         })
     }

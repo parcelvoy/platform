@@ -32,7 +32,7 @@ export default class WebhookJob extends Job {
 
         // Create an event on the user about the email
         createEvent(user, {
-            name: 'webhook_sent',
+            name: campaign.eventName('sent'),
             data: context,
         })
     }

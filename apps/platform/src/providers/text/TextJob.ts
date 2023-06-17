@@ -48,7 +48,7 @@ export default class TextJob extends Job {
 
         // Create an event on the user about the text
         await createEvent(user, {
-            name: 'text_sent',
+            name: campaign.eventName('sent'),
             data: context,
         })
     }

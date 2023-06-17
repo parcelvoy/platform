@@ -57,7 +57,9 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     const context = {
         campaign_id: campaign.id,
         campaign_name: campaign.name,
+        campaign_type: campaign.type,
         template_id: template.id,
+        channel: campaign.channel,
         subscription_id: campaign.subscription_id,
     }
 

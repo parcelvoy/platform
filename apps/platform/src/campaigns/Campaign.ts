@@ -41,11 +41,15 @@ export default class Campaign extends Model {
     deleted_at?: Date
 
     static jsonAttributes = ['delivery', 'list_ids', 'exclusion_list_ids']
+
+    eventName(action: string) {
+        return `${this.channel}_${action}`
+    }
 }
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'screenshotUrl' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'deleted_at'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'eventName' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'deleted_at'>
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel' | 'type'>
 

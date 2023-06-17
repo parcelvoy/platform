@@ -53,7 +53,7 @@ export function IntegrationForm({ project, provider: defaultProvider, onChange, 
                 <>
                     {provider?.id
                         ? <>
-                            <h4>Details</h4>
+                            {provider.setup.length > 0 && <h4>Details</h4>}
                             {provider.setup?.map(item => {
                                 return (
                                     <TextInput
