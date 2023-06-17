@@ -96,13 +96,21 @@ nav a .nav-icon {
 .sidebar-profile {
     border-top: 1px solid var(--color-grey);
     width: 100%;
+}
+
+.sidebar-profile .sidebar-profile-inner {
     display: grid;
-    grid-template-areas: "image name" "image role";
+    grid-template-areas: "image name caret" "image role caret";
     grid-template-columns: 40px 1fr;
-    grid-column-gap: 15px;
-    grid-row-gap: 5px;
+    grid-column-gap: 5px;
+    grid-row-gap: 0px;
     align-items: center;
+    cursor: pointer;
     padding: 15px 20px;
+}
+
+.sidebar-profile .sidebar-profile-inner:hover {
+    background-color: var(--color-background-soft);
 }
 
 .sidebar-profile .profile-image {
@@ -122,13 +130,20 @@ nav a .nav-icon {
 
 .sidebar-profile .profile-name {
     grid-area: name;
-    font-size: 15px;
+    font-size: 14px;
+    padding-left: 10px;
 }
 
 .sidebar-profile .profile-role {
     grid-area: role;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 500;
     display: flex;
+    padding-left: 10px;
+}
+
+.sidebar-profile .profile-caret {
+    grid-area: caret;
 }
 
 @media only screen and (max-width: 600px) {

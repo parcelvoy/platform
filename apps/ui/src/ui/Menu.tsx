@@ -11,6 +11,7 @@ interface MenuProps {
     variant?: ButtonVariant
     size?: ButtonSize
     placement?: Placement
+    button?: React.ReactNode
 }
 
 interface MenuItemProps {
@@ -28,21 +29,20 @@ export function MenuItem({ children, onClick }: PropsWithChildren<MenuItemProps>
     )
 }
 
-export default function Menu({ children, variant, size, placement }: PropsWithChildren<MenuProps>) {
+export default function Menu({ children, variant, size, placement, button }: PropsWithChildren<MenuProps>) {
     const [referenceElement, setReferenceElement] = useState<Element | null | undefined>()
     const [popperElement, setPopperElement] = useState<HTMLElement | null | undefined>()
     const { styles, attributes } = usePopper(referenceElement, popperElement, {
         placement: placement ?? 'bottom-end',
     })
+    const defaultButton = button ?? <Button
+        variant={variant ?? 'secondary'}
+        size={size ?? 'tiny'}
+        icon={<ThreeDotsIcon />} />
 
     return (
         <Popover>
-            <Popover.Button as={Button}
-                ref={setReferenceElement}
-                variant={variant ?? 'secondary'}
-                size={size}
-                icon={<ThreeDotsIcon />}></Popover.Button>
-
+            <Popover.Button as="div" ref={setReferenceElement}>{defaultButton}</Popover.Button>
             <Popover.Panel
                 ref={setPopperElement}
                 style={styles.popper}

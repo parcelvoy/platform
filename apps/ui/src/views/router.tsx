@@ -33,12 +33,14 @@ import Login from './auth/Login'
 import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
-import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
+import { CampaignsIcon, JourneysIcon, ListsIcon, PerformanceIcon, ProjectIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
 import { pushRecentProject } from '../utils'
 import LoginBasic from './auth/LoginBasic'
-import Performance from './settings/Performance'
+import Performance from './organization/Performance'
 import Settings from './settings/Settings'
+import ProjectSidebar from './project/ProjectSidebar'
+import Admins from './organization/Admins'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -93,6 +95,57 @@ export const router = createBrowserRouter([
                 ],
             },
             {
+                path: 'settings',
+                element: (
+                    <StatefulLoaderContextProvider context={ProjectContext}>
+                        <Sidebar
+                            links={[
+                                {
+                                    key: 'projects',
+                                    to: './projects',
+                                    children: 'Projects',
+                                    icon: <ProjectIcon />,
+                                },
+                                {
+                                    key: 'admins',
+                                    to: 'admins',
+                                    children: 'Admins',
+                                    icon: <UsersIcon />,
+                                },
+                                {
+                                    key: 'performance',
+                                    to: 'performance',
+                                    children: 'Performance',
+                                    icon: <PerformanceIcon />,
+                                },
+                            ]}
+                        >
+                            <Outlet />
+                        </Sidebar>
+                    </StatefulLoaderContextProvider>
+                ),
+                children: [
+                    {
+                        index: true,
+                        loader: async () => {
+                            return redirect('projects')
+                        },
+                    },
+                    {
+                        path: 'projects',
+                        element: <Projects />,
+                    },
+                    {
+                        path: 'admins',
+                        element: <Admins />,
+                    },
+                    {
+                        path: 'performance',
+                        element: <Performance />,
+                    },
+                ],
+            },
+            {
                 path: 'projects/:projectId',
                 loader: async ({ params: { projectId = '' } }) => {
                     const project = await api.projects.get(projectId)
@@ -101,7 +154,7 @@ export const router = createBrowserRouter([
                 },
                 element: (
                     <StatefulLoaderContextProvider context={ProjectContext}>
-                        <Sidebar
+                        <ProjectSidebar
                             links={[
                                 {
                                     key: 'campaigns',
@@ -140,7 +193,7 @@ export const router = createBrowserRouter([
                             ]}
                         >
                             <Outlet />
-                        </Sidebar>
+                        </ProjectSidebar>
                     </StatefulLoaderContextProvider>
                 ),
                 children: [

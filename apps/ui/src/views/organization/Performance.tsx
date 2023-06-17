@@ -5,6 +5,7 @@ import api from '../../api'
 import { Metric } from '../../types'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import Tile, { TileGrid } from '../../ui/Tile'
+import PageContent from '../../ui/PageContent'
 
 interface Series {
     label: string
@@ -48,8 +49,10 @@ export default function Performance() {
     )
 
     return (
-        <>
-            <Heading size="h3" title="Performance" />
+        <PageContent
+            title="Performance"
+            desc="View queue throughput for your project."
+        >
             <Heading size="h4" title="Queue Throughput" />
             {data && <div style={{ position: 'relative', height: '250px' }}>
                 <TileGrid numColumns={4}>
@@ -67,6 +70,6 @@ export default function Performance() {
                     }}
                 />
             </div>}
-        </>
+        </PageContent>
     )
 }
