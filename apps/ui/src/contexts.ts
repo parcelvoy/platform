@@ -1,5 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from 'react'
-import { Admin, Campaign, Journey, List, LocaleOption, Project, Template, User, UseStateContext } from './types'
+import { Admin, Campaign, Journey, List, LocaleOption, Organization, Project, Template, User, UseStateContext } from './types'
 
 export const AdminContext = createContext<null | Admin>(null)
 
@@ -39,5 +39,10 @@ export const TemplateContext = createContext<UseStateContext<Template>>([
 
 export const ListContext = createContext<UseStateContext<List>>([
     {} as unknown as List,
+    () => {},
+])
+
+export const OrganizationContext = createContext<UseStateContext<Organization>>([
+    {} as unknown as Organization,
     () => {},
 ])

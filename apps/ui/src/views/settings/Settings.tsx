@@ -37,11 +37,6 @@ export default function Settings() {
             to: 'tags',
             children: 'Tags',
         },
-        {
-            key: 'performance',
-            to: 'performance',
-            children: 'Performance',
-        },
     ]
 
     return (

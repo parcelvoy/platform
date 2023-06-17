@@ -106,10 +106,17 @@ export type AuditFields = 'created_at' | 'updated_at' | 'deleted_at'
 
 export interface Admin {
     id: number
+    organization_id: number
     first_name: string
     last_name: string
     email: string
     image_url: string
+}
+
+export interface Organization {
+    username: string
+    domain: string
+    auth: any
 }
 
 export const projectRoles = [
