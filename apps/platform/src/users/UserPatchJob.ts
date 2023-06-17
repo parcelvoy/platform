@@ -1,6 +1,6 @@
 import { User, UserParams } from './User'
 import { Job } from '../queue'
-import { createUser, getUserFromClientId } from './UserRepository'
+import { createUser, getUsersFromIdentity } from './UserRepository'
 import { addUserToList, updateUsersLists } from '../lists/ListService'
 import { updateUsersJourneys } from '../journey/JourneyService'
 import { ClientIdentity } from '../client/Client'
@@ -28,7 +28,8 @@ export default class UserPatchJob extends Job {
             const identity = { external_id, anonymous_id } as ClientIdentity
 
             // Check for existing user
-            const existing = await getUserFromClientId(project_id, identity)
+            const { anonymous, external } = await getUsersFromIdentity(project_id, identity)
+            const existing = external ?? anonymous
 
             // TODO: Utilize phone and email as backup identifiers
             // to decrease the likelihood of future duplicates
@@ -39,6 +40,7 @@ export default class UserPatchJob extends Job {
                     ? await User.updateAndFetch(existing.id, {
                         data: data ? { ...existing.data, ...data } : undefined,
                         ...fields,
+                        ...!anonymous ? { anonymous_id } : {},
                     })
                     : await createUser(project_id, {
                         ...identity,
