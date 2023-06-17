@@ -1,8 +1,10 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
+import { InternalError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
+import UserError from './UserError'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -13,7 +15,7 @@ export const getUser = async (id: number, projectId?: number): Promise<User | un
     })
 }
 
-export const getUserFromClientId = async (projectId: number, identity: ClientIdentity): Promise<User | undefined> => {
+export const getUsersFromIdentity = async (projectId: number, identity: ClientIdentity) => {
     const users = await User.all(
         qb => qb
             .where(sqb => {
@@ -28,10 +30,20 @@ export const getUserFromClientId = async (projectId: number, identity: ClientIde
             .limit(2),
     )
 
+    // Map each ID to a key so they are both available
+    return {
+        anonymous: users.find(user => user.anonymous_id === identity.anonymous_id),
+        external: users.find(user => user.external_id === identity.external_id),
+    }
+}
+
+export const getUserFromClientId = async (projectId: number, identity: ClientIdentity): Promise<User | undefined> => {
+    const users = await getUsersFromIdentity(projectId, identity)
+
     // There are circumstances in which both the external ID and
     // the anonymous ID match but match different records in
     // those cases, default to the one matching the external ID
-    return users.find(user => user.external_id === identity.external_id) ?? users[0]
+    return users.external ?? users.anonymous
 }
 
 export const getUserFromPhone = async (projectId: number, phone: string): Promise<User | undefined> => {
@@ -77,9 +89,7 @@ export const aliasUser = async (projectId: number, {
     const current = await getUserFromClientId(projectId, {
         external_id,
     } as ClientIdentity)
-    if (current) {
-        return await User.updateAndFetch(current.id, { anonymous_id })
-    }
+    if (current) return
 
     return await User.updateAndFetch(previous.id, { external_id })
 }
@@ -102,7 +112,9 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
 export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {
 
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity)
-    if (!user) return
+    if (!user) {
+        throw new InternalError(UserError.NotFound)
+    }
 
     let isFirstDevice = false
     if (!user.devices) {
