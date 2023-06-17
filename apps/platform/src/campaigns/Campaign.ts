@@ -41,6 +41,10 @@ export default class Campaign extends Model {
     deleted_at?: Date
 
     static jsonAttributes = ['delivery', 'list_ids', 'exclusion_list_ids']
+
+    eventName(action: string) {
+        return `${this.channel}_${action}`
+    }
 }
 
 export type SentCampaign = Campaign & { send_at: Date }
