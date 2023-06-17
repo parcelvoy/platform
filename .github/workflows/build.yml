@@ -30,6 +30,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Node 18.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.x
+        
+      - name: Cache NPM
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm install
+      
       - name: Build the Docker Image
         run: |
           npm run docker:build:push --tag=$(echo ${GITHUB_REF_NAME:1})
