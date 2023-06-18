@@ -12,14 +12,14 @@ jobs:
       packages: write
     if: github.repository_owner == 'parcelvoy'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js 18.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 18.x
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
       - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
-      - run: npm run package:publish --tag=0.6.5)
+      - run: npm run package:publish --tag=0.6.5
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
