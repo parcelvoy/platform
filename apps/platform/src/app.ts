@@ -73,21 +73,30 @@ export default class App {
         this.unhandledErrorListener()
     }
 
-    async start() {
+    start() {
         const runners = this.env.runners
         if (runners.includes('api')) {
-            this.api = new Api(this)
-            const server = this.api?.listen(this.env.port)
-            server.keepAliveTimeout = 65000
-            server.requestTimeout = 0
-            logger.info('parcelvoy:api ready')
+            console.log('here?')
+            this.startApi()
         }
         if (runners.includes('worker')) {
-            this.worker = new Worker(this)
-            this.worker?.run()
-            logger.info('parcelvoy:worker ready')
+            this.startWorker()
         }
         return this
+    }
+
+    startApi() {
+        this.api = new Api(this)
+        const server = this.api?.listen(this.env.port)
+        server.keepAliveTimeout = 65000
+        server.requestTimeout = 0
+        logger.info('parcelvoy:api ready')
+    }
+
+    startWorker() {
+        this.worker = new Worker(this)
+        this.worker?.run()
+        logger.info('parcelvoy:worker ready')
     }
 
     async close() {

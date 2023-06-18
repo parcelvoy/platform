@@ -21,8 +21,6 @@ import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 
-export type Queues = Record<number, Queue>
-
 export const loadJobs = (queue: Queue) => {
     queue.register(CampaignGenerateListJob)
     queue.register(CampaignInteractJob)
@@ -50,8 +48,3 @@ export default (config: QueueConfig) => {
     return new Queue(config)
 }
 
-export const loadWorker = (config: QueueConfig) => {
-    const queue = new Queue(config)
-    loadJobs(queue)
-    return queue
-}
