@@ -1,5 +1,5 @@
 {
-  "name": "platform",
+  "name": "@parcelvoy/platform",
   "version": "0.1.0",
   "repository":"https://github.com/parcelvoy/platform",
   "dependencies": {
