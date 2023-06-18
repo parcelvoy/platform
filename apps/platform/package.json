@@ -1,6 +1,7 @@
 {
   "name": "platform",
   "version": "0.1.0",
+  "repository":"https://github.com/parcelvoy/platform",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.171.0",
     "@aws-sdk/client-ses": "^3.121.0",
