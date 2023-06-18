@@ -45,7 +45,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
-    "docker:build:push": "npm run docker:build -- --push"
+    "docker:build:push": "npm run docker:build -- --push",
+    "package:publish": "npm run build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish"
   },
   "browserslist": {
     "production": [

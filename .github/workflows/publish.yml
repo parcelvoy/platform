@@ -1,0 +1,23 @@
+name: Publish Packages
+
+on:
+  push
+
+jobs:
+  build-package:
+    name: "Publish to GitHub Packages"
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'parcelvoy'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18.x
+          registry-url: https://npm.pkg.github.com/
+          scope: "@parcelvoy"
+      - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
+      - run: npm ci
+      - run: npm run package:publish --tag=$(echo ${GITHUB_REF_NAME:1})
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
