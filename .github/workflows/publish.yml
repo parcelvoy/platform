@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 18.x
           registry-url: https://npm.pkg.github.com/
-      - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
       - run: npm ci
+      - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
       - run: npm run package:publish --tag=$(echo ${GITHUB_REF_NAME:1})
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
