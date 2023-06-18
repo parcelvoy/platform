@@ -1,4 +1,5 @@
 import knex, { Knex as Database } from 'knex'
+import path from 'path'
 import { removeKey } from '../utilities'
 import { logger } from './logger'
 
@@ -45,7 +46,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
     if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
     return db.migrate.latest({
-        directory: './db/migrations',
+        directory: path.resolve(__dirname, '../../db/migrations'),
         tableName: 'migrations',
         loadExtensions: ['.js', '.ts'],
     })

@@ -88,5 +88,5 @@
     "ts-node": "^10.8.2",
     "typescript": "^4.9.3"
   },
-  "files": [ "/build" ]
+  "files": [ "/build", "/db" ]
 }
