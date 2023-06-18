@@ -83,16 +83,16 @@ export default class App {
         return this
     }
 
-    startApi() {
-        this.api = new Api(this)
+    startApi(api?: Api) {
+        this.api = api ?? new Api(this)
         const server = this.api?.listen(this.env.port)
         server.keepAliveTimeout = 65000
         server.requestTimeout = 0
         logger.info('parcelvoy:api ready')
     }
 
-    startWorker() {
-        this.worker = new Worker(this)
+    startWorker(worker?: Worker) {
+        this.worker = worker ?? new Worker(this)
         this.worker?.run()
         logger.info('parcelvoy:worker ready')
     }
