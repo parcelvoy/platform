@@ -59,8 +59,7 @@ export default class App {
     rateLimiter: RateLimiter
     #registered: { [key: string | number]: unknown }
 
-    // eslint-disable-next-line no-useless-constructor
-    private constructor(
+    constructor(
         public env: Env,
         public db: Database,
         public queue: Queue,
@@ -76,7 +75,6 @@ export default class App {
     start() {
         const runners = this.env.runners
         if (runners.includes('api')) {
-            console.log('here?')
             this.startApi()
         }
         if (runners.includes('worker')) {
