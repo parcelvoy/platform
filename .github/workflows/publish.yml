@@ -7,6 +7,9 @@ jobs:
   build-package:
     name: "Publish to GitHub Packages"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     if: github.repository_owner == 'parcelvoy'
     steps:
       - uses: actions/checkout@v2
@@ -15,7 +18,6 @@ jobs:
         with:
           node-version: 18.x
           registry-url: https://npm.pkg.github.com/
-          scope: "@parcelvoy"
       - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
       - run: npm ci
       - run: npm run package:publish --tag=$(echo ${GITHUB_REF_NAME:1})
