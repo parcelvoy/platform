@@ -22,7 +22,7 @@ export default class App {
         return App.$main
     }
 
-    static async init(env: Env): Promise<App> {
+    static async init<T extends typeof App>(this: T, env: Env): Promise<InstanceType<T>> {
 
         logger.info('parcelvoy initializing')
 
@@ -42,15 +42,20 @@ export default class App {
         const auth = loadAuth(env.auth)
 
         // Setup app
-        App.$main = new App(env,
+        const app = new this(env,
             database,
             queue,
             auth,
             storage,
             error,
-        )
+        ) as any
 
-        return App.$main
+        return this.setMain(app)
+    }
+
+    static setMain<T extends typeof App>(this: T, app: InstanceType<T>) {
+        this.$main = app
+        return app
     }
 
     uuid = uuid()
