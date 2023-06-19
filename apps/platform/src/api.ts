@@ -56,11 +56,16 @@ export default class Api extends Koa {
                 defer: !app.env.mono,
             }))
 
-        this.loadControllers()
+        this.registerControllers()
     }
 
-    loadControllers(): Record<string, Router> {
-        return controllers(this)
+    getControllers() {
+        return controllers(this.app)
+    }
+
+    registerControllers() {
+        this.controllers = this.getControllers()
+        this.register(...Object.values(this.controllers))
     }
 
     register(...routers: Router[]) {
