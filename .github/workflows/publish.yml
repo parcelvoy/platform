@@ -1,7 +1,9 @@
 name: Publish Packages
 
 on:
-  push
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build-package:
@@ -20,6 +22,6 @@ jobs:
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
       - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
-      - run: npm run package:publish --tag=0.6.5
+      - run: npm run package:publish --tag=$(echo ${GITHUB_REF_NAME:1})
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
