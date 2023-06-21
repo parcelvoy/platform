@@ -18,7 +18,7 @@ export interface ProviderSetupMeta {
     value: string | number
 }
 
-export function ProviderSchema<T extends ExternalProviderParams, D>(id: string, data: JSONSchemaType<D>): any {
+export function ProviderSchema<_ extends ExternalProviderParams, D>(id: string, data: JSONSchemaType<D>): any {
     return {
         $id: id,
         type: 'object',

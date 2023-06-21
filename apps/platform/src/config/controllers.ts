@@ -37,7 +37,7 @@ export default (app: App) => {
         public: publicRouter(),
     }
 
-    // If were running in mono mode, we need to also serve the UI
+    // If we are running in mono mode, we need to also serve the UI
     if (app.env.mono) {
         const ui = new Router()
         ui.get('/(.*)', async (ctx, next) => {

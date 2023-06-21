@@ -47,4 +47,3 @@ export const loadJobs = (queue: Queue) => {
 export default (config: QueueConfig) => {
     return new Queue(config)
 }
-
