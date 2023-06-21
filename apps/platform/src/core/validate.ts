@@ -12,7 +12,7 @@ addErrors(validator)
 
 export { JSONSchemaType, IsValidSchema, validator }
 
-export const validate = <T>(schema: JSONSchemaType<T>, data: any): T => {
+export function validate<T>(schema: JSONSchemaType<T>, data: any): T {
     const validate = validator.getSchema<T>(schema.$id!)
         || validator.compile(schema)
     if (validate(data)) {

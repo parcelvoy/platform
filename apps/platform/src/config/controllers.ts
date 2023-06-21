@@ -20,28 +20,25 @@ import ProjectAdminController from '../projects/ProjectAdminController'
 import ProjectApiKeyController from '../projects/ProjectApiKeyController'
 import AdminController from '../auth/AdminController'
 import OrganizationController from '../organizations/OrganizationController'
+import App from '../app'
 
-const register = (parent: Router, ...routers: Router[]) => {
+export const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
         parent.use(router.routes(), router.allowedMethods())
     }
     return parent
 }
 
-export default (api: import('../api').default) => {
+export default (app: App) => {
 
-    // Register the three main levels of routers
-    const root = register(new Router({ prefix: '/api' }),
-        adminRouter(),
-        clientRouter(),
-        publicRouter(),
-    )
-
-    api.use(root.routes())
-        .use(root.allowedMethods())
+    const routers: Record<string, Router> = {
+        admin: adminRouter(),
+        client: clientRouter(),
+        public: publicRouter(),
+    }
 
     // If we are running in mono mode, we need to also serve the UI
-    if (api.app.env.mono) {
+    if (app.env.mono) {
         const ui = new Router()
         ui.get('/(.*)', async (ctx, next) => {
             try {
@@ -50,9 +47,10 @@ export default (api: import('../api').default) => {
                 return next()
             }
         })
-        api.use(ui.routes())
-            .use(ui.allowedMethods())
+        routers.ui = ui
     }
+
+    return routers
 }
 
 /**

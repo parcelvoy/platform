@@ -24,4 +24,4 @@ USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app ./
 EXPOSE 3001
-CMD ["dumb-init", "node", "index.js"]
+CMD ["dumb-init", "node", "boot.js"]

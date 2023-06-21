@@ -1,4 +1,5 @@
 import knex, { Knex as Database } from 'knex'
+import path from 'path'
 import { removeKey } from '../utilities'
 import { logger } from './logger'
 
@@ -10,6 +11,7 @@ export interface DatabaseConfig {
     user: string
     password: string
     database?: string
+    migrationPaths: string[]
 }
 
 export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
@@ -23,7 +25,7 @@ knex.QueryBuilder.extend('when', function(
 })
 
 const connect = (config: DatabaseConfig, withDB = true) => {
-    let connection = config
+    let connection = removeKey('migrationPaths', config)
     if (!withDB) {
         connection = removeKey('database', connection)
     }
@@ -45,7 +47,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
     if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
     return db.migrate.latest({
-        directory: './db/migrations',
+        directory: [path.resolve(__dirname, '../../db/migrations'), ...config.migrationPaths],
         tableName: 'migrations',
         loadExtensions: ['.js', '.ts'],
     })

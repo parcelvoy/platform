@@ -2,11 +2,15 @@ import Koa from 'koa'
 import koaBody from 'koa-body'
 import cors from '@koa/cors'
 import serve from 'koa-static'
-import controllers from './config/controllers'
+import controllers, { register } from './config/controllers'
 import { RequestError } from './core/errors'
 import { logger } from './config/logger'
+import Router from '@koa/router'
 
 export default class Api extends Koa {
+    router = new Router({ prefix: '/api' })
+    controllers?: Record<string, Router>
+
     constructor(
         public app: import('./app').default,
     ) {
@@ -52,6 +56,21 @@ export default class Api extends Koa {
                 defer: !app.env.mono,
             }))
 
-        controllers(this)
+        this.registerControllers()
+    }
+
+    getControllers() {
+        return controllers(this.app)
+    }
+
+    registerControllers() {
+        this.controllers = this.getControllers()
+        this.register(...Object.values(this.controllers))
+    }
+
+    register(...routers: Router[]) {
+        const root = register(this.router, ...routers)
+        this.use(root.routes())
+            .use(root.allowedMethods())
     }
 }

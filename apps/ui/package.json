@@ -1,6 +1,7 @@
 {
-  "name": "ui",
+  "name": "@parcelvoy/ui",
   "version": "0.1.0",
+  "repository":"https://github.com/parcelvoy/platform",
   "dependencies": {
     "@fontsource/inter": "^4.5.14",
     "@headlessui/react": "1.7.13",
@@ -45,7 +46,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
-    "docker:build:push": "npm run docker:build -- --push"
+    "docker:build:push": "npm run docker:build -- --push",
+    "package:publish": "npm run build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
   "browserslist": {
     "production": [
@@ -68,5 +70,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.31.11",
     "typescript": "^4.9.3"
-  }
+  },
+  "files": [ "/build" ]
 }

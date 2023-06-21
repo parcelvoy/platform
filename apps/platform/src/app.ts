@@ -22,7 +22,7 @@ export default class App {
         return App.$main
     }
 
-    static async init(env: Env): Promise<App> {
+    static async init<T extends typeof App>(this: T, env: Env): Promise<InstanceType<T>> {
 
         logger.info('parcelvoy initializing')
 
@@ -42,15 +42,20 @@ export default class App {
         const auth = loadAuth(env.auth)
 
         // Setup app
-        App.$main = new App(env,
+        const app = new this(env,
             database,
             queue,
             auth,
             storage,
             error,
-        )
+        ) as any
 
-        return App.$main
+        return this.setMain(app)
+    }
+
+    static setMain<T extends typeof App>(this: T, app: InstanceType<T>) {
+        this.$main = app
+        return app
     }
 
     uuid = uuid()
@@ -59,8 +64,7 @@ export default class App {
     rateLimiter: RateLimiter
     #registered: { [key: string | number]: unknown }
 
-    // eslint-disable-next-line no-useless-constructor
-    private constructor(
+    constructor(
         public env: Env,
         public db: Database,
         public queue: Queue,
@@ -73,21 +77,29 @@ export default class App {
         this.unhandledErrorListener()
     }
 
-    async start() {
+    start() {
         const runners = this.env.runners
         if (runners.includes('api')) {
-            this.api = new Api(this)
-            const server = this.api?.listen(this.env.port)
-            server.keepAliveTimeout = 65000
-            server.requestTimeout = 0
-            logger.info('parcelvoy:api ready')
+            this.startApi()
         }
         if (runners.includes('worker')) {
-            this.worker = new Worker(this)
-            this.worker?.run()
-            logger.info('parcelvoy:worker ready')
+            this.startWorker()
         }
         return this
+    }
+
+    startApi(api?: Api) {
+        this.api = api ?? new Api(this)
+        const server = this.api?.listen(this.env.port)
+        server.keepAliveTimeout = 65000
+        server.requestTimeout = 0
+        logger.info('parcelvoy:api ready')
+    }
+
+    startWorker(worker?: Worker) {
+        this.worker = worker ?? new Worker(this)
+        this.worker?.run()
+        logger.info('parcelvoy:worker ready')
     }
 
     async close() {
