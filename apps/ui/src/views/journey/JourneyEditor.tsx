@@ -403,17 +403,21 @@ export default function JourneyEditor() {
 
         setSaving(true)
 
-        const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
-        const stats = await api.journeys.steps.stats(project.id, journey.id)
+        try {
+            const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
+            const stats = await api.journeys.steps.stats(project.id, journey.id)
 
-        const refreshed = stepsToNodes(stepMap, stats)
+            const refreshed = stepsToNodes(stepMap, stats)
 
-        setNodes(refreshed.nodes)
-        setEdges(refreshed.edges)
+            setNodes(refreshed.nodes)
+            setEdges(refreshed.edges)
 
-        setSaving(false)
-        toast.success('Saved!')
-
+            toast.success('Saved!')
+        } catch (error: any) {
+            toast.error(`Unable to save: ${error}`)
+        } finally {
+            setSaving(false)
+        }
     }, [project, journey, nodes, edges])
 
     const onConnect = useCallback(async (connection: Connection) => {
