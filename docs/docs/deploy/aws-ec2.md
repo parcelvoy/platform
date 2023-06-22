@@ -14,14 +14,17 @@ This page guides you through deploying Parcelvoy Open-Source on an Amazon EC2 in
 2. Install Docker
 ```sh
 sudo yum update -y
-sudo yum install -y docker
+sudo yum install -y docker containerd git screen
 sudo service docker start
 sudo usermod -a -G docker $USER
 ```
 
 3. Install `docker-compose`
 ```sh
-sudo yum install -y docker-compose-plugin
+wget https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)
+sudo mv docker-compose-$(uname -s)-$(uname -m) /usr/libexec/docker/cli-plugins/docker-compose
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+sudo systemctl enable docker.service --now
 docker compose version
 ```
 
@@ -48,5 +51,10 @@ This file also lets you use a separate database, change what queue is being used
 
 By default the port is configured to use `3000` for the UI and API. You can modify this by setting `UI_PORT`.
 
-6. Setup security groups
+6. Bring containers online
+```
+docker compose up -d # run the Docker container
+```
+
+7. Setup security groups
 Based on what port you are using for the UI portion, you will want to make sure you have configured that port to be open as well in your security groups.
