@@ -45,7 +45,15 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 }
 
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
-    if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
+
+    // Create the database if it doesn't exist
+    try { 
+        if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
+    } catch (error: any) {
+        if (error.errno !== 1007) throw error
+    }
+
+    // Run migrations
     return db.migrate.latest({
         directory: [path.resolve(__dirname, '../../db/migrations'), ...config.migrationPaths],
         tableName: 'migrations',

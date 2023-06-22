@@ -11,7 +11,7 @@ services:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "exit | mysql parcelvoy -h localhost -P 3306 -u root -p$$MYSQL_ROOT_PASSWORD --execute 'SELECT 1;'" ]
+      test: ["CMD", 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD' ]
       interval: 5s
       timeout: 20s
       retries: 30
@@ -94,6 +94,8 @@ services:
       mysql:
         condition: service_healthy
       redis:
+        condition: service_started
+      api:
         condition: service_started
     environment:
       NODE_ENV: ${NODE_ENV}
