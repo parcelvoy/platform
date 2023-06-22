@@ -47,7 +47,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
 const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
 
     // Create the database if it doesn't exist
-    try { 
+    try {
         if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
     } catch (error: any) {
         if (error.errno !== 1007) throw error
