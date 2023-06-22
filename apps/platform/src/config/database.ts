@@ -75,15 +75,13 @@ export default async (config: DatabaseConfig) => {
         await migrate(config, db)
         return db
     } catch (error: any) {
-
-        logger.error(error, 'database error')
-
         if (error?.errno === 1049) {
             // On error, try to create the database and try again
             const db = connect(config, false)
             await migrate(config, db, true)
             return connect(config)
         } else {
+            logger.error(error, 'database error')
             throw error
         }
     }

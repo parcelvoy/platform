@@ -7,7 +7,7 @@ While Docker Compose is the fastest way to get up and running, we recommend at l
 The fastest way to get up and running is by using Docker Compose. Every component including the database is included in the compose file and you'll be up and running quickly.
 
 ## Scalable Deploy
-Every part of Parcelvoy is developed to be able to scale to multiple servers as your use increases. We've broken down the major components you'll want to 
+Every part of Parcelvoy is developed to be able to scale to multiple servers as your use increases. We've broken down the major components you'll want to separate to provide a truly scalable solution:
 
 1. Database
 2. Queue
