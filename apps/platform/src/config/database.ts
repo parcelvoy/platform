@@ -58,9 +58,9 @@ const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
         directory: [
             path.resolve(__dirname, process.env.NODE_ENV === 'production'
                 ? '../db/migrations'
-                : '../../db/migrations'
+                : '../../db/migrations',
             ),
-            ...config.migrationPaths
+            ...config.migrationPaths,
         ],
         tableName: 'migrations',
         loadExtensions: ['.js', '.ts'],
