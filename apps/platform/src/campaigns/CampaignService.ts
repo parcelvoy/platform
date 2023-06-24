@@ -339,6 +339,8 @@ export const recipientQuery = (campaign: Campaign) => {
                 qb.whereNotNull('users.email')
             } else if (campaign.channel === 'text') {
                 qb.whereNotNull('users.phone')
+            } else if (campaign.channel === 'push') {
+                qb.whereNotNull('users.devices')
             }
         })
 }
