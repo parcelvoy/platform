@@ -120,6 +120,15 @@ export default class Model {
             .then(r => r[0].C || 0)
     }
 
+    static async exists<T extends typeof Model>(
+        this: T,
+        query: Query = qb => qb,
+        db: Database = App.main.db,
+    ): Promise<boolean> {
+        const count = await this.count(query, db)
+        return count > 0
+    }
+
     static async search<T extends typeof Model>(
         this: T,
         params: PageQueryParams<T>,

@@ -144,6 +144,7 @@ export interface Project {
     description?: string
     locale: string
     timezone: string
+    text_opt_out_message: string
     created_at: string
     updated_at: string
     deleted_at?: string

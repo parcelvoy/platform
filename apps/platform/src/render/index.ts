@@ -9,8 +9,10 @@ import { User } from '../users/User'
 import { preferencesLink, unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
 import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
 import App from '../app'
+import Project from '../projects/Project'
 
 export type RenderContext = {
+    project: Project
     template_id: number
     campaign_id: number
     subscription_id: number

@@ -61,6 +61,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         template_id: template.id,
         channel: campaign.channel,
         subscription_id: campaign.subscription_id,
+        project,
     }
 
     return { campaign, template: template.map() as T, user, project, event, context }
