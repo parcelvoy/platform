@@ -42,10 +42,10 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     return (
         <FormWrapper<Project>
             defaultValues={defaults}
-            onSubmit={async ({ id, name, description, locale, timezone }) => {
+            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message }) => {
                 const project = id
-                    ? await api.projects.update(id, { name, description, locale, timezone })
-                    : await api.projects.create({ name, description, locale, timezone })
+                    ? await api.projects.update(id, { name, description, locale, timezone, text_opt_out_message })
+                    : await api.projects.create({ name, description, locale, timezone, text_opt_out_message })
                 onSave?.(project)
             }}
         >
@@ -67,6 +67,11 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                             label="Timezone"
                             required
                         />
+                        <TextInput.Field
+                            form={form}
+                            name="text_opt_out_message"
+                            label="SMS Opt Out Message"
+                            subtitle="Instructions on how to opt out of SMS that will be appended to every text." />
                     </>
                 )
             }

@@ -69,6 +69,10 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             nullable: true,
         },
         timezone: { type: 'string' },
+        text_opt_out_message: {
+            type: 'string',
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }
@@ -107,6 +111,10 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
             nullable: true,
         },
         timezone: {
+            type: 'string',
+            nullable: true,
+        },
+        text_opt_out_message: {
             type: 'string',
             nullable: true,
         },

@@ -7,6 +7,7 @@ export default class Project extends Model {
     deleted_at?: Date
     locale?: string
     timezone!: string
+    text_opt_out_message?: string
 }
 
 export type ProjectParams = Omit<Project, ModelParams | 'deleted_at' | 'organization_id'>
