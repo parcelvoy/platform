@@ -61,7 +61,7 @@ export default (app: App) => {
 export const adminRouter = () => {
     const admin = new Router({ prefix: '/admin' })
     admin.use(authMiddleware)
-    admin.use(scopeMiddleware('admin'))
+    admin.use(scopeMiddleware(['admin', 'secret']))
     return register(admin,
         ProjectController,
         projectRouter(),

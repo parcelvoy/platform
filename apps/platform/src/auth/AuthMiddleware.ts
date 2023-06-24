@@ -70,9 +70,10 @@ export async function authMiddleware(ctx: Context, next: () => void) {
     return next()
 }
 
-export const scopeMiddleware = (scope: string) => {
+export const scopeMiddleware = (scope: string | string[]) => {
+    const scopes = Array.isArray(scope) ? scope : [scope]
     return async function authMiddleware(ctx: Context, next: () => void) {
-        if (ctx.state.scope !== scope) {
+        if (!scopes.includes(ctx.state.scope)) {
             throw new RequestError(AuthError.AccessDenied)
         }
         return next()
