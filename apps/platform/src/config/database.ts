@@ -1,6 +1,6 @@
 import knex, { Knex as Database } from 'knex'
 import path from 'path'
-import { removeKey } from '../utilities'
+import { removeKey, sleep } from '../utilities'
 import { logger } from './logger'
 
 export { Database }
@@ -15,6 +15,8 @@ export interface DatabaseConfig {
 }
 
 export type Query = (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>
+
+const MIGRATION_RETRIES = 3
 
 knex.QueryBuilder.extend('when', function(
     condition: boolean,
@@ -44,18 +46,27 @@ const connect = (config: DatabaseConfig, withDB = true) => {
     })
 }
 
-const migrate = async (config: DatabaseConfig, db: Database) => {
-    return db.migrate.latest({
-        directory: [
-            path.resolve(__dirname, process.env.NODE_ENV === 'production'
-                ? '../db/migrations'
-                : '../../db/migrations',
-            ),
-            ...config.migrationPaths,
-        ],
-        tableName: 'migrations',
-        loadExtensions: ['.js', '.ts'],
-    })
+const migrate = async (config: DatabaseConfig, db: Database, retries = MIGRATION_RETRIES): Promise<void> => {
+    try {
+        return await db.migrate.latest({
+            directory: [
+                path.resolve(__dirname, process.env.NODE_ENV === 'production'
+                    ? '../db/migrations'
+                    : '../../db/migrations',
+                ),
+                ...config.migrationPaths,
+            ],
+            tableName: 'migrations',
+            loadExtensions: ['.js', '.ts'],
+        })
+    } catch (error: any) {
+        if (error?.name === 'MigrationLocked' && retries > 0) {
+            --retries
+            await sleep((MIGRATION_RETRIES - retries) * 1000)
+            return await migrate(config, db, retries)
+        }
+        throw error
+    }
 }
 
 const createDatabase = async (config: DatabaseConfig, db: Database) => {
