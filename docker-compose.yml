@@ -96,7 +96,7 @@ services:
       redis:
         condition: service_started
       api:
-        condition: service_started
+        condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV}
       BASE_URL: ${BASE_URL}
