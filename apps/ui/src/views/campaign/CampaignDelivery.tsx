@@ -31,9 +31,9 @@ export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
 
     const sent = delivery.sent.toLocaleString()
     const total = delivery.total.toLocaleString()
-    const deliveryRate = percent.format(delivery.sent / delivery.total)
-    const openRate = percent.format(delivery.opens / delivery.total)
-    const clickRate = percent.format(delivery.clicks / delivery.total)
+    const deliveryRate = percent.format(delivery.total ? delivery.sent / delivery.total : 0)
+    const openRate = percent.format(delivery.total ? delivery.opens / delivery.total : 0)
+    const clickRate = percent.format(delivery.total ? delivery.clicks / delivery.total : 0)
 
     const SentSpan: React.ReactNode = <span>{sent}/<small>{total}</small></span>
 
