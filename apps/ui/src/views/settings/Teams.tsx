@@ -6,7 +6,7 @@ import Button from '../../ui/Button'
 import { EntityIdPicker } from '../../ui/form/EntityIdPicker'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
-import { ArchiveIcon, PlusIcon } from '../../ui/icons'
+import { ArchiveIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
@@ -57,6 +57,9 @@ export default function Teams() {
                                     }}
                                 >
                                     <ArchiveIcon /> Remove
+                                </MenuItem>
+                                <MenuItem onClick={() => setEditing(item)}>
+                                    <EditIcon /> Edit
                                 </MenuItem>
                             </Menu>
                         ),
