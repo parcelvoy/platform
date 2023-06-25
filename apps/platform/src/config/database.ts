@@ -44,16 +44,7 @@ const connect = (config: DatabaseConfig, withDB = true) => {
     })
 }
 
-const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
-
-    // Create the database if it doesn't exist
-    try {
-        if (fresh) await db.raw(`CREATE DATABASE ${config.database}`)
-    } catch (error: any) {
-        if (error.errno !== 1007) throw error
-    }
-
-    // Run migrations
+const migrate = async (config: DatabaseConfig, db: Database) => {
     return db.migrate.latest({
         directory: [
             path.resolve(__dirname, process.env.NODE_ENV === 'production'
@@ -67,6 +58,14 @@ const migrate = async (config: DatabaseConfig, db: Database, fresh = false) => {
     })
 }
 
+const createDatabase = async (config: DatabaseConfig, db: Database) => {
+    try {
+        await db.raw(`CREATE DATABASE ${config.database}`)
+    } catch (error: any) {
+        if (error.errno !== 1007) throw error
+    }
+}
+
 export default async (config: DatabaseConfig) => {
 
     // Attempt to connect & migrate
@@ -75,11 +74,18 @@ export default async (config: DatabaseConfig) => {
         await migrate(config, db)
         return db
     } catch (error: any) {
+
+        // Check if error is related to DB not existing
         if (error?.errno === 1049) {
-            // On error, try to create the database and try again
-            const db = connect(config, false)
-            await migrate(config, db, true)
-            return connect(config)
+
+            // Connect without database and create it
+            let db = connect(config, false)
+            await createDatabase(config, db)
+
+            // Reconnect using new database
+            db = connect(config)
+            await migrate(config, db)
+            return db
         } else {
             logger.error(error, 'database error')
             throw error
