@@ -34,7 +34,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 
     // If there is a send and it's in an aborted state or has already
     // sent, abort this job to prevent duplicate sends
-    if (send && (send.state === 'aborted' || send.state === 'sent')) return
+    if (send && (send.state === 'aborted' || send.state === 'sent' || send.state === 'locked')) return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)
@@ -65,6 +65,32 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     }
 
     return { campaign, template: template.map() as T, user, project, event, context }
+}
+
+export const prepareSend = async <T>(
+    channel: EmailChannel | TextChannel,
+    message: MessageTriggerHydrated<T>,
+    raw: EncodedJob,
+): Promise<boolean | undefined> => {
+    const { campaign, user } = message
+
+    // Check current send rate, if exceeded then requeue job
+    // at a time in the future
+    const rateCheck = await throttleSend(channel)
+    if (rateCheck?.exceeded) {
+
+        // Mark state as throttled so it is not continuously added
+        // to the queue
+        await updateSendState(campaign, user, 'throttled')
+
+        // Schedule the resend for after the throttle finishes
+        await requeueSend(raw, rateCheck.msRemaining)
+        return false
+    }
+
+    await updateSendState(campaign, user, 'locked')
+
+    return true
 }
 
 export const throttleSend = async (channel: EmailChannel | TextChannel): Promise<RateLimitResponse | undefined> => {

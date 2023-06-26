@@ -325,7 +325,7 @@ export interface Campaign {
     updated_at: string
 }
 
-export type CampaignSendState = 'pending' | 'throttled' | 'bounced' | 'sent' | 'failed'
+export type CampaignSendState = 'pending' | 'throttled' | 'bounced' | 'sent' | 'failed' | 'locked'
 
 export type CampaignUpdateParams = Partial<Pick<Campaign, 'name' | 'state' | 'list_ids' | 'exclusion_list_ids' | 'subscription_id' | 'tags'>>
 export type CampaignCreateParams = Pick<Campaign, 'name' | 'type' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>

@@ -12,12 +12,13 @@ import { formatDate, snakeToTitle } from '../../utils'
 import { useRoute } from '../router'
 
 export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
-    const variant: Record<CampaignSendState, TagVariant> = {
+    const variant: Record<CampaignSendState, TagVariant | undefined> = {
         pending: 'info',
         throttled: 'warn',
         bounced: 'error',
         sent: 'success',
         failed: 'error',
+        locked: undefined,
     }
 
     return <Tag variant={variant[state]}>

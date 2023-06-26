@@ -23,15 +23,18 @@ export default class PushJob extends Job {
         const { campaign, template, user, project, event, context } = data
 
         try {
-            // Send and render push
+            // Load email channel so its ready to send
             const channel = await loadPushChannel(campaign.provider_id, project.id)
             if (!channel) {
                 await updateSendState(campaign, user, 'failed')
                 return
             }
-            await channel.send(template, { user, event, context })
 
-            // Update send record
+            // Lock the send record to prevent duplicate sends
+            await updateSendState(campaign, user, 'locked')
+
+            // Send the push and update the send record
+            await channel.send(template, { user, event, context })
             await updateSendState(campaign, user)
 
             // Create an event on the user about the push
