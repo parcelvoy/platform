@@ -3,7 +3,7 @@ import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from '.'
-import { loadSendJob, requeueSend, throttleSend } from '../MessageTriggerService'
+import { loadSendJob, prepareSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
@@ -28,19 +28,9 @@ export default class EmailJob extends Job {
             return
         }
 
-        // Check current send rate, if exceeded then requeue job
-        // at a time in the future
-        const rateCheck = await throttleSend(channel)
-        if (rateCheck?.exceeded) {
-
-            // Mark state as throttled so it is not continuously added
-            // to the queue
-            await updateSendState(campaign, user, 'throttled')
-
-            // Schedule the resend for after the throttle finishes
-            await requeueSend(raw, rateCheck.msRemaining)
-            return
-        }
+        // Check current send rate and if the send is locked
+        const isReady = prepareSend(channel, data, raw)
+        if (!isReady) return
 
         try {
             await channel.send(template, { user, event, context })

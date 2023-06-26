@@ -53,7 +53,7 @@ export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'eventNam
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel' | 'type'>
 
-export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted'
+export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted' | 'locked'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number

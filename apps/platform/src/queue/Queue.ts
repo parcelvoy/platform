@@ -31,8 +31,13 @@ export default class Queue {
     }
 
     async dequeue(job: EncodedJob): Promise<boolean> {
+        const handler = this.jobs[job.name]
+        if (!handler) {
+            App.main.error.notify(new Error(`No handler found for job: ${job.name}`))
+        }
+
         await this.started(job)
-        await this.jobs[job.name](job.data, job)
+        await handler(job.data, job)
         await this.completed(job)
         return true
     }
@@ -56,7 +61,6 @@ export default class Queue {
     }
 
     async started(job: EncodedJob) {
-        // TODO: Do something about starting
         logger.info(job, 'queue:job:started')
     }
 
@@ -66,7 +70,6 @@ export default class Queue {
     }
 
     async completed(job: EncodedJob) {
-        // TODO: Do something about completion
         logger.info(job, 'queue:job:completed')
     }
 
