@@ -28,7 +28,7 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
         chunks.push(UserPatchJob.from({
             project_id,
             user: {
-                external_id,
+                external_id: `${external_id}`,
                 email,
                 phone,
                 timezone,
