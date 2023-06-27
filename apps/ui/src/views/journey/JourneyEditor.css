@@ -224,6 +224,27 @@
     margin: 0;
 }
 
+.journey-step-header .step-header-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--color-background-soft);
+    border-radius: var(--border-radius-inner);
+    padding: 5px 10px;
+}
+
+.journey-step-header .step-header-stats:hover .stat {
+    color: var(--color-primary);
+}
+
+.journey-step-header .step-header-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: 500;
+    color: var(--color-primary-soft);
+}
+
 .journey-step-body {
     padding: 20px;
 }
