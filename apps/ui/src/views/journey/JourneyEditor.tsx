@@ -42,7 +42,7 @@ import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast'
 import { JourneyForm } from './JourneyForm'
-import { CopyIcon } from '../../ui/icons'
+import { CheckCircleIcon, CopyIcon, TimeIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
@@ -52,6 +52,7 @@ function JourneyStepNode({
     data: {
         type: typeName,
         data,
+        stats,
     } = {},
     selected,
 }: NodeProps) {
@@ -109,6 +110,10 @@ function JourneyStepNode({
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{type.name}</h4>
+                    <div className="step-header-stats">
+                        <span className="stat">{stats.waiting}<TimeIcon /></span>
+                        <span className="stat">{stats.completions}<CheckCircleIcon /></span>
+                    </div>
                 </div>
                 {
                     type.Edit && (
@@ -286,7 +291,7 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
             data: {
                 type,
                 data,
-                stats,
+                stats: stats[id],
             },
         })
         const stepType = getStepType(type)
