@@ -16,14 +16,17 @@ export const getUser = async (id: number, projectId?: number): Promise<User | un
 }
 
 export const getUsersFromIdentity = async (projectId: number, identity: ClientIdentity) => {
+    const externalId = `${identity.external_id}`
+    const anonymousId = `${identity.anonymous_id}`
+
     const users = await User.all(
         qb => qb
             .where(sqb => {
                 if (identity.external_id) {
-                    sqb.where('external_id', `${identity.external_id}`)
+                    sqb.where('external_id', externalId)
                 }
                 if (identity.anonymous_id) {
-                    sqb.orWhere('anonymous_id', `${identity.anonymous_id}`)
+                    sqb.orWhere('anonymous_id', anonymousId)
                 }
             })
             .where('project_id', projectId)
@@ -32,8 +35,8 @@ export const getUsersFromIdentity = async (projectId: number, identity: ClientId
 
     // Map each ID to a key so they are both available
     return {
-        anonymous: users.find(user => user.anonymous_id === identity.anonymous_id),
-        external: users.find(user => user.external_id === identity.external_id),
+        anonymous: users.find(user => user.anonymous_id === anonymousId),
+        external: users.find(user => user.external_id === externalId),
     }
 }
 
