@@ -111,8 +111,8 @@ function JourneyStepNode({
                     </span>
                     <h4 className="step-header-title">{type.name}</h4>
                     <div className="step-header-stats">
-                        <span className="stat">{stats.waiting}<TimeIcon /></span>
-                        <span className="stat">{stats.completions}<CheckCircleIcon /></span>
+                        {typeName === 'delay' && <span className="stat">{(stats?.waiting ?? 0).toLocaleString()}<TimeIcon /></span>}
+                        <span className="stat">{(stats?.completions ?? 0).toLocaleString()}<CheckCircleIcon /></span>
                     </div>
                 </div>
                 {

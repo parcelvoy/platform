@@ -274,7 +274,7 @@ export const getJourneyStepStats = async (journeyId: number) => {
 
     return steps.reduce<JourneyStepStats>((a, { external_id, id }) => {
         a[external_id] = {
-            completions: completions.find(uc => uc.step_id)?.users ?? 0,
+            completions: completions.find(uc => uc.step_id === id)?.users ?? 0,
             waiting: waiting.find(uc => uc.step_id === id)?.users ?? 0,
         }
         return a
