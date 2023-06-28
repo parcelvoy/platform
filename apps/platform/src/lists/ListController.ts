@@ -70,6 +70,10 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 },
                 nullable: true,
             },
+            is_visible: {
+                type: 'boolean',
+                nullable: true,
+            },
         },
         additionalProperties: false,
     },
@@ -89,6 +93,10 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 items: {
                     type: 'string',
                 },
+                nullable: true,
+            },
+            is_visible: {
+                type: 'boolean',
                 nullable: true,
             },
         },

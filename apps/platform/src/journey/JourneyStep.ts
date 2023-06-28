@@ -1,8 +1,6 @@
 import { add, isBefore, isFuture } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
-import Rule from '../rules/Rule'
-import { check } from '../rules/RuleEngine'
 import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
@@ -14,6 +12,7 @@ import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
 import { getProject } from '../projects/ProjectService'
 import { getTimezoneOffset } from 'date-fns-tz'
+import { isUserInList } from '../lists/ListService'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -208,23 +207,19 @@ export class JourneyAction extends JourneyStep {
 export class JourneyGate extends JourneyStep {
     static type = 'gate'
 
-    rule!: Rule
+    list_id?: number
 
     parseJson(json: any) {
         super.parseJson(json)
-        this.rule = json.data?.rule
+        this.list_id = json?.data?.list_id
     }
 
-    async next(user: User, event?: UserEvent | undefined) {
-
+    async next(user: User) {
         const [passed, failed] = await getJourneyStepChildren(this.id)
+        if (!this.list_id) return await getJourneyStep(passed?.child_id)
 
-        const input = {
-            user: user.flatten(),
-            event: event?.flatten(),
-        }
-
-        if (this.rule && check(input, this.rule)) {
+        const isInList = await isUserInList(user.id, this.list_id)
+        if (isInList) {
             return await getJourneyStep(passed?.child_id)
         }
         return await getJourneyStep(failed?.child_id)

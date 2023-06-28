@@ -13,6 +13,7 @@ export default class List extends Model {
     version!: number
     users_count?: number
     tags?: string[]
+    is_visible!: boolean
     deleted_at?: Date
 
     static jsonAttributes = ['rule']
@@ -31,4 +32,4 @@ export class UserList extends Model {
 }
 
 export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
-export type ListCreateParams = Pick<List, 'name' | 'type' | 'rule' | 'tags'>
+export type ListCreateParams = Pick<List, 'name' | 'type' | 'rule' | 'tags' | 'is_visible'>
