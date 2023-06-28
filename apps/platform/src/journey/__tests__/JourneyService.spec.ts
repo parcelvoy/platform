@@ -1,4 +1,4 @@
-import List from '../../lists/List'
+import List, { UserList } from '../../lists/List'
 import Project from '../../projects/Project'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
@@ -31,6 +31,24 @@ describe('Run', () => {
         test('user should be taken to action 2 or 3', async () => {
 
             const { project, journey } = await setup()
+            const list = await List.insertAndFetch({
+                project_id: project.id,
+                type: 'dynamic',
+                rule: {
+                    type: 'string',
+                    group: 'user',
+                    path: '$.email',
+                    operator: '=',
+                    value: 'test1@twochris.com',
+                },
+            })
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: '1',
+                email: 'test2@twochris.com', // won't match the gate condition
+                data: {},
+            })
+            await UserList.insert({ user_id: user.id, list_id: list.id })
 
             // entrance -> gate -> (action1 | experiment -> (action2 | action3))
             const { steps } = await setJourneyStepMap(journey.id, {
@@ -47,13 +65,7 @@ describe('Run', () => {
                     ...baseStep,
                     type: 'gate',
                     data: {
-                        rule: {
-                            type: 'string',
-                            group: 'user',
-                            path: '$.email',
-                            operator: '=',
-                            value: 'test1@twochris.com',
-                        },
+                        list_id: list.id,
                     },
                     children: [
                         // if passed
@@ -108,14 +120,6 @@ describe('Run', () => {
             })
 
             const service = new JourneyService(journey.id)
-
-            const user = await User.insertAndFetch({
-                project_id: project.id,
-                external_id: '1',
-                email: 'test2@twochris.com', // won't match the gate condition
-                data: {},
-            })
-
             await service.run(user)
 
             const actionIds = steps
@@ -261,6 +265,7 @@ describe('Run', () => {
             expect(lastStep!.step_id).toEqual(gateStep!.id)
         })
     })
+
     describe('enter journey from list', () => {
 
         test('only enter published journeys', async () => {
