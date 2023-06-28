@@ -288,7 +288,7 @@ function RuleEdit({
                                 onClick={() => setRule({
                                     ...rule,
                                     children: [...rule.children ?? [], {
-                                        path: '',
+                                        path: '$.name',
                                         type: 'wrapper',
                                         group: 'event',
                                         value: '',
