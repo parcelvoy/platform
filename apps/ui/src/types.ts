@@ -205,6 +205,7 @@ export type List = {
     rule?: WrapperRule
     users_count: number
     tags?: string[]
+    is_visible: boolean
     created_at: string
     updated_at: string
 } & (
@@ -217,7 +218,7 @@ export type List = {
 
 export type DynamicList = List & { type: 'dynamic' }
 
-export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type' | 'tags'>
+export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type' | 'tags' | 'is_visible'>
 export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
 
 export interface Journey {

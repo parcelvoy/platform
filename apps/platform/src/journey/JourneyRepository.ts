@@ -257,6 +257,7 @@ export const getJourneyStepStats = async (journeyId: number) => {
             .select('step_id')
             .count('* as users')
             .where('journey_id', journeyId)
+            .where('type', 'completed')
             .groupBy('step_id')
         ) as Promise<Array<{ step_id: number, users: number }>>,
         (JourneyUserStep.query()

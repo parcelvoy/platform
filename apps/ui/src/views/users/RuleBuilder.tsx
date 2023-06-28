@@ -1,5 +1,6 @@
 import { Combobox } from '@headlessui/react'
-import { Operator, Rule, RuleSuggestions, RuleType, WrapperRule } from '../../types'
+import { Operator, Rule, RuleSuggestions, RuleType, WrapperRule, ControlledInputProps, FieldProps } from '../../types'
+import { FieldPath, FieldValues, useController } from 'react-hook-form'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
@@ -12,6 +13,7 @@ import { useResolver } from '../../hooks'
 import api from '../../api'
 import { highlightSearch, usePopperSelectDropdown } from '../../ui/utils'
 import clsx from 'clsx'
+import { snakeToTitle } from '../../utils'
 
 export const createWrapperRule = (): WrapperRule => ({
     path: '$',
@@ -286,7 +288,7 @@ function RuleEdit({
                                 onClick={() => setRule({
                                     ...rule,
                                     children: [...rule.children ?? [], {
-                                        path: '',
+                                        path: '$.name',
                                         type: 'wrapper',
                                         group: 'event',
                                         value: '',
@@ -405,4 +407,34 @@ export default function RuleBuilder({ headerPrefix, rule, setRule }: RuleBuilder
             />
         </RuleEditContext.Provider>
     )
+}
+
+RuleBuilder.Field = function RuleBuilderField<X extends FieldValues, P extends FieldPath<X>>({
+    form,
+    name,
+    label,
+    required,
+    onChange,
+}: Partial<ControlledInputProps<Rule>> & FieldProps<X, P>) {
+
+    const { field } = useController({
+        control: form.control,
+        name,
+        rules: {
+            required,
+        },
+    })
+
+    return <>
+        <div className="rule-form-title">
+            <span>
+                {label ?? snakeToTitle(name)}
+                {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
+            </span>
+        </div>
+        <RuleBuilder rule={field.value} setRule={async (rule) => {
+            await field.onChange?.(rule)
+            onChange?.(rule)
+        }} />
+    </>
 }

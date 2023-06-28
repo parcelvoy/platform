@@ -17,6 +17,7 @@ export const pagedLists = async (params: PageParams, projectId: number) => {
         b => {
             b = b.where('project_id', projectId)
                 .whereNull('deleted_at')
+                .where('is_visible', true)
             params.tag?.length && b.whereIn('id', createTagSubquery(List, projectId, params.tag))
             return b
         },
@@ -96,9 +97,7 @@ export const createList = async (projectId: number, { tags, ...params }: ListCre
 
     const hasRules = (params.rule?.children?.length ?? 0) > 0
     if (list.type === 'dynamic' && hasRules) {
-        App.main.queue.enqueue(
-            ListPopulateJob.from(list.id, list.project_id),
-        )
+        await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
     return list
@@ -117,9 +116,7 @@ export const updateList = async (id: number, { tags, ...params }: Partial<List>)
     }
 
     if (params.rule && list.type === 'dynamic') {
-        App.main.queue.enqueue(
-            ListPopulateJob.from(list.id, list.project_id),
-        )
+        await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
     return list
@@ -207,6 +204,13 @@ export const populateList = async (list: List, rule: Rule) => {
         .where('list_id', list.id))
 
     await updateList(id, { state: 'ready' })
+}
+
+export const isUserInList = async (user_id: number, list_id: number) => {
+    return await UserList.exists(qb => qb
+        .where('user_id', user_id)
+        .where('list_id', list_id),
+    )
 }
 
 const getUsersListIds = async (user_id: number): Promise<number[]> => {

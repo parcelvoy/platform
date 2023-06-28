@@ -102,3 +102,11 @@
     font-weight: 500;
     width: 100%;
 }
+
+.rule-form-title {
+    margin: 10px 0 0;
+}
+
+.rule-form-title span {
+    font-weight: 500;
+}
