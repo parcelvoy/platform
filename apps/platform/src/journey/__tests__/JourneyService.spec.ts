@@ -1,4 +1,4 @@
-import List, { UserList } from '../../lists/List'
+import List from '../../lists/List'
 import Project from '../../projects/Project'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
