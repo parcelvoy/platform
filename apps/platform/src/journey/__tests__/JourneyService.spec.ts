@@ -42,13 +42,13 @@ describe('Run', () => {
                     value: 'test1@twochris.com',
                 },
             })
+
             const user = await User.insertAndFetch({
                 project_id: project.id,
                 external_id: '1',
                 email: 'test2@twochris.com', // won't match the gate condition
                 data: {},
             })
-            await UserList.insert({ user_id: user.id, list_id: list.id })
 
             // entrance -> gate -> (action1 | experiment -> (action2 | action3))
             const { steps } = await setJourneyStepMap(journey.id, {
