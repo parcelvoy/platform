@@ -15,7 +15,7 @@ exports.up = async function(knex) {
             name: crypto.randomUUID(),
             type: 'dynamic',
             state: 'ready',
-            rule: gate.rule,
+            rule: JSON.stringify(gate.rule),
             version: 0,
             is_visible: false,
             users_count: 0,
