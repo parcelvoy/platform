@@ -10,6 +10,7 @@ import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
+import { chunk } from '../utilities'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -169,34 +170,15 @@ export const populateList = async (list: List, rule: Rule) => {
     const version = oldVersion + 1
     await updateList(id, { state: 'loading', version })
 
-    type UserListChunk = { user_id: number, list_id: number, version: number }[]
-    const insertChunk = async (chunk: UserListChunk) => {
-        return await UserList.query()
-            .insert(chunk)
+    type UserListChunk = { user_id: number, list_id: number, version: number }
+    const query = ruleQuery(rule)
+    await chunk<UserListChunk>(query, 100, async (items) => {
+        if (items.length <= 0) return
+        await UserList.query()
+            .insert(items)
             .onConflict(['user_id', 'list_id'])
             .merge(['version'])
-    }
-
-    await ruleQuery(rule)
-        .where('users.project_id', list.project_id)
-        .stream(async function(stream) {
-
-            // Stream results and insert in chunks of 100
-            const chunkSize = 100
-            let chunk: UserListChunk = []
-            let i = 0
-            for await (const { id: user_id } of stream) {
-                chunk.push({ user_id, list_id: id, version })
-                i++
-                if (i % chunkSize === 0) {
-                    await insertChunk(chunk)
-                    chunk = []
-                }
-            }
-
-            // Insert remaining items
-            await insertChunk(chunk)
-        })
+    }, ({ id: user_id }: { id: number }) => ({ user_id, list_id: id, version }))
 
     // Once list is regenerated, drop any users from previous version
     await UserList.delete(qb => qb

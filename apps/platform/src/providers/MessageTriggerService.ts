@@ -2,6 +2,7 @@ import App from '../app'
 import Campaign, { CampaignSend } from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
 import { RateLimitResponse } from '../config/rateLimit'
+import { acquireLock } from '../config/scheduler'
 import Project from '../projects/Project'
 import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
@@ -34,7 +35,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 
     // If there is a send and it's in an aborted state or has already
     // sent, abort this job to prevent duplicate sends
-    if (send && (send.state === 'aborted' || send.state === 'sent' || send.state === 'locked')) return
+    if (send && (send.state === 'aborted' || send.state === 'sent')) return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)
@@ -88,7 +89,9 @@ export const prepareSend = async <T>(
         return false
     }
 
-    await updateSendState(campaign, user, 'locked')
+    // Create a lock for this process to make sure it doesn't run twice
+    const acquired = acquireLock({ key: `parcelvoy:send:${campaign.id}:${user.id}` })
+    if (!acquired) return false
 
     return true
 }

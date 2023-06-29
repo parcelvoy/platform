@@ -12,6 +12,7 @@ import { uuid } from './utilities'
 import Api from './api'
 import Worker from './worker'
 import ErrorHandler from './error/ErrorHandler'
+import { DefaultRedis, Redis } from './config/redis'
 
 export default class App {
     private static $main: App
@@ -62,6 +63,7 @@ export default class App {
     api?: Api
     worker?: Worker
     rateLimiter: RateLimiter
+    redis: Redis
     #registered: { [key: string | number]: unknown }
 
     constructor(
@@ -74,6 +76,7 @@ export default class App {
     ) {
         this.#registered = {}
         this.rateLimiter = loadRateLimit(env.redis)
+        this.redis = DefaultRedis(env.redis)
         this.unhandledErrorListener()
     }
 

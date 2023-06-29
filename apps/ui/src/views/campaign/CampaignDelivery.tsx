@@ -18,7 +18,6 @@ export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
         bounced: 'error',
         sent: 'success',
         failed: 'error',
-        locked: undefined,
     }
 
     return <Tag variant={variant[state]}>

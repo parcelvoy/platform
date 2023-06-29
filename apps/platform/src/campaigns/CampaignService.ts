@@ -8,12 +8,11 @@ import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, Campa
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
-import App from '../app'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
 import { getSubscription } from '../subscriptions/SubscriptionService'
-import { crossTimezoneCopy, pick } from '../utilities'
+import { chunk, crossTimezoneCopy, pick } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
@@ -181,7 +180,7 @@ interface SendCampaign {
     send_id?: number
 }
 
-export const sendCampaign = async ({ campaign, user, event, send_id }: SendCampaign): Promise<void> => {
+export const sendCampaignJob = ({ campaign, user, event, send_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
@@ -205,7 +204,12 @@ export const sendCampaign = async ({ campaign, user, event, send_id }: SendCampa
         webhook: WebhookJob.from(body),
     }
 
-    await App.main.queue.enqueue(channels[campaign.channel])
+    return channels[campaign.channel]
+}
+export const sendCampaign = async (data: SendCampaign): Promise<void> => {
+
+    const job = sendCampaignJob(data)
+    await job.queue()
 }
 
 export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState = 'sent') => {
@@ -221,7 +225,7 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
 
     // If no records were updated then try and create missing record
     if (records <= 0) {
-        await CampaignSend.query()
+        const records = await CampaignSend.query()
             .insert({
                 user_id: userId,
                 campaign_id: campaignId,
@@ -229,7 +233,10 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
             })
             .onConflict(['user_id', 'list_id'])
             .merge(['state'])
+        return Array.isArray(records) ? records[0] : records
     }
+
+    return records
 }
 
 export const generateSendList = async (campaign: SentCampaign) => {
@@ -239,50 +246,27 @@ export const generateSendList = async (campaign: SentCampaign) => {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
-    const insertChunk = async (chunk: CampaignSendParams[]) => {
+    const query = recipientQuery(campaign)
+    await chunk<CampaignSendParams>(query, 100, async (items) => {
         if (chunk.length <= 0) return
-        return await CampaignSend.query()
-            .insert(chunk)
+        await CampaignSend.query()
+            .insert(items)
             .onConflict(['user_id', 'list_id'])
             .merge(['state', 'send_at'])
-    }
+    }, ({ user_id, timezone }: { user_id: number, timezone: string }) => ({
+        user_id,
+        campaign_id: campaign.id,
+        state: 'pending',
+        send_at: campaign.send_in_user_timezone
+            ? crossTimezoneCopy(
+                campaign.send_at,
+                project.timezone,
+                timezone ?? project.timezone,
+            )
+            : campaign.send_at,
+    }))
 
-    // Stream results so that we aren't overwhelmed by millions
-    // of potential entries
-    let chunk: CampaignSendParams[] = []
-    await recipientQuery(campaign)
-        .stream(async function(stream) {
-
-            // Create records of the send in a pending state
-            // Once sent, each record will be updated accordingly
-            const chunkSize = 100
-            let i = 0
-            for await (const { user_id, timezone } of stream) {
-                chunk.push({
-                    user_id,
-                    campaign_id: campaign.id,
-                    state: 'pending',
-                    send_at: campaign.send_in_user_timezone
-                        ? crossTimezoneCopy(
-                            campaign.send_at,
-                            project.timezone,
-                            timezone ?? project.timezone,
-                        )
-                        : campaign.send_at,
-                })
-                i++
-                if (i % chunkSize === 0) {
-                    await insertChunk(chunk)
-                    chunk = []
-                }
-            }
-        })
-        .then(async function() {
-            // Insert remaining items
-            await insertChunk(chunk)
-
-            await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
-        })
+    await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
 
 export const campaignSendReadyQuery = (campaignId: number) => {

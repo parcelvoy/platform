@@ -8,6 +8,7 @@ import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
+import { acquireLock } from '../../config/scheduler'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -31,7 +32,8 @@ export default class PushJob extends Job {
             }
 
             // Lock the send record to prevent duplicate sends
-            await updateSendState(campaign, user, 'locked')
+            const acquired = await acquireLock({ key: `parcelvoy:send:${campaign.id}:${user.id}` })
+            if (!acquired) return false
 
             // Send the push and update the send record
             await channel.send(template, { user, event, context })
