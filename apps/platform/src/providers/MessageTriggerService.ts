@@ -88,7 +88,7 @@ export const prepareSend = async <T>(
         await updateSendState(campaign, user, 'throttled')
 
         // Schedule the resend for a jittered number of seconds later
-        const delay = 1000 * randomInt()
+        const delay = 1000 + randomInt(0, 5000)
         await requeueSend(raw, delay)
         return false
     }

@@ -26,11 +26,12 @@ export default class EmailJob extends Job {
         const channel = await loadEmailChannel(campaign.provider_id, project.id)
         if (!channel) {
             await updateSendState(campaign, user, 'failed')
+            App.main.error.notify(new Error('Unabled to send when there is no channel available.'))
             return
         }
 
         // Check current send rate and if the send is locked
-        const isReady = prepareSend(channel, data, raw)
+        const isReady = await prepareSend(channel, data, raw)
         if (!isReady) return
 
         try {
