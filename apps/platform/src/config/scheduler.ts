@@ -78,13 +78,13 @@ interface LockParams {
 
 export const acquireLock = async ({
     key,
-    owner = uuid(),
-    timeout = 300,
+    owner,
+    timeout = 60,
 }: LockParams) => {
     try {
         const result = await App.main.redis.set(
             `lock:${key}`,
-            owner,
+            owner ?? uuid(),
             'EX',
             timeout,
             'NX',
@@ -96,11 +96,18 @@ export const acquireLock = async ({
 
             // Since we know there already is a lock, lets see if
             // it is this instance that owns it
-            const value = await App.main.redis.get(`lock:${key}`)
-            return value === owner
+            if (owner) {
+                const value = await App.main.redis.get(`lock:${key}`)
+                return value === owner
+            }
+            return false
         }
         return true
     } catch {
         return false
     }
+}
+
+export const releaseLock = async (key: string) => {
+    await App.main.redis.del(`lock:${key}`)
 }

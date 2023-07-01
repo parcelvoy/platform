@@ -3,8 +3,9 @@ import { TextTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
+import { releaseLock } from '../../config/scheduler'
 
 export default class TextJob extends Job {
     static $name = 'text'
@@ -41,5 +42,7 @@ export default class TextJob extends Job {
             name: campaign.eventName('sent'),
             data: context,
         })
+
+        await releaseLock(messageLock(campaign, user))
     }
 }

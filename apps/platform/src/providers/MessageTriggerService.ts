@@ -10,6 +10,7 @@ import Template, { TemplateType } from '../render/Template'
 import { templateInUserLocale } from '../render/TemplateService'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
+import { randomInt } from '../utilities'
 import EmailChannel from './email/EmailChannel'
 import { MessageTrigger } from './MessageTrigger'
 import TextChannel from './text/TextChannel'
@@ -68,6 +69,8 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     return { campaign, template: template.map() as T, user, project, event, context }
 }
 
+export const messageLock = (campaign: Campaign, user: User) => `parcelvoy:send:${campaign.id}:${user.id}`
+
 export const prepareSend = async <T>(
     channel: EmailChannel | TextChannel,
     message: MessageTriggerHydrated<T>,
@@ -84,13 +87,14 @@ export const prepareSend = async <T>(
         // to the queue
         await updateSendState(campaign, user, 'throttled')
 
-        // Schedule the resend for after the throttle finishes
-        await requeueSend(raw, rateCheck.msRemaining)
+        // Schedule the resend for a jittered number of seconds later
+        const delay = 1000 * randomInt()
+        await requeueSend(raw, delay)
         return false
     }
 
     // Create a lock for this process to make sure it doesn't run twice
-    const acquired = acquireLock({ key: `parcelvoy:send:${campaign.id}:${user.id}` })
+    const acquired = await acquireLock({ key: messageLock(campaign, user) })
     if (!acquired) return false
 
     return true
@@ -111,5 +115,5 @@ export const throttleSend = async (channel: EmailChannel | TextChannel): Promise
 
 export const requeueSend = async (job: EncodedJob, delay: number): Promise<void> => {
     job.options.delay = delay
-    return App.main.queue.enqueue(job)
+    return await App.main.queue.enqueue(job)
 }

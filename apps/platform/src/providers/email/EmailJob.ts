@@ -2,11 +2,12 @@ import Job from '../../queue/Job'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadEmailChannel } from '.'
-import { loadSendJob, prepareSend } from '../MessageTriggerService'
+import { loadEmailChannel } from './index'
+import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
+import { releaseLock } from '../../config/scheduler'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -39,6 +40,7 @@ export default class EmailJob extends Job {
             // On error, mark as failed and notify just in case
             await updateSendState(campaign, user, 'failed')
             App.main.error.notify(error)
+            return
         }
 
         // Update send record
@@ -49,5 +51,7 @@ export default class EmailJob extends Job {
             name: campaign.eventName('sent'),
             data: context,
         })
+
+        await releaseLock(messageLock(campaign, user))
     }
 }
