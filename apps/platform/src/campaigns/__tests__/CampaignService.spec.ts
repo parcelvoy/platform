@@ -173,6 +173,7 @@ describe('CampaignService', () => {
             const list = await createList(params.project_id, {
                 name: uuid(),
                 type: 'static',
+                is_visible: true,
             })
             const campaign = await createTestCampaign(params, {
                 list_ids: [list.id],
@@ -201,10 +202,12 @@ describe('CampaignService', () => {
             const list = await createList(params.project_id, {
                 name: uuid(),
                 type: 'static',
+                is_visible: true,
             })
             const list2 = await createList(params.project_id, {
                 name: uuid(),
                 type: 'static',
+                is_visible: true,
             })
             const campaign = await createTestCampaign(params, {
                 list_ids: [list.id],

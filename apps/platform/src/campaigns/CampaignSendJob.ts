@@ -1,6 +1,8 @@
 import { Job } from '../queue'
-import { campaignSendReadyQuery, getCampaign, sendCampaign } from './CampaignService'
+import { campaignSendReadyQuery, getCampaign, sendCampaignJob } from './CampaignService'
 import { CampaignJobParams } from './Campaign'
+import { chunk } from '../utilities'
+import App from '../app'
 
 export default class CampaignSendJob extends Job {
     static $name = 'campaign_send_job'
@@ -13,11 +15,10 @@ export default class CampaignSendJob extends Job {
         const campaign = await getCampaign(id, project_id)
         if (!campaign) return
 
-        await campaignSendReadyQuery(campaign.id)
-            .stream(async function(stream) {
-                for await (const { user_id, send_id } of stream) {
-                    await sendCampaign({ campaign, user: user_id, send_id })
-                }
-            })
+        const query = campaignSendReadyQuery(campaign.id)
+        await chunk<{ user_id: number, send_id: number }>(query, 100, async (items) => {
+            const jobs = items.map(({ user_id, send_id }) => sendCampaignJob({ campaign, user: user_id, send_id }))
+            await App.main.queue.enqueueBatch(jobs)
+        })
     }
 }

@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import Hashids from 'hashids'
 import { differenceInSeconds } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
+import { Database } from '../config/database'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
@@ -172,4 +173,29 @@ export function shallowEqual(object1: any, object2: any) {
 
     if (keys1.length !== keys2.length) return false
     return keys1.every(key => object1[key] === object2[key])
+}
+
+type ChunkCallback<T> = (chunk: T[]) => Promise<void>
+
+export const chunk = async <T>(
+    query: Database.QueryBuilder,
+    size = 100,
+    callback: ChunkCallback<T>,
+    modifier: (result: any) => T = (result) => result,
+) => {
+    let chunk: T[] = []
+    await query.stream(async function(stream) {
+        let i = 0
+        for await (const result of stream) {
+            chunk.push(modifier(result))
+            i++
+            if (i % size === 0) {
+                await callback(chunk)
+                chunk = []
+            }
+        }
+    })
+        .then(async function() {
+            await callback(chunk)
+        })
 }

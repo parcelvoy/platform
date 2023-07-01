@@ -1,7 +1,9 @@
 import App from '../app'
 import Campaign, { CampaignSend } from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
+import { Channel } from '../config/channels'
 import { RateLimitResponse } from '../config/rateLimit'
+import { acquireLock } from '../config/scheduler'
 import Project from '../projects/Project'
 import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
@@ -9,9 +11,8 @@ import Template, { TemplateType } from '../render/Template'
 import { templateInUserLocale } from '../render/TemplateService'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import EmailChannel from './email/EmailChannel'
+import { randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
-import TextChannel from './text/TextChannel'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -34,7 +35,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 
     // If there is a send and it's in an aborted state or has already
     // sent, abort this job to prevent duplicate sends
-    if (send && (send.state === 'aborted' || send.state === 'sent' || send.state === 'locked')) return
+    if (send && (send.state === 'aborted' || send.state === 'sent')) return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)
@@ -67,8 +68,10 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     return { campaign, template: template.map() as T, user, project, event, context }
 }
 
+export const messageLock = (campaign: Campaign, user: User) => `parcelvoy:send:${campaign.id}:${user.id}`
+
 export const prepareSend = async <T>(
-    channel: EmailChannel | TextChannel,
+    channel: Channel,
     message: MessageTriggerHydrated<T>,
     raw: EncodedJob,
 ): Promise<boolean | undefined> => {
@@ -83,17 +86,20 @@ export const prepareSend = async <T>(
         // to the queue
         await updateSendState(campaign, user, 'throttled')
 
-        // Schedule the resend for after the throttle finishes
-        await requeueSend(raw, rateCheck.msRemaining)
+        // Schedule the resend for a jittered number of seconds later
+        const delay = 1000 + randomInt(0, 5000)
+        await requeueSend(raw, delay)
         return false
     }
 
-    await updateSendState(campaign, user, 'locked')
+    // Create a lock for this process to make sure it doesn't run twice
+    const acquired = await acquireLock({ key: messageLock(campaign, user) })
+    if (!acquired) return false
 
     return true
 }
 
-export const throttleSend = async (channel: EmailChannel | TextChannel): Promise<RateLimitResponse | undefined> => {
+export const throttleSend = async (channel: Channel): Promise<RateLimitResponse | undefined> => {
     const provider = channel.provider
 
     // If no rate limit, just break
@@ -108,5 +114,5 @@ export const throttleSend = async (channel: EmailChannel | TextChannel): Promise
 
 export const requeueSend = async (job: EncodedJob, delay: number): Promise<void> => {
     job.options.delay = delay
-    return App.main.queue.enqueue(job)
+    return await App.main.queue.enqueue(job)
 }
