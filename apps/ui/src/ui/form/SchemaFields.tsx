@@ -52,6 +52,7 @@ export default function SchemaFields({ title, description, parent, form, schema 
                         key={key}
                         form={form}
                         name={`${parent}.${key}`}
+                        type={item.type === 'number' ? 'number' : 'text'}
                         label={title}
                         subtitle={item.description}
                         required={required}
