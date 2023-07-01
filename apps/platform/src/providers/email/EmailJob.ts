@@ -25,7 +25,7 @@ export default class EmailJob extends Job {
         // Load email channel so its ready to send
         const channel = await loadEmailChannel(campaign.provider_id, project.id)
         if (!channel) {
-            await updateSendState(campaign, user, 'failed')
+            await updateSendState(campaign, user, 'aborted')
             App.main.error.notify(new Error('Unabled to send when there is no channel available.'))
             return
         }

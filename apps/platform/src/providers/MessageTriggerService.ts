@@ -1,6 +1,7 @@
 import App from '../app'
 import Campaign, { CampaignSend } from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
+import { Channel } from '../config/channels'
 import { RateLimitResponse } from '../config/rateLimit'
 import { acquireLock } from '../config/scheduler'
 import Project from '../projects/Project'
@@ -11,9 +12,7 @@ import { templateInUserLocale } from '../render/TemplateService'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import { randomInt } from '../utilities'
-import EmailChannel from './email/EmailChannel'
 import { MessageTrigger } from './MessageTrigger'
-import TextChannel from './text/TextChannel'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -72,7 +71,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 export const messageLock = (campaign: Campaign, user: User) => `parcelvoy:send:${campaign.id}:${user.id}`
 
 export const prepareSend = async <T>(
-    channel: EmailChannel | TextChannel,
+    channel: Channel,
     message: MessageTriggerHydrated<T>,
     raw: EncodedJob,
 ): Promise<boolean | undefined> => {
@@ -100,7 +99,7 @@ export const prepareSend = async <T>(
     return true
 }
 
-export const throttleSend = async (channel: EmailChannel | TextChannel): Promise<RateLimitResponse | undefined> => {
+export const throttleSend = async (channel: Channel): Promise<RateLimitResponse | undefined> => {
     const provider = channel.provider
 
     // If no rate limit, just break

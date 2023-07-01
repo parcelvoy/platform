@@ -1,14 +1,14 @@
-import { Job } from '../../queue'
+import { EncodedJob, Job } from '../../queue'
 import { PushTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob } from '../MessageTriggerService'
+import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
-import { acquireLock } from '../../config/scheduler'
+import { releaseLock } from '../../config/scheduler'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -17,7 +17,7 @@ export default class PushJob extends Job {
         return new this(data)
     }
 
-    static async handler(trigger: MessageTrigger) {
+    static async handler(trigger: MessageTrigger, raw: EncodedJob) {
         const data = await loadSendJob<PushTemplate>(trigger)
         if (!data) return
 
@@ -27,13 +27,13 @@ export default class PushJob extends Job {
             // Load email channel so its ready to send
             const channel = await loadPushChannel(campaign.provider_id, project.id)
             if (!channel) {
-                await updateSendState(campaign, user, 'failed')
+                await updateSendState(campaign, user, 'aborted')
                 return
             }
 
-            // Lock the send record to prevent duplicate sends
-            const acquired = await acquireLock({ key: `parcelvoy:send:${campaign.id}:${user.id}` })
-            if (!acquired) return false
+            // Check current send rate and if the send is locked
+            const isReady = await prepareSend(channel, data, raw)
+            if (!isReady) return
 
             // Send the push and update the send record
             await channel.send(template, { user, event, context })
@@ -44,6 +44,8 @@ export default class PushJob extends Job {
                 name: campaign.eventName('sent'),
                 data: context,
             })
+
+            await releaseLock(messageLock(campaign, user))
 
         } catch (error: any) {
             if (error instanceof PushError) {
