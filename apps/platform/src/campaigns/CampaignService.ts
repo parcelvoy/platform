@@ -191,12 +191,6 @@ export const sendCampaignJob = ({ campaign, user, event, send_id }: SendCampaign
         send_id,
     }
 
-    // TODO: Should filter out anyone who has already been through this
-    // campaign before
-
-    // TODO: Create a `campaign_send` record for users coming through
-    // this path
-
     const channels = {
         email: EmailJob.from(body),
         text: TextJob.from(body),
@@ -208,8 +202,7 @@ export const sendCampaignJob = ({ campaign, user, event, send_id }: SendCampaign
 }
 export const sendCampaign = async (data: SendCampaign): Promise<void> => {
 
-    const job = sendCampaignJob(data)
-    await job.queue()
+    await sendCampaignJob(data).queue()
 }
 
 export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState = 'sent') => {
