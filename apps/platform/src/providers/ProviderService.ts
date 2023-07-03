@@ -4,6 +4,7 @@ import { PageParams } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
 import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
+import App from '../app'
 
 export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
@@ -13,6 +14,11 @@ export const pagedProviders = async (params: PageParams, projectId: number) => {
     return await Provider.search(
         { ...params, fields: ['name', 'group'] },
         b => b.where('project_id', projectId),
+        App.main.db,
+        (item) => {
+            item.setup = item.loadSetup(App.main)
+            return item
+        },
     )
 }
 

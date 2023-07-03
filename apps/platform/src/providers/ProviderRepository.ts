@@ -17,6 +17,7 @@ export const loadProvider = async <T extends Provider>(id: number, mapper: Provi
 
     // Map to appropriate type, cache and return
     const mappedValue = mapper(record)
+    mappedValue.setup = mappedValue.loadSetup(app)
     cacheProvider(mappedValue)
     return mappedValue
 }

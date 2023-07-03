@@ -134,6 +134,7 @@ export default class Model {
         params: PageQueryParams<T>,
         query: Query = qb => qb,
         db: Database = App.main.db,
+        postProcessor: (item: InstanceType<T>) => InstanceType<T> = item => item,
     ): Promise<SearchResult<InstanceType<T>>> {
         const {
             cursor,
@@ -217,7 +218,7 @@ export default class Model {
 
         // Return the results, cursors (they flip based on direction) and limit
         return {
-            results: results.map((item: any) => this.fromJson(item)),
+            results: results.map((item: any) => postProcessor(this.fromJson(item))),
             nextCursor: page === 'next' ? endCursor : startCursor,
             prevCursor: page === 'next' ? startCursor : endCursor,
             limit,
