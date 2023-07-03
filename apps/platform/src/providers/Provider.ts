@@ -1,6 +1,7 @@
 import Router from '@koa/router'
 import Model, { ModelParams } from '../core/Model'
 import { JSONSchemaType } from '../core/validate'
+import type App from '../app'
 
 export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook' | 'analytics'
 export interface ProviderMeta {
@@ -51,9 +52,9 @@ export default class Provider extends Model {
     data!: Record<string, any>
     is_default!: boolean
     rate_limit!: number
+    setup!: ProviderSetupMeta[]
 
     static jsonAttributes = ['data']
-    static virtualAttributes = ['setup']
 
     static namespace = this.name
     static meta: Omit<ProviderMeta, 'channel' | 'type'> = {
@@ -79,7 +80,8 @@ export default class Provider extends Model {
         Object.assign(this, this.data)
     }
 
-    get setup(): ProviderSetupMeta[] { return [] }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    loadSetup(app: App): ProviderSetupMeta[] { return [] }
 
     static schema: any = ProviderSchema('providerParams', {
         type: 'object',

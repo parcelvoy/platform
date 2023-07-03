@@ -1,3 +1,4 @@
+import App from '../../app'
 import { encodeHashid } from '../../utilities'
 import { ExternalProviderParams, ProviderControllers, ProviderSchema, ProviderSetupMeta } from '../Provider'
 import { createController } from '../ProviderService'
@@ -48,11 +49,11 @@ export default class TwilioTextProvider extends TextProvider {
         return Buffer.from(`${this.account_sid}:${this.auth_token}`).toString('base64')
     }
 
-    get setup(): ProviderSetupMeta[] {
-        const root = process.env.API_BASE_URL
+    loadSetup(app: App): ProviderSetupMeta[] {
+        console.log('load setup')
         return [{
             name: 'Unsubscribe URL',
-            value: `${root}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
+            value: `${app.env.baseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
         }]
     }
 

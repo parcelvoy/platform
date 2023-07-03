@@ -10,6 +10,7 @@ import { getUserFromEmail } from '../../users/UserRepository'
 import { RequestError } from '../../core/errors'
 import { getCampaign } from '../../campaigns/CampaignService'
 import { trackMessageEvent } from '../../render/LinkService'
+import type App from '../../app'
 
 interface SESDataParams {
     config: AWSConfig
@@ -59,11 +60,10 @@ export default class SESEmailProvider extends EmailProvider {
         additionalProperties: false,
     })
 
-    get setup(): ProviderSetupMeta[] {
-        const root = process.env.API_BASE_URL
+    loadSetup(app: App): ProviderSetupMeta[] {
         return [{
             name: 'Feedback URL',
-            value: `${root}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
+            value: `${app.env.baseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
         }]
     }
 
