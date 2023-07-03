@@ -63,7 +63,7 @@ export default class SESEmailProvider extends EmailProvider {
     loadSetup(app: App): ProviderSetupMeta[] {
         return [{
             name: 'Feedback URL',
-            value: `${app.env.baseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
+            value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
         }]
     }
 
