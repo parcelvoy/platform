@@ -54,9 +54,70 @@ All user objects will at a minimum have a series of constant fields present (alt
 ## Helpers
 Alongside being able to access variables using Handlebars, you can also modify values using custom helpers. We've included a list of them below.
 
+### Equality
+#### Compare
+There is a general equality function `compare` which lets you check if two values match an operator. Available operators are `==`, `===`, `!=`, `!==`, `<`, `>`, `<=` and `>=`.
+```handlebars
+{{ compare "a" "==" "b" }}
+```
+
+#### Equals
+```handlebars
+{{ eq "a" "b" }}
+```
+
+#### Not Equals
+```handlebars
+{{ nq "a" "b" }}
+```
+
+#### Less Than
+```handlebars
+{{ lt "a" "b" }}
+```
+
+#### Greater Than
+```handlebars
+{{ gt "a" "b" }}
+```
+
+#### Less Than or Equal To
+```handlebars
+{{ lte "a" "b" }}
+```
+
+#### Greater Than or Equal To
+```handlebars
+{{ gte "a" "b" }}
+```
+
+#### Or
+The `or` function lets you group chunks of logic together by checking if any of the included chunks are true.
+```handlebars
+{{#if (or 
+        (eq section1 "foo")
+        (ne section2 "bar"))}}
+... content
+{{/if}}
+```
+
+#### And
+The `and` function lets you group chunks of logic together by checking if all of the included chunks are true.
+```handlebars
+{{#if (and 
+        (eq section1 "foo")
+        (ne section2 "bar"))}}
+... content
+{{/if}}
+```
+
 ### Strings
 #### Append
-Appends the specified `suffix` to the given `string`.
+Appends the given `string` with the specified `suffix`.
+```handlebars
+{{ prepend "The word that means come after is" "append" }} // = `The word that means come after is append`
+```
+
 #### Camelcase
 camelCase the characters in the given `string`.
 ```handlebars
@@ -244,12 +305,113 @@ Examples:
 ```
 
 ### Lists
+#### Wrap
+Takes a given value and if it's not a array (list), it wraps the value in an array to guarantee that the response will always be an array.
+```handlebars
+{{ wrap 10 }} // = `[10]`
+
+{{ wrap [10] }} // = `[10]`
+```
+
+#### First
+Returns the first item of a list.
+```handlebars
+{{ first [20, 10] }} // = `20`
+```
+
+#### Is Array
+Returns true if the value is an array (list).
+```handlebars
+{{ isArray [10] }} // = true
+```
+
+#### Item At
+Return the item from a list at the provided index. Note, the index starts at zero not one.
+```handlebars
+{{ itemAt [3, 9, 4, 20] 2 }} // = `4`
+```
+
+#### Join
+Join all elements of a list into a string, optionally using a given separator.
+```handlebars
+{{ join ["hello", "again"] }} // = `hello again`
+```
+
+#### Last
+Returns the last item of a list.
+```handlebars
+{{ last [20, 9, 11] }} // = `11`
+```
+
+#### Length
+Returns the number of items in the provided list.
+```handlebars
+{{ length [4, 9, 8, 11, 5] }} // = `5`
+```
+
+#### Reverse
+Reverse the elements in a list, or the characters in a string.
+```handlebars
+{{ reverse [11, 20, 5] }} // = `[5, 20, 11]`
+```
+
+#### Sort
+Sort the given list in the provided order.
+
+Format: `{{ sort array direction }}`
+Parameters:
+- `array`: The list of items to be sorted
+- `direction`: What direction to sort the array, accepted values are either `asc` for ascending or `desc` for descending.
+
+```handlebars
+{{ sort [10, 80, 4, 7] 'asc' }} // = `[4, 7, 10, 80]`
+```
+
 
 ### Dates
 #### Now
+Returns the current date time in the format and timezone provided.
+
+Format: `{{ now format timezone }}`
+Parameters:
+- `format`: The date format to use for the returned value. Defaults to `yyyy-MM-dd HH:mm:ss`
+- `timezone`: What timezone to use for the returned value. Defaults to `UTC`
+
+```handlebars
+{{ now }} // = `2023-07-04 12:22:32`
+
+{{ now 'MM/dd/yyyy' }} // = `07/04/2023`
+
+{{ now 'MM/yyyy' 'America/Chicago' }} // = `07/2023`
+```
+
 #### Format
+Takes a given date and formats it to the provided format and timezone.
+
+Format: `{{ dateFormat format timezone }}`
+Parameters:
+- `format`: The date format to use for the returned value. Defaults to `yyyy-MM-dd HH:mm:ss`
+- `timezone`: What timezone to use for the returned value. Defaults to `UTC`
+
+```handlebars
+{{ dateFormat 'MM/dd/yyyy' }} // = `07/04/2023`
+
+{{ dateFormat 'MM/yyyy' 'America/Chicago' }} // = `07/2023`
+```
+
 #### Addition
+Perform date math on a given date by adding some unit to the date.
+
+```handlebars
+{{ addDate "1970-01-15" 1 "months" }} // = `1970-02-15`
+```
+
 #### Subtraction
+Perform date math on a given date by subtracting some unit to the date.
+
+```handlebars
+{{ subDate "1974-01-23" 1 "months" }} // = `1973-12-23`
+```
 
 ### Urls
 #### Encode URI

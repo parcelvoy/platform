@@ -10,7 +10,7 @@ export const wrap = function(value: any): any[] {
 }
 
 /**
- * Returns the first `n` items of an array.
+ * Returns the first item of an array.
  */
 export const first = function(array: any[]): any {
     checkType(array, 'array')
