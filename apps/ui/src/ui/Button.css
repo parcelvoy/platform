@@ -18,7 +18,6 @@
     gap: 5px;
 }
 
-.ui-button .button-icon,
 .ui-button .button-icon svg {
     width: 16px;
     height: 16px;
@@ -26,6 +25,9 @@
 
 .ui-button .button-icon {
     margin-left: -2px;
+    height: 20px;
+    padding: 2px 0;
+    display: inline-block;
 }
 
 .ui-button.ui-button-no-children .button-icon {

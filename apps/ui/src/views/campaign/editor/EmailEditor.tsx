@@ -1,7 +1,7 @@
 import { SetStateAction, Suspense, lazy, useContext, useState } from 'react'
 import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../../contexts'
 import './EmailEditor.css'
-import Button from '../../../ui/Button'
+import Button, { LinkButton } from '../../../ui/Button'
 import api from '../../../api'
 import { Campaign, Template } from '../../../types'
 import { useNavigate } from 'react-router-dom'
@@ -10,6 +10,7 @@ import Modal from '../../../ui/Modal'
 import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
 import { toast } from 'react-hot-toast'
+import { QuestionIcon } from '../../../ui/icons'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
@@ -50,6 +51,12 @@ export default function EmailEditor() {
                     onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
                     actions={
                         <>
+                            <LinkButton
+                                icon={<QuestionIcon />}
+                                variant="secondary"
+                                size="small"
+                                to="https://docs.parcelvoy.com/how-to/campaigns/templates"
+                                target="_blank" />
                             <LocaleSelector campaignState={[campaign, campaignChange]} />
                             {template && (
                                 <Button

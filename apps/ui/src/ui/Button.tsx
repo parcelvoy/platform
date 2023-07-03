@@ -21,11 +21,12 @@ type ButtonProps = {
 
 type LinkButtonProps = {
     to: To
+    target?: string
 } & BaseButtonProps
 
 const LinkButton = forwardRef(function LinkButton(props: LinkButtonProps, ref: Ref<HTMLAnchorElement> | undefined) {
     return (
-        <Link to={props.to} className={
+        <Link to={props.to} target={props.target} className={
             `ui-button ${props.variant ?? 'primary'} ${props.size ?? 'regular'}`
         } ref={ref}>
             {props.icon && (<span className="button-icon">{props.icon}</span>)}

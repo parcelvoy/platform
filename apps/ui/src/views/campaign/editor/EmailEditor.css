@@ -2,8 +2,6 @@
     background: var(--color-background);
     position: absolute;
     display: flex;
-    flex-direction: column;
-    grid-template-rows: 60px auto;
     left: 0;
     right: 0;
     top: 0;
@@ -92,7 +90,7 @@
     min-height: 300px;
     position: relative;
     overflow: auto;
-    padding: 10px 20px 20px;
+    padding: 20px;
 }
 
 .source-editor {
