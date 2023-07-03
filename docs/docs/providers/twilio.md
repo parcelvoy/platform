@@ -25,13 +25,7 @@ To setup inbound SMS for Twilio, do the following:
 1. In Twilip, navigate to `Develop -> Phone Numbers -> Manage -> Active Numbers`.
 2. Pick the phone number you are using internally.
 3. Scroll down to the `Messaging` section.
-4. On the line item `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then the URL to the following:
-
-```
-https://yourdomain.com/api/unsubscribe/sms
-```
-
-Where `yourdomain.com` is replaced with whatever domain you are running Parcelvoy under.
+4. On the line item `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then copy the Unsubscribe URL from your provider into that field.
 5. Save the values.
 
 Inbound Twilio notifications are now configured and unsubscribe events will register as Parcelvoy user events.

@@ -88,8 +88,8 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
     }
     const projectId = template.project_id
 
-    const user = await getUserFromEmail(projectId, recipient)
-        ?? await getUserFromPhone(projectId, recipient)
+    const user = (await getUserFromEmail(projectId, recipient))
+        ?? (await getUserFromPhone(projectId, recipient))
         ?? User.fromJson({ ...variables.user, email: recipient, phone: recipient })
     user.data = { ...user?.data, ...variables.user }
     variables = { user, event, context }

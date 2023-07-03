@@ -53,7 +53,7 @@ export default class TwilioTextProvider extends TextProvider {
         console.log('load setup')
         return [{
             name: 'Unsubscribe URL',
-            value: `${app.env.baseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
+            value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
         }]
     }
 

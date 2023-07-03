@@ -30,6 +30,7 @@ export default class TextChannel {
 
         // Check to see if its the first users message, if so include
         // the opt out message
+        if (!variables.user.id) return compiled
         const hasReceivedOptOut = await UserEvent.exists(qb => qb.where({
             user_id: variables.user.id,
             name: 'text_sent',
