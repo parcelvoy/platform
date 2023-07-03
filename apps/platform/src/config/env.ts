@@ -14,6 +14,7 @@ export interface Env {
     queue: QueueConfig
     storage: StorageConfig
     baseUrl: string
+    apiBaseUrl: string
     port: number
     secret: string
     auth: AuthConfig
@@ -45,6 +46,7 @@ export default (type?: EnvType): Env => {
 
     const port = parseInt(process.env.PORT ?? '3000')
     const baseUrl = process.env.BASE_URL ?? `http://localhost:${port}`
+    const apiBaseUrl = process.env.API_BASE_URL ?? `${baseUrl}/api`
 
     return {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
@@ -92,6 +94,7 @@ export default (type?: EnvType): Env => {
             }),
         }),
         baseUrl,
+        apiBaseUrl,
         port,
         secret: process.env.APP_SECRET!,
         auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {

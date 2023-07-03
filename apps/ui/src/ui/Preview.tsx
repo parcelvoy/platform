@@ -3,12 +3,15 @@ import { format } from 'date-fns'
 import { Template } from '../types'
 import Iframe from './Iframe'
 import './Preview.css'
+import { useContext } from 'react'
+import { ProjectContext } from '../contexts'
 
 interface PreviewProps {
     template: Pick<Template, 'type' | 'data'>
 }
 
 export default function Preview({ template }: PreviewProps) {
+    const [project] = useContext(ProjectContext)
     const { data, type } = template
 
     const EmailFrame = () => <div className="email-frame">
@@ -26,7 +29,7 @@ export default function Preview({ template }: PreviewProps) {
             </div>
         </div>
         <span className="text-frame-context">Text Message<br/>Today { format(new Date(), 'p') }</span>
-        <div className="text-bubble">{data.text}<br />Msg & data rates may apply. Text &#39;STOP&#39; to quit.</div>
+        <div className="text-bubble">{data.text}<br />{project.text_opt_out_message}</div>
     </div>
 
     const PushFrame = () => <div className="push-frame phone-frame">
