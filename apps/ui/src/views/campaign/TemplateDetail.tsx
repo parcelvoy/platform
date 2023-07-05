@@ -67,6 +67,8 @@ const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
 const PushTable = ({ data }: { data: PushTemplateData }) => <InfoTable rows={{
     Title: data.title,
     Body: data.body,
+    Deeplink: data.url,
+    'Raw JSON': JSON.stringify(data.custom),
 }} />
 
 const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
@@ -81,13 +83,22 @@ const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
         label="Body"
         textarea
         required />
+    <TextInput.Field
+        form={form}
+        name="data.url"
+        label="Deeplink" />
+    <JsonField
+        form={form}
+        name="data.custom"
+        label="Raw JSON"
+        textarea />
 </>
 
 const WebhookTable = ({ data }: { data: WebhookTemplateData }) => <InfoTable rows={{
     Method: data.method,
     Endpoint: data.endpoint,
-    headers: JSON.stringify(data.headers),
-    body: JSON.stringify(data.body),
+    Headers: JSON.stringify(data.headers),
+    Body: JSON.stringify(data.body),
 }} />
 
 const WebhookForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>

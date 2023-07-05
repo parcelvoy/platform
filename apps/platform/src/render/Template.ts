@@ -163,6 +163,7 @@ export class PushTemplate extends Template {
     title!: string
     topic!: string
     body!: string
+    url!: string
     custom!: Record<string, any>
 
     parseJson(json: any) {
@@ -171,6 +172,7 @@ export class PushTemplate extends Template {
         this.title = json?.data.title
         this.topic = json?.data.topic
         this.body = json?.data.body
+        this.url = json?.data.url
         this.custom = json?.data.custom ?? {}
     }
 
@@ -184,7 +186,7 @@ export class PushTemplate extends Template {
             topic: this.topic,
             title: Render(this.title, variables),
             body: Render(this.body, variables),
-            custom,
+            custom: { ...custom, url: this.url },
         }
     }
 
@@ -196,6 +198,7 @@ export class PushTemplate extends Template {
                 title: { type: 'string' },
                 topic: { type: 'string' },
                 body: { type: 'string' },
+                url: { type: 'string', nullable: true },
             },
             additionalProperties: true,
             errorMessage: {
