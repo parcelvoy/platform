@@ -13,16 +13,8 @@ export default class WebhookChannel {
     }
 
     async send(options: WebhookTemplate, variables: Variables) {
-        const headers = Object.keys(options.headers).reduce((headers, key) => {
-            headers[key] = Render(options.headers[key], variables)
-            return headers
-        }, {} as Record<string, string>)
-
-        const body = Object.keys(options.body).reduce((body, key) => {
-            body[key] = Render(options.body[key], variables)
-            return body
-        }, {} as Record<string, any>)
-
+        const headers = this.compile(options.headers, variables)
+        const body = this.compile(options.body, variables)
         const endpoint = Render(options.endpoint, variables)
         const method = options.method
 
@@ -32,5 +24,13 @@ export default class WebhookChannel {
             headers,
             body,
         })
+    }
+
+    private compile(object: Record<string, string> | undefined, variables: Variables) {
+        if (!object) return {}
+        return Object.keys(object).reduce((body, key) => {
+            body[key] = Render(object[key], variables)
+            return body
+        }, {} as Record<string, any>)
     }
 }
