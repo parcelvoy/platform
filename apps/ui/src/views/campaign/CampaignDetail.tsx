@@ -44,7 +44,7 @@ export const createLocale = async ({ locale, data }: LocaleParams, campaign: Cam
         campaign_id: campaign.id,
         type: campaign.channel,
         locale,
-        data: { ...template?.data, ...data },
+        data: template?.data ? { ...template?.data, ...data } : undefined,
     })
 }
 
