@@ -35,7 +35,7 @@ export const compile = <Y>(rule: Rule, cast: (item: AnyJson) => Y): Y => {
     return cast(compiledValue)
 }
 
-export const whereQuery = <T extends AnyJson>({ builder, isJson, column, path, wrapper }: QueryRuleParams, operator: string, value: T): Database.QueryBuilder<any> => {
+export const whereQuery = <T extends AnyJson | Date>({ builder, isJson, column, path, wrapper }: QueryRuleParams, operator: string, value: T): Database.QueryBuilder<any> => {
 
     // Edge case since Knex doesn't support `IN` for JSON
     if (isJson && Array.isArray(value)) {
@@ -92,9 +92,11 @@ const reservedPaths = {
         'phone',
         'timezone',
         'locale',
+        'created_at',
     ],
     event: [
         'name',
+        'created_at',
     ],
 }
 

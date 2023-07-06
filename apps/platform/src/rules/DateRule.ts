@@ -64,7 +64,7 @@ export default {
 
         const ruleValue = compile(rule, item => {
             if (typeof item === 'string' || typeof item === 'number') {
-                return item
+                return new Date(item)
             }
             throw new RuleEvalException(rule, 'invalid value for date comparison')
         })
