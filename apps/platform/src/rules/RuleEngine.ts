@@ -64,10 +64,11 @@ export const check = (value: RuleCheckInput, rule: Rule | Rule[]) => {
     return ruleRegistry.get(rule.type).check(value, rule, ruleRegistry)
 }
 
-export const query = (rule: Rule) => {
+export const query = (rule: Rule, projectId: number) => {
     const builder = User.query()
         .select('users.id')
         .leftJoin('user_events', 'user_events.user_id', 'users.id')
+        .where('users.project_id', projectId)
         .groupBy('users.id')
     return ruleRegistry.get('wrapper')
         .query(builder, rule, 'and', ruleRegistry)

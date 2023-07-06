@@ -171,7 +171,7 @@ export const populateList = async (list: List, rule: Rule) => {
     await updateList(id, { state: 'loading', version })
 
     type UserListChunk = { user_id: number, list_id: number, version: number }
-    const query = ruleQuery(rule)
+    const query = ruleQuery(rule, list.project_id)
     await chunk<UserListChunk>(query, 100, async (items) => {
         if (items.length <= 0) return
         await UserList.query()

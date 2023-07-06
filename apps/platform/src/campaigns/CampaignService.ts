@@ -305,6 +305,7 @@ export const recipientQuery = (campaign: Campaign) => {
         // Find all users in provided lists, removing ones in exclusion list
         .whereIn('user_list.list_id', campaign.list_ids ?? [])
         .whereNull('ul2.list_id')
+        .where('users.project_id', campaign.project_id)
 
         // Filter out existing sends (handle aborts & reschedules)
         .whereNull('campaign_sends.id')
