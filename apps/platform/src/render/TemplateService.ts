@@ -35,6 +35,13 @@ export const getTemplate = async (id: number, projectId: number) => {
 }
 
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
+    const hasLocale = await Template.exists(
+        qb => qb.where('locale', params.locale)
+            .where('project_id', projectId)
+            .where('campaign_id', params.campaign_id),
+    )
+    if (hasLocale) throw new RequestError('A template with this locale already exists.')
+
     const template = await Template.insertAndFetch({
         ...params,
         data: params.data ?? {},
