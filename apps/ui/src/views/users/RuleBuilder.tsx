@@ -267,7 +267,7 @@ function RuleEdit({
                             children: [...rule.children ?? [], {
                                 path: '',
                                 type: 'string',
-                                group: 'user',
+                                group: rule.group,
                                 value: '',
                                 operator: '=',
                             }],
