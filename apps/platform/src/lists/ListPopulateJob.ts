@@ -1,4 +1,3 @@
-import App from '../app'
 import { Job } from '../queue'
 import { DynamicList } from './List'
 import { getList, populateList } from './ListService'
@@ -23,6 +22,6 @@ export default class ListPopulateJob extends Job {
 
         await populateList(list, list.rule)
 
-        App.main.queue.enqueue(ListStatsJob.from(listId, projectId))
+        await ListStatsJob.from(listId, projectId).queue()
     }
 }
