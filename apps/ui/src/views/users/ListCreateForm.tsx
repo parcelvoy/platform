@@ -24,9 +24,10 @@ export function ListCreateForm({ onCreated, isJourneyList = false }: ListCreateF
         <FormWrapper<ListCreateParams>
             onSubmit={
                 async list => {
+                    const rule = list.rule ?? createWrapperRule()
                     const created = await api.lists.create(project.id, {
                         ...list,
-                        rule: list.type === 'dynamic' ? createWrapperRule() : undefined,
+                        rule: list.type === 'dynamic' ? rule : undefined,
                         is_visible: true,
                     })
                     onCreated?.(created)
