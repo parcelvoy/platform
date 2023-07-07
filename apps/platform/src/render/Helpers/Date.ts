@@ -71,7 +71,7 @@ export const nextDate = function(date: Date | string, day: 'mo' | 'tu' | 'we' | 
  *
  * i.e. {{nextDate "1974-01-23" "fr" }}
  */
-export const dateDiff = function(date: Date | string, date2: Date | string, unit: DateUnit): number {
+export const dateDiff = function(date: Date | string, date2: Date | string, unit: DateUnit = 'days'): number {
     if (!isUnit(unit)) return 0
     switch (unit) {
     case 'years': return differenceInYears(baseDate(date), baseDate(date2))

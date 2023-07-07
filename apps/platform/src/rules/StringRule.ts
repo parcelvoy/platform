@@ -30,6 +30,10 @@ export default {
             return value !== ruleValue
         }
 
+        if (rule.operator === 'starts with') {
+            return value.startsWith(ruleValue)
+        }
+
         if (rule.operator === 'contains') {
             return value.includes(ruleValue)
         }
@@ -64,6 +68,10 @@ export default {
 
         if (rule.operator === 'contains') {
             return whereQuery(queryParams, 'LIKE', `%${ruleValue}%`)
+        }
+
+        if (rule.operator === 'starts with') {
+            return whereQuery(queryParams, 'LIKE', `${ruleValue}%`)
         }
 
         if (Array.isArray(rule.value)) {

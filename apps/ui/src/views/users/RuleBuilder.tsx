@@ -62,6 +62,7 @@ const operatorTypes: Record<RuleType, OperatorOption[]> = {
         ...baseOperators,
         { key: 'empty', label: 'is empty' },
         { key: 'contains', label: 'contains' },
+        { key: 'starts with', label: 'starts with' },
     ],
     number: [
         ...baseOperators,
