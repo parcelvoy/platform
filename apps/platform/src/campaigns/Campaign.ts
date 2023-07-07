@@ -61,6 +61,7 @@ export class CampaignSend extends Model {
     send_at!: string | Date
     opened_at!: string | Date
     clicks!: number
+    user_step_id?: number
 }
 
 export type CampaignSendParams = Pick<CampaignSend, 'campaign_id' | 'user_id' | 'state' | 'send_at'>

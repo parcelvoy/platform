@@ -23,7 +23,7 @@ interface MessageTriggerHydrated<T> {
     context: RenderContext
 }
 
-export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
+export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id, user_step_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
 
     const user = await User.find(user_id)
     const event = await UserEvent.find(event_id)
@@ -51,7 +51,12 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 
     // If campaign or template dont exist, log and abort
     if (!template || !campaign) {
-        await updateSendState(campaign, user, 'failed')
+        await updateSendState({
+            campaign,
+            user,
+            user_step_id,
+            state: 'failed',
+        })
         return
     }
 
@@ -63,6 +68,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         channel: campaign.channel,
         subscription_id: campaign.subscription_id,
         project,
+        user_step_id,
     }
 
     return { campaign, template: template.map() as T, user, project, event, context }
@@ -84,7 +90,12 @@ export const prepareSend = async <T>(
 
         // Mark state as throttled so it is not continuously added
         // to the queue
-        await updateSendState(campaign, user, 'throttled')
+        await updateSendState({
+            campaign,
+            user,
+            user_step_id: message.context.user_step_id,
+            state: 'throttled',
+        })
 
         // Schedule the resend for a jittered number of seconds later
         const delay = 1000 + randomInt(0, 5000)

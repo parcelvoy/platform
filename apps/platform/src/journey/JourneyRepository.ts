@@ -91,7 +91,7 @@ export const getJourneyStepChildren = async (stepId: number) => {
     )
 }
 
-const getAllJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
+export const getAllJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
     return await JourneyStepChild.all(
         q => q
             .whereIn('step_id', JourneyStep.query(db).select('id').where('journey_id', journeyId))

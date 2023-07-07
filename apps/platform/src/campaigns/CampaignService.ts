@@ -178,9 +178,10 @@ interface SendCampaign {
     user: User | number
     event?: UserEvent | number
     send_id?: number
+    user_step_id?: number
 }
 
-export const sendCampaignJob = ({ campaign, user, event, send_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
+export const sendCampaignJob = ({ campaign, user, event, send_id, user_step_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
@@ -189,6 +190,7 @@ export const sendCampaignJob = ({ campaign, user, event, send_id }: SendCampaign
         user_id: user instanceof User ? user.id : user,
         event_id: event instanceof UserEvent ? event?.id : event,
         send_id,
+        user_step_id,
     }
 
     const channels = {
@@ -205,14 +207,22 @@ export const sendCampaign = async (data: SendCampaign): Promise<void> => {
     await sendCampaignJob(data).queue()
 }
 
-export const updateSendState = async (campaign: Campaign | number, user: User | number, state: CampaignSendState = 'sent') => {
+interface UpdateSendStateParams {
+    campaign: Campaign | number
+    user: User | number
+    state?: CampaignSendState
+    user_step_id?: number
+}
+
+export const updateSendState = async ({ campaign, user, state = 'sent', user_step_id = 0 }: UpdateSendStateParams) => {
     const userId = user instanceof User ? user.id : user
     const campaignId = campaign instanceof Campaign ? campaign.id : campaign
 
     // Update send state
     const records = await CampaignSend.update(
         qb => qb.where('user_id', userId)
-            .where('campaign_id', campaignId),
+            .where('campaign_id', campaignId)
+            .where('user_step_id', user_step_id),
         { state },
     )
 
@@ -222,9 +232,10 @@ export const updateSendState = async (campaign: Campaign | number, user: User | 
             .insert({
                 user_id: userId,
                 campaign_id: campaignId,
+                user_step_id,
                 state,
             })
-            .onConflict(['user_id', 'list_id'])
+            .onConflict(['campaign_id', 'user_id', 'user_step_id'])
             .merge(['state'])
         return Array.isArray(records) ? records[0] : records
     }
@@ -372,8 +383,12 @@ export const updateCampaignProgress = async (
     await Campaign.update(qb => qb.where('id', id).where('project_id', projectId), { state, delivery })
 }
 
-export const getCampaignSend = async (campaignId: number, userId: number) => {
-    return CampaignSend.first(qb => qb.where('campaign_id', campaignId).where('user_id', userId))
+export const getCampaignSend = async (campaignId: number, userId: number, userStepId: number) => {
+    return CampaignSend.first(qb => qb
+        .where('campaign_id', campaignId)
+        .where('user_id', userId)
+        .where('user_step_id', userStepId),
+    )
 }
 
 export const updateCampaignSend = async (id: number, update: Partial<CampaignSend>) => {

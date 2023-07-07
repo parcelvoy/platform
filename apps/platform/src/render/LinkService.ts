@@ -35,6 +35,7 @@ export const paramsToEncodedLink = (params: TrackedLinkParts): string => {
 interface TrackedLinkExport {
     user?: User
     campaign?: Campaign
+    userStepId?: number
     redirect: string
 }
 
@@ -42,9 +43,10 @@ export const encodedLinkToParts = async (link: string | URL): Promise<TrackedLin
     const url = link instanceof URL ? link : new URL(link)
     const userId = decodeHashid(url.searchParams.get('u'))
     const campaignId = decodeHashid(url.searchParams.get('c'))
+    const userStepId = decodeHashid(url.searchParams.get('s'))
     const redirect = decodeURIComponent(url.searchParams.get('r') ?? '')
 
-    const parts: TrackedLinkExport = { redirect }
+    const parts: TrackedLinkExport = { redirect, userStepId }
 
     if (userId) {
         parts.user = await getUser(userId)
@@ -113,7 +115,7 @@ export const trackMessageEvent = async (
     action?: 'unsubscribe',
     context?: any,
 ) => {
-    const { user, campaign } = parts
+    const { user, campaign, userStepId } = parts
     if (!user || !campaign) return
 
     const eventJob = EventPostJob.from({
@@ -137,6 +139,7 @@ export const trackMessageEvent = async (
     const campaignJob = CampaignInteractJob.from({
         campaign_id: campaign.id,
         user_id: user.id,
+        user_step_id: userStepId ?? 0,
         subscription_id: campaign.subscription_id,
         type,
         action,

@@ -27,7 +27,12 @@ export default class PushJob extends Job {
             // Load email channel so its ready to send
             const channel = await loadPushChannel(campaign.provider_id, project.id)
             if (!channel) {
-                await updateSendState(campaign, user, 'aborted')
+                await updateSendState({
+                    campaign,
+                    user,
+                    user_step_id: trigger.user_step_id,
+                    state: 'aborted',
+                })
                 return
             }
 
@@ -37,7 +42,11 @@ export default class PushJob extends Job {
 
             // Send the push and update the send record
             await channel.send(template, { user, event, context })
-            await updateSendState(campaign, user)
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+            })
 
             // Create an event on the user about the push
             await createEvent(user, {
@@ -55,7 +64,12 @@ export default class PushJob extends Job {
                 await disableNotifications(user.id, error.invalidTokens)
 
                 // Update send record
-                await updateSendState(campaign, user, 'failed')
+                await updateSendState({
+                    campaign,
+                    user,
+                    user_step_id: trigger.user_step_id,
+                    state: 'failed',
+                })
 
                 // Create an event about the disabling
                 await createEvent(user, {

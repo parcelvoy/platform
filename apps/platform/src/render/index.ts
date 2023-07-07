@@ -16,6 +16,7 @@ export type RenderContext = {
     template_id: number
     campaign_id: number
     subscription_id: number
+    user_step_id?: number
 } & Record<string, unknown>
 
 export interface Variables {

@@ -3,4 +3,5 @@ export interface MessageTrigger {
     campaign_id: number
     user_id: number
     event_id?: number
+    user_step_id?: number
 }

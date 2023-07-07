@@ -3,6 +3,7 @@ import { getJourneyEntrance, getJourneyStep, getUserJourneyIds, lastJourneyStep 
 import { JourneyEntrance, JourneyStep, journeyStepTypes } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import List from '../lists/List'
+import { acquireLock, releaseLock } from '../config/scheduler'
 
 /**
  * Update all journeys that the user is currently in. Admittence to a
@@ -43,29 +44,46 @@ export default class JourneyService {
 
     async run(user: User, event?: UserEvent): Promise<void> {
 
-        const processed: number[] = []
+        const key = `parcelvoy:journey:${this.journeyId}:${user.id}`
 
-        // Loop through all possible next steps until we get an empty next
-        // which signifies that the journey is in a pending state
+        // avoid running multiple times in parallel
+        const locked = await acquireLock({ key })
+        if (!locked) {
+            return
+        }
 
-        let nextStep: JourneyStep | undefined | null = await this.nextStep(user)
-        while (nextStep) {
-            if (processed.includes(nextStep.id)) {
-                // Avoid infinite loop in single run
-                break
+        try {
+
+            const processed: number[] = []
+
+            // Loop through all possible next steps until we get an empty next
+            // which signifies that the journey is in a pending state
+
+            let nextStep: JourneyStep | undefined | null = await this.nextStep(user)
+            while (nextStep) {
+                if (processed.includes(nextStep.id)) {
+                    // Avoid infinite loop in single run
+                    break
+                }
+                processed.push(nextStep.id)
+                nextStep = this.parse(nextStep)
+
+                // If completed, jump to next otherwise validate condition
+                if (await nextStep.hasCompleted(user)) {
+                    nextStep = await nextStep.next(user)
+                } else if (await nextStep.condition(user, event)) {
+                    const proceed = await nextStep.complete(user, event)
+                    if (proceed) {
+                        nextStep = await nextStep.next(user)
+                    } else {
+                        nextStep = null
+                    }
+                } else {
+                    nextStep = null
+                }
             }
-            processed.push(nextStep.id)
-            nextStep = this.parse(nextStep)
-
-            // If completed, jump to next otherwise validate condition
-            if (await nextStep.hasCompleted(user)) {
-                nextStep = await nextStep.next(user)
-            } else if (await nextStep.condition(user, event)) {
-                await nextStep.complete(user, event)
-                nextStep = await nextStep.next(user)
-            } else {
-                nextStep = null
-            }
+        } finally {
+            await releaseLock(key)
         }
     }
 
