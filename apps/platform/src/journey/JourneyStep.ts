@@ -1,17 +1,17 @@
-import { add, isBefore, isFuture } from 'date-fns'
+import { add, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
 import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
 import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
-import { random, snakeCase, uuid } from '../utilities'
+import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
 import { Database } from '../config/database'
 import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
 import { getProject } from '../projects/ProjectService'
-import { getTimezoneOffset } from 'date-fns-tz'
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import { isUserInList } from '../lists/ListService'
 
 export class JourneyUserStep extends Model {
@@ -116,17 +116,21 @@ export class JourneyEntrance extends JourneyStep {
     }
 }
 
+type JourneyDelayFormat = 'duration' | 'time' | 'date'
 export class JourneyDelay extends JourneyStep {
     static type = 'delay'
 
+    format: JourneyDelayFormat = 'duration'
     minutes = 0
     hours = 0
     days = 0
     time?: string
+    date?: string
 
     parseJson(json: any) {
         super.parseJson(json)
 
+        this.format = json?.data?.format
         this.minutes = json?.data?.minutes
         this.hours = json?.data?.hours
         this.days = json?.data?.days
@@ -144,42 +148,55 @@ export class JourneyDelay extends JourneyStep {
             return false
         }
 
+        const timezone = await this.timezone(user)
+        const offset = await this.offset(userJourneyStep.created_at, timezone)
+
         // If event, check that it's in the past
-        if (isFuture(await this.offset(userJourneyStep.created_at, user))) return false
+        if (isFuture(offset)) return false
         return true
     }
 
-    private async offset(date: Date, user: User): Promise<Date> {
+    private async offset(baseDate: Date, timezone: string): Promise<Date> {
 
-        let nextDate = add(date, {
-            days: this.days,
-            hours: this.hours,
-            minutes: this.minutes,
-        })
+        const time = this.time?.trim()
+        const date = this.date?.trim()
 
-        const time = this.time?.trim() // hh:mm
-        if (time?.length === 5) {
-            const [hours, minutes] = time.split(':').map(s => parseInt(s, 10))
-            if (!isNaN(hours) && !isNaN(minutes)) {
-                let tz = user.timezone
-                if (!tz) {
-                    const project = await getProject(user.project_id)
-                    tz = project!.timezone
-                }
-                if (tz) {
-                    const offset = getTimezoneOffset(tz, nextDate)
-                    nextDate = add(nextDate, { hours: offset })
-                }
-                nextDate.setHours(hours)
-                nextDate.setMinutes(minutes)
-                // if resulting time is before the visit date, push out to next day same time
-                if (isBefore(nextDate, date)) {
-                    nextDate = add(nextDate, { days: 1 })
-                }
+        if (this.format === 'duration') {
+            return add(baseDate, {
+                days: this.days,
+                hours: this.hours,
+                minutes: this.minutes,
+            })
+        } else if (this.format === 'time' && time) {
+            const localDate = utcToZonedTime(baseDate, timezone)
+            const parsedDate = parse(time, 'HH:mm', baseDate)
+            localDate.setMinutes(parsedDate.getMinutes())
+            localDate.setHours(parsedDate.getHours())
+            localDate.setSeconds(0)
+
+            const nextDate = zonedTimeToUtc(localDate, timezone)
+
+            // In case things are delayed, allow for up to 30 minutes
+            // to pass before moving event to next day
+            const dateWithOffset = add(nextDate, { minutes: 30 })
+            if (isPast(dateWithOffset)) {
+                return add(nextDate, { days: 1 })
             }
+            return nextDate
+        } else if (this.format === 'date' && date) {
+            const localDate = crossTimezoneCopy(new Date(date), 'UTC', timezone)
+            if (localDate < baseDate) return baseDate
+            return localDate
         }
 
-        return nextDate
+        return baseDate
+    }
+
+    private async timezone(user: User) {
+        const tz = user.timezone
+        if (tz) return tz
+        const project = await getProject(user.project_id)
+        return project!.timezone
     }
 }
 

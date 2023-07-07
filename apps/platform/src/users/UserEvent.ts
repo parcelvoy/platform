@@ -16,6 +16,7 @@ export class UserEvent extends Model {
         return {
             ...this.data,
             name: this.name,
+            created_at: this.created_at,
         }
     }
 }

@@ -1,13 +1,16 @@
 import { JourneyStepType } from '../../../types'
+import OptionField from '../../../ui/form/OptionField'
 import TextInput from '../../../ui/form/TextInput'
 import { DelayStepIcon } from '../../../ui/icons'
 import { snakeToTitle } from '../../../utils'
 
 interface DelayStepConfig {
+    format: 'duration' | 'time' | 'date'
     minutes: number
     hours: number
     days: number
     time?: string
+    date?: string
 }
 
 export const delayStep: JourneyStepType<DelayStepConfig> = {
@@ -19,6 +22,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
         minutes: 0,
         hours: 0,
         days: 0,
+        format: 'duration',
     }),
     Edit({
         onChange,
@@ -26,8 +30,15 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
     }) {
         return (
             <>
-                {
-                    ['days', 'hours', 'minutes'].map(name => (
+                <OptionField name="type" label="Type" options={[
+                    { key: 'duration', label: 'For a Duration' },
+                    { key: 'time', label: 'Until Time' },
+                    { key: 'date', label: 'Until Date' },
+                ]}
+                value={value.format}
+                onChange={format => onChange({ ...value, format }) } />
+                { value.format === 'duration'
+                    && ['days', 'hours', 'minutes'].map(name => (
                         <TextInput
                             key={name}
                             name={name}
@@ -40,14 +51,29 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                         />
                     ))
                 }
-                <TextInput
-                    name="time"
-                    label="Time"
-                    type="time"
-                    size="small"
-                    value={value.time ?? ''}
-                    onChange={time => onChange({ ...value, time })}
-                />
+                { value.format === 'time'
+                    && <TextInput
+                        name="time"
+                        label="Time"
+                        type="time"
+                        subtitle="Delay until the specified time in the users timezone."
+                        size="small"
+                        value={value.time ?? ''}
+                        onChange={time => onChange({ ...value, time })}
+                    />
+                }
+                { value.format === 'date'
+                    && <TextInput
+                        name="date"
+                        label="Date"
+                        type="text"
+                        subtitle="Delay until the specified date in the users timezone."
+                        size="small"
+                        placeholder="YYYY-MM-DD"
+                        value={value.date ?? ''}
+                        onChange={date => onChange({ ...value, date })}
+                    />
+                }
             </>
         )
     },
