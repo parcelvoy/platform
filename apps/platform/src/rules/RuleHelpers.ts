@@ -85,7 +85,7 @@ interface QueryRuleParams {
     wrapper: 'and' | 'or'
 }
 
-const reservedPaths = {
+export const reservedPaths = {
     user: [
         'external_id',
         'email',
