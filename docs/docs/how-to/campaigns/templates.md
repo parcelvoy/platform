@@ -380,9 +380,9 @@ Parameters:
 ```handlebars
 {{ now }} // = `2023-07-04 12:22:32`
 
-{{ now 'MM/dd/yyyy' }} // = `07/04/2023`
+{{ now "MM/dd/yyyy" }} // = `07/04/2023`
 
-{{ now 'MM/yyyy' 'America/Chicago' }} // = `07/2023`
+{{ now "MM/yyyy" "America/Chicago" }} // = `07/2023`
 ```
 
 #### Format
@@ -394,9 +394,24 @@ Parameters:
 - `timezone`: What timezone to use for the returned value. Defaults to `UTC`
 
 ```handlebars
-{{ dateFormat 'MM/dd/yyyy' }} // = `07/04/2023`
+{{ dateFormat "MM/dd/yyyy" }} // = `07/04/2023`
 
-{{ dateFormat 'MM/yyyy' 'America/Chicago' }} // = `07/2023`
+{{ dateFormat "MM/yyyy" "America/Chicago" }} // = `07/2023`
+```
+
+#### Set
+Set a given component of a date to a provided value.
+
+Format: `{{ setDate date unit value }}`
+Parameters:
+- `date`: The date you are wanting to manipulate.
+- `unit`: The component unit of a date (`years`, `months`, `days`, `hours`, `minutes`).
+- `value`: How many of the given unit as a number.
+
+```handlebars
+{{ setDate "2023-07-05 12:00:00" "days" 1 }} // `2023-07-01 12:00:00`
+
+{{ setDate "now" "years" 2022 }}
 ```
 
 #### Addition
@@ -411,6 +426,31 @@ Perform date math on a given date by subtracting some unit to the date.
 
 ```handlebars
 {{ subDate "1974-01-23" 1 "months" }} // = `1973-12-23`
+```
+
+#### Next Date
+Get the date of the next occurance of a given day of week from a provided date.
+
+Format: `{{ nextDate date day }}`
+Parameters:
+- `date`: The date to use as the starting point.
+- `day`: The two letter abbreviation of the day of the week to seek (`mo`, `tu`, `we`, `th`, `fr`, `sa`, `su`).
+
+```handlebars
+{{ nextDate "now" "mo" }} // Returns the next monday
+```
+
+#### Date Difference
+Get the distance between two days in the provided unit.
+
+Format: `{{ dateDiff date date2 unit }}`
+Parameters:
+- `date`: The later date
+- `date2`: The earlier date
+- `unit`: What unit to get the difference in (ie `hours`, `minutes`)
+
+```handlebars
+{{ dateDiff "2023-06-05 12:00:00" "2023-06-01 12:00:00" "days" }} // = `1`
 ```
 
 ### Urls
