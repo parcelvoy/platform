@@ -5,6 +5,7 @@ import { UserEvent } from '../../users/UserEvent'
 import { addLeafPaths, syncUserDataPaths } from '../UserSchemaService'
 import { sleep } from '../../utilities'
 import { startOfSecond } from 'date-fns'
+import { reservedPaths } from '../../rules/RuleHelpers'
 
 describe('UserSchemaService', () => {
     describe('path extraction', () => {
@@ -179,7 +180,8 @@ describe('UserSchemaService', () => {
 
             const paths = await ProjectRulePath.all(q => q.where('project_id', project_id))
 
-            expect(paths.length).toEqual(1) // only '$.f'
+            const count = reservedPaths.user.length + 1
+            expect(paths.length).toEqual(count) // only '$.f'
 
         })
     })

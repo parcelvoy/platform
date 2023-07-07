@@ -2,6 +2,7 @@ import { User } from '../users/User'
 import App from '../app'
 import { ProjectRulePath } from '../rules/ProjectRulePath'
 import { UserEvent } from '../users/UserEvent'
+import { reservedPaths } from '../rules/RuleHelpers'
 
 export async function listUserPaths(project_id: number) {
     const paths: Array<{ path: string }> = await ProjectRulePath.query()
@@ -73,6 +74,9 @@ export async function syncUserDataPaths({
                 addLeafPaths(userPaths, data)
             }
         })
+        for (const path of reservedPaths.user) {
+            userPaths.add(`$.${path}`)
+        }
 
         const eventQuery = UserEvent.query(trx)
             .where('project_id', project_id)
@@ -80,6 +84,7 @@ export async function syncUserDataPaths({
         if (updatedAfter) {
             eventQuery.where('updated_at', '>=', updatedAfter)
         }
+
         await eventQuery.stream(async function(stream) {
             for await (const { name, data } of stream) {
                 let set = eventPaths.get(name)
@@ -87,6 +92,9 @@ export async function syncUserDataPaths({
                     eventPaths.set(name, set = new Set())
                 }
                 addLeafPaths(set, data)
+                for (const path of reservedPaths.event) {
+                    set.add(`$.${path}`)
+                }
             }
         })
 
