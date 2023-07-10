@@ -3,7 +3,7 @@ import Model from '../core/Model'
 import { User } from '../users/User'
 import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
 import { UserEvent } from '../users/UserEvent'
-import { getCampaign, sendCampaign } from '../campaigns/CampaignService'
+import { getCampaign, getCampaignSend, sendCampaign } from '../campaigns/CampaignService'
 import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
@@ -56,7 +56,7 @@ export class JourneyStep extends Model {
     static get type() { return snakeCase(this.name) }
 
     async step(user: User, type: string) {
-        await JourneyUserStep.insert({
+        return await JourneyUserStep.insert({
             type,
             user_id: user.id,
             journey_id: this.journey_id,
@@ -67,6 +67,7 @@ export class JourneyStep extends Model {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async complete(user: User, event?: UserEvent) {
         await this.step(user, 'completed')
+        return true
     }
 
     async hasCompleted(user: User): Promise<boolean> {
@@ -214,10 +215,33 @@ export class JourneyAction extends JourneyStep {
         const campaign = await getCampaign(this.campaign_id, user.project_id)
 
         if (campaign) {
-            await sendCampaign({ campaign, user, event })
+
+            // check if we have already recorded this action
+            const wait = await getUserJourneyStep(user.id, this.id, 'action')
+
+            if (wait) {
+                const send = await getCampaignSend(campaign.id, user.id, wait.id)
+                if (send?.state === 'sent') {
+                    // carry on, this was recorded as sent
+                    return await super.complete(user, event)
+                }
+                // not sent yet, don't continue
+                return false
+            } else {
+                // not triggered yet, mark that we've visited this step
+                // and pass a reference to this campaign
+                const user_step_id = await this.step(user, 'action')
+                await sendCampaign({
+                    campaign,
+                    user,
+                    event,
+                    user_step_id,
+                })
+                return false
+            }
         }
 
-        await super.complete(user, event)
+        return await super.complete(user, event)
     }
 }
 
@@ -285,7 +309,7 @@ export class JourneyLink extends JourneyStep {
         this.target_id = json.data?.journey_id
     }
 
-    async complete(user: User, event?: UserEvent | undefined): Promise<void> {
+    async complete(user: User, event?: UserEvent | undefined) {
 
         if (!isNaN(this.journey_id)) {
             await App.main.queue.enqueue(JourneyProcessJob.from({
@@ -309,7 +333,7 @@ export class JourneyUpdate extends JourneyStep {
         this.template = json.data?.template
     }
 
-    async complete(user: User, event?: UserEvent | undefined): Promise<void> {
+    async complete(user: User, event?: UserEvent | undefined) {
 
         if (this.template.trim()) {
             let value: any
@@ -318,20 +342,21 @@ export class JourneyUpdate extends JourneyStep {
                     user: user.flatten(),
                     event: event?.flatten(),
                 }))
+                if (typeof value === 'object') {
+                    user.data = {
+                        ...user.data,
+                        ...value,
+                    }
+                    await User.update(q => q.where('id', user.id), {
+                        data: user.data,
+                    })
+                }
             } catch (err: any) {
                 logger.warn({
                     error: err.message,
                 }, 'Error while updating user')
-                return
-            }
-            if (typeof value === 'object') {
-                user.data = {
-                    ...user.data,
-                    ...value,
-                }
-                await User.update(q => q.where('id', user.id), {
-                    data: user.data,
-                })
+                this.step(user, 'error')
+                return false
             }
         }
 

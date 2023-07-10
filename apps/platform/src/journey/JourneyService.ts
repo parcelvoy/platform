@@ -61,8 +61,12 @@ export default class JourneyService {
             if (await nextStep.hasCompleted(user)) {
                 nextStep = await nextStep.next(user)
             } else if (await nextStep.condition(user, event)) {
-                await nextStep.complete(user, event)
-                nextStep = await nextStep.next(user)
+                const proceed = await nextStep.complete(user, event)
+                if (proceed) {
+                    nextStep = await nextStep.next(user)
+                } else {
+                    nextStep = null
+                }
             } else {
                 nextStep = null
             }

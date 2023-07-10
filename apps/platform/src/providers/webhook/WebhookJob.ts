@@ -23,7 +23,12 @@ export default class WebhookJob extends Job {
         // Send and render webhook
         const channel = await loadWebhookChannel(campaign.provider_id, project.id)
         if (!channel) {
-            await updateSendState(campaign, user, 'aborted')
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+                state: 'aborted',
+            })
             return
         }
 
@@ -34,7 +39,11 @@ export default class WebhookJob extends Job {
         await channel.send(template, { user, event, context })
 
         // Update send record
-        await updateSendState(campaign, user)
+        await updateSendState({
+            campaign,
+            user,
+            user_step_id: trigger.user_step_id,
+        })
 
         // Create an event on the user about the email
         await createEvent(user, {

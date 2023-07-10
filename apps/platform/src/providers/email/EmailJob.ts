@@ -25,7 +25,12 @@ export default class EmailJob extends Job {
         // Load email channel so its ready to send
         const channel = await loadEmailChannel(campaign.provider_id, project.id)
         if (!channel) {
-            await updateSendState(campaign, user, 'aborted')
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+                state: 'aborted',
+            })
             App.main.error.notify(new Error('Unabled to send when there is no channel available.'))
             return
         }
@@ -39,13 +44,22 @@ export default class EmailJob extends Job {
         } catch (error: any) {
 
             // On error, mark as failed and notify just in case
-            await updateSendState(campaign, user, 'failed')
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+                state: 'failed',
+            })
             App.main.error.notify(error)
             return
         }
 
         // Update send record
-        await updateSendState(campaign, user)
+        await updateSendState({
+            campaign,
+            user,
+            user_step_id: trigger.user_step_id,
+        })
 
         // Create an event on the user about the email
         await createEvent(user, {

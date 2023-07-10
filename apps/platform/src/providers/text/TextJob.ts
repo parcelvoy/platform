@@ -25,7 +25,12 @@ export default class TextJob extends Job {
         // Send and render text
         const channel = await loadTextChannel(campaign.provider_id, project.id)
         if (!channel) {
-            await updateSendState(campaign, user, 'aborted')
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+                state: 'aborted',
+            })
             App.main.error.notify(new Error('Unabled to send when there is no channel available.'))
             return
         }
@@ -37,7 +42,11 @@ export default class TextJob extends Job {
         await channel.send(template, { user, event, context })
 
         // Update send record
-        await updateSendState(campaign, user)
+        await updateSendState({
+            campaign,
+            user,
+            user_step_id: trigger.user_step_id,
+        })
 
         // Create an event on the user about the text
         await createEvent(user, {

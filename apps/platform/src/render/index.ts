@@ -16,6 +16,7 @@ export type RenderContext = {
     template_id: number
     campaign_id: number
     subscription_id: number
+    user_step_id?: number
 } & Record<string, unknown>
 
 export interface Variables {
@@ -54,7 +55,11 @@ interface WrapParams {
     variables: Variables
 }
 export const Wrap = ({ html, preheader, variables: { user, context } }: WrapParams) => {
-    const trackingParams = { userId: user.id, campaignId: context.campaign_id }
+    const trackingParams = {
+        userId: user.id,
+        campaignId: context.campaign_id,
+        userStepId: context.user_step_id,
+    }
 
     // Check if link wrapping is enabled first
     if (App.main.env.tracking.linkWrap) {
@@ -75,6 +80,7 @@ export default (template: string, { user, event, context }: Variables) => {
         unsubscribeEmailUrl: unsubscribeEmailLink({
             userId: user.id,
             campaignId: context?.campaign_id,
+            userStepId: context.user_step_id,
         }),
         preferencesUrl: preferencesLink(user.id),
     })
