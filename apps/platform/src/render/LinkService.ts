@@ -11,6 +11,7 @@ import { combineURLs, decodeHashid, encodeHashid } from '../utilities'
 export interface TrackedLinkParams {
     userId: number
     campaignId: number
+    userStepId?: number
 }
 
 interface TrackedLinkParts extends TrackedLinkParams {
@@ -26,6 +27,9 @@ export const paramsToEncodedLink = (params: TrackedLinkParts): string => {
     const url = new URL(baseUrl)
     url.searchParams.set('u', hashUserId)
     url.searchParams.set('c', hashCampaignId)
+    if (params.userStepId) {
+        url.searchParams.set('s', encodeHashid(params.userStepId))
+    }
     if (params.redirect) {
         url.searchParams.set('r', encodeURIComponent(params.redirect))
     }
