@@ -557,6 +557,8 @@ export default function JourneyEditor() {
                         onDrop={onDrop}
                         panOnScroll
                         selectNodesOnDrag
+                        fitView
+                        maxZoom={1.5}
                     >
                         <Background className="internal-canvas" />
                         <Controls />
