@@ -46,7 +46,10 @@ export const allCampaigns = async (projectId: number): Promise<Campaign[]> => {
 }
 
 export const getCampaign = async (id: number, projectId: number): Promise<Campaign | undefined> => {
-    const campaign = await Campaign.find(id, qb => qb.where('project_id', projectId))
+    const campaign = await Campaign.find(id,
+        qb => qb.where('project_id', projectId)
+            .whereNull('deleted_at'),
+    )
 
     if (campaign) {
         campaign.templates = await allTemplates(projectId, campaign.id)
@@ -252,7 +255,6 @@ export const generateSendList = async (campaign: SentCampaign) => {
 
     const query = recipientQuery(campaign)
     await chunk<CampaignSendParams>(query, 100, async (items) => {
-        if (chunk.length <= 0) return
         await CampaignSend.query()
             .insert(items)
             .onConflict(['user_id', 'list_id'])

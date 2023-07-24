@@ -189,13 +189,13 @@ export const chunk = async <T>(
         for await (const result of stream) {
             chunk.push(modifier(result))
             i++
-            if (i % size === 0) {
+            if (i % size === 0 && chunk.length > 0) {
                 await callback(chunk)
                 chunk = []
             }
         }
     })
         .then(async function() {
-            await callback(chunk)
+            if (chunk.length > 0) await callback(chunk)
         })
 }

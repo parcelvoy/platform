@@ -11,6 +11,7 @@ export default class CampaignGenerateListJob extends Job {
 
     static async handler({ id, project_id }: CampaignJobParams) {
         const campaign = await getCampaign(id, project_id) as SentCampaign
+        if (campaign.state === 'aborted' || campaign.state === 'draft') return
         await generateSendList(campaign)
     }
 }
