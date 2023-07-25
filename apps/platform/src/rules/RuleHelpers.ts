@@ -67,13 +67,17 @@ export const whereQuery = <T extends AnyJson | Date>({ builder, isJson, column, 
 
 export const whereQueryNullable = ({ builder, isJson, column, path, wrapper }: QueryRuleParams, isNull: boolean): Database.QueryBuilder<any> => {
     if (wrapper === 'or') {
-        isJson
+        return isJson
             ? builder.orWhereJsonPath(column, path, isNull ? '=' : '!=', null)
-            : builder.orWhere(column, isNull ? 'IS NULL' : 'IS NOT NULL')
+            : isNull
+                ? builder.orWhereNull(column)
+                : builder.orWhereNotNull(column)
     }
     return isJson
         ? builder.whereJsonPath(column, path, isNull ? '=' : '!=', null)
-        : builder.where(column, isNull ? 'IS NULL' : 'IS NOT NULL')
+        : isNull
+            ? builder.whereNull(column)
+            : builder.whereNotNull(column)
 }
 
 interface QueryRuleParams {

@@ -120,8 +120,8 @@ function RuleEdit({
     } = usePopperSelectDropdown()
 
     const { suggestions } = useContext(RuleEditContext)
-
     const { path } = rule
+    const hasValue = rule?.operator && !['is set', 'is not set', 'empty'].includes(rule?.operator)
 
     const pathSuggestions = useMemo<string[]>(() => {
 
@@ -374,7 +374,7 @@ function RuleEdit({
                     size="small"
                     toValue={x => x.key}
                 />
-                <TextInput
+                { hasValue && <TextInput
                     size="small"
                     type="text"
                     name="value"
@@ -382,7 +382,7 @@ function RuleEdit({
                     hideLabel={true}
                     value={rule?.value?.toString()}
                     onChange={value => setRule({ ...rule, value })}
-                />
+                />}
                 {controls}
             </ButtonGroup>
         </div>
