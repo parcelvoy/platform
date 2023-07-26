@@ -4,6 +4,8 @@ import { TextProvider } from './TextProvider'
 import { InboundTextMessage } from './TextMessage'
 import { UserEvent } from '../../users/UserEvent'
 
+const TEXT_SEGMENT_LENGTH = 160
+
 export default class TextChannel {
     readonly provider: TextProvider
     constructor(provider?: TextProvider) {
@@ -40,6 +42,11 @@ export default class TextChannel {
         }
 
         return compiled
+    }
+
+    async segments(template: TextTemplate, variables: Variables): Promise<number> {
+        const { text } = await this.build(template, variables)
+        return Math.ceil(text.length / TEXT_SEGMENT_LENGTH)
     }
 
     parseInbound(body: any): InboundTextMessage {

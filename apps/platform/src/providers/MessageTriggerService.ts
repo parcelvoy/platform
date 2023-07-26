@@ -80,12 +80,13 @@ export const prepareSend = async <T>(
     channel: Channel,
     message: MessageTriggerHydrated<T>,
     raw: EncodedJob,
+    rateLimitPoints = 1,
 ): Promise<boolean | undefined> => {
     const { campaign, user } = message
 
     // Check current send rate, if exceeded then requeue job
     // at a time in the future
-    const rateCheck = await throttleSend(channel)
+    const rateCheck = await throttleSend(channel, rateLimitPoints)
     if (rateCheck?.exceeded) {
 
         // Mark state as throttled so it is not continuously added
@@ -110,7 +111,7 @@ export const prepareSend = async <T>(
     return true
 }
 
-export const throttleSend = async (channel: Channel): Promise<RateLimitResponse | undefined> => {
+export const throttleSend = async (channel: Channel, points = 1): Promise<RateLimitResponse | undefined> => {
     const provider = channel.provider
 
     // If no rate limit, just break
@@ -119,7 +120,10 @@ export const throttleSend = async (channel: Channel): Promise<RateLimitResponse 
     // Otherwise consume points and check rate
     return await App.main.rateLimiter.consume(
         `ratelimit-${provider.id}`,
-        provider.rate_limit,
+        {
+            limit: provider.rate_limit,
+            points,
+        },
     )
 }
 
