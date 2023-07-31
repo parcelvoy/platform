@@ -1,21 +1,42 @@
 import { DefaultRedis, Redis, RedisConfig } from './redis'
 
 const slidingRateLimiterLuaScript = `
-    local current_time = redis.call('TIME')
-    local trim_time = tonumber(current_time[1]) - ARGV[1]
-    redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, trim_time)
-    local request_count = redis.call('ZCARD', KEYS[1])
+    local key = KEYS[1]
+    local window = tonumber(ARGV[1])
+    local points = tonumber(ARGV[2])
+    local limit = tonumber(ARGV[3])
 
-    if request_count < tonumber(ARGV[2]) then
-        redis.call('ZADD', KEYS[1], current_time[1], current_time[1] .. current_time[2])
-        redis.call('EXPIRE', KEYS[1], ARGV[1])
+    local current_time = redis.call('TIME')
+    local trim_time = tonumber(current_time[1]) - window
+    redis.call('ZREMRANGEBYSCORE', key, 0, trim_time)
+    local request_count = redis.call('ZCARD', key)
+
+    -- If we haven't exceeded the limit, lets add value
+    if request_count < limit then
+
+        -- Add the current time to the sorted set as many times as points
+        for i = 1,points
+        do 
+            redis.call('ZADD', key, current_time[1], current_time[1] .. current_time[2] .. i)
+        end
+
+        -- Set the expiration of the set to the window size
+        redis.call('EXPIRE', key, window)
+        
+        request_count = request_count + points
         return {request_count, 0}
     end
     return {request_count, 1}
 `
 
 interface RateLimitRedis extends Redis {
-    slidingRateLimiter(key: string, window: number, points: number): Promise<[consumed: number, exceeded: number]>
+    slidingRateLimiter(key: string, window: number, points: number, limit: number): Promise<[consumed: number, exceeded: number]>
+}
+
+export interface RateLimitOptions {
+    limit?: number
+    points?: number
+    msDuration?: number
 }
 
 export interface RateLimitResponse {
@@ -38,9 +59,9 @@ export class RateLimiter {
         })
     }
 
-    async consume(key: string, limit: number, msDuration = 1000): Promise<RateLimitResponse> {
+    async consume(key: string, { limit = 10, points = 1, msDuration = 1000 }: RateLimitOptions): Promise<RateLimitResponse> {
         const window = Math.floor(msDuration / 1000)
-        const [consumed, exceeded] = await this.client.slidingRateLimiter(key, window, limit)
+        const [consumed, exceeded] = await this.client.slidingRateLimiter(key, window, points, limit)
 
         return {
             exceeded: exceeded === 1,

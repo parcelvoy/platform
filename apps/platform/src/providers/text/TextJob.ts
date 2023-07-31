@@ -35,11 +35,15 @@ export default class TextJob extends Job {
             return
         }
 
+        const variables = { user, event, context }
+
         // Check current send rate and if the send is locked
-        const isReady = await prepareSend(channel, data, raw)
+        // Increment rate limitter by number of segments
+        const segments = await channel.segments(template, variables)
+        const isReady = await prepareSend(channel, data, raw, segments)
         if (!isReady) return
 
-        await channel.send(template, { user, event, context })
+        await channel.send(template, variables)
 
         // Update send record
         await updateSendState({
