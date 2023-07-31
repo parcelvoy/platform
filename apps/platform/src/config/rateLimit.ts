@@ -15,9 +15,9 @@ const slidingRateLimiterLuaScript = `
     if request_count < limit then
 
         -- Add the current time to the sorted set as many times as points
-        for i = 0,points,1
+        for i = 1,points
         do 
-            redis.call('ZADD', key, current_time[1], current_time[1] .. current_time[2])
+            redis.call('ZADD', key, current_time[1], current_time[1] .. current_time[2] .. i)
         end
 
         -- Set the expiration of the set to the window size
