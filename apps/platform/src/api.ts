@@ -53,7 +53,7 @@ export default class Api extends Koa {
             .use(cors())
             .use(serve('./public', {
                 hidden: true,
-                defer: !app.env.mono,
+                defer: !app.env.config.monoDocker,
             }))
 
         this.registerControllers()

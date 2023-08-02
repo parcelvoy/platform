@@ -14,7 +14,10 @@ export abstract class TextProvider extends Provider {
         const router = new Router<{ provider: Provider }>()
         router.post(`/${namespace}/unsubscribe`, async ctx => {
             const channel = await loadTextChannel(ctx.state.provider.id)
-            if (!channel) return
+            if (!channel) {
+                ctx.status = 404
+                return
+            }
 
             // Always return with positive status code
             ctx.status = 204

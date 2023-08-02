@@ -2,14 +2,17 @@ import * as dotenv from 'dotenv'
 import type { StorageConfig } from '../storage/Storage'
 import type { QueueConfig } from '../queue/Queue'
 import type { DatabaseConfig } from './database'
-import type { AuthConfig } from '../auth/Auth'
+import type { AuthConfig, AuthProviderName } from '../auth/Auth'
 import type { ErrorConfig } from '../error/ErrorHandler'
 import { RedisConfig } from './redis'
 
 export type Runner = 'api' | 'worker'
 export interface Env {
     runners: Runner[]
-    mono: boolean
+    config: {
+        monoDocker: boolean
+        multiOrg: boolean
+    }
     db: DatabaseConfig
     queue: QueueConfig
     storage: StorageConfig
@@ -50,7 +53,10 @@ export default (type?: EnvType): Env => {
 
     return {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
-        mono: (process.env.MONO ?? 'false') === 'true',
+        config: {
+            monoDocker: (process.env.MONO ?? 'false') === 'true',
+            multiOrg: (process.env.MULTI_ORG ?? 'false') === 'true',
+        },
         db: {
             host: process.env.DB_HOST!,
             user: process.env.DB_USERNAME!,
@@ -97,28 +103,45 @@ export default (type?: EnvType): Env => {
         apiBaseUrl,
         port,
         secret: process.env.APP_SECRET!,
-        auth: driver<AuthConfig>(process.env.AUTH_DRIVER, {
-            basic: () => ({
-                tokenLife: defaultTokenLife,
+        auth: {
+            driver: (process.env.AUTH_DRIVER?.split(',') ?? []) as AuthProviderName[],
+            tokenLife: defaultTokenLife,
+            basic: {
+                driver: 'basic',
+                name: process.env.AUTH_BASIC_NAME!,
                 email: process.env.AUTH_BASIC_EMAIL!,
                 password: process.env.AUTH_BASIC_PASSWORD!,
-            }),
-            saml: () => ({
-                tokenLife: defaultTokenLife,
-                callbackUrl: process.env.AUTH_SAML_CALLBACK_URL,
-                entryPoint: process.env.AUTH_SAML_ENTRY_POINT_URL,
-                issuer: process.env.AUTH_SAML_ISSUER,
-                cert: process.env.AUTH_SAML_CERT,
+            },
+            saml: {
+                driver: 'saml',
+                name: process.env.AUTH_SAML_NAME!,
+                callbackUrl: `${apiBaseUrl}/auth/login/saml/callback`,
+                entryPoint: process.env.AUTH_SAML_ENTRY_POINT_URL!,
+                issuer: process.env.AUTH_SAML_ISSUER!,
+                cert: process.env.AUTH_SAML_CERT!,
                 wantAuthnResponseSigned: process.env.AUTH_SAML_IS_AUTHN_SIGNED === 'true',
-            }),
-            openid: () => ({
-                tokenLife: defaultTokenLife,
-                issuerUrl: process.env.AUTH_OPENID_ISSUER_URL,
-                clientId: process.env.AUTH_OPENID_CLIENT_ID,
-                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET,
-                redirectUri: process.env.AUTH_OPENID_REDIRECT_URI,
-            }),
-        }),
+            },
+            openid: {
+                driver: 'openid',
+                name: process.env.AUTH_OPENID_NAME!,
+                issuerUrl: process.env.AUTH_OPENID_ISSUER_URL!,
+                clientId: process.env.AUTH_OPENID_CLIENT_ID!,
+                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET!,
+                redirectUri: `${apiBaseUrl}/auth/login/openid/callback`,
+                domain: process.env.AUTH_OPENID_DOMAIN!,
+            },
+            google: {
+                driver: 'google',
+                name: process.env.AUTH_GOOGLE_NAME!,
+                clientId: process.env.AUTH_OPENID_CLIENT_ID!,
+                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET!,
+                redirectUri: `${apiBaseUrl}/auth/login/google/callback`,
+            },
+            multi: {
+                driver: 'multi',
+                name: process.env.AUTH_MULTI_NAME!,
+            },
+        },
         error: driver<ErrorConfig>(process.env.ERROR_DRIVER, {
             bugsnag: () => ({
                 apiKey: process.env.ERROR_BUGSNAG_API_KEY,

@@ -7,7 +7,7 @@ import { createOrUpdateAdmin } from './AdminRepository'
 import { generateAccessToken, OAuthResponse, setTokenCookies } from './TokenRepository'
 import Organization from '../organizations/Organization'
 import { State } from './AuthMiddleware'
-import { createOrganization, getOrganizationByDomain } from '../organizations/OrganizationService'
+import { createOrganization, getDefaultOrganization, getOrganizationByDomain } from '../organizations/OrganizationService'
 
 type OrgState = State & { organization?: Organization }
 export type AuthContext = Context & { state: OrgState }
@@ -18,11 +18,22 @@ export default abstract class AuthProvider {
     abstract validate(ctx: AuthContext): Promise<void>
 
     async loadAuthOrganization(ctx: AuthContext, domain: string) {
-        const organization = ctx.state.organization ?? await getOrganizationByDomain(domain)
-        if (!organization) {
-            return await createOrganization(domain)
+
+        // If we have an organization or can find one by domain
+        // we use that to start
+        let organization = ctx.state.organization ?? await getOrganizationByDomain(domain)
+        if (organization) return organization
+
+        // If we are not in multi-org mode we always fall back to
+        // a single organization
+        if (!App.main.env.config.multiOrg) {
+            organization = await getDefaultOrganization()
         }
-        return organization
+        if (organization) return organization
+        
+        // If there is no organization at all or are in multi-org mode
+        // and have no org for the user, create one
+        return await createOrganization(domain)
     }
 
     async login(params: AdminParams, ctx?: AuthContext, redirect?: string): Promise<OAuthResponse> {

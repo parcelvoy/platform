@@ -104,6 +104,11 @@ export interface SearchResult<T> {
 
 export type AuditFields = 'created_at' | 'updated_at' | 'deleted_at'
 
+export interface AuthMethod {
+    driver: string
+    name: string
+}
+
 export interface Admin {
     id: number
     organization_id: number

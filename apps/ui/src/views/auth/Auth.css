@@ -22,12 +22,33 @@
     padding: 40px;
 }
 
-.auth-step h1 {
+.auth.login .auth-step {
+    min-width: 300px;
+    width: 100%;
+    max-width: 350px;
+}
+
+.auth-step h1, .auth-step h2 {
     margin: 0;
 }
 
 .auth-step .form {
     padding: 10px 0;
+}
+
+.auth-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.auth.login .ui-button,
+.auth.login .form-submit {
+    width: 100%;
+}
+
+.auth.login form {
+    margin-bottom: 10px;
 }
 
 @media only screen and (max-width: 600px) {

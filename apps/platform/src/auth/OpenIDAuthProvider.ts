@@ -11,9 +11,9 @@ export interface OpenIDConfig extends AuthTypeConfig {
     driver: 'openid'
     issuerUrl: string // 'https://accounts.google.com'
     clientId: string
-    cliendSecret: string
+    clientSecret: string
     redirectUri: string
-    domain: string
+    domain?: string
 }
 
 export default class OpenIDAuthProvider extends AuthProvider {
@@ -32,9 +32,6 @@ export default class OpenIDAuthProvider extends AuthProvider {
         const client = await this.getClient()
 
         const nonce = generators.nonce()
-        // store the nonce in your framework's session mechanism, if it is a cookie based solution
-        // it should be httpOnly (not readable by javascript) and encrypted.
-
         ctx.cookies.set('nonce', nonce, {
             secure: ctx.request.secure,
             httpOnly: true,
@@ -48,6 +45,15 @@ export default class OpenIDAuthProvider extends AuthProvider {
             httpOnly: true,
             expires: addSeconds(Date.now(), 3600),
         })
+
+        const organization = ctx.state.organization
+        if (organization) {
+            ctx.cookies.set('organization', `${organization.id}`, {
+                secure: ctx.request.secure,
+                httpOnly: true,
+                expires: addSeconds(Date.now(), 3600),
+            })
+        }
 
         const url = client.authorizationUrl({
             scope: 'openid email profile',
@@ -95,6 +101,10 @@ export default class OpenIDAuthProvider extends AuthProvider {
             }
 
             await this.login(admin, ctx, state)
+
+            ctx.cookies.set('nonce', null)
+            ctx.cookies.set('relaystate', null)
+            ctx.cookies.set('organization', null)
         } catch (error) {
             logger.warn(error)
             throw new RequestError(AuthError.OpenIdValidationError)
@@ -109,7 +119,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
         // TODO: Should we validate that we can use the issuer?
         this.client = new issuer.Client({
             client_id: this.config.clientId,
-            client_secret: this.config.cliendSecret,
+            client_secret: this.config.clientSecret,
             redirect_uris: [this.config.redirectUri],
             response_types: ['id_token'],
         })

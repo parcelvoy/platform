@@ -8,5 +8,5 @@ export interface Webhook {
 export interface WebhookResponse {
     message: Webhook
     success: boolean
-    response: string
+    response: Record<string, any> | string
 }
