@@ -46,7 +46,7 @@ const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> })
 const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
     const [project] = useContext(ProjectContext)
     const segmentLength = 160
-    const optOutLength = project.text_opt_out_message.length
+    const optOutLength = project.text_opt_out_message?.length ?? 0
     const length = (text?.length ?? 0) + optOutLength
     const segments = Math.ceil(length / segmentLength)
     return <InfoTable rows={{
