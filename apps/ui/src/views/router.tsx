@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet, redirect, useNavigate, useParams } from 'react-router-dom'
+import { createBrowserRouter, Outlet, redirect, RouteObject, useNavigate, useParams } from 'react-router-dom'
 import api from '../api'
 
 import ErrorPage from './ErrorPage'
@@ -55,7 +55,7 @@ export const useRoute = (includeProject = true) => {
     }
 }
 
-export const router = createBrowserRouter([
+export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserRouter([
     {
         path: '/login',
         element: <Login />,
@@ -334,6 +334,7 @@ export const router = createBrowserRouter([
                     },
                 ],
             },
+            ...additionalRoutes ?? [],
         ],
     },
 ])

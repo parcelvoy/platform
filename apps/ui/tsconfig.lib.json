@@ -1,0 +1,19 @@
+{
+    "include": [
+        "src"
+    ],
+    "compilerOptions": {
+        "downlevelIteration": true,
+        "moduleResolution": "Node",
+        "lib": ["dom", "esnext"],
+        "importHelpers": true,
+        "declaration": true,
+        "sourceMap": true,
+        "rootDir": "src",
+        "outDir": "dist/esm",
+        "strict": true,
+        "jsx": "react-jsx",
+        "esModuleInterop": true,
+        "skipLibCheck": true
+    }
+}

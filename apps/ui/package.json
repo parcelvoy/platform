@@ -47,8 +47,14 @@
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
-    "package:publish": "npm run build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
+    "package:build": "rm -rf dist && npm run package:build:esm && npm run package:build:cjs",
+    "package:build:esm":  "tsc --project ./tsconfig.lib.json",
+    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir dist/cjs",
+    "package:build:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
+  "main": "./dist/cjs/mod.js",
+  "module": "./dist/esm/mod.js",
+  "types": "./dist/esm/mod.d.ts",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -71,5 +77,5 @@
     "eslint-plugin-react": "^7.31.11",
     "typescript": "^4.9.3"
   },
-  "files": [ "/build" ]
+  "files": ["dist"]
 }
