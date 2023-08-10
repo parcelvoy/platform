@@ -45,7 +45,7 @@ function GrapesReact({ id, mjml, onChange, setAssetState }: GrapesReactProps) {
             setEditor(editor)
             editor.on('load', () => {
                 editor.Panels.getButton('views', 'open-blocks')
-                    .set('active', true)
+                    ?.set('active', true)
             })
             editor.render()
             editor.setComponents(mjml ?? '<mjml><mj-body></mj-body></mjml>')

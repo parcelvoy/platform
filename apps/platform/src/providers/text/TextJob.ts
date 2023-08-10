@@ -20,7 +20,7 @@ export default class TextJob extends Job {
         const data = await loadSendJob<TextTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event, context } = data
+        const { campaign, template, user, project, context } = data
 
         // Send and render text
         const channel = await loadTextChannel(campaign.provider_id, project.id)
@@ -35,15 +35,13 @@ export default class TextJob extends Job {
             return
         }
 
-        const variables = { user, event, context }
-
         // Check current send rate and if the send is locked
         // Increment rate limitter by number of segments
-        const segments = await channel.segments(template, variables)
+        const segments = await channel.segments(template, data)
         const isReady = await prepareSend(channel, data, raw, segments)
         if (!isReady) return
 
-        await channel.send(template, variables)
+        await channel.send(template, data)
 
         // Update send record
         await updateSendState({

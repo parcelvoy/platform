@@ -119,10 +119,14 @@ export interface Admin {
 }
 
 export interface Organization {
+    id: number
     username: string
     domain: string
     auth: any
+    tracking_deeplink_mirror_url?: string
 }
+
+export type OrganizationUpdateParams = Omit<Organization, 'id' | 'auth' | AuditFields>
 
 export const projectRoles = [
     'support',
@@ -150,6 +154,7 @@ export interface Project {
     locale: string
     timezone: string
     text_opt_out_message: string
+    link_wrap: boolean
     created_at: string
     updated_at: string
     deleted_at?: string

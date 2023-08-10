@@ -42,14 +42,6 @@ export function Projects() {
         }
     }, [projects, navigate])
 
-    if (!projects) {
-        return (
-            <div>
-                loading...
-            </div>
-        )
-    }
-
     return (
         <PageContent
             title="Projects"

@@ -67,7 +67,6 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         template_id: template.id,
         channel: campaign.channel,
         subscription_id: campaign.subscription_id,
-        project,
         user_step_id,
     }
 

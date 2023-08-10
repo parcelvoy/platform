@@ -1,8 +1,12 @@
 import Router from '@koa/router'
 import App from '../app'
 import { encodedLinkToParts, trackMessageEvent } from './LinkService'
+import Organization from '../organizations/Organization'
 
-const router = new Router<{app: App}>()
+const router = new Router<{
+    app: App
+    organization?: Organization
+}>()
 
 router.get('/c', async ctx => {
 
@@ -26,7 +30,7 @@ router.get('/o', async ctx => {
 })
 
 router.get('/.well-known/:file', async ctx => {
-    const url = App.main.env.tracking.deeplinkMirrorUrl
+    const url = ctx.state.organization?.tracking_deeplink_mirror_url
     const file = ctx.params.file
     if (!url) {
         ctx.status = 404

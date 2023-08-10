@@ -37,8 +37,8 @@ export default class TextChannel {
             user_id: variables.user.id,
             name: 'text_sent',
         }))
-        if (!hasReceivedOptOut && variables.context.project.text_opt_out_message) {
-            compiled.text += `\n${variables.context.project.text_opt_out_message}`
+        if (!hasReceivedOptOut && variables.project.text_opt_out_message) {
+            compiled.text += `\n${variables.project.text_opt_out_message}`
         }
 
         return compiled

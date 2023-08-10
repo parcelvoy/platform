@@ -4,7 +4,7 @@ import api from '../api'
 import ErrorPage from './ErrorPage'
 import Sidebar from '../ui/Sidebar'
 import { LoaderContextProvider, StatefulLoaderContextProvider } from './LoaderContextProvider'
-import { AdminContext, CampaignContext, JourneyContext, ListContext, ProjectContext, UserContext } from '../contexts'
+import { AdminContext, CampaignContext, JourneyContext, ListContext, OrganizationContext, ProjectContext, UserContext } from '../contexts'
 import ApiKeys from './settings/ApiKeys'
 import EmailEditor from './campaign/editor/EmailEditor'
 import Lists from './users/Lists'
@@ -40,6 +40,7 @@ import Performance from './organization/Performance'
 import Settings from './settings/Settings'
 import ProjectSidebar from './project/ProjectSidebar'
 import Admins from './organization/Admins'
+import OrganizationSettings from './organization/Settings'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -90,9 +91,12 @@ export const router = createBrowserRouter([
                 ],
             },
             {
-                path: 'settings',
+                path: 'organization',
+                loader: async () => {
+                    return await api.organizations.get()
+                },
                 element: (
-                    <StatefulLoaderContextProvider context={ProjectContext}>
+                    <StatefulLoaderContextProvider context={OrganizationContext}>
                         <Sidebar
                             links={[
                                 {
@@ -112,6 +116,12 @@ export const router = createBrowserRouter([
                                     to: 'performance',
                                     children: 'Performance',
                                     icon: <PerformanceIcon />,
+                                },
+                                {
+                                    key: 'settings',
+                                    to: 'settings',
+                                    children: 'Settings',
+                                    icon: <SettingsIcon />,
                                 },
                             ]}
                         >
@@ -137,6 +147,10 @@ export const router = createBrowserRouter([
                     {
                         path: 'performance',
                         element: <Performance />,
+                    },
+                    {
+                        path: 'settings',
+                        element: <OrganizationSettings />,
                     },
                 ],
             },

@@ -8,11 +8,9 @@ import * as ArrayHelpers from './Helpers/Array'
 import { User } from '../users/User'
 import { preferencesLink, unsubscribeEmailLink } from '../subscriptions/SubscriptionService'
 import { clickWrapHtml, openWrapHtml, preheaderWrapHtml } from './LinkService'
-import App from '../app'
 import Project from '../projects/Project'
 
 export type RenderContext = {
-    project: Project
     template_id: number
     campaign_id: number
     subscription_id: number
@@ -23,6 +21,7 @@ export interface Variables {
     context: RenderContext
     user: User
     event?: Record<string, any>
+    project: Project
 }
 
 export interface TrackingParams {
@@ -54,7 +53,7 @@ interface WrapParams {
     preheader?: string
     variables: Variables
 }
-export const Wrap = ({ html, preheader, variables: { user, context } }: WrapParams) => {
+export const Wrap = ({ html, preheader, variables: { user, context, project } }: WrapParams) => {
     const trackingParams = {
         userId: user.id,
         campaignId: context.campaign_id,
@@ -62,7 +61,7 @@ export const Wrap = ({ html, preheader, variables: { user, context } }: WrapPara
     }
 
     // Check if link wrapping is enabled first
-    if (App.main.env.tracking.linkWrap) {
+    if (project.link_wrap) {
         html = clickWrapHtml(html, trackingParams)
     }
 

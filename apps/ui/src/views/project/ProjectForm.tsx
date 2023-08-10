@@ -3,6 +3,8 @@ import TextInput from '../../ui/form/TextInput'
 import { Project } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
+import SwitchField from '../../ui/form/SwitchField'
+import Heading from '../../ui/Heading'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Intl {
@@ -42,18 +44,23 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     return (
         <FormWrapper<Project>
             defaultValues={defaults}
-            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message }) => {
+            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message, link_wrap }) => {
+
+                const params = { name, description, locale, timezone, text_opt_out_message, link_wrap }
+
                 const project = id
-                    ? await api.projects.update(id, { name, description, locale, timezone, text_opt_out_message })
-                    : await api.projects.create({ name, description, locale, timezone, text_opt_out_message })
+                    ? await api.projects.update(id, params)
+                    : await api.projects.create(params)
                 onSave?.(project)
             }}
+            submitLabel="Save Settings"
         >
             {
                 form => (
                     <>
                         <TextInput.Field form={form} name="name" required />
                         <TextInput.Field form={form} name="description" textarea />
+                        <Heading size="h4" title="Defaults" />
                         <TextInput.Field
                             form={form}
                             name="locale"
@@ -67,11 +74,13 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                             label="Timezone"
                             required
                         />
+                        <Heading size="h4" title="Message Settings" />
                         <TextInput.Field
                             form={form}
                             name="text_opt_out_message"
                             label="SMS Opt Out Message"
                             subtitle="Instructions on how to opt out of SMS that will be appended to every text." />
+                        <SwitchField form={form} name="link_wrap" label="Link Wrapping" subtitle="Enable link wrapping for all links in messages." />
                     </>
                 )
             }

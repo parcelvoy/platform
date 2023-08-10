@@ -20,7 +20,7 @@ export default class EmailJob extends Job {
         const data = await loadSendJob<EmailTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event, context } = data
+        const { campaign, template, user, project, context } = data
 
         // Load email channel so its ready to send
         const channel = await loadEmailChannel(campaign.provider_id, project.id)
@@ -40,7 +40,7 @@ export default class EmailJob extends Job {
         if (!isReady) return
 
         try {
-            await channel.send(template, { user, event, context })
+            await channel.send(template, data)
         } catch (error: any) {
 
             // On error, mark as failed and notify just in case
