@@ -30,7 +30,7 @@ export default abstract class AuthProvider {
             organization = await getDefaultOrganization()
         }
         if (organization) return organization
-        
+
         // If there is no organization at all or are in multi-org mode
         // and have no org for the user, create one
         return await createOrganization(domain)
