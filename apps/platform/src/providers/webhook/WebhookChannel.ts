@@ -18,7 +18,7 @@ export default class WebhookChannel {
         const endpoint = Render(options.endpoint, variables)
         const method = options.method
 
-        await this.provider.send({
+        return await this.provider.send({
             endpoint,
             method,
             headers,

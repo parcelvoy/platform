@@ -38,7 +38,7 @@ export default (app: App) => {
     }
 
     // If we are running in mono mode, we need to also serve the UI
-    if (app.env.mono) {
+    if (app.env.config.monoDocker) {
         const ui = new Router()
         ui.get('/(.*)', async (ctx, next) => {
             try {

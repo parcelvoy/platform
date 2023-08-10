@@ -69,6 +69,8 @@ export default function FormWrapper<T extends FieldValues>({
             return submitError.error
         } else if (submitError.response?.data?.error) {
             return submitError.response?.data?.error
+        } else if (submitError.message) {
+            return submitError.message
         }
         return defaultError
     }

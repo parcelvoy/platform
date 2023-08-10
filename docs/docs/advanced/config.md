@@ -38,21 +38,28 @@ Find below a list of all environment variables that can be set at launch to conf
 | AWS_SECRET_ACCESS_KEY | string | If driver is S3 |
 
 ### Auth
-| key | type | required |
+| key | type | required | notes
 |--|--|--|
-| AUTH_DRIVER | 'basic', 'openid' or 'saml' | true |
+| AUTH_DRIVER | 'basic', 'google', 'openid', 'saml' | true | Can be multiple
 | AUTH_BASIC_EMAIL | string | If driver is Basic |
 | AUTH_BASIC_PASSWORD | string | If driver is Basic |
+| AUTH_BASIC_NAME | string | false |
 | AUTH_SAML_CALLBACK_URL | string | If driver is SAML |
 | AUTH_SAML_ENTRY_POINT_URL | string | If driver is SAML |
 | AUTH_SAML_ISSUER | string | If driver is SAML |
 | AUTH_SAML_CERT | string | If driver is SAML |
 | AUTH_SAML_IS_AUTHN_SIGNED | boolean | If driver is SAML |
+| AUTH_SAML_NAME | string | false |
 | AUTH_OPENID_ISSUER_URL | string | If driver is OpenID |
 | AUTH_OPENID_CLIENT_ID | string | If driver is OpenID |
 | AUTH_OPENID_CLIENT_SECRET | string | If driver is OpenID |
 | AUTH_OPENID_REDIRECT_URI | string | If driver is OpenID |
 | AUTH_OPENID_DOMAIN_WHITELIST | string | If driver is OpenID |
+| AUTH_OPENID_NAME | string | false |
+| AUTH_GOOGLE_ISSUER_URL | string | If driver is Google |
+| AUTH_GOOGLE_CLIENT_ID | string | If driver is Google |
+| AUTH_GOOGLE_CLIENT_SECRET | string | If driver is Google |
+| AUTH_GOOGLE_NAME | string | false |
 
 ### Tracking
 | key | type | required |

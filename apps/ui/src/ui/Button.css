@@ -28,6 +28,12 @@
     height: 20px;
     padding: 2px 0;
     display: inline-block;
+    flex-shrink: 0;
+}
+
+.ui-button .button-text {
+    display: inline-block;
+    flex-grow: 1;
 }
 
 .ui-button.ui-button-no-children .button-icon {

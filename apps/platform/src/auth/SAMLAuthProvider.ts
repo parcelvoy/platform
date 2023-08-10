@@ -7,6 +7,7 @@ import { AuthTypeConfig } from './Auth'
 import AuthProvider from './AuthProvider'
 import AuthError from './AuthError'
 import { firstQueryParam } from '../utilities'
+import { addSeconds } from 'date-fns'
 
 export interface SAMLConfig extends AuthTypeConfig {
     driver: 'saml'
@@ -65,6 +66,15 @@ export default class SAMLAuthProvider extends AuthProvider {
 
         const url = await this.saml.getAuthorizeUrlAsync(relayState, host, {})
 
+        const organization = ctx.state.organization
+        if (organization) {
+            ctx.cookies.set('organization', `${organization.id}`, {
+                secure: ctx.request.secure,
+                httpOnly: true,
+                expires: addSeconds(Date.now(), 3600),
+            })
+        }
+
         ctx.redirect(url)
     }
 
@@ -88,6 +98,8 @@ export default class SAMLAuthProvider extends AuthProvider {
 
         const { id } = await this.loadAuthOrganization(ctx, domain)
         await this.login({ first_name, last_name, email, organization_id: id }, ctx, state)
+
+        ctx.cookies.set('organization', null)
     }
 
     private getDomain(email: string): string | undefined {

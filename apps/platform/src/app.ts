@@ -1,13 +1,11 @@
 import loadDatabase, { Database } from './config/database'
 import loadQueue from './config/queue'
 import loadStorage from './config/storage'
-import loadAuth from './config/auth'
 import loadError, { logger } from './config/logger'
 import loadRateLimit, { RateLimiter } from './config/rateLimit'
 import type { Env } from './config/env'
 import type Queue from './queue'
 import Storage from './storage'
-import type Auth from './auth/Auth'
 import { uuid } from './utilities'
 import Api from './api'
 import Worker from './worker'
@@ -39,14 +37,10 @@ export default class App {
         // Load storage
         const storage = loadStorage(env.storage)
 
-        // Load auth
-        const auth = loadAuth(env.auth)
-
         // Setup app
         const app = new this(env,
             database,
             queue,
-            auth,
             storage,
             error,
         ) as any
@@ -70,7 +64,6 @@ export default class App {
         public env: Env,
         public db: Database,
         public queue: Queue,
-        public auth: Auth,
         public storage: Storage,
         public error: ErrorHandler,
     ) {

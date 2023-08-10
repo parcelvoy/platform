@@ -73,7 +73,7 @@ export default class Model {
 
     static async first<T extends typeof Model>(
         this: T,
-        query: Query,
+        query: Query = (qb) => qb,
         db: Database = App.main.db,
     ): Promise<InstanceType<T> | undefined> {
         const record = await this.build(query, db).first()

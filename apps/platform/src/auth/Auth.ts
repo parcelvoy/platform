@@ -1,56 +1,96 @@
 import { Context } from 'koa'
 import AuthProvider from './AuthProvider'
 import OpenIDProvider, { OpenIDConfig } from './OpenIDAuthProvider'
+import GoogleProvider, { GoogleConfig } from './GoogleAuthProvider'
 import SAMLProvider, { SAMLConfig } from './SAMLAuthProvider'
 import { DriverConfig } from '../config/env'
 import BasicAuthProvider, { BasicAuthConfig } from './BasicAuthProvider'
-import { getOrganizationByUsername } from '../organizations/OrganizationService'
+import Organization from '../organizations/Organization'
+import App from '../app'
+import MultiAuthProvider, { MultiAuthConfig } from './MultiAuthProvider'
 
-export type AuthProviderName = 'basic' | 'saml' | 'openid' | 'logger'
+export type AuthProviderName = 'basic' | 'saml' | 'openid' | 'google' | 'multi'
 
-export type AuthConfig = BasicAuthConfig | SAMLConfig | OpenIDConfig
+export type AuthProviderConfig = BasicAuthConfig | SAMLConfig | OpenIDConfig | GoogleConfig | MultiAuthConfig
+
+export interface AuthConfig {
+    driver: AuthProviderName[]
+    tokenLife: number
+    basic: BasicAuthConfig
+    saml: SAMLConfig
+    openid: OpenIDConfig
+    google: GoogleConfig
+    multi: MultiAuthConfig
+}
+
+export { BasicAuthConfig, SAMLConfig, OpenIDConfig }
 
 export interface AuthTypeConfig extends DriverConfig {
-    tokenLife: number
     driver: AuthProviderName
+    name?: string
 }
 
-export default class Auth {
-    provider: AuthProvider
+interface AuthMethod {
+    driver: AuthProviderName
+    name: string
+}
 
-    constructor(config?: AuthConfig) {
-        this.provider = Auth.provider(config)
-    }
-
-    static provider(config?: AuthConfig): AuthProvider {
-        if (config?.driver === 'basic') {
-            return new BasicAuthProvider(config)
-        } else if (config?.driver === 'saml') {
-            return new SAMLProvider(config)
-        } else if (config?.driver === 'openid') {
-            return new OpenIDProvider(config)
-        } else {
-            throw new Error('A valid auth driver must be set!')
-        }
-    }
-
-    async start(ctx: Context): Promise<void> {
-        const provider = await this.loadProvider(ctx)
-        return await provider.start(ctx)
-    }
-
-    async validate(ctx: Context): Promise<void> {
-        const provider = await this.loadProvider(ctx)
-        return await provider.validate(ctx)
-    }
-
-    private async loadProvider(ctx: Context): Promise<AuthProvider> {
-        if (ctx.subdomains && ctx.subdomains[0]) {
-            const subdomain = ctx.subdomains[0]
-            const org = await getOrganizationByUsername(subdomain)
-            ctx.state.organization = org
-            if (org) return Auth.provider(org.auth)
-        }
-        return this.provider
+export const initProvider = (config?: AuthProviderConfig): AuthProvider => {
+    if (config?.driver === 'basic') {
+        return new BasicAuthProvider(config)
+    } else if (config?.driver === 'saml') {
+        return new SAMLProvider(config)
+    } else if (config?.driver === 'openid') {
+        return new OpenIDProvider(config)
+    } else if (config?.driver === 'google') {
+        return new GoogleProvider(config)
+    } else if (config?.driver === 'multi') {
+        return new MultiAuthProvider()
+    } else {
+        throw new Error('A valid auth driver must be set!')
     }
 }
+
+export const authMethods = async (organization?: Organization): Promise<AuthMethod[]> => {
+
+    // If we know the org, don't require any extra steps like
+    // providing email since we know where to route you. Otherwise
+    // we need context to properly fetch SSO and such.
+    return organization
+        ? [mapMethod(organization.auth)]
+        : mapMethods(App.main.env.auth)
+}
+
+export const checkAuth = (organization?: Organization): boolean => {
+    return organization != null && organization.auth != null
+}
+
+export const startAuth = async (ctx: Context): Promise<void> => {
+    const provider = await loadProvider(ctx)
+    return await provider.start(ctx)
+}
+
+export const validateAuth = async (ctx: Context): Promise<void> => {
+    const provider = await loadProvider(ctx)
+    return await provider.validate(ctx)
+}
+
+const loadProvider = async (ctx: Context): Promise<AuthProvider> => {
+    const driver = ctx.params.driver as AuthProviderName
+    const organization = ctx.state.organization
+    if (organization) {
+        return initProvider(organization.auth)
+    }
+
+    return initProvider(App.main.env.auth[driver])
+}
+
+const mapMethods = (config: AuthConfig): AuthMethod[] => {
+    const drivers = config.driver
+    return drivers.map((driver) => mapMethod(config[driver]))
+}
+
+const mapMethod = ({ driver, name }: AuthTypeConfig): AuthMethod => ({
+    driver,
+    name: name ?? `Continue with ${driver}`,
+})

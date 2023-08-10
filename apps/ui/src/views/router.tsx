@@ -36,7 +36,6 @@ import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, PerformanceIcon, ProjectIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
 import { pushRecentProject } from '../utils'
-import LoginBasic from './auth/LoginBasic'
 import Performance from './organization/Performance'
 import Settings from './settings/Settings'
 import ProjectSidebar from './project/ProjectSidebar'
@@ -59,10 +58,6 @@ export const router = createBrowserRouter([
     {
         path: '/login',
         element: <Login />,
-    },
-    {
-        path: '/login/basic',
-        element: <LoginBasic />,
     },
     {
         path: '*',

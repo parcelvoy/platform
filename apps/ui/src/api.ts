@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -29,7 +29,7 @@ client.interceptors.response.use(
     response => response,
     async error => {
         if (error.response.status === 401) {
-            api.login()
+            api.auth.login()
         }
         throw error
     },
@@ -115,17 +115,23 @@ const cache: {
 
 const api = {
 
-    login() {
-        window.location.href = `/login?r=${encodeURIComponent(window.location.href)}`
-    },
-
-    async logout() {
-        window.location.href = env.api.baseURL + '/auth/logout'
-    },
-
-    async basicAuth(email: string, password: string, redirect: string = '/') {
-        await client.post('/auth/login/callback', { email, password })
-        window.location.href = redirect
+    auth: {
+        methods: async () => await client
+            .get<AuthMethod[]>('/auth/methods')
+            .then(r => r.data),
+        check: async (method: string, email: string) => await client
+            .post<boolean>('/auth/check', { method, email })
+            .then(r => r.data),
+        basicAuth: async (email: string, password: string, redirect: string = '/') => {
+            await client.post('/auth/login/basic/callback', { email, password })
+            window.location.href = redirect
+        },
+        login() {
+            window.location.href = `/login?r=${encodeURIComponent(window.location.href)}`
+        },
+        async logout() {
+            window.location.href = env.api.baseURL + '/auth/logout'
+        },
     },
 
     profile: {
