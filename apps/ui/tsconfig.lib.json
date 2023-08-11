@@ -10,7 +10,7 @@
         "declaration": true,
         "sourceMap": true,
         "rootDir": "src",
-        "outDir": "dist/esm",
+        "outDir": "lib/esm",
         "strict": true,
         "jsx": "react-jsx",
         "esModuleInterop": true,

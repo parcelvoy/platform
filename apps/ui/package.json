@@ -40,14 +40,14 @@
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
-    "package:build": "rm -rf dist && npm run package:build:esm && npm run package:build:cjs",
-    "package:build:esm":  "tsc --project ./tsconfig.lib.json",
-    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir dist/cjs",
+    "package:build": "rimraf lib/ && npm run package:build:esm && npm run package:build:cjs",
+    "package:build:esm":  "tsc --project ./tsconfig.lib.json && copyfiles -u 1 src/**/*.css lib/esm/",
+    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir lib/cjs && copyfiles -u 1 src/**/*.css lib/cjs/",
     "package:build:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
-  "main": "./dist/cjs/mod.js",
-  "module": "./dist/esm/mod.js",
-  "types": "./dist/esm/mod.d.ts",
+  "main": "./lib/cjs/mod.js",
+  "module": "./lib/esm/mod.js",
+  "types": "./lib/esm/mod.d.ts",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -66,6 +66,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "copyfiles": "2.4.1",
     "eslint": "^8.28.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -74,8 +75,9 @@
     "eslint-plugin-react": "^7.31.11",
     "http-proxy-middleware": "^2.0.6",
     "react-scripts": "5.0.1",
+    "rimraf": "5.0.1",
     "source-map-explorer": "2.5.3",
     "typescript": "^4.9.3"
   },
-  "files": ["dist"]
+  "files": ["lib"]
 }
