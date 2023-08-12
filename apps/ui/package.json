@@ -1,7 +1,7 @@
 {
   "name": "@parcelvoy/ui",
   "version": "0.1.0",
-  "repository":"https://github.com/parcelvoy/platform",
+  "repository": "https://github.com/parcelvoy/platform",
   "dependencies": {
     "@fontsource/inter": "^4.5.14",
     "@headlessui/react": "1.7.13",
@@ -21,6 +21,7 @@
     "date-fns-tz": "^1.3.8",
     "grapesjs": "^0.21.1",
     "grapesjs-mjml": "^1.0.4",
+    "monaco-editor": "^0.41.0",
     "react": "^18.2.0",
     "react-charts": "^3.0.0-beta.54",
     "react-dom": "^18.2.0",
@@ -41,7 +42,7 @@
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
     "package:build": "rimraf lib/ && npm run package:build:esm && npm run package:build:cjs",
-    "package:build:esm":  "tsc --project ./tsconfig.lib.json && copyfiles -u 1 src/**/*.css lib/esm/",
+    "package:build:esm": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 src/**/*.css lib/esm/",
     "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir lib/cjs && copyfiles -u 1 src/**/*.css lib/cjs/",
     "package:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
@@ -79,5 +80,7 @@
     "source-map-explorer": "2.5.3",
     "typescript": "^4.9.3"
   },
-  "files": ["lib"]
+  "files": [
+    "lib"
+  ]
 }

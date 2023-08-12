@@ -15,6 +15,7 @@
     "docker:build": "lerna run docker:build",
     "docker:build:push": "lerna run docker:build:push",
     "analyze:ui:bundle": "lerna run build && npx source-map-explorer './apps/ui/build/static/js/*.js'",
+    "package:build": "lerna run package:build",
     "package:publish": "lerna run package:publish"
   }
 }
