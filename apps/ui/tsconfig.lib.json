@@ -4,7 +4,8 @@
     ],
     "compilerOptions": {
         "downlevelIteration": true,
-        "moduleResolution": "Node",
+        "moduleResolution": "node",
+        "target": "esnext",
         "lib": ["dom", "esnext"],
         "importHelpers": true,
         "declaration": true,
