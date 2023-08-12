@@ -8,7 +8,7 @@ function appendValue(params: URLSearchParams, name: string, value: unknown) {
     params.append(name, value + '')
 }
 
-const client = Axios.create({
+export const client = Axios.create({
     ...env.api,
     paramsSerializer: params => {
         const s = new URLSearchParams()
