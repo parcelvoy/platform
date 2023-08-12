@@ -3,7 +3,9 @@ exports.up = async function(knex) {
         table.boolean('link_wrap').defaultTo(0)
     })
 
-    await knex('projects').update({ link_wrap: process.env.TRACKING_LINK_WRAP === 'true' })
+    if (process.env.TRACKING_LINK_WRAP) {
+        await knex('projects').update({ link_wrap: process.env.TRACKING_LINK_WRAP === 'true' })
+    }
 
     await knex.schema.alterTable('organizations', function(table) {
         table.string('tracking_deeplink_mirror_url', 255)
@@ -15,7 +17,9 @@ exports.up = async function(knex) {
             .unsigned()
     })
 
-    await knex('organizations').update({ tracking_deeplink_mirror_url: process.env.TRACKING_DEEPLINK_MIRROR_URL })
+    if (process.env.TRACKING_DEEPLINK_MIRROR_URL) {
+        await knex('organizations').update({ tracking_deeplink_mirror_url: process.env.TRACKING_DEEPLINK_MIRROR_URL })
+    }
 }
 
 exports.down = async function(knex) {
