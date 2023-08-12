@@ -6,6 +6,7 @@
         "downlevelIteration": true,
         "moduleResolution": "node",
         "target": "esnext",
+        "module": "esnext",
         "lib": ["dom", "esnext"],
         "importHelpers": true,
         "declaration": true,
