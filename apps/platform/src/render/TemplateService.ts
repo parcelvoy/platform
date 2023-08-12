@@ -13,6 +13,7 @@ import { loadPushChannel } from '../providers/push'
 import { getUserFromEmail, getUserFromPhone } from '../users/UserRepository'
 import { loadWebhookChannel } from '../providers/webhook'
 import Project from '../projects/Project'
+import { getProject } from '../projects/ProjectService'
 
 export const pagedTemplates = async (params: PageParams, projectId: number) => {
     return await Template.search(
@@ -87,35 +88,35 @@ export const validateTemplates = async (projectId: number, campaignId: number) =
 export const sendProof = async (template: TemplateType, variables: Variables, recipient: string) => {
 
     const campaign = await getCampaign(template.campaign_id, template.project_id)
-    if (!campaign) throw new RequestError(CampaignError.CampaignDoesNotExist)
+    const project = await getProject(template.project_id)
+    if (!campaign || !project) throw new RequestError(CampaignError.CampaignDoesNotExist)
     const event = UserEvent.fromJson(variables.event || {})
     const context = {
         ...variables.context,
         campaign_id: template.campaign_id,
     }
-    const projectId = template.project_id
 
-    const user = (await getUserFromEmail(projectId, recipient))
-        ?? (await getUserFromPhone(projectId, recipient))
+    const user = (await getUserFromEmail(project.id, recipient))
+        ?? (await getUserFromPhone(project.id, recipient))
         ?? User.fromJson({ ...variables.user, email: recipient, phone: recipient })
     user.data = { ...user?.data, ...variables.user }
-    variables = { user, event, context }
+    variables = { user, event, context, project }
 
     if (template.type === 'email') {
-        const channel = await loadEmailChannel(campaign.provider_id, projectId)
+        const channel = await loadEmailChannel(campaign.provider_id, project.id)
         await channel?.send(template, variables)
 
     } else if (template.type === 'text') {
-        const channel = await loadTextChannel(campaign.provider_id, projectId)
+        const channel = await loadTextChannel(campaign.provider_id, project.id)
         await channel?.send(template, variables)
 
     } else if (template.type === 'push') {
-        const channel = await loadPushChannel(campaign.provider_id, projectId)
+        const channel = await loadPushChannel(campaign.provider_id, project.id)
         if (!user.id) throw new RequestError('Unable to find a user matching the criteria.')
         await channel?.send(template, variables)
 
     } else if (template.type === 'webhook') {
-        const channel = await loadWebhookChannel(campaign.provider_id, projectId)
+        const channel = await loadWebhookChannel(campaign.provider_id, project.id)
         await channel?.send(template, variables)
     } else {
         throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
