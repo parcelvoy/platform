@@ -42,8 +42,8 @@
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
     "package:build": "rimraf lib/ && npm run package:build:esm && npm run package:build:cjs",
-    "package:build:esm": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 src/**/*.css lib/esm/",
-    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir lib/cjs && copyfiles -u 1 src/**/*.css lib/cjs/",
+    "package:build:esm": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 'src/**/*.css' lib/esm/ && copyfiles -u 1 'src/assets/*' lib/esm/assets/",
+    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir lib/cjs && copyfiles -u 1 'src/**/*.css' lib/cjs/ && copyfiles -u 1 'src/assets/*' lib/esm/assets/",
     "package:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
   "main": "./lib/cjs/mod.js",
