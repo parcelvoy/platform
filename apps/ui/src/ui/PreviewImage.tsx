@@ -22,7 +22,6 @@ export default function PreviewImage({
 
     const handleLoad = (event: React.SyntheticEvent<HTMLIFrameElement, Event> | undefined) => {
         const state = (event?.target as any).contentWindow?.document.body.innerHTML.length > 0
-        console.log(url, state)
         setLoaded(state)
     }
 

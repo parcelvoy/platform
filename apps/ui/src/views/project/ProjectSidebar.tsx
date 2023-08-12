@@ -91,7 +91,7 @@ export default function ProjectSidebar({ children, links }: PropsWithChildren<Si
                                 </div>
                             </div>
                         }>
-                            <MenuItem onClick={() => navigate('/settings')}>Settings</MenuItem>
+                            <MenuItem onClick={() => navigate('/organization')}>Settings</MenuItem>
                             <MenuItem onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}>Use {preferences.mode === 'dark' ? 'Light' : 'Dark'} Theme</MenuItem>
                             <MenuItem onClick={async () => await api.auth.logout()}>Sign Out</MenuItem>
                         </Menu>

@@ -18,7 +18,7 @@ export default class WebhookJob extends Job {
         const data = await loadSendJob<WebhookTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event, context } = data
+        const { campaign, template, user, project, context } = data
 
         // Send and render webhook
         const channel = await loadWebhookChannel(campaign.provider_id, project.id)
@@ -36,7 +36,7 @@ export default class WebhookJob extends Job {
         const isReady = await prepareSend(channel, data, raw)
         if (!isReady) return
 
-        await channel.send(template, { user, event, context })
+        await channel.send(template, data)
 
         // Update send record
         await updateSendState({

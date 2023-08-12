@@ -21,6 +21,7 @@ import ProjectApiKeyController from '../projects/ProjectApiKeyController'
 import AdminController from '../auth/AdminController'
 import OrganizationController from '../organizations/OrganizationController'
 import App from '../app'
+import { organizationMiddleware } from '../organizations/OrganizationMiddleware'
 
 export const register = (parent: Router, ...routers: Router[]) => {
     for (const router of routers) {
@@ -61,6 +62,7 @@ export default (app: App) => {
 export const adminRouter = () => {
     const admin = new Router({ prefix: '/admin' })
     admin.use(authMiddleware)
+    admin.use(organizationMiddleware)
     admin.use(scopeMiddleware(['admin', 'secret']))
     return register(admin,
         ProjectController,
@@ -125,6 +127,8 @@ export const clientRouter = () => {
  */
 export const publicRouter = () => {
     const router = new Router()
+    router.use(organizationMiddleware)
+
     router.get('/health', async (ctx) => {
         ctx.body = {
             status: 'ok',

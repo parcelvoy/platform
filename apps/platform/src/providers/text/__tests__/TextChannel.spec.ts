@@ -1,5 +1,6 @@
 import { Admin } from '../../../auth/Admin'
 import { createProject } from '../../../projects/ProjectService'
+import { Variables } from '../../../render'
 import { TextTemplate } from '../../../render/Template'
 import { UserEvent } from '../../../users/UserEvent'
 import { createUser } from '../../../users/UserRepository'
@@ -10,7 +11,7 @@ import TextChannel from '../TextChannel'
 describe('TextChannel', () => {
 
     const optOut = 'Reply STOP to opt out.'
-    const setup = async (text_opt_out_message?: string) => {
+    const setup = async (text_opt_out_message?: string): Promise<{ variables: Variables, template: TextTemplate }> => {
         const text = 'Hello world!'
         const admin = await Admin.insertAndFetch({
             first_name: uuid(),
@@ -36,8 +37,8 @@ describe('TextChannel', () => {
                     template_id: 1,
                     campaign_id: 1,
                     subscription_id: 1,
-                    project,
                 },
+                project,
             },
             template,
         }
@@ -60,7 +61,7 @@ describe('TextChannel', () => {
             await UserEvent.insert({
                 user_id: variables.user.id,
                 name: 'text_sent',
-                project_id: variables.context.project.id,
+                project_id: variables.project.id,
             })
 
             const message = await channel.build(template, variables)

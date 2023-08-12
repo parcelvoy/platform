@@ -1,12 +1,12 @@
 import { ReactNode, useState } from 'react'
-import { DeepPartial, DeepRequired, FieldErrorsImpl, FieldValues, useForm, UseFormReturn } from 'react-hook-form'
+import { DeepRequired, DefaultValues, FieldErrorsImpl, FieldValues, useForm, UseFormReturn } from 'react-hook-form'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 import Alert from '../Alert'
 import Button from '../Button'
 
 interface FormWrapperProps<T extends FieldValues> {
     children: (form: UseFormReturn<T>) => ReactNode
-    defaultValues?: DeepPartial<T>
+    defaultValues?: DefaultValues<T>
     submitLabel?: string
     onSubmit: (data: T, navigate: NavigateFunction) => Promise<void>
     onError?: (error: Error) => void

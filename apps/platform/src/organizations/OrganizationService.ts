@@ -1,4 +1,5 @@
 import { Admin } from '../auth/Admin'
+import Provider from '../providers/Provider'
 import { encodeHashid } from '../utilities'
 import Organization from './Organization'
 
@@ -40,4 +41,15 @@ export const createOrganization = async (domain: string): Promise<Organization> 
         })
     }
     return org
+}
+
+export const updateOrganization = async (organization: Organization, params: Partial<Organization>) => {
+    return await Organization.updateAndFetch(organization.id, params)
+}
+
+export const organizationIntegrations = async (organization: Organization) => {
+    return await Provider.all(
+        qb => qb.leftJoin('projects', 'projects.id', 'providers.project_id')
+            .where('projects.organization_id', organization.id),
+    )
 }

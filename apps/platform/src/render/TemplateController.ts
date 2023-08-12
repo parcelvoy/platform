@@ -277,6 +277,7 @@ router.post('/:templateId/preview', async ctx => {
         user: User.fromJson({ ...payload.user, data: payload.user }),
         event: UserEvent.fromJson(payload.event || {}),
         context: payload.context || {},
+        project: ctx.state.project,
     })
 })
 

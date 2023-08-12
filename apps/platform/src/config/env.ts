@@ -23,10 +23,6 @@ export interface Env {
     auth: AuthConfig
     error: ErrorConfig
     redis: RedisConfig
-    tracking: {
-        linkWrap: boolean,
-        deeplinkMirrorUrl: string | undefined,
-    }
 }
 
 export interface DriverConfig {
@@ -150,9 +146,5 @@ export default (type?: EnvType): Env => {
                 dsn: process.env.ERROR_SENTRY_DSN,
             }),
         }),
-        tracking: {
-            linkWrap: (process.env.TRACKING_LINK_WRAP ?? 'true') === 'true',
-            deeplinkMirrorUrl: process.env.TRACKING_DEEPLINK_MIRROR_URL,
-        },
     }
 }

@@ -21,7 +21,7 @@ export default class PushJob extends Job {
         const data = await loadSendJob<PushTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, event, context } = data
+        const { campaign, template, user, project, context } = data
 
         try {
             // Load email channel so its ready to send
@@ -41,7 +41,7 @@ export default class PushJob extends Job {
             if (!isReady) return
 
             // Send the push and update the send record
-            await channel.send(template, { user, event, context })
+            await channel.send(template, data)
             await updateSendState({
                 campaign,
                 user,

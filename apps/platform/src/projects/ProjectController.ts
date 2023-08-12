@@ -57,9 +57,7 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
     type: 'object',
     required: ['name', 'timezone'],
     properties: {
-        name: {
-            type: 'string',
-        },
+        name: { type: 'string' },
         description: {
             type: 'string',
             nullable: true,
@@ -71,6 +69,10 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
         timezone: { type: 'string' },
         text_opt_out_message: {
             type: 'string',
+            nullable: true,
+        },
+        link_wrap: {
+            type: 'boolean',
             nullable: true,
         },
     },
@@ -116,6 +118,10 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
         },
         text_opt_out_message: {
             type: 'string',
+            nullable: true,
+        },
+        link_wrap: {
+            type: 'boolean',
             nullable: true,
         },
     },

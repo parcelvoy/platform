@@ -1,4 +1,3 @@
-
 import { DriverConfig } from '../../config/env'
 import { AnalyticsProvider, AnalyticsProviderName, AnalyticsUserEvent } from './AnalyticsProvider'
 
