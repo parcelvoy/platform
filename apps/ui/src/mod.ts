@@ -1,5 +1,6 @@
 export { default as ParcelvoyUI } from './App'
 export { default as parcelvoyApi, client as parcelvoyClient } from './api'
+export * as Types from './types'
 export * from './contexts'
 export * from './hooks'
 export * from './ui'

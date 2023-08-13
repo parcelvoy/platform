@@ -7,11 +7,13 @@ import Button from './Button'
 import { MenuIcon } from './icons'
 import clsx from 'clsx'
 
+export interface SidebarLink extends NavLinkProps {
+    key: string
+    icon: ReactNode
+}
+
 interface SidebarProps {
-    links?: Array<NavLinkProps & {
-        key: string
-        icon: ReactNode
-    }>
+    links?: SidebarLink[]
     prepend?: ReactNode
     append?: ReactNode
 }

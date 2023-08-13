@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useCallback, useContext, useState } from 'react'
+import { useNavigate } from 'react-router'
 import api, { apiUrl } from '../../api'
 import { Campaign, CampaignDelivery, CampaignState } from '../../types'
-import Button from '../../ui/Button'
+import Button, { LinkButton } from '../../ui/Button'
 import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import Modal from '../../ui/Modal'
@@ -13,6 +13,8 @@ import { snakeToTitle } from '../../utils'
 import { CampaignForm } from './CampaignForm'
 import { ChannelIcon } from './ChannelTag'
 import PreviewImage from '../../ui/PreviewImage'
+import { Alert } from '../../ui'
+import { ProjectContext } from '../../contexts'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -36,9 +38,9 @@ export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
 }
 
 export default function Campaigns() {
-    const { projectId = '' } = useParams()
+    const [project] = useContext(ProjectContext)
     const navigate = useNavigate()
-    const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(projectId, params), [projectId]))
+    const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(project.id, params), [project.id]))
     const [isCreateOpen, setIsCreateOpen] = useState(false)
 
     const handleCreateCampaign = (campaign: Campaign) => {
@@ -51,12 +53,12 @@ export default function Campaigns() {
     }
 
     const handleDuplicateCampaign = async (id: number) => {
-        const campaign = await api.campaigns.duplicate(projectId, id)
+        const campaign = await api.campaigns.duplicate(project.id, id)
         navigate(campaign.id.toString())
     }
 
     const handleArchiveCampaign = async (id: number) => {
-        await api.campaigns.delete(projectId, id)
+        await api.campaigns.delete(project.id, id)
         await state.reload()
     }
 
@@ -64,7 +66,16 @@ export default function Campaigns() {
         <>
             <PageContent title="Campaigns" actions={
                 <Button icon={<PlusIcon />} onClick={() => setIsCreateOpen(true)}>Create Campaign</Button>
-            }>
+            } banner={project.has_provider === false && (
+                <Alert
+                    variant="plain"
+                    title="Setup"
+                    actions={
+                        <LinkButton to={`/projects/${project.id}/settings/integrations`}>Setup Integration</LinkButton>
+                    }
+                >Campaigns depend on message integrations to be able to send. Configure an integration to start being able to send messages!
+                </Alert>
+            )}>
                 <SearchTable
                     {...state}
                     columns={[
@@ -74,7 +85,7 @@ export default function Campaigns() {
                             cell: ({ item: { id, name, channel } }) => (
                                 <div className="multi-cell">
                                     { channel === 'email'
-                                        ? <PreviewImage url={apiUrl(projectId, `campaigns/${id}/preview`)} width={50} height={40}>
+                                        ? <PreviewImage url={apiUrl(project.id, `campaigns/${id}/preview`)} width={50} height={40}>
                                             <div className="placeholder">
                                                 <ChannelIcon channel={channel} />
                                             </div>

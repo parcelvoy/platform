@@ -19,6 +19,10 @@ a {
     padding: 0 40px 40px;
 }
 
+.page-content .page-banner {
+    padding-top: 20px;
+}
+
 .container {
     border: 1px solid var(--color-grey);
     border-radius: var(--border-radius-outer);
