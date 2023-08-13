@@ -49,10 +49,6 @@
   "types": "./lib/cjs/mod.d.ts",
   "main": "./lib/cjs/mod.js",
   "module": "./lib/esm/mod.js",
-  "exports": {
-    "require": "./lib/cjs/mod.js",
-    "import": "./lib/esm/mod.js"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
