@@ -32,6 +32,9 @@
     --color-green-soft: #D1FADF;
     --color-green-hard: #039855;
 
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-soft: rgba(0, 0, 0, 0.05);
+
     --border-radius: 8px;
     --border-radius-inner: 6px;
     --border-radius-outer: 14px;
@@ -51,4 +54,7 @@
 
     --color-on-primary: var(--color-black);
     --color-on-background: var(--color-white);
+
+    --color-shadow: var(--color-grey);
+    --color-shadow-soft: var(--color-grey-soft);
 }

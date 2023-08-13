@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { ProjectContext } from '../../contexts'
 import Heading from '../../ui/Heading'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast/headless'
 import ProjectForm from '../project/ProjectForm'
 
 export default function ProjectSettings() {

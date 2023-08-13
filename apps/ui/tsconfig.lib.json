@@ -1,21 +1,19 @@
 {
-    "include": [
-        "src"
-    ],
+    "include": ["src"],
     "compilerOptions": {
         "downlevelIteration": true,
         "moduleResolution": "node",
-        "target": "esnext",
-        "module": "esnext",
-        "lib": ["dom", "esnext"],
+        "module": "commonjs",
+        "lib": ["dom", "esnext", "dom.iterable"],
         "importHelpers": true,
         "declaration": true,
         "sourceMap": true,
         "rootDir": "src",
-        "outDir": "lib/esm",
+        "outDir": "lib/cjs",
         "strict": true,
         "jsx": "react-jsx",
         "esModuleInterop": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
     }
 }

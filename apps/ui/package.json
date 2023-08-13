@@ -42,13 +42,13 @@
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
     "package:build": "rimraf lib/ && npm run package:build:esm && npm run package:build:cjs",
-    "package:build:esm": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 'src/**/*.css' lib/esm/ && copyfiles -u 2 'src/assets/*' lib/esm/assets/ && echo '{\"type\": \"module\"}' > lib/esm/package.json",
-    "package:build:cjs": "tsc --project ./tsconfig.lib.json --module commonjs --outDir lib/cjs && copyfiles -u 1 'src/**/*.css' lib/cjs/ && copyfiles -u 2 'src/assets/*' lib/esm/assets/ && echo '{\"type\": \"commonjs\"}' > lib/cjs/package.json",
+    "package:build:esm": "tsc --project ./tsconfig.lib-module.json && copyfiles -u 1 'src/**/*.css' lib/esm/ && copyfiles -u 2 'src/assets/*' lib/esm/assets/",
+    "package:build:cjs": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 'src/**/*.css' lib/cjs/ && copyfiles -u 2 'src/assets/*' lib/cjs/assets/",
     "package:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
   },
+  "types": "./lib/cjs/mod.d.ts",
   "main": "./lib/cjs/mod.js",
   "module": "./lib/esm/mod.js",
-  "types": "./lib/esm/mod.d.ts",
   "exports": {
     "require": "./lib/cjs/mod.js",
     "import": "./lib/esm/mod.js"

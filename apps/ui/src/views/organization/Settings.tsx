@@ -6,7 +6,7 @@ import TextInput from '../../ui/form/TextInput'
 import { Organization } from '../../types'
 import Heading from '../../ui/Heading'
 import api from '../../api'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast/headless'
 
 export default function Settings() {
     const [organization] = useContext(OrganizationContext)

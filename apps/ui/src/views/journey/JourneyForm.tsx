@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast/headless'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { Journey } from '../../types'
