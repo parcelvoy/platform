@@ -2,7 +2,7 @@ import { createBrowserRouter, Outlet, redirect, RouteObject, useNavigate, usePar
 import api from '../api'
 
 import ErrorPage from './ErrorPage'
-import Sidebar from '../ui/Sidebar'
+import Sidebar, { SidebarLink } from '../ui/Sidebar'
 import { LoaderContextProvider, StatefulLoaderContextProvider } from './LoaderContextProvider'
 import { AdminContext, CampaignContext, JourneyContext, ListContext, OrganizationContext, ProjectContext, UserContext } from '../contexts'
 import ApiKeys from './settings/ApiKeys'
@@ -55,7 +55,17 @@ export const useRoute = (includeProject = true) => {
     }
 }
 
-export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserRouter([
+export interface RouterProps {
+    additionalRoutes?: RouteObject[] // be sure to memoize this
+    projectSidebarLinks?: <T extends SidebarLink>(links: T[]) => T[]
+    orgSidebarLinks?: <T extends SidebarLink>(links: T[]) => T[]
+}
+
+export const createRouter = ({
+    additionalRoutes,
+    projectSidebarLinks = links => links,
+    orgSidebarLinks = links => links,
+}: RouterProps) => createBrowserRouter([
     {
         path: '/login',
         element: <Login />,
@@ -98,7 +108,7 @@ export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserR
                 element: (
                     <StatefulLoaderContextProvider context={OrganizationContext}>
                         <Sidebar
-                            links={[
+                            links={orgSidebarLinks([
                                 {
                                     key: 'projects',
                                     to: './projects',
@@ -123,7 +133,7 @@ export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserR
                                     children: 'Settings',
                                     icon: <SettingsIcon />,
                                 },
-                            ]}
+                            ])}
                         >
                             <Outlet />
                         </Sidebar>
@@ -164,7 +174,7 @@ export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserR
                 element: (
                     <StatefulLoaderContextProvider context={ProjectContext}>
                         <ProjectSidebar
-                            links={[
+                            links={projectSidebarLinks([
                                 {
                                     key: 'campaigns',
                                     to: 'campaigns',
@@ -199,7 +209,7 @@ export const createRouter = (additionalRoutes?: RouteObject[]) => createBrowserR
                                     icon: <SettingsIcon />,
                                     minRole: 'admin',
                                 },
-                            ]}
+                            ])}
                         >
                             <Outlet />
                         </ProjectSidebar>

@@ -10,6 +10,10 @@ export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
 }
 
+export const hasProvider = async (projectId: number) => {
+    return await Provider.exists(qb => qb.where('project_id', projectId))
+}
+
 export const pagedProviders = async (params: PageParams, projectId: number) => {
     return await Provider.search(
         { ...params, fields: ['name', 'group'] },
