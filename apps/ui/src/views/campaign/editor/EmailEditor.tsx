@@ -9,7 +9,7 @@ import { localeState } from '../CampaignDetail'
 import Modal from '../../../ui/Modal'
 import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast/headless'
 import { QuestionIcon } from '../../../ui/icons'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))

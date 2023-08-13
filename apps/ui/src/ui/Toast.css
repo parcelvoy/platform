@@ -1,0 +1,210 @@
+.ui-toast-wrapper { }
+
+.ui-toast-wrapper.active {
+    z-index: 9999;
+}
+
+.ui-toast-wrapper.active > * {
+    pointer-events: auto;
+}
+
+.ui-toast-bar {
+    display: flex;
+    align-items: center;
+    background: var(--color-background);
+    color: var(--color-text);
+    line-height: 1.3;
+    will-change: transform;
+    box-shadow: 0 3px 10px var(--color-shadow), 0 3px 3px var(--color-shadow-soft);
+    max-width: 350px;
+    pointer-events: auto;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+.ui-toast-bar .toast-message {
+    display: flex;
+    justify-content: center;
+    margin: 4px 10px;
+    color: inherit;
+    flex: 1 1 auto;
+    white-space: pre-line;
+}
+
+.ui-toast-bar .indicator-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.ui-toast-bar .status-wrapper {
+    position: absolute;
+}
+
+.ui-toast-bar .icon-wrapper {
+    position: relative;
+    transform: scale(0.6);
+    opacity: 0.4;
+    min-width: 20px;
+    animation: toastEnter 0.3s 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+        forwards;
+}
+
+.ui-toast-bar .checkmark-icon {
+    width: 20px;
+    opacity: 0;
+    height: 20px;
+    border-radius: 10px;
+    background: #61d345;
+    position: relative;
+    transform: rotate(45deg);
+
+    animation: circleAnimation 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+        forwards;
+    animation-delay: 100ms;
+}
+
+.ui-toast-bar .checkmark-icon:after {
+    content: '';
+    box-sizing: border-box;
+    animation: checkmarkAnimation 0.2s ease-out forwards;
+    opacity: 0;
+    animation-delay: 200ms;
+    position: absolute;
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+    border-color: #fff;
+    bottom: 6px;
+    left: 6px;
+    height: 10px;
+    width: 6px;
+}
+
+.ui-toast-bar .error-icon {
+    width: 20px;
+    opacity: 0;
+    height: 20px;
+    border-radius: 10px;
+    background: #ff4b4b;
+    position: relative;
+    transform: rotate(45deg);
+
+    animation: circleAnimation 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+        forwards;
+    animation-delay: 100ms;
+}
+
+.ui-toast-bar .error-icon:after,
+.ui-toast-bar .error-icon:before {
+    content: '';
+    animation: firstLineAnimation 0.15s ease-out forwards;
+    animation-delay: 150ms;
+    position: absolute;
+    border-radius: 3px;
+    opacity: 0;
+    background: #fff;
+    bottom: 9px;
+    left: 4px;
+    height: 2px;
+    width: 12px;
+}
+
+.ui-toast-bar .error-icon:before {
+    animation: secondLineAnimation 0.15s ease-out forwards;
+    animation-delay: 180ms;
+    transform: rotate(90deg);
+}
+
+.ui-toast-bar .loader-icon {
+    width: 12px;
+    height: 12px;
+    box-sizing: border-box;
+    border: 2px solid;
+    border-radius: 100%;
+    border-color: #e0e0e0;
+    border-right-color: #616161;
+    animation: rorate 1s linear infinite;
+}
+
+@keyframes toastBarEnter {
+    0% { transform: translate3d(0,-200%,0) scale(.6); opacity:.5; }
+    100% { transform: translate3d(0,0,0) scale(1); opacity:1; }
+}
+
+@keyframes toastBarExit {
+    0% {transform: translate3d(0,0,-1px) scale(1); opacity:1;}
+    100% {transform: translate3d(0,-150%,-1px) scale(.6); opacity:0;}
+}
+
+@keyframes toastEnter {
+    from {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes circleAnimation {
+    from {
+        transform: scale(0) rotate(45deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(45deg);
+        opacity: 1;
+    }
+}
+
+@keyframes checkmarkAnimation {
+    0% {
+        height: 0;
+        width: 0;
+        opacity: 0;
+    }
+    40% {
+        height: 0;
+        width: 6px;
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        height: 10px;
+    }
+}
+
+@keyframes firstLineAnimation {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes secondLineAnimation {
+    from {
+        transform: scale(0) rotate(90deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(90deg);
+        opacity: 1;
+    }
+}

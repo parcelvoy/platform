@@ -12,7 +12,7 @@ import { ArchiveIcon, CopyIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast/headless'
 import Alert from '../../ui/Alert'
 
 export default function ProjectApiKeys() {

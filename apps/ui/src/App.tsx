@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { Toaster } from 'react-hot-toast'
 import { RouteObject, RouterProvider } from 'react-router-dom'
 import { PreferencesProvider } from './ui/PreferencesContext'
 import { createRouter } from './views/router'
+import { Toaster } from './ui/Toast'
 
 interface AppProps {
     additionalRoutes?: RouteObject[] // be sure to memoize this
