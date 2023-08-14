@@ -1,44 +1,32 @@
 import { Campaign, LocaleOption } from '../../types'
-import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
-import { languageName } from '../../utils'
-import { UseFormReturn } from 'react-hook-form'
 import { LocaleParams, createLocale, localeOption } from './CampaignDetail'
-import { useState } from 'react'
 import OptionField from '../../ui/form/OptionField'
+import { useContext, useEffect, useState } from 'react'
+import api from '../../api'
+import { ProjectContext } from '../../contexts'
+import { SingleSelect } from '../../ui/form/SingleSelect'
+import { LinkButton } from '../../ui'
 
-interface CreateLocaleParams {
+interface CreateTemplateParams {
     open: boolean
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     onCreate: (campaign: Campaign, locale: LocaleOption) => void
 }
 
-const LocaleTextField = ({ form }: { form: UseFormReturn<LocaleParams> }) => {
+export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreate }: CreateTemplateParams) {
 
-    const [language, setLanguage] = useState<string | undefined>(undefined)
-    const handlePreviewLanguage = (locale: string) => {
-        try {
-            return setLanguage(languageName(locale))
-        } catch {
-            return setLanguage(undefined)
-        }
-    }
+    const [project] = useContext(ProjectContext)
+    const [locales, setLocales] = useState<LocaleOption[]>([])
+    useEffect(() => {
+        api.locales.search(project.id, { limit: 100 })
+            .then((result) => setLocales(result.results))
+            .catch(() => {})
+    })
 
-    return <>
-        <TextInput.Field form={form}
-            name="locale"
-            label="Locale"
-            onChange={handlePreviewLanguage}
-            required />
-        <p>{language}</p>
-    </>
-}
-
-export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate }: CreateLocaleParams) {
-
-    async function handleCreateLocale(params: LocaleParams) {
+    async function handleCreateTemplate(params: LocaleParams) {
         const template = await createLocale(params, campaign)
         const newCampaign = { ...campaign }
         newCampaign.templates.push(template)
@@ -47,16 +35,28 @@ export default function CreateLocaleModal({ open, setIsOpen, campaign, onCreate 
     }
 
     return (
-        <Modal title={'Create Template'}
+        <Modal title="Create Template"
             open={open}
             onClose={() => setIsOpen(false)}
             zIndex={1000}>
             <FormWrapper<LocaleParams>
-                onSubmit={async (params) => { await handleCreateLocale(params) }}
+                onSubmit={async (params) => { await handleCreateTemplate(params) }}
                 submitLabel="Create">
                 {form => <>
                     <p>Each campaign can have one template per locale. Pick a locale to create a template for it.</p>
-                    <LocaleTextField form={form} />
+                    <SingleSelect.Field
+                        form={form}
+                        name="locale"
+                        label="Locale"
+                        options={locales}
+                        toValue={option => option.key}
+                        required />
+                    <div className="label">
+                        <LinkButton
+                            size="small"
+                            variant="secondary"
+                            to={`/projects/${project.id}/settings/locales`}>Create Locale</LinkButton>
+                    </div>
                     { campaign.channel === 'email' && (
                         <OptionField
                             form={form}

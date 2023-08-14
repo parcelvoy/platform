@@ -6,6 +6,7 @@ import { useContext } from 'react'
 import api from '../../api'
 import { LocaleContext } from '../../contexts'
 import { localeOption } from './CampaignDetail'
+import { languageName } from '../../utils'
 
 interface EditLocalesParams {
     open: boolean
@@ -44,7 +45,11 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
                 items={allLocales}
                 itemKey={({ item }) => item.key}
                 columns={[
-                    { key: 'label', title: 'Language' },
+                    {
+                        key: 'label',
+                        title: 'Language',
+                        cell: ({ item }) => languageName(item.key),
+                    },
                     { key: 'key', title: 'Locale' },
                     {
                         key: 'options',

@@ -9,6 +9,7 @@ import { ProjectAdmin } from './ProjectAdmins'
 import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
 import { Admin } from '../auth/Admin'
 import { getAdmin } from '../auth/AdminRepository'
+import Locale, { LocaleParams } from './Locale'
 
 export const adminProjectIds = async (adminId: number) => {
     const records = await ProjectAdmin.all(qb => qb.where('admin_id', adminId))
@@ -121,4 +122,22 @@ export const requireProjectRole = (ctx: ParameterizedContext<ProjectState>, minR
 export const projectRoleMiddleware = (minRole: ProjectRole) => async (ctx: ParameterizedContext<ProjectState>, next: Next) => {
     requireProjectRole(ctx, minRole)
     return next()
+}
+
+export const pagedLocales = async (params: PageParams, projectId: number) => {
+    return await Locale.search(
+        { ...params, fields: ['name'] },
+        qb => qb.where('project_id', projectId),
+    )
+}
+
+export const createLocale = async (projectId: number, params: LocaleParams) => {
+    return await Locale.insertAndFetch({
+        ...params,
+        project_id: projectId,
+    })
+}
+
+export const deleteLocale = async (projectId: number, id: number) => {
+    return await Locale.delete(qb => qb.where('project_id', projectId).where('id', id))
 }

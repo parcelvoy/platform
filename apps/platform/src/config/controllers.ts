@@ -18,6 +18,7 @@ import TagController from '../tags/TagController'
 import { authMiddleware, scopeMiddleware } from '../auth/AuthMiddleware'
 import ProjectAdminController from '../projects/ProjectAdminController'
 import ProjectApiKeyController from '../projects/ProjectApiKeyController'
+import ProjectLocaleController from '../projects/ProjectLocaleController'
 import AdminController from '../auth/AdminController'
 import OrganizationController from '../organizations/OrganizationController'
 import App from '../app'
@@ -93,6 +94,7 @@ export const projectRouter = (prefix = '/projects/:project') => {
         AdminProviderController,
         ProjectAdminController,
         ProjectApiKeyController,
+        ProjectLocaleController,
         UserController,
         TagController,
     )

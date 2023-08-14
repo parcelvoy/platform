@@ -121,7 +121,7 @@ export interface Admin {
 export interface Organization {
     id: number
     username: string
-    domain: string
+    domain?: string
     auth: any
     tracking_deeplink_mirror_url?: string
 }
@@ -159,6 +159,7 @@ export interface Project {
     updated_at: string
     deleted_at?: string
     role?: ProjectRole
+    has_provider?: boolean
 }
 
 export type ChannelType = 'email' | 'push' | 'text' | 'webhook'
@@ -508,4 +509,8 @@ export interface Metric {
 export interface LocaleOption {
     key: string
     label: string
+}
+
+export interface Locale extends LocaleOption {
+    id: number
 }

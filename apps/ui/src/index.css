@@ -13,10 +13,19 @@ body {
 
 a {
     color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 .page-content {
     padding: 0 40px 40px;
+}
+
+.page-content .page-banner {
+    padding-top: 20px;
 }
 
 .container {
@@ -100,6 +109,11 @@ form .form-submit {
 label {
     display: block;
     margin: 10px 0 5px;
+}
+
+form .label {
+    display: block;
+    margin: 5px 0;
 }
 
 label > span {

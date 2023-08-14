@@ -1,16 +1,12 @@
 import { useMemo } from 'react'
-import { RouteObject, RouterProvider } from 'react-router-dom'
+import { RouterProvider } from 'react-router-dom'
 import { PreferencesProvider } from './ui/PreferencesContext'
-import { createRouter } from './views/router'
+import { RouterProps, createRouter } from './views/router'
 import { Toaster } from './ui/Toast'
 
-interface AppProps {
-    additionalRoutes?: RouteObject[] // be sure to memoize this
-}
+export default function App(props: RouterProps) {
 
-export default function App({ additionalRoutes }: AppProps) {
-
-    const router = useMemo(() => createRouter(additionalRoutes), [additionalRoutes])
+    const router = useMemo(() => createRouter(props), [props])
 
     return (
         <PreferencesProvider>

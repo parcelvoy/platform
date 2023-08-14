@@ -13,6 +13,7 @@ import { ProjectRulePath } from '../rules/ProjectRulePath'
 import { getAdmin } from '../auth/AdminRepository'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import App from '../app'
+import { hasProvider } from '../providers/ProviderService'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -93,6 +94,7 @@ subrouter.get('/', async ctx => {
     ctx.body = {
         ...ctx.state.project,
         role: ctx.state.projectRole,
+        has_provider: await hasProvider(ctx.state.project.id),
     }
 })
 

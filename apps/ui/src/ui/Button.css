@@ -49,6 +49,10 @@
     z-index: 2;
 }
 
+a.ui-button:hover {
+    text-decoration: none;
+}
+
 .ui-button:disabled {
     cursor: not-allowed;
     opacity: 0.5 !important;

@@ -14,8 +14,9 @@ import { SelectionProps } from '../../ui/form/Field'
 import { TagPicker } from '../settings/TagPicker'
 import { Column, Columns } from '../../ui/Columns'
 import Modal from '../../ui/Modal'
-import Button from '../../ui/Button'
+import Button, { LinkButton } from '../../ui/Button'
 import { DataTable } from '../../ui/DataTable'
+import { Alert } from '../../ui'
 
 interface CampaignEditParams {
     campaign?: Campaign
@@ -288,20 +289,28 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
                                         subscriptions={subscriptions}
                                         form={form}
                                     />
-                                    <Columns>
-                                        <Column>
-                                            <ProviderSelection
-                                                providers={providers}
-                                                form={form}
-                                            />
-                                        </Column>
-                                        <Column>
-                                            <SubscriptionSelection
-                                                subscriptions={subscriptions}
-                                                form={form}
-                                            />
-                                        </Column>
-                                    </Columns>
+                                    {providers.length
+                                        ? <Columns>
+                                            <Column>
+                                                <ProviderSelection
+                                                    providers={providers}
+                                                    form={form}
+                                                />
+                                            </Column>
+                                            <Column>
+                                                <SubscriptionSelection
+                                                    subscriptions={subscriptions}
+                                                    form={form}
+                                                />
+                                            </Column>
+                                        </Columns>
+                                        : <Alert
+                                            variant="plain"
+                                            title="No Providers"
+                                            actions={
+                                                <LinkButton to={`/projects/${project.id}/settings/integrations`}>Setup Integration</LinkButton>
+                                            }>There are no providers configured for this channel. Please add a provider to continue.</Alert>
+                                    }
                                 </>
                             )
                     }
