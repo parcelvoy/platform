@@ -13,6 +13,11 @@ body {
 
 a {
     color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
 }
 
 .page-content {
@@ -104,6 +109,11 @@ form .form-submit {
 label {
     display: block;
     margin: 10px 0 5px;
+}
+
+form .label {
+    display: block;
+    margin: 5px 0;
 }
 
 label > span {

@@ -41,6 +41,7 @@ import Settings from './settings/Settings'
 import ProjectSidebar from './project/ProjectSidebar'
 import Admins from './organization/Admins'
 import OrganizationSettings from './organization/Settings'
+import Locales from './settings/Locales'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -319,6 +320,10 @@ export const createRouter = ({
                             {
                                 path: 'team',
                                 element: <Teams />,
+                            },
+                            {
+                                path: 'locales',
+                                element: <Locales />,
                             },
                             {
                                 path: 'api-keys',

@@ -18,6 +18,11 @@ export default function Settings() {
             children: 'Team',
         },
         {
+            key: 'locales',
+            to: 'locales',
+            children: 'Locales',
+        },
+        {
             key: 'api-keys',
             to: 'api-keys',
             children: 'API Keys',
