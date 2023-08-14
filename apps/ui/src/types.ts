@@ -510,3 +510,7 @@ export interface LocaleOption {
     key: string
     label: string
 }
+
+export interface Locale extends LocaleOption {
+    id: number
+}

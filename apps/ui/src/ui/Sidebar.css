@@ -79,6 +79,7 @@ nav a {
 nav a:hover {
     color: var(--color-primary);
     background: var(--color-grey);
+    text-decoration: none;
 }
 
 nav a.selected {

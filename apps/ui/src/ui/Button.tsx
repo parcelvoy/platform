@@ -69,7 +69,7 @@ const Button = forwardRef(function Button(props: ButtonProps, ref: Ref<HTMLButto
             style={style}
         >
             {icon && (<span className="button-icon" aria-hidden="true">{icon}</span>)}
-            <span className="button-text">{children}</span>
+            {children && <span className="button-text">{children}</span>}
         </button>
     )
 })

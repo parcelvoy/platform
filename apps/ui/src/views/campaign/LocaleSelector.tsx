@@ -6,7 +6,7 @@ import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import LocaleEditModal from './LocaleEditModal'
 import { useNavigate } from 'react-router-dom'
-import LocaleCreateModal from './LocaleCreateModal'
+import TemplateCreateModal from './TemplateCreateModal'
 
 interface LocaleSelectorParams {
     campaignState: UseStateContext<Campaign>
@@ -70,7 +70,7 @@ export default function LocaleSelector({
             campaign={campaign}
             setCampaign={setCampaign}
             setAddOpen={setAddOpen} />
-        <LocaleCreateModal
+        <TemplateCreateModal
             open={addOpen}
             setIsOpen={setAddOpen}
             campaign={campaign}
