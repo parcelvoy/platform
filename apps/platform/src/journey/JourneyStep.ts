@@ -19,6 +19,7 @@ export class JourneyUserStep extends Model {
     type!: string
     journey_id!: number
     step_id!: number
+    delay_until?: Date
 
     static tableName = 'journey_user_step'
 }
@@ -55,12 +56,13 @@ export class JourneyStep extends Model {
 
     static get type() { return snakeCase(this.name) }
 
-    async step(user: User, type: string) {
+    async step(user: User, type: string, delay_until?: Date) {
         return await JourneyUserStep.insert({
             type,
             user_id: user.id,
             journey_id: this.journey_id,
             step_id: this.id,
+            delay_until,
         })
     }
 
@@ -145,16 +147,21 @@ export class JourneyDelay extends JourneyStep {
 
         // If no delay yet, event hasn't been seen yet, create and break
         if (!userJourneyStep) {
-            await this.step(user, 'delay')
+
+            // determine user/project timezone
+            const timezone = await this.timezone(user)
+
+            // compute delay (in UTC)
+            const delayUntil = await this.offset(new Date(), timezone)
+
+            // record delay
+            await this.step(user, 'delay', delayUntil)
+
+            // do not continue, wait for JourneyDelayJob to pick this up again
             return false
         }
 
-        const timezone = await this.timezone(user)
-        const offset = await this.offset(userJourneyStep.created_at, timezone)
-
-        // If event, check that it's in the past
-        if (isFuture(offset)) return false
-        return true
+        return !userJourneyStep.delay_until || !isFuture(userJourneyStep.delay_until)
     }
 
     private async offset(baseDate: Date, timezone: string): Promise<Date> {
