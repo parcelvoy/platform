@@ -1,3 +1,4 @@
+import { subDays } from 'date-fns'
 import { Job } from '../queue'
 import { shallowEqual } from '../utilities'
 import Campaign, { CampaignDelivery } from './Campaign'
@@ -7,8 +8,15 @@ export default class CampaignStateJob extends Job {
     static $name = 'campaign_state_job'
 
     static async handler() {
+
+        // Fetch anything that is currently running or has finished
+        // within the last two days
         const campaigns = await Campaign.query()
-            .whereIn('state', ['scheduled', 'running', 'finished'])
+            .whereIn('state', ['scheduled', 'running'])
+            .orWhere(function(qb) {
+                qb.where('state', 'finished')
+                    .where('send_at', '>', subDays(Date.now(), 2))
+            })
 
         const currentState = (campaign: Campaign, pending: number, delivery: CampaignDelivery) => {
             if (campaign.type === 'trigger') return 'running'

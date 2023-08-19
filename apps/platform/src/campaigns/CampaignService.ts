@@ -20,6 +20,7 @@ import CampaignError from './CampaignError'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
 import Project from '../projects/Project'
 import Template from '../render/Template'
+import { subDays } from 'date-fns'
 
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
     const result = await Campaign.search(
@@ -281,6 +282,14 @@ export const campaignSendReadyQuery = (campaignId: number) => {
         .where('campaign_sends.state', 'pending')
         .where('campaign_id', campaignId)
         .select('user_id', 'campaign_sends.id AS send_id')
+}
+
+export const checkStalledSends = (campaignId: number) => {
+    return CampaignSend.query()
+        .where('campaign_sends.send_at', '<', subDays(Date.now(), 2))
+        .where('campaign_sends.state', 'throttled')
+        .where('campaign_id', campaignId)
+        .update({ state: 'failed' })
 }
 
 export const recipientQuery = (campaign: Campaign) => {
