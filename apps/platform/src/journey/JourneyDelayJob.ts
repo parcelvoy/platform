@@ -20,7 +20,7 @@ export default class JourneyDelayJob extends Job {
             .leftJoin('journeys', 'journeys.id', '=', 'latest_journey_steps.journey_id')
             .where('rn', 1)
             .where('type', 'delay')
-            .where('delay_until', '<=', Date.now())
+            .where('delay_until', '<=', new Date())
             .stream(async stream => {
 
                 let chunk: Job[] = []
