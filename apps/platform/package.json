@@ -1,7 +1,7 @@
 {
   "name": "@parcelvoy/platform",
   "version": "0.1.0",
-  "repository":"https://github.com/parcelvoy/platform",
+  "repository": "https://github.com/parcelvoy/platform",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "dependencies": {
@@ -88,5 +88,8 @@
     "ts-node": "^10.8.2",
     "typescript": "^4.9.3"
   },
-  "files": [ "/build", "/db" ]
+  "files": [
+    "/build",
+    "/db"
+  ]
 }

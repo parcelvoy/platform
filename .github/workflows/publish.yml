@@ -19,9 +19,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          registry-url: https://npm.pkg.github.com/
+          registry-url: https://registry.npmjs.org
+      - name: Cache NPM
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - run: npm ci
-      - run: echo "registry=https://npm.pkg.github.com/@parcelvoy" >> .npmrc
       - run: npm run package:publish --tag=$(echo ${GITHUB_REF_NAME:1})
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
