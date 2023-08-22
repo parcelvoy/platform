@@ -44,7 +44,7 @@
     "package:build": "rimraf lib/ && npm run package:build:esm && npm run package:build:cjs",
     "package:build:esm": "tsc --project ./tsconfig.lib-module.json && copyfiles -u 1 'src/**/*.css' lib/esm/ && copyfiles -u 2 'src/assets/*' lib/esm/assets/",
     "package:build:cjs": "tsc --project ./tsconfig.lib.json && copyfiles -u 1 'src/**/*.css' lib/cjs/ && copyfiles -u 2 'src/assets/*' lib/cjs/assets/",
-    "package:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
+    "package:publish": "npm run package:build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest --access public"
   },
   "types": "./lib/cjs/mod.d.ts",
   "main": "./lib/cjs/mod.js",
