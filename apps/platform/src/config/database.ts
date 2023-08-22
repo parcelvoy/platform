@@ -50,10 +50,7 @@ const migrate = async (config: DatabaseConfig, db: Database, retries = MIGRATION
     try {
         return await db.migrate.latest({
             directory: [
-                path.resolve(__dirname, process.env.NODE_ENV === 'production'
-                    ? '../db/migrations'
-                    : '../../db/migrations',
-                ),
+                path.resolve(__dirname, '../../db/migrations'),
                 ...config.migrationPaths,
             ],
             tableName: 'migrations',

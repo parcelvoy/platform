@@ -1,4 +1,4 @@
-import { Admin } from '../auth/Admin'
+import Admin from '../auth/Admin'
 import Provider from '../providers/Provider'
 import { encodeHashid } from '../utilities'
 import Organization from './Organization'

@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:18 AS build
 WORKDIR /usr/src/app
 COPY --from=compile /usr/src/app/apps/platform/package*.json ./
-COPY --from=compile /usr/src/app/apps/platform/build ./
+COPY --from=compile /usr/src/app/apps/platform/build ./build
 COPY --from=compile /usr/src/app/apps/platform/db ./db
 COPY --from=compile /usr/src/app/apps/platform/scripts ./scripts
 COPY --from=compile /usr/src/app/apps/platform/public ./public 
@@ -24,4 +24,4 @@ USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app ./
 EXPOSE 3001
-CMD ["dumb-init", "node", "boot.js"]
+CMD ["dumb-init", "node", "build/boot.js"]

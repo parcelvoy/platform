@@ -1,4 +1,4 @@
-import { Admin } from '../../../auth/Admin'
+import Admin from '../../../auth/Admin'
 import { createProject } from '../../../projects/ProjectService'
 import { Variables } from '../../../render'
 import { TextTemplate } from '../../../render/Template'

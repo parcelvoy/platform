@@ -7,7 +7,7 @@ import { uuid } from '../utilities'
 import Project, { ProjectParams, ProjectRole, projectRoles } from './Project'
 import { ProjectAdmin } from './ProjectAdmins'
 import { ProjectApiKey, ProjectApiKeyParams } from './ProjectApiKey'
-import { Admin } from '../auth/Admin'
+import Admin from '../auth/Admin'
 import { getAdmin } from '../auth/AdminRepository'
 import Locale, { LocaleParams } from './Locale'
 

@@ -1,6 +1,6 @@
 import Model, { ModelParams } from '../core/Model'
 
-export class Admin extends Model {
+export default class Admin extends Model {
     organization_id!: number
     email!: string
     first_name?: string

@@ -1,5 +1,5 @@
 import Router from '@koa/router'
-import { Admin } from '../auth/Admin'
+import Admin from '../auth/Admin'
 import { AuthState } from '../auth/AuthMiddleware'
 
 const router = new Router<AuthState>({
