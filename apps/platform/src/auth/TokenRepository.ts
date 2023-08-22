@@ -3,7 +3,7 @@ import { Context } from 'koa'
 import { sign } from 'jsonwebtoken'
 import { AccessToken } from './AccessToken'
 import App from '../app'
-import { Admin } from './Admin'
+import Admin from './Admin'
 
 export interface OAuthResponse {
     access_token: string

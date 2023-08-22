@@ -1,4 +1,4 @@
-import { Admin } from '../../auth/Admin'
+import Admin from '../../auth/Admin'
 import { uuid } from '../../utilities'
 import { createProject } from '../ProjectService'
 

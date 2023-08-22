@@ -4,7 +4,7 @@ import { getAdminByEmail } from './AdminRepository'
 import AuthProvider from './AuthProvider'
 import App from '../app'
 import { combineURLs, firstQueryParam } from '../utilities'
-import { Admin } from './Admin'
+import Admin from './Admin'
 import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 

@@ -1,5 +1,5 @@
 import { PageParams } from '../core/searchParams'
-import { Admin, AdminParams } from './Admin'
+import Admin, { AdminParams } from './Admin'
 
 export const pagedAdmins = async (params: PageParams) => {
     return await Admin.search(
