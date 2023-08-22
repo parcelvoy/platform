@@ -60,7 +60,7 @@
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/api:latest -t ghcr.io/parcelvoy/api:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
     "migration:create": "node ./scripts/create-migration.mjs",
-    "package:publish": "npm run build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest"
+    "package:publish": "npm run build && npm version $npm_config_tag --no-git-tag-version && npm pack && npm publish --tag=latest --access public"
   },
   "devDependencies": {
     "@types/busboy": "^1.5.0",
