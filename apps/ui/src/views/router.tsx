@@ -57,16 +57,16 @@ export const useRoute = (includeProject = true) => {
 }
 
 export interface RouterProps {
-    additionalRoutes?: RouteObject[] // be sure to memoize this
+    routes?: (routes: RouteObject[]) => RouteObject[]
     projectSidebarLinks?: <T extends SidebarLink>(links: T[]) => T[]
     orgSidebarLinks?: <T extends SidebarLink>(links: T[]) => T[]
 }
 
 export const createRouter = ({
-    additionalRoutes,
+    routes = routes => routes,
     projectSidebarLinks = links => links,
     orgSidebarLinks = links => links,
-}: RouterProps) => createBrowserRouter([
+}: RouterProps) => createBrowserRouter(routes([
     {
         path: '/login',
         element: <Login />,
@@ -349,7 +349,6 @@ export const createRouter = ({
                     },
                 ],
             },
-            ...additionalRoutes ?? [],
         ],
     },
-])
+]))

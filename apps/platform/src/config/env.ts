@@ -129,8 +129,8 @@ export default (type?: EnvType): Env => {
             google: {
                 driver: 'google',
                 name: process.env.AUTH_GOOGLE_NAME!,
-                clientId: process.env.AUTH_OPENID_CLIENT_ID!,
-                clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET!,
+                clientId: process.env.AUTH_GOOGLE_CLIENT_ID!,
+                clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET!,
                 redirectUri: `${apiBaseUrl}/auth/login/google/callback`,
             },
             multi: {
