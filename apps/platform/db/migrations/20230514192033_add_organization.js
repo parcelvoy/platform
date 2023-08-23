@@ -26,7 +26,7 @@ exports.up = async function(knex) {
             .after('id')
     })
 
-    const orgId = await knex('organizations').insert({ id: 1, username: 'main' })
+    const orgId = await knex('organizations').insert({ id: 1, username: 'local' })
     await knex('projects').update({ organization_id: orgId }).whereNull('organization_id')
     await knex('admins').update({ organization_id: orgId }).whereNull('organization_id')
 }
