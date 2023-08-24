@@ -1,20 +1,26 @@
 import { isRouteErrorResponse, Navigate, useNavigate, useRouteError } from 'react-router-dom'
-import Alert from '../ui/Alert'
+import Alert, { AlertProps } from '../ui/Alert'
 import Button from '../ui/Button'
+import './ErrorPage.css'
 
-export default function ErrorPage() {
+const ErrorAlert = (props: AlertProps) => {
+    return <section className="error-page">
+        <Alert {...props} />
+    </section>
+}
+
+export default function ErrorPage({ status = 500 }: { status?: number }) {
     const error = useRouteError() as any
     const navigate = useNavigate()
 
     console.error(error)
 
-    let status = 500
     let message = ''
     if (isRouteErrorResponse(error)) {
         status = error.status
         message = error.data + ''
     }
-    if (error.response) {
+    if (error?.response) {
         status = error.response.status
         message = error.response.data + ''
     }
@@ -34,33 +40,30 @@ export default function ErrorPage() {
 
     if (status === 404) {
         return (
-            <Alert
-                variant="info"
-                title="Page Not Found"
-                style={{ margin: 15 }}
+            <ErrorAlert
+                variant="plain"
+                title="Looks Like You're Lost!"
                 actions={
-                    <Button
-                        onClick={() => navigate(-1)}
-                    >
+                    <Button onClick={() => navigate('/')}>
                         Go Back
                     </Button>
                 }
-            />
+            >The page or resource you are looking for does not exist or has been moved.</ErrorAlert>
         )
     }
 
     return (
-        <Alert variant="error" title={`Error [${status.toString()}]`}>
+        <ErrorAlert variant="error" title={`Error [${status.toString()}]`}>
             {message}
-        </Alert>
+        </ErrorAlert>
     )
 }
 
 export function AccessDenied() {
     return (
-        <Alert variant="warn" title="Access Denied" style={{ margin: 15 }}>
+        <ErrorAlert variant="warn" title="Access Denied">
             Additional permission is required in order to access this section.
             Please reach out to your administrator.
-        </Alert>
+        </ErrorAlert>
     )
 }

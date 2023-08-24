@@ -4,7 +4,7 @@ import ProjectForm from '../project/ProjectForm'
 export default function OnboardingProject() {
     const navigate = useNavigate()
     return (
-        <>
+        <div className="auth-step">
             <h1>Project Setup</h1>
             <p>
                 {
@@ -16,6 +16,6 @@ export default function OnboardingProject() {
             <ProjectForm
                 onSave={({ id }) => navigate('/projects/' + id)}
             />
-        </>
+        </div>
     )
 }
