@@ -1,7 +1,7 @@
 import { CSSProperties, PropsWithChildren } from 'react'
 import './Alert.css'
 
-interface AlertProps extends PropsWithChildren {
+export interface AlertProps extends PropsWithChildren {
     variant?: 'info' | 'plain' | 'success' | 'error' | 'warn'
     title: React.ReactNode
     body?: React.ReactNode

@@ -8,9 +8,7 @@ export default function Onboarding() {
             <div className="logo">
                 <Logo />
             </div>
-            <div className="auth-step">
-                <Outlet />
-            </div>
+            <Outlet />
         </div>
     )
 }

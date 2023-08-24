@@ -83,9 +83,7 @@ export const createRouter = ({
         children: [
             {
                 index: true,
-                element: (
-                    <Projects />
-                ),
+                element: <Projects />,
             },
             {
                 path: 'onboarding',
@@ -348,6 +346,11 @@ export const createRouter = ({
                         ],
                     },
                 ],
+            },
+            {
+                path: '*',
+                element: <ErrorPage status={404} />,
+                errorElement: <ErrorPage />,
             },
         ],
     },
