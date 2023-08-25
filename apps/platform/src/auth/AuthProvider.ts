@@ -17,7 +17,7 @@ export default abstract class AuthProvider {
     abstract start(ctx: AuthContext): Promise<void>
     abstract validate(ctx: AuthContext): Promise<void>
 
-    async loadAuthOrganization(ctx: AuthContext, domain: string) {
+    async loadAuthOrganization(ctx: AuthContext, domain?: string) {
 
         // If we have an organization or can find one by domain
         // we use that to start

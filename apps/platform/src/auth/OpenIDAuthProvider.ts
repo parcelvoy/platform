@@ -9,7 +9,7 @@ import { logger } from '../config/logger'
 
 export interface OpenIDConfig extends AuthTypeConfig {
     driver: 'openid'
-    issuerUrl: string // 'https://accounts.google.com'
+    issuerUrl: string
     clientId: string
     clientSecret: string
     redirectUri: string
@@ -36,6 +36,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
             secure: ctx.request.secure,
             httpOnly: true,
             expires: addSeconds(Date.now(), 3600),
+            signed: true,
         })
 
         const state = firstQueryParam(ctx.request.query.r)
@@ -44,6 +45,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
             secure: ctx.request.secure,
             httpOnly: true,
             expires: addSeconds(Date.now(), 3600),
+            signed: true,
         })
 
         const organization = ctx.state.organization
@@ -52,6 +54,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
                 secure: ctx.request.secure,
                 httpOnly: true,
                 expires: addSeconds(Date.now(), 3600),
+                signed: true,
             })
         }
 
@@ -71,8 +74,8 @@ export default class OpenIDAuthProvider extends AuthProvider {
 
         // Unsafe cast, but Koa and library don't play nicely
         const params = client.callbackParams(ctx.request as any)
-        const nonce = ctx.cookies.get('nonce')
-        const state = params.state ?? ctx.cookies.get('relaystate')
+        const nonce = ctx.cookies.get('nonce', { signed: true })
+        const state = params.state ?? ctx.cookies.get('relaystate', { signed: true })
 
         try {
             const tokenSet = await client.callback(this.config.redirectUri, params, { nonce, state })
@@ -83,10 +86,6 @@ export default class OpenIDAuthProvider extends AuthProvider {
 
             const claims = tokenSet.claims()
             const domain = this.getDomain(claims)
-            if (!domain || !this.domainMatch(domain)) {
-                throw new RequestError(AuthError.InvalidDomain)
-            }
-
             if (!claims.email) {
                 throw new RequestError(AuthError.InvalidEmail)
             }
@@ -126,15 +125,9 @@ export default class OpenIDAuthProvider extends AuthProvider {
         return this.client
     }
 
-    private domainMatch(domain?: string): boolean {
-        if (!this.config.domain) return true
-        return this.config.domain === domain
-    }
-
     private getDomain(claims: IdTokenClaims): string | undefined {
         if (claims.hd && typeof claims.hd === 'string') {
             return claims.hd
         }
-        return claims.email?.split('@')[1]
     }
 }

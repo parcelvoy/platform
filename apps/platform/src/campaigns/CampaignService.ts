@@ -206,8 +206,8 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, user_step_id }
 
     return channels[campaign.channel]
 }
-export const sendCampaign = async (data: SendCampaign): Promise<void> => {
 
+export const sendCampaign = async (data: SendCampaign): Promise<void> => {
     await sendCampaignJob(data).queue()
 }
 

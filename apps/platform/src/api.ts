@@ -49,6 +49,7 @@ export default class Api extends Koa {
             }
         })
 
+        this.keys = [app.env.secret]
         this.use(koaBody())
             .use(cors())
             .use(serve('./public', {
