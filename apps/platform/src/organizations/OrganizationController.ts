@@ -5,6 +5,7 @@ import { Context } from 'koa'
 import { JwtAdmin } from '../auth/AuthMiddleware'
 import { getOrganization, organizationIntegrations, updateOrganization } from './OrganizationService'
 import Organization, { OrganizationParams } from './Organization'
+import { jobs } from '../config/queue'
 
 const router = new Router<{
     admin: JwtAdmin
@@ -22,8 +23,16 @@ router.get('/', async ctx => {
     ctx.body = ctx.state.organization
 })
 
-router.get('/metrics', async ctx => {
+router.get('/performance/queue', async ctx => {
     ctx.body = await App.main.queue.metrics()
+})
+
+router.get('/performance/jobs', async ctx => {
+    ctx.body = jobs.map(job => job.$name)
+})
+
+router.get('/performance/jobs/:job', async ctx => {
+    ctx.body = await App.main.stats.list(ctx.params.job)
 })
 
 router.get('/integrations', async ctx => {

@@ -21,27 +21,33 @@ import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 
+export const jobs = [
+    CampaignGenerateListJob,
+    CampaignInteractJob,
+    CampaignSendJob,
+    CampaignStateJob,
+    CampaignTriggerJob,
+    EmailJob,
+    EventPostJob,
+    JourneyDelayJob,
+    JourneyProcessJob,
+    ListPopulateJob,
+    ListStatsJob,
+    ProcessListsJob,
+    UserSchemaSyncJob,
+    PushJob,
+    TextJob,
+    UserAliasJob,
+    UserDeleteJob,
+    UserDeviceJob,
+    UserPatchJob,
+    WebhookJob,
+]
+
 export const loadJobs = (queue: Queue) => {
-    queue.register(CampaignGenerateListJob)
-    queue.register(CampaignInteractJob)
-    queue.register(CampaignSendJob)
-    queue.register(CampaignStateJob)
-    queue.register(CampaignTriggerJob)
-    queue.register(EmailJob)
-    queue.register(EventPostJob)
-    queue.register(JourneyDelayJob)
-    queue.register(JourneyProcessJob)
-    queue.register(ListPopulateJob)
-    queue.register(ListStatsJob)
-    queue.register(ProcessListsJob)
-    queue.register(UserSchemaSyncJob)
-    queue.register(PushJob)
-    queue.register(TextJob)
-    queue.register(UserAliasJob)
-    queue.register(UserDeleteJob)
-    queue.register(UserDeviceJob)
-    queue.register(UserPatchJob)
-    queue.register(WebhookJob)
+    for (const job of jobs) {
+        queue.register(job)
+    }
 }
 
 export default (config: QueueConfig) => {

@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Locale, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, JourneyStepStats, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -284,7 +284,13 @@ const api = {
             .patch<Organization>(`/admin/organizations/${id}`, params)
             .then(r => r.data),
         metrics: async () => await client
-            .get<QueueMetric>('/admin/organizations/metrics')
+            .get<QueueMetric>('/admin/organizations/performance/queue')
+            .then(r => r.data),
+        jobs: async () => await client
+            .get<string[]>('/admin/organizations/performance/jobs')
+            .then(r => r.data),
+        jobPerformance: async (job: string) => await client
+            .get<Metric[]>(`/admin/organizations/performance/jobs/${job}`)
             .then(r => r.data),
     },
 

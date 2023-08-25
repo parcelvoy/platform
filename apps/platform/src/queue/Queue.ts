@@ -44,12 +44,18 @@ export default class Queue {
 
     async enqueue(job: Job | EncodedJob): Promise<void> {
         logger.info(job instanceof Job ? job.toJSON() : job, 'queue:job:enqueued')
-        return await this.provider.enqueue(job)
+        await this.provider.enqueue(job)
+
+        // Increment stats
+        await App.main.stats.increment(job.name)
     }
 
     async enqueueBatch(jobs: EncodedJob[]): Promise<void> {
         logger.info({ count: jobs.length }, 'queue:job:enqueuedBatch')
-        return await this.provider.enqueueBatch(jobs)
+        await this.provider.enqueueBatch(jobs)
+
+        // Increment stats
+        await App.main.stats.increment(jobs.map(job => job.name))
     }
 
     get batchSize() {
