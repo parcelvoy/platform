@@ -3,6 +3,7 @@ import loadQueue from './config/queue'
 import loadStorage from './config/storage'
 import loadError, { logger } from './config/logger'
 import loadRateLimit, { RateLimiter } from './config/rateLimit'
+import loadStats, { Stats } from './config/stats'
 import type { Env } from './config/env'
 import type Queue from './queue'
 import Storage from './storage'
@@ -58,6 +59,7 @@ export default class App {
     worker?: Worker
     rateLimiter: RateLimiter
     redis: Redis
+    stats: Stats
     #registered: { [key: string | number]: unknown }
 
     constructor(
@@ -70,6 +72,7 @@ export default class App {
         this.#registered = {}
         this.rateLimiter = loadRateLimit(env.redis)
         this.redis = DefaultRedis(env.redis)
+        this.stats = loadStats(env.redis)
         this.unhandledErrorListener()
     }
 
