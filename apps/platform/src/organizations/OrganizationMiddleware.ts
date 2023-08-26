@@ -1,8 +1,11 @@
 import { Context } from 'koa'
-import { getOrganizationByUsername } from './OrganizationService'
+import { getOrganization, getOrganizationByUsername } from './OrganizationService'
 
 export const organizationMiddleware = async (ctx: Context, next: () => void) => {
-    if (ctx.subdomains && ctx.subdomains[0]) {
+    const organizationId = ctx.cookies.get('organization', { signed: true })
+    if (organizationId) {
+        ctx.state.organization = await getOrganization(parseInt(organizationId))
+    } else if (ctx.subdomains && ctx.subdomains[0]) {
         const subdomain = ctx.subdomains[0]
         ctx.state.organization = await getOrganizationByUsername(subdomain)
     }

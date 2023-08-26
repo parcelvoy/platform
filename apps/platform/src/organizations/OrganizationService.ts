@@ -26,11 +26,10 @@ export const getDefaultOrganization = async () => {
     return await Organization.first()
 }
 
-export const createOrganization = async (domain: string): Promise<Organization> => {
-    const username = domain.split('.').shift()
+export const createOrganization = async (domain?: string): Promise<Organization> => {
+    const username = domain?.split('.').shift()
     const org = await Organization.insertAndFetch({
         username,
-        domain,
     })
 
     // If for some reason the domain format is odd, generate

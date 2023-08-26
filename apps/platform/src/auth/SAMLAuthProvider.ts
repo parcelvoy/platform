@@ -72,6 +72,7 @@ export default class SAMLAuthProvider extends AuthProvider {
                 secure: ctx.request.secure,
                 httpOnly: true,
                 expires: addSeconds(Date.now(), 3600),
+                signed: true,
             })
         }
 
