@@ -26,6 +26,7 @@ export default interface QueueProvider {
     batchSize: number
     enqueue(job: EncodedJob): Promise<void>
     enqueueBatch(jobs: EncodedJob[]): Promise<void>
+    delay(job: EncodedJob, milliseconds: number): Promise<void>
     start(): void
     close(): void
     metrics?(period: MetricPeriod): Promise<QueueMetric>

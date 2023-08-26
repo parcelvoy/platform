@@ -203,8 +203,12 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, user_step_id }
         push: PushJob.from(body),
         webhook: WebhookJob.from(body),
     }
+    const job = channels[campaign.channel]
+    if (send_id) {
+        job.jobId(`sid${send_id}`)
+    }
 
-    return channels[campaign.channel]
+    return job
 }
 
 export const sendCampaign = async (data: SendCampaign): Promise<void> => {

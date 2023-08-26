@@ -1,14 +1,16 @@
 import App from '../app'
 
 interface JobOptions {
-    delay?: number
+    delay?: number // Milliseconds
     attempts?: number
+    jobId?: string
 }
 
 export interface EncodedJob {
     data: any
     options: JobOptions
     name: string
+    token?: string
 }
 
 export class JobError extends Error {
@@ -53,8 +55,13 @@ export default class Job implements EncodedJob {
         this.data = data
     }
 
-    delay(seconds: number) {
-        this.options.delay = seconds
+    delay(milliseconds: number) {
+        this.options.delay = milliseconds
+        return this
+    }
+
+    jobId(id: string) {
+        this.options.jobId = id
         return this
     }
 
