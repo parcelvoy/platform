@@ -25,6 +25,11 @@ export default class MemoryQueueProvider implements QueueProvider {
         this.backlog.push(...jobs)
     }
 
+    async delay(job: Job, milliseconds: number): Promise<void> {
+        job.options.delay = milliseconds
+        await this.enqueue(job)
+    }
+
     start(): void {
         if (process.env.NODE_ENV === 'test') return
         if (this.loop) return

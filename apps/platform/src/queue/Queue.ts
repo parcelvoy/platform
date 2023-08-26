@@ -58,6 +58,10 @@ export default class Queue {
         await App.main.stats.increment(jobs.map(job => job.name))
     }
 
+    async delay(job: EncodedJob, milliseconds: number) {
+        await this.provider.delay(job, milliseconds)
+    }
+
     get batchSize() {
         return this.provider.batchSize
     }

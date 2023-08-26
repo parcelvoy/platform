@@ -1,4 +1,4 @@
-import { MetricsTime, Queue as BullQueue, Worker } from 'bullmq'
+import { MetricsTime, Queue as BullQueue, Worker, JobsOptions, DelayedError } from 'bullmq'
 import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
@@ -52,7 +52,24 @@ export default class RedisQueueProvider implements QueueProvider {
         }
     }
 
-    private adaptJob(job: EncodedJob) {
+    async delay(job: EncodedJob, milliseconds: number): Promise<void> {
+
+        // If we are missing required fields, just enqueue the job manually
+        if (!job.options.jobId || !job.token) {
+            job.options.delay = milliseconds
+            await this.enqueue(job)
+            return
+        }
+
+        // If we are able to fetch the job, properly move it to delayed
+        const bullJob = await this.bull.getJob(job.options.jobId)
+        await bullJob?.moveToDelayed(Date.now() + milliseconds, job.token)
+
+        // Special error so job stays in queue instead of being removed
+        throw new DelayedError()
+    }
+
+    private adaptJob(job: EncodedJob): { name: string, data: any, opts: JobsOptions | undefined } {
         return {
             name: job.name,
             data: job,
@@ -64,13 +81,21 @@ export default class RedisQueueProvider implements QueueProvider {
                 },
                 delay: job.options.delay,
                 attempts: job.options.attempts,
+                jobId: job.options.jobId,
             },
         }
     }
 
     start(): void {
-        this.worker = new Worker('parcelvoy', async job => {
-            await this.queue.dequeue(job.data)
+        this.worker = new Worker('parcelvoy', async (job, token) => {
+            await this.queue.dequeue({
+                ...job.data,
+                options: {
+                    ...job.data.options,
+                    jobId: job.id,
+                },
+                token,
+            })
         }, {
             connection: this.redis,
             concurrency: this.batchSize,

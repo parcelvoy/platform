@@ -99,7 +99,7 @@ export const prepareSend = async <T>(
 
         // Schedule the resend for a jittered number of seconds later
         const delay = 1000 + randomInt(0, 5000)
-        await requeueSend(raw, delay)
+        await App.main.queue.delay(raw, delay)
         return false
     }
 
@@ -124,9 +124,4 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
             points,
         },
     )
-}
-
-export const requeueSend = async (job: EncodedJob, delay: number): Promise<void> => {
-    job.options.delay = delay
-    return await App.main.queue.enqueue(job)
 }

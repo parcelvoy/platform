@@ -64,6 +64,11 @@ export default class SQSQueueProvider implements QueueProvider {
         }
     }
 
+    async delay(job: Job, milliseconds: number): Promise<void> {
+        job.options.delay = milliseconds
+        await this.enqueue(job)
+    }
+
     start(): void {
         const app = Consumer.create({
             queueUrl: this.config.queueUrl,
