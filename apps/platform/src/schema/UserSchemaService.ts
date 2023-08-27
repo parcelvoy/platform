@@ -82,7 +82,7 @@ export async function syncUserDataPaths({
             .where('project_id', project_id)
             .select('name', 'data')
         if (updatedAfter) {
-            eventQuery.where('updated_at', '>=', updatedAfter)
+            eventQuery.where('created_at', '>=', updatedAfter)
         }
 
         await eventQuery.stream(async function(stream) {
