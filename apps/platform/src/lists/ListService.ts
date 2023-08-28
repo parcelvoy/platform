@@ -228,11 +228,7 @@ export const checkList = async (
 
         // If check passes and user isn't already in the list, add
         if (result && !existingLists.includes(list.id)) {
-
             await addUserToList(user, list, event)
-
-            // Find all associated journeys based on list and enter user
-            await enterJourneyFromList(list, user, event)
         }
     } catch (error: any) {
         App.main.error.notify(error)
