@@ -92,7 +92,7 @@ export default class Provider extends Model {
 
 export type ProviderMap<T extends Provider> = (record: any) => T
 
-export type ProviderParams = Omit<Provider, ModelParams | 'setup'>
+export type ProviderParams = Omit<Provider, ModelParams | 'setup' | 'loadSetup'>
 
 export type ExternalProviderParams = Omit<ProviderParams, 'group'>
 

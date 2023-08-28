@@ -239,7 +239,12 @@ export const checkList = async (
     }
 }
 
-export const listUserCount = async (listId: number | number[]): Promise<number> => {
-    const lists = Array.isArray(listId) ? listId : [listId]
-    return await UserList.count(qb => qb.whereIn('list_id', lists))
+export const listUserCount = async (listId: number, since?: Date): Promise<number> => {
+    return await UserList.count(qb => {
+        qb.where('list_id', listId)
+        if (since) {
+            qb.where('created_at', '>=', since)
+        }
+        return qb
+    })
 }
