@@ -1,4 +1,4 @@
-import { addUserToList, listUserCount } from '../../lists/ListService'
+import { addUserToList } from '../../lists/ListService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import ListStatsJob from '../ListStatsJob'
@@ -24,7 +24,7 @@ describe('ListStatsJob', () => {
 
         await addUserToList(user, list)
         await addUserToList(user2, list)
-        
+
         await ListStatsJob.handler({ listId: list.id, projectId: project.id })
 
         const count = await UserList.count(qb => qb.where('list_id', list.id))
@@ -46,7 +46,7 @@ describe('ListStatsJob', () => {
 
         await addUserToList(user, list)
         await addUserToList(user2, list)
-        
+
         await ListStatsJob.handler({ listId: list.id, projectId: 1 })
 
         await addUserToList(user3, list)
