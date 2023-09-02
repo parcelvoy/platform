@@ -50,6 +50,7 @@
     "openid-client": "^5.2.1",
     "pino": "^8.1.0",
     "pino-pretty": "^8.1.0",
+    "posthog-node": "^3.1.2",
     "sqs-consumer": "^7.0.0"
   },
   "scripts": {

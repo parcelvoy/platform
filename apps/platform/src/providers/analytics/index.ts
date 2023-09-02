@@ -2,10 +2,12 @@ import { loadDefaultProvider } from '../ProviderRepository'
 import { loadControllers } from '../ProviderService'
 import Analytics from './Analytics'
 import { AnalyticsProvider, AnalyticsProviderName } from './AnalyticsProvider'
+import PostHogAnalyticsProvider from './PosthogProvider'
 import SegmentAnalyticsProvider from './SegmentProvider'
 
 const typeMap = {
     segment: SegmentAnalyticsProvider,
+    posthog: PostHogAnalyticsProvider,
 }
 
 export const providerMap = (record: { type: AnalyticsProviderName }): AnalyticsProvider => {

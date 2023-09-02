@@ -43,16 +43,27 @@ export const loadDefaultProvider = async <T extends Provider>(group: string, pro
 }
 
 export const createProvider = async (projectId: number, params: ProviderParams) => {
-    return await Provider.insertAndFetch({
+    params.is_default = params.data.is_default ?? false
+
+    const provider = await Provider.insertAndFetch({
         ...params,
         project_id: projectId,
     })
+
+    await setDefault(provider)
+
+    return provider
 }
 
 export const updateProvider = async (id: number, params: ExternalProviderParams, app = App.main) => {
+    params.is_default = params.data.is_default ?? false
+
     const provider = await Provider.updateAndFetch(id, params)
     app.remove(Provider.cacheKey.internal(provider.id))
     app.remove(Provider.cacheKey.default(provider.project_id, provider.group))
+
+    await setDefault(provider)
+
     return provider
 }
 
@@ -61,4 +72,13 @@ export const cacheProvider = (provider: Provider, app = App.main) => {
     if (provider.is_default) {
         app.set(Provider.cacheKey.default(provider.project_id, provider.group), provider)
     }
+}
+
+const setDefault = async ({ id, group, project_id }: Pick<Provider, 'id' | 'group' | 'project_id'>, isDefault = false) => {
+    return await Provider.update(
+        qb => qb.where('project_id', project_id)
+            .where('group', group)
+            .whereNot('id', id),
+        { is_default: isDefault },
+    )
 }
