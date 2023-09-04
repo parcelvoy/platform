@@ -13,13 +13,8 @@ export interface EncodedJob {
     token?: string
 }
 
-export class JobError extends Error {
-    data?: Record<any, any>
-    constructor(message: string, data?: Record<any, any>) {
-        super(message)
-        this.data = data
-    }
-}
+export class JobError extends Error {}
+export class RetryError extends JobError {}
 
 export default class Job implements EncodedJob {
     data: any

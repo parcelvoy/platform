@@ -2,7 +2,7 @@ import App from '../app'
 import { DriverConfig } from '../config/env'
 import { logger } from '../config/logger'
 import { LoggerConfig } from '../providers/LoggerProvider'
-import Job, { EncodedJob } from './Job'
+import Job, { EncodedJob, JobError } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { MetricPeriod, QueueMetric, QueueProviderName } from './QueueProvider'
 import RedisQueueProvider, { RedisQueueConfig } from './RedisQueueProvider'
@@ -75,6 +75,7 @@ export default class Queue {
     }
 
     async errored(error: Error, job?: EncodedJob) {
+        if (error instanceof JobError) return
         logger.error({ error, stacktrace: error.stack, job }, 'queue:job:errored')
         App.main.error.notify(error, job)
     }
