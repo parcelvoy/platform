@@ -1,10 +1,9 @@
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
-import { InternalError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
+import { RetryError } from '../queue/Job'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
-import UserError from './UserError'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -115,9 +114,7 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
 export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams): Promise<Device | undefined> => {
 
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity)
-    if (!user) {
-        throw new InternalError(UserError.NotFound)
-    }
+    if (!user) throw new RetryError()
 
     let isFirstDevice = false
     if (!user.devices) {
