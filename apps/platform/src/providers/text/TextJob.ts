@@ -3,11 +3,10 @@ import { TextTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
 import App from '../../app'
-import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class TextJob extends Job {
     static $name = 'text'
@@ -59,8 +58,8 @@ export default class TextJob extends Job {
 
         await releaseLock(messageLock(campaign, user))
 
-        if (context.user_step_id) {
-            await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+        if (trigger.user_step_id) {
+            await notifyJourney(trigger.user_step_id)
         }
     }
 }

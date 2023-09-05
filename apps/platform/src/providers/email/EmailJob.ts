@@ -3,12 +3,11 @@ import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from './index'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
 import { releaseLock } from '../../config/scheduler'
-import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -70,8 +69,8 @@ export default class EmailJob extends Job {
 
         await releaseLock(messageLock(campaign, user))
 
-        if (context.user_step_id) {
-            await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+        if (trigger.user_step_id) {
+            await notifyJourney(trigger.user_step_id)
         }
     }
 }

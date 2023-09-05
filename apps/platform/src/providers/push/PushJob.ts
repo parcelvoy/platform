@@ -5,11 +5,10 @@ import { MessageTrigger } from '../MessageTrigger'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
 import { releaseLock } from '../../config/scheduler'
-import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -57,8 +56,8 @@ export default class PushJob extends Job {
 
             await releaseLock(messageLock(campaign, user))
 
-            if (context.user_step_id) {
-                await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+            if (trigger.user_step_id) {
+                await notifyJourney(trigger.user_step_id)
             }
 
         } catch (error: any) {
