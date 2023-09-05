@@ -15,7 +15,6 @@ import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { uuid } from '../../utilities'
 import Journey from '../Journey'
-import { getUserActiveEntrances } from '../JourneyRepository'
 import { JourneyState, enterJourneysFromList } from '../JourneyService'
 import { JourneyStep, JourneyStepMap, JourneyUserStep } from '../JourneyStep'
 
@@ -169,7 +168,10 @@ describe('JourneyService', () => {
 
         await enterJourneysFromList(list, user)
 
-        const entranceStepIds = await getUserActiveEntrances(user.id).then(x => x.map(e => e.step_id))
+        const entranceStepIds = await JourneyUserStep.all(qb => qb
+            .whereNull('entrance_id')
+            .where('user_id', user.id),
+        ).then(x => x.map(e => e.step_id))
 
         expect(entranceStepIds.length).toBe(2)
         expect(entranceStepIds).toContain(j1.id)
