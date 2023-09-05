@@ -29,7 +29,7 @@ export default (app: App) => {
         lockLength: 360,
     })
     scheduler.schedule({
-        rule: '* * * * *',
+        rule: '*/30 * * * *',
         callback: () => {
             app.queue.enqueue(UpdateJourneysJob.from())
         },
