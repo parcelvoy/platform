@@ -1,9 +1,12 @@
+import Rule from '../rules/Rule'
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { PageParams } from '../core/searchParams'
 import { RetryError } from '../queue/Job'
 import { subscribeAll } from '../subscriptions/SubscriptionService'
 import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
+import { getRuleEventNames } from '../rules/RuleHelpers'
+import { UserEvent } from './UserEvent'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -151,4 +154,20 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
         devices: user.devices,
     })
     return true
+}
+
+export const getUserEventsForRules = async (userIds: number[], rules: Rule[]) => {
+    if (!userIds.length || !rules.length) return []
+    const names = rules.reduce<string[]>((a, rule) => {
+        if (rule) {
+            a.push(...getRuleEventNames(rule))
+        }
+        return a
+    }, []).filter((o, i, a) => a.indexOf(o) === i)
+    if (!names.length) return []
+    return UserEvent.all(qb => qb
+        .whereIn('user_id', userIds)
+        .whereIn('name', names)
+        .orderBy('id', 'asc'),
+    )
 }

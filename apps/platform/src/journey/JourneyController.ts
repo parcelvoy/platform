@@ -5,7 +5,7 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
-import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, getJourneyStepStats } from './JourneyRepository'
+import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
 import { JourneyStepMap, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 
 const router = new Router<
@@ -91,6 +91,10 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
                 nullable: true,
                 additionalProperties: true,
             },
+            data_key: {
+                type: 'string',
+                nullable: true,
+            },
             x: {
                 type: 'number',
             },
@@ -127,10 +131,6 @@ router.get('/:journeyId/steps', async ctx => {
 router.put('/:journeyId/steps', async ctx => {
     const { steps, children } = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
     ctx.body = await toJourneyStepMap(steps, children)
-})
-
-router.get('/:journeyId/step-stats', async ctx => {
-    ctx.body = await getJourneyStepStats(ctx.state.journey!.id)
 })
 
 export default router

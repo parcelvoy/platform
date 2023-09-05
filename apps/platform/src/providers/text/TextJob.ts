@@ -7,6 +7,7 @@ import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
 import App from '../../app'
+import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class TextJob extends Job {
     static $name = 'text'
@@ -57,5 +58,9 @@ export default class TextJob extends Job {
         })
 
         await releaseLock(messageLock(campaign, user))
+
+        if (context.user_step_id) {
+            await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+        }
     }
 }

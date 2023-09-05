@@ -2,7 +2,7 @@ import { User, UserParams } from './User'
 import { Job } from '../queue'
 import { createUser, getUsersFromIdentity } from './UserRepository'
 import { addUserToList, updateUsersLists } from '../lists/ListService'
-import { updateUsersJourneys } from '../journey/JourneyService'
+import { resumeUserJourneys } from '../journey/JourneyService'
 import { ClientIdentity } from '../client/Client'
 
 interface UserPatchTrigger {
@@ -75,7 +75,7 @@ export default class UserPatchJob extends Job {
 
         // Check all journeys to update progress
         if (!skip_journey_updating) {
-            await updateUsersJourneys(user)
+            await resumeUserJourneys(user)
         }
     }
 }

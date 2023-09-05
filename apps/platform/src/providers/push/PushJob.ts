@@ -9,6 +9,7 @@ import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
 import { releaseLock } from '../../config/scheduler'
+import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -55,6 +56,10 @@ export default class PushJob extends Job {
             })
 
             await releaseLock(messageLock(campaign, user))
+
+            if (context.user_step_id) {
+                await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+            }
 
         } catch (error: any) {
             if (error instanceof PushError) {

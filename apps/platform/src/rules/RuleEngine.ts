@@ -24,7 +24,8 @@ class Registry<T> {
 
 export interface RuleCheckInput {
     user: TemplateUser
-    event?: TemplateEvent
+    events: TemplateEvent[] // all of this user's events
+    event?: TemplateEvent // current event, if applicable
 }
 
 export interface RuleCheck {

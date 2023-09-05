@@ -42,4 +42,5 @@ export const actionStep: JourneyStepType<ActionConfig> = {
             />
         )
     },
+    hasDataKey: true,
 }

@@ -1,12 +1,10 @@
 import { Job } from '../queue'
-import { User } from '../users/User'
-import JourneyService from './JourneyService'
-import { UserEvent } from '../users/UserEvent'
+import Journey from './Journey'
+import { JourneyState } from './JourneyService'
+import { JourneyUserStep } from './JourneyStep'
 
 interface JourneyProcessParams {
-    user_id: number
-    event_id?: number
-    journey_id: number
+    entrance_id: number
 }
 
 export default class JourneyProcessJob extends Job {
@@ -16,15 +14,20 @@ export default class JourneyProcessJob extends Job {
         return new this(params)
     }
 
-    static async handler({ user_id, event_id, journey_id }: JourneyProcessParams) {
+    static async handler({ entrance_id }: JourneyProcessParams) {
 
-        const user = await User.find(user_id)
-        const event = await UserEvent.find(event_id)
-        const service = new JourneyService(journey_id)
+        const entrance = await JourneyUserStep.find(entrance_id)
 
-        // If not user, break since it must no longer exist
-        if (!user) return
+        // invalid entrance id
+        if (!entrance) {
+            return
+        }
 
-        await service.run(user, event)
+        // make sure journey is still active
+        if (!await Journey.exists(qb => qb.where('id', entrance.journey_id).where('published', true))) {
+            return
+        }
+
+        await JourneyState.resume(entrance)
     }
 }

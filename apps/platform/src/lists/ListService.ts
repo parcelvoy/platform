@@ -1,16 +1,17 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
-import { check, query as ruleQuery } from '../rules/RuleEngine'
+import { check } from '../rules/RuleEngine'
 import List, { DynamicList, ListCreateParams, UserList } from './List'
 import Rule from '../rules/Rule'
-import { enterJourneyFromList } from '../journey/JourneyService'
+import { enterJourneysFromList } from '../journey/JourneyService'
 import { PageParams } from '../core/searchParams'
 import App from '../app'
 import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
-import { chunk } from '../utilities'
+import { Chunker, chunk, groupBy } from '../utilities'
+import { getUserEventsForRules } from '../users/UserRepository'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -79,7 +80,7 @@ export const getUserLists = async (id: number, params: PageParams, projectId: nu
     )
 }
 
-export const createList = async (projectId: number, { tags, ...params }: ListCreateParams): Promise<List> => {
+export const createList = async (projectId: number, { tags, syncJourneys, ...params }: ListCreateParams): Promise<List> => {
     const list = await List.insertAndFetch({
         ...params,
         state: 'ready',
@@ -170,21 +171,45 @@ export const populateList = async (list: List, rule: Rule) => {
     const version = oldVersion + 1
     await updateList(id, { state: 'loading', version })
 
-    type UserListChunk = { user_id: number, list_id: number, version: number }
-    const query = ruleQuery(rule, list.project_id)
-    await chunk<UserListChunk>(query, 100, async (items) => {
-        if (items.length <= 0) return
+    // look up all users in list's project
+    const query = User.query().where('project_id', list.project_id)
+
+    // collect matching user ids, insert in batches of 100
+    const chunker = new Chunker<number>(async userIds => {
         await UserList.query()
-            .insert(items)
+            .insert(userIds.map(user_id => ({
+                list_id: list.id,
+                user_id,
+                version,
+            })))
             .onConflict(['user_id', 'list_id'])
             .merge(['version'])
-    }, ({ id: user_id }: { id: number }) => ({ user_id, list_id: id, version }))
+    }, 100)
+
+    // stream all users, check rules in batches
+    await chunk<User>(query, 100, async users => {
+        const events = await getUserEventsForRules(users.map(u => u.id), [rule])
+            .then(events => groupBy(events, e => e.user_id))
+        for (const user of users) {
+            const matched = check({
+                user: user.flatten(),
+                events: events.get(user.id) ?? [],
+            }, rule)
+            if (matched) {
+                chunker.add(user.id)
+            }
+        }
+    })
+
+    // insert any remaining users
+    await chunker.flush()
 
     // Once list is regenerated, drop any users from previous version
     await UserList.delete(qb => qb
         .where('version', '<', version)
         .where('list_id', list.id))
 
+    // update list status to ready
     await updateList(id, { state: 'ready' })
 }
 
@@ -201,16 +226,22 @@ const getUsersListIds = async (user_id: number): Promise<number[]> => {
 }
 
 export const updateUsersLists = async (user: User, event?: UserEvent) => {
-    const lists = await List.all(
+    let lists = await List.all(
         qb => qb.where('project_id', user.project_id)
             .whereNotNull('rule'),
     ) as DynamicList[]
     const existingLists = await getUsersListIds(user.id)
 
+    lists = lists.filter(list => existingLists.includes(list.id))
+
+    if (!lists.length) return
+
+    const events = await getUserEventsForRules([user.id], lists.map(list => list.rule))
+
     for (const list of lists) {
 
         // Check to see if user condition matches list requirements
-        await checkList(list, existingLists, user, event)
+        await checkList(list, existingLists, user, events, event)
     }
 }
 
@@ -218,12 +249,14 @@ export const checkList = async (
     list: DynamicList,
     existingLists: number[],
     user: User,
+    events: UserEvent[],
     event?: UserEvent,
 ) => {
     try {
         const result = check({
             user: user.flatten(),
             event: event?.flatten(),
+            events,
         }, list.rule)
 
         // If check passes and user isn't already in the list, add
@@ -232,7 +265,7 @@ export const checkList = async (
             await addUserToList(user, list, event)
 
             // Find all associated journeys based on list and enter user
-            await enterJourneyFromList(list, user, event)
+            await enterJourneysFromList(list, user, event)
         }
     } catch (error: any) {
         App.main.error.notify(error)

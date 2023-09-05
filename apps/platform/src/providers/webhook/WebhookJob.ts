@@ -6,6 +6,8 @@ import { updateSendState } from '../../campaigns/CampaignService'
 import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
+import { JourneyUserStep } from '../../journey/JourneyStep'
+import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'
@@ -36,7 +38,7 @@ export default class WebhookJob extends Job {
         const isReady = await prepareSend(channel, data, raw)
         if (!isReady) return
 
-        await channel.send(template, data)
+        const { response } = await channel.send(template, data)
 
         // Update send record
         await updateSendState({
@@ -52,5 +54,17 @@ export default class WebhookJob extends Job {
         })
 
         await releaseLock(messageLock(campaign, user))
+
+        // if this was triggered by a journey
+        if (context.user_step_id) {
+            // save response into user step
+            await JourneyUserStep.update(q => q.where('id', context.user_step_id), {
+                data: {
+                    response,
+                },
+            })
+            // trigger processing of this journey entrance
+            await JourneyProcessJob.from({ entrance_id: context.user_step_id }).queue()
+        }
     }
 }

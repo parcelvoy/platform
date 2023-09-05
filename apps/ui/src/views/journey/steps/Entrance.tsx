@@ -42,4 +42,5 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             />
         )
     },
+    hasDataKey: true,
 }

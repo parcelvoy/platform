@@ -3,6 +3,7 @@ import Rule, { AnyJson, Operator } from './Rule'
 import { Database } from '../config/database'
 import { RuleCheckInput, RuleEvalException } from './RuleEngine'
 import { compileTemplate } from '../render'
+import { visit } from '../utilities'
 
 export const queryValue = <T>(input: RuleCheckInput, rule: Rule, cast: (item: any) => T): T | undefined => {
     const inputValue = input[rule.group]
@@ -131,4 +132,17 @@ export const queryRuleParams = (
 export const isEventWrapper = (rule: Rule) => {
     return rule.group === 'event'
         && rule.path === '$.name'
+}
+
+export const getRuleEventNames = (rule: Rule) => {
+    const names: string[] = []
+    visit(rule, r => r.children, r => {
+        if (r.group === 'event' && r.path === '$.name') {
+            const name = r.value
+            if (typeof name === 'string' && !names.includes(name)) {
+                names.push(name)
+            }
+        }
+    })
+    return names
 }

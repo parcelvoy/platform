@@ -125,7 +125,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<boolean> {
-        const count = await this.count(query, db)
+        const count = await this.count(qb => query(qb).limit(1), db)
         return count > 0
     }
 
@@ -232,7 +232,7 @@ export default class Model {
         data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
     ): Promise<number | number[]> {
-        const formattedData = this.formatJson(data)
+        const formattedData = Array.isArray(data) ? data.map(o => this.formatJson(o)) : this.formatJson(data)
         const value = await this.table(db).insert(formattedData)
         if (Array.isArray(data)) return value
         return value[0]

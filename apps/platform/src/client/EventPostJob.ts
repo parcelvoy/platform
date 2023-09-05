@@ -2,7 +2,6 @@ import { getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
-import { updateUsersJourneys } from '../journey/JourneyService'
 import { logger } from '../config/logger'
 import { createAndFetchEvent } from '../users/UserEventRepository'
 
@@ -40,8 +39,5 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateUsersLists(user, dbEvent)
-
-        // Check all journeys to update progress
-        await updateUsersJourneys(user, dbEvent)
     }
 }

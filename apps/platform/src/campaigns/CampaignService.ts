@@ -220,6 +220,7 @@ interface UpdateSendStateParams {
     user: User | number
     state?: CampaignSendState
     user_step_id?: number
+    response?: any
 }
 
 export const updateSendState = async ({ campaign, user, state = 'sent', user_step_id = 0 }: UpdateSendStateParams) => {

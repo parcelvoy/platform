@@ -21,6 +21,7 @@
         "padded-blocks": "off",
         "camelcase": "off",
         "no-use-before-define": "off",
+        "no-useless-constructor": 0,
         "comma-dangle": "off",
         "space-before-function-paren": ["error", {
             "anonymous": "never",

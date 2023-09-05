@@ -23,19 +23,19 @@ const ToastWrapper = ({
     onHeightUpdate,
     children,
 }: ToastWrapperProps) => {
-    const ref = React.useCallback((el: HTMLElement | null) => {
-        if (el) {
-            const updateHeight = () => {
-                const height = el.getBoundingClientRect().height
-                onHeightUpdate(id, height)
-            }
-            updateHeight()
-            new MutationObserver(updateHeight).observe(el, {
-                subtree: true,
-                childList: true,
-                characterData: true,
-            })
-        }
+    const ref = React.useCallback(() => {
+        // if (el) {
+        //     const updateHeight = () => {
+        //         const height = el.getBoundingClientRect().height
+        //         onHeightUpdate(id, height)
+        //     }
+        //     updateHeight()
+        //     new MutationObserver(updateHeight).observe(el, {
+        //         subtree: true,
+        //         childList: true,
+        //         characterData: true,
+        //     })
+        // }
     }, [id, onHeightUpdate],
     )
 

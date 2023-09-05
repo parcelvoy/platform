@@ -86,6 +86,27 @@ export const batch = <T>(arr: T[], size: number) => {
     return result
 }
 
+export function findLast<T>(arr: T[], predicate: (item: T, index: number, arr: T[]) => boolean) {
+    for (let i = arr.length - 1; i >= 0; i--) {
+        const item = arr[i]
+        if (predicate(item, i, arr)) {
+            return item
+        }
+    }
+    return undefined
+}
+
+export const groupBy = <T, K>(arr: T[], getKey: (o: T) => K) => {
+    const m = new Map<K, T[]>()
+    for (const item of arr) {
+        const key = getKey(item)
+        let list = m.get(key)
+        if (!list) m.set(key, list = [])
+        list.push(item)
+    }
+    return m
+}
+
 export const parseLocale = (locale: string): string | undefined => {
     return locale.slice(-1) === '-'
         ? locale.slice(0, -1)
@@ -183,19 +204,47 @@ export const chunk = async <T>(
     callback: ChunkCallback<T>,
     modifier: (result: any) => T = (result) => result,
 ) => {
-    let chunk: T[] = []
+    const chunker = new Chunker(callback, size)
     await query.stream(async function(stream) {
-        let i = 0
         for await (const result of stream) {
-            chunk.push(modifier(result))
-            i++
-            if (i % size === 0 && chunk.length > 0) {
-                await callback(chunk)
-                chunk = []
-            }
+            chunker.add(modifier(result))
         }
     })
-        .then(async function() {
-            if (chunk.length > 0) await callback(chunk)
-        })
+    await chunker.flush()
+}
+
+export class Chunker<T> {
+
+    #items: T[] = []
+
+    constructor(
+        private callback: (batch: T[]) => Promise<void>,
+        private size: number,
+    ) {}
+
+    public async add(...items: T[]) {
+        for (const item of items) {
+            this.#items.push(item)
+            if (this.#items.length >= this.size) {
+                await this.flush()
+            }
+        }
+    }
+
+    public async flush() {
+        if (this.#items.length) {
+            await this.callback(this.#items)
+            this.#items = []
+        }
+    }
+}
+
+export function visit<T>(item: T, children: (item: T) => undefined | T[], callback: (item: T) => void) {
+    callback(item)
+    const items = children(item)
+    if (items?.length) {
+        for (const item of items) {
+            visit(item, children, callback)
+        }
+    }
 }

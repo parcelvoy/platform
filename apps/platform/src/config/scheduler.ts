@@ -8,6 +8,7 @@ import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import { uuid } from '../utilities'
+import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -26,6 +27,12 @@ export default (app: App) => {
             app.queue.enqueue(ProcessListsJob.from())
         },
         lockLength: 360,
+    })
+    scheduler.schedule({
+        rule: '* * * * *',
+        callback: () => {
+            app.queue.enqueue(UpdateJourneysJob.from())
+        },
     })
     scheduler.schedule({
         rule: '0 * * * *',

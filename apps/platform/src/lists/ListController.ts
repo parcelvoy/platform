@@ -74,6 +74,10 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 type: 'boolean',
                 nullable: true,
             },
+            syncJourneys: {
+                type: 'boolean',
+                nullable: true,
+            },
         },
         additionalProperties: false,
     },
@@ -96,6 +100,10 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 nullable: true,
             },
             is_visible: {
+                type: 'boolean',
+                nullable: true,
+            },
+            syncJourneys: {
                 type: 'boolean',
                 nullable: true,
             },
@@ -139,6 +147,10 @@ const listUpdateParams: JSONSchemaType<ListUpdateParams> = {
             items: {
                 type: 'string',
             },
+            nullable: true,
+        },
+        syncJourneys: {
+            type: 'boolean',
             nullable: true,
         },
     },

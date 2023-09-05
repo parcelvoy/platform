@@ -4,7 +4,6 @@ import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
-import { raw } from '../core/Model'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 
 export const pagedJourneys = async (params: PageParams, projectId: number) => {
@@ -83,15 +82,7 @@ export const getJourneySteps = async (journeyId: number, db?: Database): Promise
     return await JourneyStep.all(qb => qb.where('journey_id', journeyId), db)
 }
 
-export const getJourneyStepChildren = async (stepId: number) => {
-    return await JourneyStepChild.all(q => q
-        .where('step_id', stepId)
-        .orderBy('priority', 'asc')
-        .orderBy('id', 'asc'),
-    )
-}
-
-export const getAllJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
+export const getJourneyStepChildren = async (journeyId: number, db?: Database): Promise<JourneyStepChild[]> => {
     return await JourneyStepChild.all(
         q => q
             .whereIn('step_id', JourneyStep.query(db).select('id').where('journey_id', journeyId))
@@ -104,7 +95,7 @@ export const getAllJourneyStepChildren = async (journeyId: number, db?: Database
 export const getJourneyStepMap = async (journeyId: number) => {
     const [steps, children] = await Promise.all([
         getJourneySteps(journeyId),
-        getAllJourneyStepChildren(journeyId),
+        getJourneyStepChildren(journeyId),
     ])
     return toJourneyStepMap(steps, children)
 }
@@ -114,11 +105,11 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
 
         const [steps, children] = await Promise.all([
             getJourneySteps(journeyId, trx),
-            getAllJourneyStepChildren(journeyId, trx),
+            getJourneyStepChildren(journeyId, trx),
         ])
 
         // Create or update steps
-        for (const [external_id, { type, x = 0, y = 0, data = {} }] of Object.entries(stepMap)) {
+        for (const [external_id, { type, x = 0, y = 0, data = {}, data_key }] of Object.entries(stepMap)) {
             const idx = steps.findIndex(s => s.external_id === external_id)
             if (idx === -1) {
                 steps.push(await JourneyStep.insertAndFetch({
@@ -126,6 +117,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                     type,
                     external_id,
                     data,
+                    data_key,
                     x,
                     y,
                 }, trx))
@@ -135,6 +127,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                     type,
                     external_id,
                     data,
+                    data_key,
                     x,
                     y,
                 }, trx)
@@ -205,79 +198,9 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
     })
 }
 
-export const getJourneyStep = async (id?: number): Promise<JourneyStep | undefined> => {
-    if (!id) return
-    return await JourneyStep.first(db => db.where('id', id))
-}
-
-export const getUserJourneyIds = async (userId: number): Promise<number[]> => {
-    return await JourneyUserStep.all(
-        db => db.where('user_id', userId)
-            .select('journey_id'),
-    ).then(items => items.map(item => item.journey_id))
-}
-
-export const getUserJourneyStep = async (userId: number, stepId: number, type = 'completed'): Promise<JourneyUserStep | undefined> => {
-    return await JourneyUserStep.first(
-        db => db.where('step_id', stepId)
-            .where('user_id', userId)
-            .where('type', type)
-            .orderBy('created_at', 'desc'),
+export const getEntranceSubsequentSteps = async (entranceId: number) => {
+    return JourneyUserStep.all(q => q
+        .where('entrance_id', entranceId)
+        .orderBy('id', 'asc'),
     )
-}
-
-export const getJourneyEntrance = async (journeyId: number):Promise<JourneyStep | undefined> => {
-    return await JourneyStep.first(
-        db => db.where('type', JourneyEntrance.type)
-            .where('journey_id', journeyId),
-    )
-}
-
-export const lastJourneyStep = async (userId: number, journeyId: number): Promise<JourneyUserStep | undefined> => {
-    return await JourneyUserStep.first(
-        db => db.where('journey_id', journeyId)
-            .where('user_id', userId)
-            .orderBy('created_at', 'desc')
-            .orderBy('id', 'desc'),
-    )
-}
-
-interface JourneyStepStats {
-    [external_id: string]: {
-        completions: number
-        waiting: number
-    }
-}
-
-export const getJourneyStepStats = async (journeyId: number) => {
-
-    const [steps, completions, waiting] = await Promise.all([
-        getJourneySteps(journeyId),
-        (JourneyUserStep.query()
-            .select('step_id')
-            .count('* as users')
-            .where('journey_id', journeyId)
-            .where('type', 'completed')
-            .groupBy('step_id')
-        ) as Promise<Array<{ step_id: number, users: number }>>,
-        (JourneyUserStep.query()
-            .with(
-                'latest_journey_steps',
-                raw('SELECT step_id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id DESC) AS rn FROM journey_user_step where journey_id = ' + journeyId),
-            )
-            .select('step_id')
-            .count('* as users')
-            .from('latest_journey_steps')
-            .where('rn', 1)
-            .groupBy('step_id')
-        ) as Promise<Array<{ step_id: number, users: number }>>,
-    ])
-
-    return steps.reduce<JourneyStepStats>((a, { external_id, id }) => {
-        a[external_id] = {
-            completions: completions.find(uc => uc.step_id === id)?.users ?? 0,
-            waiting: waiting.find(uc => uc.step_id === id)?.users ?? 0,
-        }
-        return a
-    }, {})
 }

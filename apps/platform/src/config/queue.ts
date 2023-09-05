@@ -20,6 +20,8 @@ import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
+import JourneyStatsJob from '../journey/JourneyStatsJob'
+import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 
 export const jobs = [
     CampaignGenerateListJob,
@@ -48,6 +50,8 @@ export const loadJobs = (queue: Queue) => {
     for (const job of jobs) {
         queue.register(job)
     }
+    queue.register(JourneyStatsJob)
+    queue.register(UpdateJourneysJob)
 }
 
 export default (config: QueueConfig) => {

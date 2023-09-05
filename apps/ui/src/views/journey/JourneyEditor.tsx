@@ -33,7 +33,7 @@ import { createComparator, createUuid } from '../../utils'
 import * as journeySteps from './steps/index'
 import clsx from 'clsx'
 import api from '../../api'
-import { JourneyStep, JourneyStepMap, JourneyStepStats, JourneyStepType } from '../../types'
+import { JourneyStep, JourneyStepMap, JourneyStepType } from '../../types'
 
 import './JourneyEditor.css'
 import 'reactflow/dist/style.css'
@@ -42,8 +42,9 @@ import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast/headless'
 import { JourneyForm } from './JourneyForm'
-import { CheckCircleIcon, CopyIcon, TimeIcon } from '../../ui/icons'
+import { ActionStepIcon, CheckCircleIcon, CopyIcon, TimeIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
+import TextInput from '../../ui/form/TextInput'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -52,6 +53,7 @@ function JourneyStepNode({
     data: {
         type: typeName,
         data,
+        data_key,
         stats,
     } = {},
     selected,
@@ -110,10 +112,28 @@ function JourneyStepNode({
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{type.name}</h4>
-                    <div className="step-header-stats">
-                        {typeName === 'delay' && <span className="stat">{(stats?.waiting ?? 0).toLocaleString()}<TimeIcon /></span>}
-                        <span className="stat">{(stats?.completions ?? 0).toLocaleString()}<CheckCircleIcon /></span>
-                    </div>
+                    {
+                        stats && (
+                            <div className="step-header-stats">
+                                {
+                                    Object.entries<number>(stats).map(([type, count]) => (
+                                        <span key={type} className="stat">
+                                            {(count ?? 0).toLocaleString()}
+                                            {
+                                                type === 'completed'
+                                                    ? <CheckCircleIcon />
+                                                    : type === 'delay'
+                                                        ? <TimeIcon />
+                                                        : type === 'action'
+                                                            ? <ActionStepIcon />
+                                                            : undefined
+                                            }
+                                        </span>
+                                    ))
+                                }
+                            </div>
+                        )
+                    }
                 </div>
                 {
                     type.Edit && (
@@ -125,6 +145,19 @@ function JourneyStepNode({
                                     project,
                                     journey,
                                 })
+                            }
+                            {
+                                type.hasDataKey && (
+                                    <TextInput
+                                        label="Data Key"
+                                        subtitle="Makes data stored at this step available in user update and campaign templates."
+                                        name="data_key"
+                                        value={data_key}
+                                        onChange={
+                                            data_key => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, data_key } } : n))
+                                        }
+                                    />
+                                )
                             }
                         </div>
                     )
@@ -275,12 +308,12 @@ function createEdge({
     }
 }
 
-function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
+function stepsToNodes(stepMap: JourneyStepMap) {
 
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, children }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, children, stats, stats_at }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -291,7 +324,8 @@ function stepsToNodes(stepMap: JourneyStepMap, stats: JourneyStepStats = {}) {
             data: {
                 type,
                 data,
-                stats: stats[id],
+                stats,
+                stats_at,
             },
         })
         const stepType = getStepType(type)
@@ -387,12 +421,9 @@ export default function JourneyEditor() {
 
     const loadSteps = useCallback(async () => {
 
-        const [steps, stats] = await Promise.all([
-            api.journeys.steps.get(project.id, journeyId),
-            api.journeys.steps.stats(project.id, journeyId),
-        ])
+        const steps = await api.journeys.steps.get(project.id, journeyId)
 
-        const { edges, nodes } = stepsToNodes(steps, stats)
+        const { edges, nodes } = stepsToNodes(steps)
 
         setNodes(nodes)
         setEdges(edges)
@@ -410,9 +441,8 @@ export default function JourneyEditor() {
 
         try {
             const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
-            const stats = await api.journeys.steps.stats(project.id, journey.id)
 
-            const refreshed = stepsToNodes(stepMap, stats)
+            const refreshed = stepsToNodes(stepMap)
 
             setNodes(refreshed.nodes)
             setEdges(refreshed.edges)
