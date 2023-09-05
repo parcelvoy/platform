@@ -14,6 +14,8 @@ exports.up = async function(knex) {
         table.json('data')
         table.string('ref', 64).nullable()
     })
+
+    // link steps to entrances
     await knex.raw(`
         update journey_user_step s
         join (
@@ -30,6 +32,14 @@ exports.up = async function(knex) {
                 else s2.entrance_id
             end
         );
+    `)
+
+    // copy gate step rules back from lists
+    await knex.raw(`
+        update journey_steps s
+            inner join lists l on s.data->'$.list_id' = l.id
+        set s.data = json_object('rule', l.rule)
+        where s.type = 'gate' and l.rule is not null;
     `)
 }
 
