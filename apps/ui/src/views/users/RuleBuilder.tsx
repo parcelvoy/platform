@@ -179,7 +179,7 @@ function RuleEdit({
                                                 </Combobox.Button>
                                             </ButtonGroup>
                                             <Combobox.Options
-                                                className="select-options"
+                                                className="select-options nowheel"
                                                 ref={setPopperElement}
                                                 style={styles.popper}
                                                 {...attributes.popper}
@@ -344,7 +344,7 @@ function RuleEdit({
                         <ChevronUpDownIcon />
                     </Combobox.Button>
                     <Combobox.Options
-                        className="select-options"
+                        className="select-options nowheel"
                         ref={setPopperElement}
                         style={styles.popper}
                         {...attributes.popper}
