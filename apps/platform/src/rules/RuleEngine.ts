@@ -1,7 +1,6 @@
 import { TemplateEvent } from '../users/UserEvent'
-import { TemplateUser, User } from '../users/User'
+import { TemplateUser } from '../users/User'
 import Rule, { AnyJson, Operator, RuleGroup, RuleType } from './Rule'
-import { Database } from '../config/database'
 import NumberRule from './NumberRule'
 import StringRule from './StringRule'
 import BooleanRule from './BooleanRule'
@@ -25,21 +24,17 @@ class Registry<T> {
 export interface RuleCheckInput {
     user: TemplateUser
     events: TemplateEvent[] // all of this user's events
-    event?: TemplateEvent // current event, if applicable
+}
+
+export interface RuleCheckParams {
+    registry: typeof ruleRegistry
+    input: RuleCheckInput // all contextual input data
+    rule: Rule // current rule to use
+    value: Record<string, unknown> // current value to evaluate against
 }
 
 export interface RuleCheck {
-    check(
-        value: RuleCheckInput,
-        rule: Rule,
-        registry: Registry<RuleCheck>
-    ): boolean
-    query(
-        builder: Database.QueryBuilder<any>,
-        rule: Rule,
-        wrapper: 'and' | 'or',
-        registry: Registry<RuleCheck>,
-    ): Database.QueryBuilder<any>
+    check(params: RuleCheckParams): boolean
 }
 
 const ruleRegistry = new Registry<RuleCheck>()
@@ -57,22 +52,15 @@ ruleRegistry.register('date', DateRule)
 ruleRegistry.register('array', ArrayRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
-export const check = (value: RuleCheckInput, rule: Rule | Rule[]) => {
+export const check = (input: RuleCheckInput, rule: Rule | Rule[]) => {
     if (Array.isArray(rule)) {
-        const baseRule = make({ type: 'wrapper', operator: 'and', children: rule })
-        return ruleRegistry.get('wrapper').check(value, baseRule, ruleRegistry)
+        rule = make({
+            type: 'wrapper',
+            operator: 'and',
+            children: rule,
+        })
     }
-    return ruleRegistry.get(rule.type).check(value, rule, ruleRegistry)
-}
-
-export const query = (rule: Rule, projectId: number) => {
-    const builder = User.query()
-        .select('users.id')
-        .leftJoin('user_events', 'user_events.user_id', 'users.id')
-        .where('users.project_id', projectId)
-        .groupBy('users.id')
-    return ruleRegistry.get('wrapper')
-        .query(builder, rule, 'and', ruleRegistry)
+    return ruleRegistry.get(rule.type).check({ registry: ruleRegistry, input, rule, value: input.user })
 }
 
 interface RuleMake {

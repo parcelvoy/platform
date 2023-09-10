@@ -10,7 +10,7 @@ import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
-import { Chunker, chunk, groupBy } from '../utilities'
+import { Chunker, groupBy } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
@@ -171,9 +171,6 @@ export const populateList = async (list: List, rule: Rule) => {
     const version = oldVersion + 1
     await updateList(id, { state: 'loading', version })
 
-    // look up all users in list's project
-    const query = User.query().where('project_id', list.project_id)
-
     // collect matching user ids, insert in batches of 100
     const chunker = new Chunker<number>(async userIds => {
         await UserList.query()
@@ -186,20 +183,19 @@ export const populateList = async (list: List, rule: Rule) => {
             .merge(['version'])
     }, 100)
 
-    // stream all users, check rules in batches
-    await chunk<User>(query, 100, async users => {
+    for await (const users of User.scroll(q => q.where('project_id', list.project_id))) {
         const events = await getUserEventsForRules(users.map(u => u.id), [rule])
             .then(events => groupBy(events, e => e.user_id))
         for (const user of users) {
             const matched = check({
                 user: user.flatten(),
-                events: events.get(user.id) ?? [],
+                events: events.get(user.id)?.map(e => e.flatten()) ?? [],
             }, rule)
             if (matched) {
                 chunker.add(user.id)
             }
         }
-    })
+    }
 
     // insert any remaining users
     await chunker.flush()
@@ -255,7 +251,6 @@ export const checkList = async (
     try {
         const result = check({
             user: user.flatten(),
-            event: event?.flatten(),
             events,
         }, list.rule)
 

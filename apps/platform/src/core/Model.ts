@@ -276,6 +276,30 @@ export default class Model {
         return await query(this.table(db)).delete()
     }
 
+    static scroll = async function * <T extends typeof Model>(
+        this: T,
+        query: Query = qb => qb,
+        batchSize = 100,
+        db: Database = App.main.db,
+    ): AsyncGenerator<InstanceType<T>[]> {
+        let cursor = 0
+        while (true) {
+            const batch = await this.build(query, db)
+                .where(`${this.tableName}.id`, '>', cursor)
+                .clearOrder()
+                .orderBy(`${this.tableName}.id`, 'asc')
+                .limit(batchSize)
+            if (batch.length) {
+                yield batch.map((o: any) => this.fromJson(o))
+                if (batch.length === batchSize) {
+                    cursor = batch.at(-1)!.id
+                    continue
+                }
+            }
+            break
+        }
+    }
+
     static get tableName(): string {
         return pluralize(snakeCase(this.name))
     }

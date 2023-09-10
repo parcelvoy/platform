@@ -1,88 +1,45 @@
-import { Database } from '../config/database'
-import Rule from './Rule'
-import { RuleCheck, RuleCheckInput, RuleEvalException } from './RuleEngine'
-import { checkArrayOperators, compile, queryRuleParams, queryValue, whereQuery, whereQueryNullable } from './RuleHelpers'
+import { RuleCheck, RuleEvalException } from './RuleEngine'
+import { compile, queryValue } from './RuleHelpers'
 
 export default {
-    check(input: RuleCheckInput, rule: Rule) {
-        const value = queryValue(input, rule, item => String(item))
-        if (!value) return false
+    check({ rule, value }) {
+        const values = queryValue(value, rule, item => {
+            if (typeof item === 'string') return item
+            if (typeof item === 'boolean' || typeof item === 'number') {
+                return String(item)
+            }
+            return null
+        })
 
         if (rule.operator === 'is set') {
-            return value != null && value !== ''
+            return values.some(v => typeof v === 'string')
         }
 
         if (rule.operator === 'is not set') {
-            return value == null
+            return values.every(x => x === null)
         }
 
         if (rule.operator === 'empty') {
-            return value.length <= 0
+            return values.every(x => !x)
         }
 
         const ruleValue = compile(rule, item => String(item))
 
-        if (rule.operator === '=') {
-            return value === ruleValue
-        }
-
-        if (rule.operator === '!=') {
-            return value !== ruleValue
-        }
-
-        if (rule.operator === 'starts with') {
-            return value.startsWith(ruleValue)
-        }
-
-        if (rule.operator === 'contains') {
-            return value.includes(ruleValue)
-        }
-
-        if (Array.isArray(rule.value)) {
-            return checkArrayOperators(value, rule.operator, rule.value)
-        }
-
-        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
-    },
-
-    query(builder: Database.QueryBuilder<any>, rule: Rule, wrapper) {
-        const queryParams = queryRuleParams(builder, rule, wrapper)
-
-        if (rule.operator === 'is set') {
-            return whereQueryNullable(queryParams, false)
-        }
-
-        if (rule.operator === 'is not set') {
-            return whereQueryNullable(queryParams, true)
-        }
-
-        if (rule.operator === 'empty') {
-            return whereQuery(queryParams, '=', '')
-        }
-
-        const ruleValue = compile(rule, item => String(item))
-
-        if (['=', '!='].includes(rule.operator)) {
-            return whereQuery(queryParams, rule.operator, ruleValue)
-        }
-
-        if (rule.operator === 'contains') {
-            return whereQuery(queryParams, 'LIKE', `%${ruleValue}%`)
-        }
-
-        if (rule.operator === 'starts with') {
-            return whereQuery(queryParams, 'LIKE', `${ruleValue}%`)
-        }
-
-        if (Array.isArray(rule.value)) {
-            if (rule.operator === 'any') {
-                return whereQuery(queryParams, 'in', rule.value)
+        return values.some(v => {
+            switch (rule.operator) {
+            case '=':
+                return v === ruleValue
+            case '!=':
+                return v !== ruleValue
+            case 'starts with':
+                return v?.startsWith(ruleValue)
+            case 'ends with':
+                return v?.endsWith(ruleValue)
+            case 'contains':
+                return v?.includes(ruleValue)
+            default:
+                throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
             }
-            if (rule.operator === 'none') {
-                return whereQuery(queryParams, 'not in', rule.value)
-            }
-        }
-
-        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+        })
     },
 } satisfies RuleCheck

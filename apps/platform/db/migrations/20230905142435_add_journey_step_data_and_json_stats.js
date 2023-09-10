@@ -10,6 +10,7 @@ exports.up = async function(knex) {
             .nullable()
             .references('id')
             .inTable('journey_user_step')
+            .onDelete('CASCADE')
         table.timestamp('ended_at').nullable()
         table.json('data')
         table.string('ref', 64).nullable()
