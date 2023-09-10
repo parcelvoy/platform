@@ -43,7 +43,7 @@ export const enterJourneysFromList = async (list: List, user: User, event?: User
 
     let entrances = await getActiveEntrancesForList(list)
 
-    if (!entrances.length) return
+    if (!entrances.length) return []
 
     // only include first with this list per journey
     entrances = entrances.filter((e, i, a) => a.findIndex(x => x.journey_id === e.journey_id) === i)
@@ -54,11 +54,14 @@ export const enterJourneysFromList = async (list: List, user: User, event?: User
         .whereNull('entrance_id'),
     )
 
-    const newEntrances = entrances
-        .filter(s => !userSteps.find(us => us.step_id === s.id))
-        .map(s => ({
-            journey_id: s.journey_id,
-            step_id: s.id,
+    const userStepIds: number[] = []
+    for (const entrance of entrances) {
+        if (userSteps.find(us => us.step_id === entrance.id)) {
+            continue
+        }
+        userStepIds.push(await JourneyUserStep.insert({
+            journey_id: entrance.journey_id,
+            step_id: entrance.id,
             user_id: user.id,
             type: 'completed',
             data: {
@@ -70,10 +73,8 @@ export const enterJourneysFromList = async (list: List, user: User, event?: User
                     : undefined,
             },
         }))
-
-    if (newEntrances.length) {
-        await JourneyUserStep.insert(newEntrances)
     }
+    return userStepIds
 }
 
 export const enterAllUnstartedJourneysFromList = async (list: List) => {

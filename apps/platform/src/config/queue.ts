@@ -33,12 +33,14 @@ export const jobs = [
     EventPostJob,
     JourneyDelayJob,
     JourneyProcessJob,
+    JourneyStatsJob,
     ListPopulateJob,
     ListStatsJob,
     ProcessListsJob,
     UserSchemaSyncJob,
     PushJob,
     TextJob,
+    UpdateJourneysJob,
     UserAliasJob,
     UserDeleteJob,
     UserDeviceJob,
@@ -50,8 +52,6 @@ export const loadJobs = (queue: Queue) => {
     for (const job of jobs) {
         queue.register(job)
     }
-    queue.register(JourneyStatsJob)
-    queue.register(UpdateJourneysJob)
 }
 
 export default (config: QueueConfig) => {

@@ -12,6 +12,7 @@ import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { Chunker, groupBy } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
+import JourneyProcessJob from '../journey/JourneyProcessJob'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -234,10 +235,21 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
 
     const events = await getUserEventsForRules([user.id], lists.map(list => list.rule))
 
-    for (const list of lists) {
+    const input = {
+        user: user.flatten(),
+        events: events.map(e => e.flatten()),
+    }
 
-        // Check to see if user condition matches list requirements
-        await checkList(list, existingLists, user, events, event)
+    const userStepIds: number[] = []
+    for (const list of lists) {
+        if (check(input, list.rule)) {
+            await addUserToList(user, list, event)
+            userStepIds.push(...await enterJourneysFromList(list, user, event))
+        }
+    }
+
+    if (userStepIds.length) {
+        App.main.queue.enqueueBatch(userStepIds.map(entrance_id => JourneyProcessJob.from({ entrance_id })))
     }
 }
 
