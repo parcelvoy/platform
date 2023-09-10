@@ -385,22 +385,24 @@ export const journeyStepTypes = [
     return a
 }, {})
 
-export type JourneyStepMap = Record<
-    string,
-    {
-        type: string
+interface JourneyStepMapItem {
+    type: string
+    data?: Record<string, unknown>
+    data_key?: string
+    x: number
+    y: number
+    children?: Array<{
+        external_id: string
         data?: Record<string, unknown>
-        data_key?: string
-        x: number
-        y: number
-        children?: Array<{
-            external_id: string
-            data?: Record<string, unknown>
-        }>
-        stats?: Record<string, number>
-        stats_at?: Date
-    }
->
+    }>
+}
+
+export type JourneyStepMap = Record<string, JourneyStepMapItem & {
+    stats?: Record<string, number>
+    stats_at?: Date
+}>
+
+export type JourneyStepMapParams = Record<string, JourneyStepMapItem>
 
 // This is async in case we ever want to fetch stats here
 export async function toJourneyStepMap(steps: JourneyStep[], children: JourneyStepChild[]) {

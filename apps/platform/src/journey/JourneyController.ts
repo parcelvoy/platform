@@ -6,7 +6,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
 import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
-import { JourneyStepMap, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { JourneyStepMapParams, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -74,7 +74,7 @@ router.delete('/:journeyId', async ctx => {
     ctx.body = true
 })
 
-const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
+const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMapParams> = {
     $id: 'journeyStepsParams',
     type: 'object',
     required: [],
