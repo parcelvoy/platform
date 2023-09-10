@@ -228,7 +228,7 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
     ) as DynamicList[]
     const existingLists = await getUsersListIds(user.id)
 
-    lists = lists.filter(list => existingLists.includes(list.id))
+    lists = lists.filter(list => !existingLists.includes(list.id))
 
     if (!lists.length) return
 
