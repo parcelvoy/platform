@@ -16,7 +16,7 @@ export default class JourneyDelayJob extends Job {
         const { db, queue } = App.main
 
         const query = JourneyUserStep.query(db)
-            .distinct(db.raw('ifnull(journey_user_step.entrance_id, journey_user_step.id)'))
+            .distinct(db.raw('ifnull(journey_user_step.entrance_id, journey_user_step.id) as entrance_id'))
             .leftJoin('journeys', 'journeys.id', '=', 'journey_user_step.journey_id')
             .where('journeys.published', true) // ignore inactive journeys
             .where('journey_user_step.type', 'delay') // only include steps where the current type/status is 'delay'
