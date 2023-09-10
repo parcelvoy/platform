@@ -164,7 +164,6 @@ export const getUserEventsForRules = async (userIds: number[], rules: Rule[]) =>
         }
         return a
     }, []).filter((o, i, a) => a.indexOf(o) === i)
-    console.log('looking up events', names)
     if (!names.length) return []
     return UserEvent.all(qb => qb
         .whereIn('user_id', userIds)
