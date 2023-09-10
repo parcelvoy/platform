@@ -225,7 +225,11 @@ export class JourneyState {
             }
 
             // delegate to step type
-            await step.process(this, userStep)
+            try {
+                await step.process(this, userStep)
+            } catch (err) {
+                userStep.type = 'error'
+            }
 
             // persist and update the user step
             userStep.parseJson(
@@ -241,13 +245,15 @@ export class JourneyState {
     }
 
     private async nextOrEnd(step: JourneyStep) {
-        const stepId = await step.next(this)
-        if (stepId) {
-            const step = this.steps.find(s => s.id === stepId)
-            if (step) {
-                return step
+        try {
+            const stepId = await step.next(this)
+            if (stepId) {
+                const step = this.steps.find(s => s.id === stepId)
+                if (step) {
+                    return step
+                }
             }
-        }
+        } catch {}
         await this.end()
     }
 

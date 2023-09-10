@@ -225,6 +225,7 @@ const getUsersListIds = async (user_id: number): Promise<number[]> => {
 export const updateUsersLists = async (user: User, event?: UserEvent) => {
     let lists = await List.all(
         qb => qb.where('project_id', user.project_id)
+            .where('type', 'dynamic')
             .whereNotNull('rule'),
     ) as DynamicList[]
     const existingLists = await getUsersListIds(user.id)
