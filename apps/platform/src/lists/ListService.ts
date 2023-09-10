@@ -229,7 +229,7 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
     ) as DynamicList[]
     const existingLists = await getUsersListIds(user.id)
 
-    lists = lists.filter(list => !existingLists.includes(list.id))
+    lists = lists.filter(list => !existingLists.includes(list.id) && list.rule?.type)
 
     if (!lists.length) return
 
@@ -242,7 +242,16 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
 
     const userStepIds: number[] = []
     for (const list of lists) {
-        if (check(input, list.rule)) {
+        let result: boolean
+        try {
+            result = check(input, list.rule)
+        } catch (err) {
+            App.main.error.notify(err as Error, {
+                list_id: list.id,
+            })
+            continue
+        }
+        if (result) {
             await addUserToList(user, list, event)
             userStepIds.push(...await enterJourneysFromList(list, user, event))
         }
@@ -250,32 +259,6 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
 
     if (userStepIds.length) {
         App.main.queue.enqueueBatch(userStepIds.map(entrance_id => JourneyProcessJob.from({ entrance_id })))
-    }
-}
-
-export const checkList = async (
-    list: DynamicList,
-    existingLists: number[],
-    user: User,
-    events: UserEvent[],
-    event?: UserEvent,
-) => {
-    try {
-        const result = check({
-            user: user.flatten(),
-            events,
-        }, list.rule)
-
-        // If check passes and user isn't already in the list, add
-        if (result && !existingLists.includes(list.id)) {
-
-            await addUserToList(user, list, event)
-
-            // Find all associated journeys based on list and enter user
-            await enterJourneysFromList(list, user, event)
-        }
-    } catch (error: any) {
-        App.main.error.notify(error)
     }
 }
 

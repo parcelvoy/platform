@@ -1,6 +1,5 @@
 import jsonpath from 'jsonpath'
 import Rule, { AnyJson } from './Rule'
-import { RuleEvalException } from './RuleEngine'
 import { compileTemplate } from '../render'
 import { visit } from '../utilities'
 
@@ -14,14 +13,11 @@ export const queryValue = <T>(value: Record<string, unknown>, rule: Rule, cast: 
 // TODO: rule tree "compile step"... we shouldn't do this once per user
 // it would be nice if JSON path also supported a parsed/compiled intermediate format too
 export const compile = <Y>(rule: Rule, cast: (item: AnyJson) => Y): Y => {
-    const value = rule.value
-    if (!value) {
-        throw new RuleEvalException(rule, 'value required for operator')
+    let value = rule.value as AnyJson
+    if (typeof value === 'string' && value.includes('{')) {
+        value = compileTemplate(value)({})
     }
-    const compiledValue = typeof value === 'string' && value.includes('{')
-        ? compileTemplate(value)({})
-        : value
-    return cast(compiledValue)
+    return cast(value)
 }
 
 export const reservedPaths = {
