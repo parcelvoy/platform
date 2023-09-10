@@ -9,6 +9,7 @@ export default {
             if (typeof item === 'number') return item === 1
             return false
         })
-        return values.some(Boolean)
+        const match = values.some(Boolean)
+        return rule.operator === '!=' ? !match : match
     },
 } satisfies RuleCheck

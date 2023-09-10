@@ -73,6 +73,7 @@ const operatorTypes: Record<RuleType, OperatorOption[]> = {
     ],
     boolean: [
         { key: '=', label: 'is' },
+        { key: '!=', label: 'is not' },
     ],
     date: [
         ...baseOperators,
@@ -379,8 +380,9 @@ function RuleEdit({
                     type="text"
                     name="value"
                     placeholder="Value"
+                    disabled={rule.type === 'boolean'}
                     hideLabel={true}
-                    value={rule?.value?.toString()}
+                    value={rule.type === 'boolean' ? 'true' : rule?.value?.toString()}
                     onChange={value => setRule({ ...rule, value })}
                 />}
                 {controls}
