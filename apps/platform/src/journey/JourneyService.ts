@@ -206,22 +206,12 @@ export class JourneyState {
                     type: 'pending',
                 }))
 
-            } else {
+            }
 
-                // continue on if this step is completed
-                if (userStep.type === 'completed') {
-                    step = await this.nextOrEnd(step)
-                    continue
-                }
-
-                // exit journey completely if a catastrophic error
-                // has occurred to avoid unpredictable behavior
-                if (userStep.type === 'error') {
-                    await this.end()
-                }
-
-                // stop processing for now
-                break
+            // continue on if this step is completed
+            if (userStep.type === 'completed') {
+                step = await this.nextOrEnd(step)
+                continue
             }
 
             // delegate to step type
@@ -237,6 +227,16 @@ export class JourneyState {
                     ? await JourneyUserStep.updateAndFetch(userStep.id, userStep)
                     : await JourneyUserStep.insertAndFetch(userStep),
             )
+
+            // stop processing if latest isn't completed
+            if (userStep.type !== 'completed') {
+                // exit journey completely if a catastrophic error
+                // has occurred to avoid unpredictable behavior
+                if (userStep.type === 'error') {
+                    await this.end()
+                }
+                break
+            }
         }
 
         if (this._jobs.length) {
