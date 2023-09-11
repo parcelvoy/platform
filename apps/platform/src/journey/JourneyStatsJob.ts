@@ -1,4 +1,5 @@
 import { Job } from '../queue'
+import Journey from './Journey'
 import { JourneyStep, JourneyUserStep } from './JourneyStep'
 
 interface JourneyStatsParams {
@@ -22,24 +23,52 @@ export default class JourneyStatsJob extends Job {
         const stats_at = new Date()
 
         const [steps, counts] = await Promise.all([
-            await JourneyStep.query()
+            JourneyStep.query()
                 .select('id')
                 .where('journey_id', journey_id),
-            await JourneyUserStep.query()
-                .select('step_id', 'type')
-                .count('id as cnt')
+            JourneyUserStep.query()
+                .select('step_id')
+                .sum({
+                    entrance: JourneyUserStep.raw('if(entrance_id is null, 1, 0)'),
+                    ended: JourneyUserStep.raw('if(entrance_id is null and ended_at is not null, 1, 0)'),
+                    completed: JourneyUserStep.raw('if(type = \'completed\', 1, 0)'),
+                    error: JourneyUserStep.raw('if(type = \'error\', 1, 0)'),
+                    delay: JourneyUserStep.raw('if(type = \'delay\', 1, 0)'),
+                    action: JourneyUserStep.raw('if(type = \'action\', 1, 0)'),
+                })
                 .where('journey_id', journey_id)
-                .groupBy(['step_id', 'type']),
+                .groupBy('step_id') as Promise<Array<{
+                    step_id: number
+                    [stat: string]: number
+                }>>,
         ])
 
+        // knex returns the sums as strings for some reason
+        counts.forEach(o => Object.entries(o).forEach(([stat, count]) => {
+            o[stat] = Number(count)
+        }))
+
+        await Journey.update(q => q.where('id', journey_id), {
+            stats: counts.reduce((a, { step_id, ...rest }) => {
+                for (const [stat, count] of Object.entries(rest)) {
+                    a[stat] = (a[stat] ?? 0) + count
+                }
+                return a
+            }, {
+                entrance: 0,
+                ended: 0,
+                completed: 0,
+                error: 0,
+                delay: 0,
+                action: 0,
+            } as Record<string, number>),
+            stats_at,
+        })
+
         for (const step of steps) {
-            await JourneyStep.update(qb => qb.where('id', step.id), {
-                stats: counts.reduce<Record<string, number>>((a, { step_id, type, cnt }) => {
-                    if (step.id === step_id) {
-                        a[type] = cnt
-                    }
-                    return a
-                }, {}),
+            const { step_id, ...stats } = counts.find(c => c.step_id === step.id) ?? {}
+            await JourneyStep.update(q => q.where('id', step.id), {
+                stats,
                 stats_at,
             })
         }

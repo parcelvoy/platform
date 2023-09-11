@@ -1,4 +1,4 @@
-import { createElement, DragEventHandler, Fragment, memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createElement, DragEventHandler, Fragment, memo, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactFlow, {
     addEdge,
@@ -42,11 +42,20 @@ import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast/headless'
 import { JourneyForm } from './JourneyForm'
-import { ActionStepIcon, CheckCircleIcon, CopyIcon, TimeIcon } from '../../ui/icons'
+import { ActionStepIcon, CheckCircleIcon, CloseIcon, CopyIcon, DelayStepIcon, EntranceStepIcon, ForbiddenIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
 import TextInput from '../../ui/form/TextInput'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
+
+const statIcons: Record<string, ReactNode> = {
+    action: <ActionStepIcon />,
+    delay: <DelayStepIcon />,
+    completed: <CheckCircleIcon />,
+    error: <ForbiddenIcon />,
+    entrance: <EntranceStepIcon />,
+    ended: <CloseIcon />,
+}
 
 function JourneyStepNode({
     id,
@@ -115,21 +124,17 @@ function JourneyStepNode({
                     {
                         stats && (
                             <div className="step-header-stats">
+                                <span className="stat">
+                                    {stats.completed}
+                                    {statIcons.completed}
+                                </span>
                                 {
-                                    Object.entries<number>(stats).map(([type, count]) => (
-                                        <span key={type} className="stat">
-                                            {(count ?? 0).toLocaleString()}
-                                            {
-                                                type === 'completed'
-                                                    ? <CheckCircleIcon />
-                                                    : type === 'delay'
-                                                        ? <TimeIcon />
-                                                        : type === 'action'
-                                                            ? <ActionStepIcon />
-                                                            : undefined
-                                            }
+                                    !!stats.delay && (
+                                        <span className="stat">
+                                            {stats.delay}
+                                            {statIcons.delay}
                                         </span>
-                                    ))
+                                    )
                                 }
                             </div>
                         )

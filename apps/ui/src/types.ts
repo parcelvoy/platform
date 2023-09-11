@@ -240,6 +240,8 @@ export interface Journey {
     tags?: string[]
     created_at: string
     updated_at: string
+    stats_at?: string
+    stats: Record<string, number>
 }
 
 export interface JourneyStep<T = any> {

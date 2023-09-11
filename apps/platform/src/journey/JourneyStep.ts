@@ -428,7 +428,6 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
                 return a
             }, []),
             stats: step.stats,
-            stats_at: step.stats_at,
         }
     }
 

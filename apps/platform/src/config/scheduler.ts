@@ -18,6 +18,7 @@ export default (app: App) => {
             app.queue.enqueue(JourneyDelayJob.from())
             app.queue.enqueue(CampaignTriggerJob.from())
             app.queue.enqueue(CampaignStateJob.from())
+            app.queue.enqueue(UpdateJourneysJob.from())
         },
         lockLength: 120,
     })
@@ -28,12 +29,12 @@ export default (app: App) => {
         },
         lockLength: 360,
     })
-    scheduler.schedule({
-        rule: '*/30 * * * *',
-        callback: () => {
-            app.queue.enqueue(UpdateJourneysJob.from())
-        },
-    })
+    // scheduler.schedule({
+    //     rule: '*/30 * * * *',
+    //     callback: () => {
+    //         app.queue.enqueue(UpdateJourneysJob.from())
+    //     },
+    // })
     scheduler.schedule({
         rule: '0 * * * *',
         callback: () => {

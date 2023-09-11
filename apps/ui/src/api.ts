@@ -42,7 +42,7 @@ export interface NetworkError {
     }
 }
 
-type OmitFields = 'id' | 'created_at' | 'updated_at' | 'deleted_at'
+type OmitFields = 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'stats' | 'stats_at'
 
 export interface EntityApi<T> {
     basePath: string

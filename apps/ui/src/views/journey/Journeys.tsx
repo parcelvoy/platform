@@ -33,6 +33,10 @@ export default function Journeys() {
                         key: 'published',
                     },
                     {
+                        key: 'usage',
+                        cell: ({ item }) => item.stats?.entrance,
+                    },
+                    {
                         key: 'created_at',
                     },
                     {
