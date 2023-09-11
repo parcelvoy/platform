@@ -7,6 +7,7 @@ import { JourneyForm } from '../JourneyForm'
 
 interface JourneyLinkConfig {
     target_id: number
+    delay: '1 minute' | '15 minutes' | '1 hour' | '1 day'
 }
 
 export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
@@ -14,7 +15,10 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
     icon: <LinkStepIcon />,
     category: 'action',
     description: 'Send users to another journey.',
-    newData: async () => ({ target_id: 0 }),
+    newData: async () => ({
+        target_id: 0,
+        delay: '1 day',
+    }),
     Edit({
         value,
         onChange,

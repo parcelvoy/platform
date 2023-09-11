@@ -83,6 +83,20 @@ describe('JourneyService', () => {
         ],
     })
 
+    const linkStep = (target_id: number, childId: string) => ({
+        ...baseStep,
+        type: 'link',
+        data: {
+            target_id,
+            delay: '1 minute',
+        },
+        children: [
+            {
+                external_id: childId,
+            },
+        ],
+    })
+
     interface SetupJourneyParams {
         data: Record<string, unknown>
         events?: Array<{
@@ -302,6 +316,46 @@ describe('JourneyService', () => {
         expectStepPath(state, ['e', 'u'])
         expect(user.data.field1).toBe(1)
         expect(user.data.field2).toBe('green')
+
+    })
+
+    test('Steps - Entrance', async () => {
+
+        const { project } = await setup()
+
+        const journey2 = await Journey.create(project.id, 'Second', {
+            e: entrance(0, 'd'),
+            d: delay(0, ''),
+        })
+
+        const journey1 = await Journey.create(project.id, 'First', {
+            e: entrance(0, 'l'),
+            l: linkStep(journey2.journey.id, ''),
+        })
+
+        const user = await User.insertAndFetch({
+            project_id: project.id,
+            external_id: 'abcd',
+            data: {},
+        })
+
+        let e = await enterAtStep(user, journey1.steps, 'e')
+
+        let state = (await JourneyState.resume(e))!
+
+        expectStepPath(state, ['e', 'l'])
+
+        e = (await JourneyUserStep.first(q => q
+            .where('user_id', user.id)
+            .where('journey_id', journey2.journey.id)
+            .whereNull('entrance_id'),
+        ))!
+
+        expect(e).not.toBeUndefined()
+
+        state = (await JourneyState.resume(e))!
+
+        expectStepPath(state, ['e', 'd'])
 
     })
 })

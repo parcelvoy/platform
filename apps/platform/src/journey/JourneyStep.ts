@@ -1,4 +1,4 @@
-import { add, addDays, addMinutes, isFuture, isPast, parse } from 'date-fns'
+import { add, addDays, addHours, addMinutes, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
 import { getCampaign, getCampaignSend, sendCampaignJob } from '../campaigns/CampaignService'
@@ -287,30 +287,37 @@ export class JourneyExperiment extends JourneyStep {
 export class JourneyLink extends JourneyStep {
     static type = 'link'
 
-    target_entrance_id!: number
+    target_id!: number
+    delay: '1 minute' | '15 minutes' | '1 hour' | '1 day' = '1 day'
 
     parseJson(json: any) {
         super.parseJson(json)
-        this.target_entrance_id = json.data?.entrance_id
+        this.target_id = json.data?.target_id
     }
 
     async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
 
-        let step = state.steps.find(s => s.id === this.target_entrance_id)
-        let delay_until: undefined | Date
+        let step = state.steps.find(s => s.id === this.target_id)
+        let delay_until = new Date()
 
-        if (step) {
-            // restarting this same journey
-            // TODO: should this be env configurable?
-            delay_until = addDays(new Date(), 1)
+        if (this.delay === '1 minute') {
+            delay_until = addMinutes(delay_until, 1)
+        } else if (this.delay === '15 minutes') {
+            delay_until = addMinutes(delay_until, 15)
+        } else if (this.delay === '1 hour') {
+            delay_until = addHours(delay_until, 1)
         } else {
+            delay_until = addDays(delay_until, 1)
+        }
+
+        if (!step) {
             step = await JourneyStep.first(q => q
                 .join('journeys', 'journey_id', '=', 'journeys.id')
+                .where('journeys.id', this.target_id)
                 .where('journeys.project_id', state.user.project_id)
                 .where('journeys.published', true)
-                .where('journey_steps.id', this.target_entrance_id),
+                .where('type', 'entrance'),
             )
-            delay_until = addMinutes(new Date(), 15)
         }
 
         // error if invalid entrance step target
@@ -324,7 +331,7 @@ export class JourneyLink extends JourneyStep {
             journey_id: step.journey_id,
             step_id: step.id,
             user_id: state.user.id,
-            type: 'completed',
+            type: 'delay',
             delay_until,
         })
 
