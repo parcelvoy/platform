@@ -34,6 +34,7 @@ describe('JourneyService', () => {
             data: {
                 list_id,
             },
+            data_key: 'entrance',
             children: [
                 {
                     external_id: childId,
@@ -68,6 +69,19 @@ describe('JourneyService', () => {
             ],
         }
     }
+
+    const updateStep = (template: string, childId: string) => ({
+        ...baseStep,
+        type: 'update',
+        data: {
+            template,
+        },
+        children: [
+            {
+                external_id: childId,
+            },
+        ],
+    })
 
     interface SetupJourneyParams {
         data: Record<string, unknown>
@@ -107,13 +121,14 @@ describe('JourneyService', () => {
         expect(resultPath).toEqual(expectedPath.join('->'))
     }
 
-    const enterAtStep = async (user: User, steps: JourneyStep[], external_id: string) => {
+    const enterAtStep = async (user: User, steps: JourneyStep[], external_id: string, data?: Record<string, unknown>) => {
         const step = steps.find(s => s.external_id === external_id)!
         return await JourneyUserStep.insertAndFetch({
             journey_id: step.journey_id,
             step_id: step.id,
             user_id: user.id,
             type: 'completed',
+            data,
         })
     }
 
@@ -257,5 +272,36 @@ describe('JourneyService', () => {
         const state = await JourneyState.resume(entered, user)
 
         expectStepPath(state!, ['e', 'g1', 'g2', 'd3'])
+    })
+
+    test('Steps - Update', async () => {
+
+        const { steps, user } = await setupJourney({
+            data: {
+                field1: 1,
+            },
+            stepMap: {
+                e: entrance(0, 'u'),
+                u: updateStep(`
+                    {
+                        "field2": "{{journey.entrance.event.favorite_color}}"
+                    }
+                `, ''),
+            },
+        })
+
+        const entered = await enterAtStep(user, steps, 'e', {
+            event: {
+                name: 'decided_favorite_color',
+                favorite_color: 'green',
+            },
+        })
+
+        const state = (await JourneyState.resume(entered, user))!
+
+        expectStepPath(state, ['e', 'u'])
+        expect(user.data.field1).toBe(1)
+        expect(user.data.field2).toBe('green')
+
     })
 })

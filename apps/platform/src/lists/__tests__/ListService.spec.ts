@@ -94,10 +94,6 @@ describe('ListService', () => {
 
             // create events
             await UserEvent.insert(events)
-
-            if (i === 15) {
-                console.log('event user id: ', user.id)
-            }
         }
 
         await populateList(list, rule)

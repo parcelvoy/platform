@@ -24,10 +24,12 @@ export class JourneyUserStep extends Model {
 
     static tableName = 'journey_user_step'
 
+    static jsonAttributes = ['data']
+
     static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
         return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
             const step = steps.find(s => s.id === step_id)
-            if (step?.data_key && !a[step.data_key]) {
+            if (data && step?.data_key && !a[step.data_key]) {
                 a[step.data_key] = data
             }
             return a
