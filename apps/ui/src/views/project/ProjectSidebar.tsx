@@ -59,7 +59,7 @@ export default function ProjectSidebar({ children, links }: PropsWithChildren<Si
                     value={project}
                     onChange={project => {
                         if (project.id === 0) {
-                            navigate('/settings/projects')
+                            navigate('/organization/projects')
                         } else {
                             navigate(`/projects/${project.id}`)
                         }

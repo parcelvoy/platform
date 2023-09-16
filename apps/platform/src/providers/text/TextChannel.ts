@@ -3,6 +3,8 @@ import { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
 import { InboundTextMessage } from './TextMessage'
 import { UserEvent } from '../../users/UserEvent'
+import { UnsubscribeTextError } from './TextError'
+import { unsubscribe } from '../../subscriptions/SubscriptionService'
 
 const TEXT_SEGMENT_LENGTH = 160
 
@@ -19,10 +21,20 @@ export default class TextChannel {
     async send(template: TextTemplate, variables: Variables) {
         if (!variables.user.phone) throw new Error('Unable to send a text message to a user with no phone number.')
         const message = await this.build(template, variables)
-        await this.provider.send({
-            to: variables.user.phone,
-            ...message,
-        })
+        try {
+            await this.provider.send({
+                to: variables.user.phone,
+                ...message,
+            })
+        } catch (error: any) {
+
+            // If for some reason we are getting an unsubscribe error
+            // force unsubscribe the user from this subscription type
+            if (error instanceof UnsubscribeTextError) {
+                unsubscribe(variables.user.id, variables.context.subscription_id)
+            }
+            throw error
+        }
     }
 
     async build(template: TextTemplate, variables: Variables): Promise<CompiledText> {

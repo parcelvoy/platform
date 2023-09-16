@@ -1,5 +1,6 @@
 import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
+import TextError from './TextError'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
@@ -66,7 +67,10 @@ export default class PlivoTextProvider extends TextProvider {
                 response: responseBody.message_uuid[0],
             }
         } else {
-            throw new Error(response.status === 401 ? await response.text() : (await response.json()).error)
+            const error = response.status === 401
+                ? await response.text()
+                : (await response.json()).error
+            throw new TextError(this.type, this.phone_number, error)
         }
     }
 
