@@ -66,7 +66,7 @@ export default class NexmoTextProvider extends TextProvider {
 
             // Nexmo always returns 200 even for error
             if (responseMessage.status !== '0') {
-                throw new TextError('nexmo', `Request failed with status: ${responseMessage.status}, error: ${responseMessage['error-text']}`)
+                throw new TextError(this.type, this.phone_number, `Request failed with status: ${responseMessage.status}, error: ${responseMessage['error-text']}`)
             } else {
                 return {
                     message,
@@ -75,7 +75,7 @@ export default class NexmoTextProvider extends TextProvider {
                 }
             }
         } else {
-            throw new TextError('nexmo', `Request failed with status ${response.status}`)
+            throw new TextError(this.type, this.phone_number, `Request failed with status ${response.status}`)
         }
     }
 

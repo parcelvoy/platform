@@ -2,6 +2,7 @@ import App from '../../app'
 import { encodeHashid } from '../../utilities'
 import { ExternalProviderParams, ProviderControllers, ProviderSchema, ProviderSetupMeta } from '../Provider'
 import { createController } from '../ProviderService'
+import TextError, { UndeliverableTextError, UnsubscribeTextError } from './TextError'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { TextProvider } from './TextProvider'
 
@@ -50,7 +51,6 @@ export default class TwilioTextProvider extends TextProvider {
     }
 
     loadSetup(app: App): ProviderSetupMeta[] {
-        console.log('load setup')
         return [{
             name: 'Unsubscribe URL',
             value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
@@ -81,7 +81,14 @@ export default class TwilioTextProvider extends TextProvider {
                 response: responseBody.sid,
             }
         } else {
-            throw new Error(`${response.status} - ${responseBody.message}`)
+            if (responseBody.code === 21610) {
+                // Unable to send because recipient has unsubscribed
+                throw new UnsubscribeTextError(this.type, this.phone_number, responseBody.message)
+            } else if (responseBody.code === 21408) {
+                // Unable to send because region is not enabled
+                throw new UndeliverableTextError(this.type, this.phone_number, responseBody.message)
+            }
+            throw new TextError(this.type, this.phone_number, responseBody.message)
         }
     }
 

@@ -119,6 +119,7 @@ router.patch('/', projectRoleMiddleware('editor'), async ctx => {
 })
 
 const deleteUsersRequest: JSONSchemaType<string[]> = {
+    $id: 'deleteUsers',
     type: 'array',
     items: {
         type: 'string',

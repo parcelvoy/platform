@@ -41,7 +41,16 @@ export default class TextJob extends Job {
         const isReady = await prepareSend(channel, data, raw, segments)
         if (!isReady) return
 
-        await channel.send(template, data)
+        try {
+            await channel.send(template, data)
+        } catch (error: any) {
+            await updateSendState({
+                campaign,
+                user,
+                user_step_id: trigger.user_step_id,
+                state: 'failed',
+            })
+        }
 
         // Update send record
         await updateSendState({
