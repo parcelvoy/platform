@@ -3,7 +3,7 @@ import { MessageTrigger } from '../MessageTrigger'
 import { WebhookTemplate } from '../../render/Template'
 import { createEvent } from '../../users/UserEventRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
 
@@ -36,7 +36,7 @@ export default class WebhookJob extends Job {
         const isReady = await prepareSend(channel, data, raw)
         if (!isReady) return
 
-        await channel.send(template, data)
+        const { response } = await channel.send(template, data)
 
         // Update send record
         await updateSendState({
@@ -52,5 +52,9 @@ export default class WebhookJob extends Job {
         })
 
         await releaseLock(messageLock(campaign, user))
+
+        if (trigger.user_step_id) {
+            await notifyJourney(trigger.user_step_id, response)
+        }
     }
 }

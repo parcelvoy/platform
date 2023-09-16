@@ -2,7 +2,6 @@ import { User, UserParams } from './User'
 import { Job } from '../queue'
 import { createUser, getUsersFromIdentity } from './UserRepository'
 import { addUserToList, updateUsersLists } from '../lists/ListService'
-import { updateUsersJourneys } from '../journey/JourneyService'
 import { ClientIdentity } from '../client/Client'
 
 interface UserPatchTrigger {
@@ -11,7 +10,6 @@ interface UserPatchTrigger {
     options?: {
         join_list_id?: number
         skip_list_updating?: boolean
-        skip_journey_updating?: boolean
     }
 }
 
@@ -60,7 +58,6 @@ export default class UserPatchJob extends Job {
         const {
             join_list_id,
             skip_list_updating = false,
-            skip_journey_updating = false,
         } = patch.options ?? {}
 
         // Use updated user to check for list membership
@@ -71,11 +68,6 @@ export default class UserPatchJob extends Job {
         // If provided a list to join, add user to it
         if (join_list_id) {
             await addUserToList(user, join_list_id)
-        }
-
-        // Check all journeys to update progress
-        if (!skip_journey_updating) {
-            await updateUsersJourneys(user)
         }
     }
 }

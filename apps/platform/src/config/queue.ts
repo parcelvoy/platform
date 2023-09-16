@@ -20,6 +20,8 @@ import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
+import JourneyStatsJob from '../journey/JourneyStatsJob'
+import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 
 export const jobs = [
     CampaignGenerateListJob,
@@ -31,12 +33,14 @@ export const jobs = [
     EventPostJob,
     JourneyDelayJob,
     JourneyProcessJob,
+    JourneyStatsJob,
     ListPopulateJob,
     ListStatsJob,
     ProcessListsJob,
     UserSchemaSyncJob,
     PushJob,
     TextJob,
+    UpdateJourneysJob,
     UserAliasJob,
     UserDeleteJob,
     UserDeviceJob,

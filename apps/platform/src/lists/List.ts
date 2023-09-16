@@ -31,5 +31,5 @@ export class UserList extends Model {
     static tableName = 'user_list'
 }
 
-export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
-export type ListCreateParams = Pick<List, 'name' | 'type' | 'rule' | 'tags' | 'is_visible'>
+export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'> & { syncJourneys?: boolean }
+export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'>

@@ -5,8 +5,8 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
-import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, getJourneyStepStats } from './JourneyRepository'
-import { JourneyStepMap, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
+import { JourneyStepMapParams, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -74,7 +74,7 @@ router.delete('/:journeyId', async ctx => {
     ctx.body = true
 })
 
-const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
+const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMapParams> = {
     $id: 'journeyStepsParams',
     type: 'object',
     required: [],
@@ -90,6 +90,10 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMap> = {
                 type: 'object', // TODO: Could validate further based on sub types
                 nullable: true,
                 additionalProperties: true,
+            },
+            data_key: {
+                type: 'string',
+                nullable: true,
             },
             x: {
                 type: 'number',
@@ -127,10 +131,6 @@ router.get('/:journeyId/steps', async ctx => {
 router.put('/:journeyId/steps', async ctx => {
     const { steps, children } = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
     ctx.body = await toJourneyStepMap(steps, children)
-})
-
-router.get('/:journeyId/step-stats', async ctx => {
-    ctx.body = await getJourneyStepStats(ctx.state.journey!.id)
 })
 
 export default router

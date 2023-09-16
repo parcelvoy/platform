@@ -240,6 +240,8 @@ export interface Journey {
     tags?: string[]
     created_at: string
     updated_at: string
+    stats_at?: string
+    stats: Record<string, number>
 }
 
 export interface JourneyStep<T = any> {
@@ -265,12 +267,8 @@ export interface JourneyStepMap {
         x: number
         y: number
         children?: JourneyStepMapChild[]
-    }
-}
-
-export interface JourneyStepStats {
-    [external_id: string]: {
-        users: number
+        stats?: Record<string, number>
+        stats_at?: Date
     }
 }
 
@@ -299,6 +297,7 @@ export interface JourneyStepType<T = any, E = any> {
     | 'single' // single child (default)
     | 'multi' // multiple children, one handle (unordered)
     | string[] // enumerated handles (ordered)
+    hasDataKey?: boolean
 }
 
 export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'

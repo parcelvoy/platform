@@ -1,3 +1,4 @@
+import { JourneyUserStep } from '../journey/JourneyStep'
 import App from '../app'
 import Campaign, { CampaignSend } from '../campaigns/Campaign'
 import { updateSendState } from '../campaigns/CampaignService'
@@ -13,10 +14,13 @@ import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import { randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
+import { getEntranceSubsequentSteps, getJourneySteps } from '../journey/JourneyRepository'
+import JourneyProcessJob from '../journey/JourneyProcessJob'
 
 interface MessageTriggerHydrated<T> {
     user: User
     event?: UserEvent
+    journey: Record<string, unknown> // step.data_key -> user step data
     campaign: Campaign
     template: T
     project: Project
@@ -70,7 +74,31 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         user_step_id,
     }
 
-    return { campaign, template: template.map() as T, user, project, event, context }
+    // provide data captured from linked journey steps
+    let journey: Record<string, unknown> = {}
+    if (user_step_id) {
+        let step = await JourneyUserStep.find(user_step_id)
+        if (step) {
+            if (step.entrance_id) {
+                step = (await JourneyUserStep.find(step.entrance_id))!
+            }
+            const [steps, userSteps] = await Promise.all([
+                getJourneySteps(step.journey_id),
+                getEntranceSubsequentSteps(step.id),
+            ])
+            journey = JourneyUserStep.getDataMap(steps, [step, ...userSteps])
+        }
+    }
+
+    return {
+        campaign,
+        context,
+        event,
+        journey,
+        template: template.map() as T,
+        project,
+        user,
+    }
 }
 
 export const messageLock = (campaign: Campaign, user: User) => `parcelvoy:send:${campaign.id}:${user.id}`
@@ -124,4 +152,19 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
             points,
         },
     )
+}
+
+export const notifyJourney = async (user_step_id: number, response?: any) => {
+
+    // save response into user step
+    if (response) {
+        await JourneyUserStep.update(q => q.where('id', user_step_id), {
+            data: {
+                response,
+            },
+        })
+    }
+
+    // trigger processing of this journey entrance
+    await JourneyProcessJob.from({ entrance_id: user_step_id }).queue()
 }

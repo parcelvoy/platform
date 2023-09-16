@@ -1,6 +1,8 @@
 import { Job } from '../queue'
 import JourneyProcessJob from './JourneyProcessJob'
 import App from '../app'
+import { chunk } from '../utilities'
+import { JourneyUserStep } from './JourneyStep'
 
 /**
  * A job to be run on a schedule to queue up all journeys that need
@@ -11,34 +13,19 @@ export default class JourneyDelayJob extends Job {
 
     static async handler() {
 
-        await App.main.db
-            .with(
-                'latest_journey_steps',
-                App.main.db.raw('select j.*, row_number() over (partition by user_id, journey_id order by id desc) as rn from journey_user_step as j'),
-            )
-            .from('latest_journey_steps')
-            .leftJoin('journeys', 'journeys.id', '=', 'latest_journey_steps.journey_id')
-            .where('rn', 1)
-            .where('type', 'delay')
-            .where('delay_until', '<=', new Date())
-            .stream(async stream => {
+        const { db, queue } = App.main
 
-                let chunk: Job[] = []
+        const query = JourneyUserStep.query(db)
+            .distinct(db.raw('ifnull(journey_user_step.entrance_id, journey_user_step.id) as entrance_id'))
+            .leftJoin('journeys', 'journeys.id', '=', 'journey_user_step.journey_id')
+            .where('journeys.published', true) // ignore inactive journeys
+            .where('journey_user_step.type', 'delay') // only include steps where the current type/status is 'delay'
+            .where('journey_user_step.delay_until', '<=', new Date())
 
-                for await (const { journey_id, user_id } of stream) {
-                    chunk.push(JourneyProcessJob.from({
-                        user_id,
-                        journey_id,
-                    }))
-                    if (chunk.length >= App.main.queue.batchSize) {
-                        await App.main.queue.enqueueBatch(chunk)
-                        chunk = []
-                    }
-                }
-
-                if (chunk.length) {
-                    await App.main.queue.enqueueBatch(chunk)
-                }
-            })
+        await chunk<{ entrance_id: number }>(query, queue.batchSize, async items => {
+            await queue.enqueueBatch(items.map(({ entrance_id }) => {
+                return JourneyProcessJob.from({ entrance_id })
+            }))
+        })
     }
 }

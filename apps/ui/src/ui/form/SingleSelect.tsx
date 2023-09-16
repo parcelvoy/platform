@@ -98,7 +98,7 @@ export function SingleSelect<T, U = T>({
                     </span>
                 )
             }
-            <Listbox.Options className="select-options"
+            <Listbox.Options className="select-options nowheel"
                 ref={setPopperElement}
                 style={styles.popper}
                 {...attributes.popper}>

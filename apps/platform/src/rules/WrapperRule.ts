@@ -1,52 +1,43 @@
-import { Database } from '../config/database'
 import Rule from './Rule'
-import { make, RuleCheck, RuleCheckInput, RuleEvalException } from './RuleEngine'
+import { RuleCheck, RuleCheckParams, RuleEvalException } from './RuleEngine'
 import { isEventWrapper } from './RuleHelpers'
 
+const checkWrapper = ({ input, registry, rule, value }: RuleCheckParams) => {
+
+    const predicate = (child: Rule) => registry.get(child.type)?.check({ input, registry, rule: child, value })
+
+    if (!rule.children) return true
+
+    if (rule.operator === 'or') {
+        return rule.children.some(predicate)
+    }
+
+    if (rule.operator === 'and') {
+        return rule.children.every(predicate)
+    }
+
+    if (rule.operator === 'none') {
+        return !rule.children.some(predicate)
+    }
+
+    if (rule.operator === 'xor') {
+        return rule.children.filter(predicate).length === 1
+    }
+
+    throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+}
+
 export default {
-    check(input: RuleCheckInput, rule: Rule, registry) {
-        const predicate = (child: Rule) => registry.get(child.type)?.check(input, child, registry)
-
-        // If wrapper is for events, evaluate event name alongside conditions
-        if (isEventWrapper(rule)) {
-            const nameRule = make({
-                type: 'string',
-                path: '$.name',
-                value: rule.value,
-                group: 'event',
-            })
-            if (!registry.get('string').check(input, nameRule, registry)) return false
-        }
-
-        if (!rule.children) return true
-
-        if (rule.operator === 'or') {
-            return rule.children.some(predicate)
-        }
-
-        if (rule.operator === 'and') {
-            return rule.children.every(predicate)
-        }
-
-        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
-    },
-
-    query(builder: Database.QueryBuilder<any>, rule: Rule, wrapper, registry) {
-        const children = rule.children
-        if (!children) return builder
-
-        const operator = rule.operator
-        if (operator === 'and' || operator === 'or') {
-            return builder.where(qb => {
-                if (isEventWrapper(rule)) {
-                    qb.where('user_events.name', rule.value)
+    check(params) {
+        if (isEventWrapper(params.rule)) {
+            if (!params.rule.value) return false
+            return params.input.events.some(event => {
+                if (event.name !== params.rule.value) {
+                    return false
                 }
-                for (const child of children) {
-                    registry.get(child.type)?.query(qb, child, operator, registry)
-                }
+                return checkWrapper({ ...params, value: event })
             })
         }
-
-        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+        return checkWrapper(params)
     },
 } satisfies RuleCheck

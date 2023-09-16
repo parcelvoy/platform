@@ -125,7 +125,7 @@ export default class Model {
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<boolean> {
-        const count = await this.count(query, db)
+        const count = await this.count(qb => query(qb).limit(1), db)
         return count > 0
     }
 
@@ -232,7 +232,7 @@ export default class Model {
         data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
     ): Promise<number | number[]> {
-        const formattedData = this.formatJson(data)
+        const formattedData = Array.isArray(data) ? data.map(o => this.formatJson(o)) : this.formatJson(data)
         const value = await this.table(db).insert(formattedData)
         if (Array.isArray(data)) return value
         return value[0]
@@ -274,6 +274,30 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<number> {
         return await query(this.table(db)).delete()
+    }
+
+    static scroll = async function * <T extends typeof Model>(
+        this: T,
+        query: Query = qb => qb,
+        batchSize = 100,
+        db: Database = App.main.db,
+    ): AsyncGenerator<InstanceType<T>[]> {
+        let cursor = 0
+        while (true) {
+            const batch = await this.build(query, db)
+                .where(`${this.tableName}.id`, '>', cursor)
+                .clearOrder()
+                .orderBy(`${this.tableName}.id`, 'asc')
+                .limit(batchSize)
+            if (batch.length) {
+                yield batch.map((o: any) => this.fromJson(o))
+                if (batch.length === batchSize) {
+                    cursor = batch.at(-1)!.id
+                    continue
+                }
+            }
+            break
+        }
     }
 
     static get tableName(): string {

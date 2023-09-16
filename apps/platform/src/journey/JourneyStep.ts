@@ -1,18 +1,15 @@
-import { add, isFuture, isPast, parse } from 'date-fns'
+import { add, addDays, addHours, addMinutes, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
-import { getJourneyStep, getJourneyStepChildren, getUserJourneyStep } from './JourneyRepository'
-import { UserEvent } from '../users/UserEvent'
-import { getCampaign, getCampaignSend, sendCampaign } from '../campaigns/CampaignService'
+import { getCampaign, getCampaignSend, sendCampaignJob } from '../campaigns/CampaignService'
 import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
-import App from '../app'
-import JourneyProcessJob from './JourneyProcessJob'
 import { Database } from '../config/database'
 import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
-import { getProject } from '../projects/ProjectService'
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
-import { isUserInList } from '../lists/ListService'
+import { JourneyState } from './JourneyService'
+import Rule from '../rules/Rule'
+import { check } from '../rules/RuleEngine'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -20,8 +17,24 @@ export class JourneyUserStep extends Model {
     journey_id!: number
     step_id!: number
     delay_until?: Date
+    entrance_id?: number
+    ended_at?: Date
+    data?: Record<string, unknown>
+    ref?: string
 
     static tableName = 'journey_user_step'
+
+    static jsonAttributes = ['data']
+
+    static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
+        return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
+            const step = steps.find(s => s.id === step_id)
+            if (data && step?.data_key && !a[step.data_key]) {
+                a[step.data_key] = data
+            }
+            return a
+        }, {})
+    }
 }
 
 export class JourneyStepChild extends Model {
@@ -41,13 +54,16 @@ export class JourneyStep extends Model {
     journey_id!: number
     data?: Record<string, unknown>
     external_id!: string
+    data_key?: string // make data stored in user steps available in templates
+    stats?: Record<string, number>
+    stats_at?: Date
 
     // UI variables
     x = 0
     y = 0
 
     static tableName = 'journey_steps'
-    static jsonAttributes = ['data']
+    static jsonAttributes = ['data', 'stats']
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static async getStats(steps: JourneyStep[]): Promise<{ [external_id: string]: any }> {
@@ -56,42 +72,12 @@ export class JourneyStep extends Model {
 
     static get type() { return snakeCase(this.name) }
 
-    async step(user: User, type: string, delay_until?: Date) {
-        return await JourneyUserStep.insert({
-            type,
-            user_id: user.id,
-            journey_id: this.journey_id,
-            step_id: this.id,
-            delay_until,
-        })
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
+        userStep.type = 'completed'
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async complete(user: User, event?: UserEvent) {
-        await this.step(user, 'completed')
-        return true
-    }
-
-    async hasCompleted(user: User): Promise<boolean> {
-        const userJourneyStep = await getUserJourneyStep(user.id, this.id)
-        return !!userJourneyStep
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async condition(user: User, event?: UserEvent): Promise<boolean> {
-        return !(await this.hasCompleted(user))
-    }
-
-    /**
-     * Get the next job if one exists
-     * If no next step, end the cycle
-     * @returns JourneyStep if one is available
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async next(user: User, event?: UserEvent): Promise<JourneyStep | undefined> {
-        const child = await JourneyStepChild.first(q => q.where('step_id', this.id))
-        if (!child) return undefined
-        return await getJourneyStep(child.child_id)
+    async next(state: JourneyState): Promise<undefined | number> {
+        return state.childrenOf(this.id)[0]?.child_id
     }
 }
 
@@ -140,31 +126,23 @@ export class JourneyDelay extends JourneyStep {
         this.time = json?.data?.time
     }
 
-    async condition(user: User): Promise<boolean> {
+    async process(state: JourneyState, userStep: JourneyUserStep) {
 
-        // Check for delay event
-        const userJourneyStep = await getUserJourneyStep(user.id, this.id, 'delay')
-
-        // If no delay yet, event hasn't been seen yet, create and break
-        if (!userJourneyStep) {
-
-            // determine user/project timezone
-            const timezone = await this.timezone(user)
-
-            // compute delay (in UTC)
-            const delayUntil = await this.offset(new Date(), timezone)
-
-            // record delay
-            await this.step(user, 'delay', delayUntil)
-
-            // do not continue, wait for JourneyDelayJob to pick this up again
-            return false
+        // if no delay has been set yet, calculate one
+        if (!userStep.delay_until) {
+            const timezone = await state.timezone()
+            userStep.delay_until = this.offset(new Date(), timezone)
+            userStep.type = 'delay'
+            return
         }
 
-        return !userJourneyStep.delay_until || !isFuture(userJourneyStep.delay_until)
+        // if delay has passed, change to completed
+        if (!isFuture(userStep.delay_until)) {
+            userStep.type = 'completed'
+        }
     }
 
-    private async offset(baseDate: Date, timezone: string): Promise<Date> {
+    private offset(baseDate: Date, timezone: string): Date {
 
         const time = this.time?.trim()
         const date = this.date?.trim()
@@ -199,13 +177,6 @@ export class JourneyDelay extends JourneyStep {
 
         return baseDate
     }
-
-    private async timezone(user: User) {
-        const tz = user.timezone
-        if (tz) return tz
-        const project = await getProject(user.project_id)
-        return project!.timezone
-    }
 }
 
 export class JourneyAction extends JourneyStep {
@@ -218,59 +189,65 @@ export class JourneyAction extends JourneyStep {
         this.campaign_id = json?.data?.campaign_id
     }
 
-    async complete(user: User, event?: UserEvent) {
-        const campaign = await getCampaign(this.campaign_id, user.project_id)
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
 
-        if (campaign) {
+        const campaign = await getCampaign(this.campaign_id, state.user.project_id)
 
-            // check if we have already recorded this action
-            const wait = await getUserJourneyStep(user.id, this.id, 'action')
-
-            if (wait) {
-                const send = await getCampaignSend(campaign.id, user.id, wait.id)
-                if (send?.state === 'sent') {
-                    // carry on, this was recorded as sent
-                    return await super.complete(user, event)
-                }
-                // not sent yet, don't continue
-                return false
-            } else {
-                // not triggered yet, mark that we've visited this step
-                // and pass a reference to this campaign
-                const user_step_id = await this.step(user, 'action')
-                await sendCampaign({
-                    campaign,
-                    user,
-                    event,
-                    user_step_id,
-                })
-                return false
-            }
+        if (!campaign) {
+            userStep.type = 'error'
+            return
         }
 
-        return await super.complete(user, event)
+        if (userStep.type === 'action') {
+            const send = await getCampaignSend(campaign.id, state.user.id, userStep.id)
+            if (send?.state === 'sent') {
+                userStep.type = 'completed'
+            }
+            return
+        }
+
+        userStep.type = 'action'
+
+        // defer job construction so that we have the journey_user_step.id value
+        state.job(() => sendCampaignJob({
+            campaign,
+            user: state.user,
+            user_step_id: userStep.id,
+        }))
     }
 }
 
 export class JourneyGate extends JourneyStep {
     static type = 'gate'
 
-    list_id?: number
+    rule!: Rule
 
     parseJson(json: any) {
         super.parseJson(json)
-        this.list_id = json?.data?.list_id
+        this.rule = json?.data?.rule
     }
 
-    async next(user: User) {
-        const [passed, failed] = await getJourneyStepChildren(this.id)
-        if (!this.list_id) return await getJourneyStep(passed?.child_id)
+    async next(state: JourneyState) {
 
-        const isInList = await isUserInList(user.id, this.list_id)
-        if (isInList) {
-            return await getJourneyStep(passed?.child_id)
+        if (!this.rule) return
+
+        const children = state.childrenOf(this.id)
+
+        if (!children.length) return
+
+        const [passed, failed] = children
+
+        const events = await state.events()
+
+        const params = {
+            user: state.user.flatten(),
+            events,
+            journey: state.stepData(),
         }
-        return await getJourneyStep(failed?.child_id)
+
+        return check(params, this.rule)
+            ? passed?.child_id
+            : failed?.child_id
     }
 }
 
@@ -280,15 +257,15 @@ export class JourneyGate extends JourneyStep {
 export class JourneyExperiment extends JourneyStep {
     static type = 'experiment'
 
-    async next() {
+    async next(state: JourneyState) {
 
-        let children = await getJourneyStepChildren(this.id)
+        let children = state.childrenOf(this.id)
 
         if (!children.length) return undefined
 
         children = children.reduce<JourneyStepChild[]>((a, c) => {
-            const proportion = Number(c.data?.ratio)
-            if (!isNaN(proportion) && proportion > 0) {
+            const proportion = c.data?.ratio
+            if (typeof proportion === 'number' && !isNaN(proportion) && proportion > 0) {
                 for (let i = 0; i < proportion; i++) {
                     a.push(c)
                 }
@@ -296,9 +273,10 @@ export class JourneyExperiment extends JourneyStep {
             return a
         }, [])
 
+        // exit if no children paths have any proportions
         if (!children.length) return undefined
 
-        return await getJourneyStep(random(children).child_id)
+        return random(children).child_id
     }
 
 }
@@ -310,23 +288,55 @@ export class JourneyLink extends JourneyStep {
     static type = 'link'
 
     target_id!: number
+    delay: '1 minute' | '15 minutes' | '1 hour' | '1 day' = '1 day'
 
     parseJson(json: any) {
         super.parseJson(json)
-        this.target_id = json.data?.journey_id
+        this.target_id = json.data?.target_id
     }
 
-    async complete(user: User, event?: UserEvent | undefined) {
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
 
-        if (!isNaN(this.journey_id)) {
-            await App.main.queue.enqueue(JourneyProcessJob.from({
-                journey_id: this.target_id,
-                user_id: user.id,
-                event_id: event?.id,
-            }))
+        let step = state.steps.find(s => s.id === this.target_id)
+        let delay_until = new Date()
+
+        if (this.delay === '1 minute') {
+            delay_until = addMinutes(delay_until, 1)
+        } else if (this.delay === '15 minutes') {
+            delay_until = addMinutes(delay_until, 15)
+        } else if (this.delay === '1 hour') {
+            delay_until = addHours(delay_until, 1)
+        } else {
+            delay_until = addDays(delay_until, 1)
         }
 
-        return super.complete(user, event)
+        if (!step) {
+            step = await JourneyStep.first(q => q
+                .join('journeys', 'journey_id', '=', 'journeys.id')
+                .where('journeys.id', this.target_id)
+                .where('journeys.project_id', state.user.project_id)
+                .where('journeys.published', true)
+                .where('type', 'entrance'),
+            )
+        }
+
+        // error if invalid entrance step target
+        if (!step) {
+            userStep.type = 'error'
+            return
+        }
+
+        // create an entrance in this/another journey, delay job will pick it up
+        await JourneyUserStep.insert({
+            journey_id: step.journey_id,
+            step_id: step.id,
+            user_id: state.user.id,
+            type: 'delay',
+            delay_until,
+        })
+
+        // mark this step as completed
+        userStep.type = 'completed'
     }
 }
 
@@ -340,34 +350,34 @@ export class JourneyUpdate extends JourneyStep {
         this.template = json.data?.template
     }
 
-    async complete(user: User, event?: UserEvent | undefined) {
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
 
         if (this.template.trim()) {
             let value: any
             try {
                 value = JSON.parse(compileTemplate(this.template)({
-                    user: user.flatten(),
-                    event: event?.flatten(),
+                    user: state.user.flatten(),
+                    journey: state.stepData(),
                 }))
                 if (typeof value === 'object') {
-                    user.data = {
-                        ...user.data,
+                    state.user.data = {
+                        ...state.user.data,
                         ...value,
                     }
-                    await User.update(q => q.where('id', user.id), {
-                        data: user.data,
+                    await User.update(q => q.where('id', state.user.id), {
+                        data: state.user.data,
                     })
                 }
             } catch (err: any) {
                 logger.warn({
                     error: err.message,
                 }, 'Error while updating user')
-                this.step(user, 'error')
-                return false
+                userStep.type = 'error'
+                return
             }
         }
 
-        return super.complete(user, event)
+        userStep.type = 'completed'
     }
 }
 
@@ -384,19 +394,24 @@ export const journeyStepTypes = [
     return a
 }, {})
 
-export type JourneyStepMap = Record<
-    string,
-    {
-        type: string
+interface JourneyStepMapItem {
+    type: string
+    data?: Record<string, unknown>
+    data_key?: string
+    x: number
+    y: number
+    children?: Array<{
+        external_id: string
         data?: Record<string, unknown>
-        x: number
-        y: number
-        children?: Array<{
-            external_id: string
-            data?: Record<string, unknown>
-        }>
-    }
->
+    }>
+}
+
+export type JourneyStepMap = Record<string, JourneyStepMapItem & {
+    stats?: Record<string, number>
+    stats_at?: Date
+}>
+
+export type JourneyStepMapParams = Record<string, JourneyStepMapItem>
 
 // This is async in case we ever want to fetch stats here
 export async function toJourneyStepMap(steps: JourneyStep[], children: JourneyStepChild[]) {
@@ -406,6 +421,7 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
         editData[step.external_id] = {
             type: step.type,
             data: step.data ?? {},
+            data_key: step.data_key,
             x: step.x ?? 0,
             y: step.y ?? 0,
             children: children.reduce<JourneyStepMap[string]['children']>((a, { step_id, child_id, data }) => {
@@ -420,6 +436,7 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
                 }
                 return a
             }, []),
+            stats: step.stats,
         }
     }
 

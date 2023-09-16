@@ -3,7 +3,7 @@ import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { loadEmailChannel } from './index'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
@@ -68,5 +68,9 @@ export default class EmailJob extends Job {
         })
 
         await releaseLock(messageLock(campaign, user))
+
+        if (trigger.user_step_id) {
+            await notifyJourney(trigger.user_step_id)
+        }
     }
 }

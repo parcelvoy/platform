@@ -1,4 +1,4 @@
-export type Operator = '=' | '!=' | '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor' | 'empty' | 'contains' | 'starts with' | 'any' | 'none'
+export type Operator = '=' | '!=' | '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor' | 'empty' | 'contains' | 'starts with' | 'ends with' | 'any' | 'none'
 export type RuleType = 'wrapper' | 'string' | 'number' | 'boolean' | 'date' | 'array'
 export type RuleGroup = 'user' | 'event'
 

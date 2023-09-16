@@ -132,7 +132,7 @@ export function EntityIdPicker<T extends { id: number }>({
                     )
                 }
             </div>
-            <Combobox.Options className="select-options"
+            <Combobox.Options className="select-options nowheel"
                 ref={setPopperElement}
                 style={styles.popper}
                 {...attributes.popper}>

@@ -5,7 +5,7 @@ import { MessageTrigger } from '../MessageTrigger'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
 import { releaseLock } from '../../config/scheduler'
@@ -55,6 +55,10 @@ export default class PushJob extends Job {
             })
 
             await releaseLock(messageLock(campaign, user))
+
+            if (trigger.user_step_id) {
+                await notifyJourney(trigger.user_step_id)
+            }
 
         } catch (error: any) {
             if (error instanceof PushError) {
