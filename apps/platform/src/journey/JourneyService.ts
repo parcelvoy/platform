@@ -3,12 +3,13 @@ import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } f
 import { JourneyEntrance, JourneyGate, JourneyStep, JourneyStepChild, JourneyUserStep, journeyStepTypes } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import List, { UserList } from '../lists/List'
-import { chunk, groupBy, uuid } from '../utilities'
+import { chunk, groupBy, shallowEqual, uuid } from '../utilities'
 import App from '../app'
 import { Job } from '../queue'
 import { getProject } from '../projects/ProjectService'
 import { getUserEventsForRules } from '../users/UserRepository'
 import Rule from '../rules/Rule'
+import { acquireLock, releaseLock } from '../config/scheduler'
 
 const getActiveEntrancesForList = async (list: List) => {
     return await JourneyStep.all(q => q
@@ -158,6 +159,13 @@ export class JourneyState {
             return
         }
 
+        const key = `parcelvoy:journey:entrance:${entrance.id}`
+
+        const acquired = await acquireLock({ key })
+        if (!acquired) {
+            return
+        }
+
         // load all journey dependencies
         const [steps, children, userSteps] = await Promise.all([
             getJourneySteps(entrance.journey_id)
@@ -169,6 +177,8 @@ export class JourneyState {
         const state = new this(entrance, steps, children, [entrance, ...userSteps], user)
 
         await state.run()
+
+        await releaseLock(key)
 
         return state
     }
@@ -214,6 +224,8 @@ export class JourneyState {
                 continue
             }
 
+            const copy = { ...userStep }
+
             // delegate to step type
             try {
                 await step.process(this, userStep)
@@ -222,11 +234,14 @@ export class JourneyState {
             }
 
             // persist and update the user step
-            userStep.parseJson(
-                userStep.id
-                    ? await JourneyUserStep.updateAndFetch(userStep.id, userStep)
-                    : await JourneyUserStep.insertAndFetch(userStep),
-            )
+            if (userStep.id) {
+                // only update the step is something has changed
+                if (!shallowEqual(copy, userStep)) {
+                    userStep.parseJson(await JourneyUserStep.updateAndFetch(userStep.id, userStep))
+                }
+            } else {
+                userStep.parseJson(await JourneyUserStep.insertAndFetch(userStep))
+            }
 
             // stop processing if latest isn't completed
             if (userStep.type !== 'completed') {
@@ -250,6 +265,11 @@ export class JourneyState {
             if (stepId) {
                 const step = this.steps.find(s => s.id === stepId)
                 if (step) {
+                    if (this.userSteps.find(s => s.step_id === step.id)) {
+                        // circular reference, this step has already visited
+                        await this.end()
+                        return
+                    }
                     return step
                 }
             }
