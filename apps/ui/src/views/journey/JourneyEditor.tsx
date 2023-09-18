@@ -125,13 +125,13 @@ function JourneyStepNode({
                         stats && (
                             <div className="step-header-stats">
                                 <span className="stat">
-                                    {stats.completed}
+                                    {stats.completed ?? 0}
                                     {statIcons.completed}
                                 </span>
                                 {
                                     !!stats.delay && (
                                         <span className="stat">
-                                            {stats.delay}
+                                            {stats.delay ?? 0}
                                             {statIcons.delay}
                                         </span>
                                     )
