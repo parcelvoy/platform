@@ -15,7 +15,7 @@ export default (app: App) => {
     scheduler.schedule({
         rule: '* * * * *',
         callback: () => {
-            app.queue.enqueue(JourneyDelayJob.from())
+            JourneyDelayJob.enqueueActive(app)
             app.queue.enqueue(CampaignTriggerJob.from())
             app.queue.enqueue(CampaignStateJob.from())
         },
