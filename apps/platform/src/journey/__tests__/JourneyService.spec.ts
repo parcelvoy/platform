@@ -9,6 +9,7 @@ import { uuid } from '../../utilities'
 import Journey from '../Journey'
 import { JourneyState, enterJourneysFromList } from '../JourneyService'
 import { JourneyStep, JourneyStepMap, JourneyUserStep } from '../JourneyStep'
+import { make } from '../../rules/RuleEngine'
 
 describe('JourneyService', () => {
 
@@ -356,6 +357,41 @@ describe('JourneyService', () => {
         state = (await JourneyState.resume(e))!
 
         expectStepPath(state, ['e', 'd'])
+
+    })
+
+    test('JourneyState - prevent infinite loop', async () => {
+
+        const { project } = await setup()
+
+        const rule = make({
+            type: 'boolean',
+            group: 'user',
+            path: 'some_field',
+            operator: '=',
+            value: 'true',
+        })
+
+        const { steps } = await Journey.create(project.id, 'infinite loop journey', {
+            e: entrance(0, 'g1'),
+            g1: gate(rule, ['g2', 'g3']),
+            g2: gate(rule, ['g1', 'g3']),
+            g3: gate(rule, []),
+        })
+
+        const user = await User.insertAndFetch({
+            project_id: project.id,
+            external_id: 'xyz',
+            data: {
+                some_field: true,
+            },
+        })
+
+        const entranceStep = await enterAtStep(user, steps, 'e')
+
+        const state = (await JourneyState.resume(entranceStep, user))!
+
+        expectStepPath(state, ['e', 'g1', 'g2'])
 
     })
 })
