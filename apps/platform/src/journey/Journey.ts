@@ -1,6 +1,6 @@
 import Model, { ModelParams } from '../core/Model'
 import { setJourneyStepMap } from './JourneyRepository'
-import { JourneyStepMap } from './JourneyStep'
+import { JourneyStepMapParams } from './JourneyStep'
 
 export default class Journey extends Model {
     name!: string
@@ -14,7 +14,7 @@ export default class Journey extends Model {
 
     static jsonAttributes = ['stats']
 
-    static async create(project_id: number, name: string, stepMap: JourneyStepMap) {
+    static async create(project_id: number, name: string, stepMap: JourneyStepMapParams) {
         const journey = await this.insertAndFetch({
             project_id,
             name,

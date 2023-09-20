@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -177,6 +177,14 @@ const api = {
                 .put<JourneyStepMap>(`/admin/projects/${projectId}/journeys/${journeyId}/steps`, stepData)
                 .then(r => r.data),
         },
+        entrances: {
+            search: async (projectId: number | string, journeyId: number | string, params: SearchParams) => await client
+                .get<SearchResult<JourneyUserStep>>(`/admin/projects/${projectId}/journeys/${journeyId}/entrances`, { params })
+                .then(r => r.data),
+            log: async (projectId: number | string, entranceId: number | string) => await client
+                .get<JourneyEntranceDetail>(`${projectUrl(projectId)}/journeys/entrances/${entranceId}`)
+                .then(r => r.data),
+        },
     },
 
     templates: {
@@ -199,6 +207,12 @@ const api = {
         updateSubscriptions: async (projectId: number | string, userId: number | string, subscriptions: SubscriptionParams[]) => await client
             .patch(`${projectUrl(projectId)}/users/${userId}/subscriptions`, subscriptions)
             .then(r => r.data),
+
+        journeys: {
+            search: async (projectId: number | string, userId: number | string, params: SearchParams) => await client
+                .get<SearchResult<JourneyUserStep>>(`${projectUrl(projectId)}/users/${userId}/journeys`, { params })
+                .then(r => r.data),
+        },
     },
 
     lists: {

@@ -5,8 +5,9 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
-import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney } from './JourneyRepository'
-import { JourneyStepMapParams, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog } from './JourneyRepository'
+import { JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { User } from '../users/User'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -52,6 +53,24 @@ router.post('/', async ctx => {
     ctx.body = await createJourney(ctx.state.project.id, payload)
 })
 
+router.get('/entrances/:entranceId', async ctx => {
+    const entrance = await JourneyUserStep.first(q => q
+        .join('journeys', 'journey_user_step.journey_id', '=', 'journeys.id')
+        .where('journeys.project_id', ctx.state.project.id)
+        .where('journey_user_step.id', parseInt(ctx.params.entranceId, 10))
+        .whereNull('journey_user_step.entrance_id'),
+    )
+    if (!entrance) {
+        return ctx.throw(404)
+    }
+    const [user, journey, userSteps] = await Promise.all([
+        User.find(entrance.user_id),
+        Journey.find(entrance.journey_id),
+        getEntranceLog(entrance.id),
+    ])
+    ctx.body = { journey, user, userSteps }
+})
+
 router.param('journeyId', async (value, ctx, next) => {
     ctx.state.journey = await getJourney(parseInt(value), ctx.state.project.id)
     if (!ctx.state.journey) {
@@ -85,6 +104,9 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMapParams> = {
             type: {
                 type: 'string',
                 enum: Object.keys(journeyStepTypes),
+            },
+            name: {
+                type: 'string',
             },
             data: {
                 type: 'object', // TODO: Could validate further based on sub types
@@ -131,6 +153,11 @@ router.get('/:journeyId/steps', async ctx => {
 router.put('/:journeyId/steps', async ctx => {
     const { steps, children } = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
     ctx.body = await toJourneyStepMap(steps, children)
+})
+
+router.get('/:journeyId/entrances', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedEntrancesByJourney(ctx.state.journey!.id, params)
 })
 
 export default router

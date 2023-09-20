@@ -57,10 +57,18 @@ const statIcons: Record<string, ReactNode> = {
     ended: <CloseIcon />,
 }
 
+export const stepCategoryColors = {
+    entrance: 'red',
+    action: 'blue',
+    flow: 'green',
+    delay: 'yellow',
+}
+
 function JourneyStepNode({
     id,
     data: {
         type: typeName,
+        name,
         data,
         data_key,
         stats,
@@ -117,7 +125,7 @@ function JourneyStepNode({
                 )}
             >
                 <div className="journey-step-header">
-                    <span className="step-header-icon">
+                    <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{type.name}</h4>
@@ -143,6 +151,12 @@ function JourneyStepNode({
                 {
                     type.Edit && (
                         <div className="journey-step-body">
+                            <TextInput
+                                label="Name"
+                                name="name"
+                                value={name}
+                                onChange={name => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, name } } : n))}
+                            />
                             {
                                 createElement(type.Edit, {
                                     value: data,
@@ -158,9 +172,7 @@ function JourneyStepNode({
                                         subtitle="Makes data stored at this step available in user update and campaign templates."
                                         name="data_key"
                                         value={data_key}
-                                        onChange={
-                                            data_key => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, data_key } } : n))
-                                        }
+                                        onChange={data_key => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, data_key } } : n))}
                                     />
                                 )
                             }
@@ -318,7 +330,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, children, stats, stats_at }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, name, children, stats, stats_at }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -328,6 +340,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
             type: 'step',
             data: {
                 type,
+                name,
                 data,
                 stats,
                 stats_at,
@@ -353,6 +366,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         id,
         data: {
             type,
+            name = '',
             data = {},
         },
         position: {
@@ -363,6 +377,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         a[id] = {
             type,
             data,
+            name,
             x,
             y,
             children: edges
@@ -567,7 +582,7 @@ export default function JourneyEditor() {
                                     event.dataTransfer.effectAllowed = 'move'
                                 }}
                             >
-                                <span className="component-handle">
+                                <span className={clsx('component-handle', type.category)}>
                                     {type.icon}
                                 </span>
                                 <div className="component-title">{type.name}</div>

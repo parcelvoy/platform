@@ -64,6 +64,12 @@ export default class Model {
         for (const attribute of this.jsonAttributes) {
             json[attribute] = JSON.stringify(json[attribute])
         }
+
+        // remove any virtual attributes that have been set
+        for (const attribute of this.virtualAttributes) {
+            delete (json as any)[attribute]
+        }
+
         return json
     }
 
@@ -97,6 +103,20 @@ export default class Model {
             .first()
         if (!record) return undefined
         return this.fromJson(record)
+    }
+
+    static async findMap<T extends typeof Model>(
+        this: T,
+        ids: number[],
+        db: Database = App.main.db,
+    ) {
+        const m = new Map<number, InstanceType<T>>()
+        if (!ids.length) return m
+        const records = await this.all(q => q.whereIn('id', ids), db)
+        for (const record of records) {
+            m.set(record.id, record)
+        }
+        return m
     }
 
     static async all<T extends typeof Model>(

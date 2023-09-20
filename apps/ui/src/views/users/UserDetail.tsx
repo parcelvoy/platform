@@ -38,6 +38,11 @@ export default function UserDetail() {
                     to: 'subscriptions',
                     children: 'Subscriptions',
                 },
+                {
+                    key: 'journeys',
+                    to: 'journeys',
+                    children: 'Journeys',
+                },
             ]} />
             <Outlet />
         </PageContent>

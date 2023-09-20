@@ -91,11 +91,11 @@ export default function ProjectApiKeys() {
                     editing && (
                         <FormWrapper<ProjectApiKey>
                             onSubmit={
-                                async ({ id, name, description, scope }) => {
+                                async ({ id, name, description, scope, role }) => {
                                     if (id) {
-                                        await api.apiKeys.update(project.id, id, { name, description })
+                                        await api.apiKeys.update(project.id, id, { name, description, role })
                                     } else {
-                                        await api.apiKeys.create(project.id, { name, description, scope })
+                                        await api.apiKeys.create(project.id, { name, description, scope, role })
                                     }
                                     await state.reload()
                                     setEditing(null)

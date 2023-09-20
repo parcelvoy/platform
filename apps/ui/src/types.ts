@@ -247,7 +247,7 @@ export interface Journey {
 export interface JourneyStep<T = any> {
     id: number
     type: string
-    child_id?: number
+    name: string
     data: T
     x: number
     y: number
@@ -263,6 +263,7 @@ interface JourneyStepMapChild<E = any> {
 export interface JourneyStepMap {
     [external_id: string]: {
         type: string
+        name: string
         data?: Record<string, unknown>
         x: number
         y: number
@@ -298,6 +299,25 @@ export interface JourneyStepType<T = any, E = any> {
     | 'multi' // multiple children, one handle (unordered)
     | string[] // enumerated handles (ordered)
     hasDataKey?: boolean
+}
+
+export interface JourneyUserStep {
+    id: number
+    type: string
+    delay_until?: string
+    created_at: string
+    updated_at: string
+    ended_at?: string
+
+    user?: User
+    journey?: Journey
+    step?: JourneyStep
+}
+
+export interface JourneyEntranceDetail {
+    journey: Journey
+    user: User
+    userSteps: JourneyUserStep[]
 }
 
 export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'
