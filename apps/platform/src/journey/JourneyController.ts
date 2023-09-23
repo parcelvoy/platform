@@ -107,6 +107,7 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMapParams> = {
             },
             name: {
                 type: 'string',
+                nullable: true,
             },
             data: {
                 type: 'object', // TODO: Could validate further based on sub types
