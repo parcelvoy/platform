@@ -15,8 +15,10 @@ export default class SentryProvider implements ErrorHandlingProvider {
 
     attach(api: Koa) {
         api.on('error', (err, ctx) => {
-            Sentry.withScope(scope => {
-                scope.setSDKProcessingMetadata({ request: ctx.request })
+            Sentry.withScope((scope) => {
+                scope.addEventProcessor((event) => {
+                    return Sentry.addRequestDataToEvent(event, ctx.request)
+                })
                 Sentry.captureException(err)
             })
         })

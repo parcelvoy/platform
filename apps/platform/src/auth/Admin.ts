@@ -8,4 +8,6 @@ export default class Admin extends Model {
     image_url?: string
 }
 
-export type AdminParams = Omit<Admin, ModelParams>
+export type AdminParams = Omit<Admin, ModelParams> & { domain?: string }
+
+export type AuthAdminParams = Omit<AdminParams, 'organization_id'> & { domain?: string }

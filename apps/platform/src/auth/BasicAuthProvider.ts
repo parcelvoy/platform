@@ -46,10 +46,7 @@ export default class BasicAuthProvider extends AuthProvider {
             admin = await Admin.insertAndFetch({ email, first_name: 'Admin' })
         }
 
-        // Get the only org that can exist for this method of login
-        const { id } = await this.loadAuthOrganization(ctx, 'local')
-
         // Process the login
-        await this.login({ email, organization_id: id }, ctx)
+        await this.login({ email, domain: 'local' }, ctx)
     }
 }

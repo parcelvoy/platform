@@ -1,9 +1,7 @@
 import { Context } from 'koa'
 import App from '../app'
-import { RequestError } from '../core/errors'
-import AuthError from './AuthError'
-import Admin, { AdminParams } from './Admin'
-import { createOrUpdateAdmin } from './AdminRepository'
+import Admin, { AdminParams, AuthAdminParams } from './Admin'
+import { getAdminByEmail } from './AdminRepository'
 import { generateAccessToken, OAuthResponse, setTokenCookies } from './TokenRepository'
 import Organization from '../organizations/Organization'
 import { State } from './AuthMiddleware'
@@ -36,12 +34,17 @@ export default abstract class AuthProvider {
         return await createOrganization(domain)
     }
 
-    async login(params: AdminParams, ctx?: AuthContext, redirect?: string): Promise<OAuthResponse> {
+    async login(params: AuthAdminParams, ctx: AuthContext, redirect?: string): Promise<OAuthResponse> {
 
-        // If existing, update otherwise create new admin based on params
-        const admin = await createOrUpdateAdmin(params)
-
-        if (!admin) throw new RequestError(AuthError.AdminNotFound)
+        // Check for existing, otherwise create one
+        let admin = await getAdminByEmail(params.email)
+        if (!admin) {
+            const organization = await this.loadAuthOrganization(ctx, params.domain)
+            admin = await Admin.insertAndFetch({
+                ...params,
+                organization_id: organization.id,
+            })
+        }
 
         return await this.generateOauth(admin, ctx, redirect)
     }
