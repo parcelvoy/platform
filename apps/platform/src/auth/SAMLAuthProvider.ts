@@ -97,8 +97,7 @@ export default class SAMLAuthProvider extends AuthProvider {
         const domain = this.getDomain(email)
         if (!email || !domain) throw new RequestError(AuthError.SAMLValidationError)
 
-        const { id } = await this.loadAuthOrganization(ctx, domain)
-        await this.login({ first_name, last_name, email, organization_id: id }, ctx, state)
+        await this.login({ first_name, last_name, email, domain }, ctx, state)
 
         ctx.cookies.set('organization', null)
     }
