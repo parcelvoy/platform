@@ -5,7 +5,7 @@ import AuthError from './AuthError'
 import { AuthTypeConfig } from './Auth'
 import AuthProvider, { AuthContext } from './AuthProvider'
 import { firstQueryParam } from '../utilities'
-import { logger } from '../config/logger'
+import App from '../app'
 
 export interface OpenIDConfig extends AuthTypeConfig {
     driver: 'openid'
@@ -80,23 +80,18 @@ export default class OpenIDAuthProvider extends AuthProvider {
         try {
             const tokenSet = await client.callback(this.config.redirectUri, params, { nonce, state })
 
-            if (!tokenSet) {
-                throw new RequestError(AuthError.OpenIdValidationError)
-            }
-
             const claims = tokenSet.claims()
             const domain = this.getDomain(claims)
             if (!claims.email) {
                 throw new RequestError(AuthError.InvalidEmail)
             }
 
-            const organization = await this.loadAuthOrganization(ctx, domain)
             const admin = {
                 email: claims.email,
                 first_name: claims.given_name ?? claims.name,
                 last_name: claims.family_name,
                 image_url: claims.picture,
-                organization_id: organization.id,
+                domain,
             }
 
             await this.login(admin, ctx, state)
@@ -104,8 +99,8 @@ export default class OpenIDAuthProvider extends AuthProvider {
             ctx.cookies.set('nonce', null)
             ctx.cookies.set('relaystate', null)
             ctx.cookies.set('organization', null)
-        } catch (error) {
-            logger.warn(error)
+        } catch (error: any) {
+            App.main.error.notify(error)
             throw new RequestError(AuthError.OpenIdValidationError)
         }
     }
