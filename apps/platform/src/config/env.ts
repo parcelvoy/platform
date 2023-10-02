@@ -79,6 +79,7 @@ export default (type?: EnvType): Env => {
                 host: process.env.REDIS_HOST!,
                 port: parseInt(process.env.REDIS_PORT!),
                 tls: process.env.REDIS_TLS === 'true',
+                concurrency: parseInt(process.env.REDIS_CONCURRENCY ?? '10'),
             }),
         }),
         storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
