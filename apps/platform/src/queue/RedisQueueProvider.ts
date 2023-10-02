@@ -9,6 +9,7 @@ import { DefaultRedis, Redis, RedisConfig } from '../config/redis'
 
 export interface RedisQueueConfig extends QueueTypeConfig, RedisConfig {
     driver: 'redis'
+    concurrency: number
 }
 
 export default class RedisQueueProvider implements QueueProvider {
@@ -17,11 +18,13 @@ export default class RedisQueueProvider implements QueueProvider {
     queue: Queue
     bull: BullQueue
     worker?: Worker
+    concurrency: number
     batchSize = 40 as const
     queueName = 'parcelvoy' as const
 
-    constructor(config: RedisQueueConfig, queue: Queue) {
+    constructor({ concurrency, ...config }: RedisQueueConfig, queue: Queue) {
         this.queue = queue
+        this.concurrency = concurrency
         this.redis = DefaultRedis(config, {
             maxRetriesPerRequest: null,
         })
@@ -98,7 +101,7 @@ export default class RedisQueueProvider implements QueueProvider {
             })
         }, {
             connection: this.redis,
-            concurrency: this.batchSize,
+            concurrency: this.concurrency,
             metrics: {
                 maxDataPoints: MetricsTime.TWO_WEEKS,
             },
