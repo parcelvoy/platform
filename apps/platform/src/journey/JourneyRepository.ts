@@ -247,6 +247,7 @@ export const pagedEntrancesByUser = async (userId: number, params: PageParams) =
             })),
         }
     }
+    return r
 }
 
 export const getEntranceLog = async (entranceId: number) => {
