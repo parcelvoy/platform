@@ -4,6 +4,7 @@ import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { LinkStepIcon } from '../../../ui/icons'
 import { JourneyForm } from '../JourneyForm'
+import { useResolver } from '../../../hooks'
 
 interface JourneyLinkConfig {
     target_id: number
@@ -15,6 +16,34 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
     icon: <LinkStepIcon />,
     category: 'action',
     description: 'Send users to another journey.',
+    Describe({ project, journey, value: { target_id } }) {
+        const [target] = useResolver(useCallback(async () => {
+            if (target_id === journey.id) {
+                return journey
+            }
+            if (target_id) {
+                return await api.journeys.get(project.id, target_id)
+            }
+            return null
+        }, [project, journey, target_id]))
+        if (target === journey) {
+            return (
+                <>
+                    {'Restart '}
+                    <strong>{target.name}</strong>
+                </>
+            )
+        }
+        if (target) {
+            return (
+                <>
+                    {'Start journey: '}
+                    <strong>{target.name}</strong>
+                </>
+            )
+        }
+        return null
+    },
     newData: async () => ({
         target_id: 0,
         delay: '1 day',
@@ -23,7 +52,6 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
         value,
         onChange,
         project,
-        journey,
     }) {
         return (
             <EntityIdPicker
@@ -31,7 +59,6 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
                 subtitle="Send users to this journey when they reach this step."
                 get={useCallback(async id => await api.journeys.get(project.id, id), [project])}
                 search={useCallback(async q => await api.journeys.search(project.id, { q, limit: 50 }), [project])}
-                optionEnabled={o => o.id !== journey.id}
                 value={value.target_id}
                 onChange={target_id => onChange({ ...value, target_id })}
                 required

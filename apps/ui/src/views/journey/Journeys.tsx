@@ -7,6 +7,7 @@ import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import { PlusIcon } from '../../ui/icons'
 import { JourneyForm } from './JourneyForm'
+import { Tag } from '../../ui'
 
 export default function Journeys() {
     const { projectId = '' } = useParams()
@@ -30,7 +31,12 @@ export default function Journeys() {
                         key: 'name',
                     },
                     {
-                        key: 'published',
+                        key: 'status',
+                        cell: ({ item }) => (
+                            <Tag variant={item.published ? 'success' : 'plain'}>
+                                {item.published ? 'Published' : 'Draft'}
+                            </Tag>
+                        ),
                     },
                     {
                         key: 'usage',

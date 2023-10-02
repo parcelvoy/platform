@@ -68,9 +68,7 @@ function JourneyStepNode({
     id,
     data: {
         type: typeName,
-        name,
         data,
-        data_key,
         stats,
     } = {},
     selected,
@@ -78,19 +76,7 @@ function JourneyStepNode({
 
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
-    const { setNodes, getNode, getEdges } = useReactFlow()
-
-    const onDataChange = useCallback((data: any) => {
-        setNodes(nds => nds.map(n => n.id === id
-            ? {
-                ...n,
-                data: {
-                    ...n.data,
-                    data,
-                },
-            }
-            : n))
-    }, [id, setNodes])
+    const { getNode, getEdges } = useReactFlow()
 
     const type = getStepType(typeName)
 
@@ -149,6 +135,20 @@ function JourneyStepNode({
                     }
                 </div>
                 {
+                    type.Describe && (
+                        <div className="journey-step-body">
+                            {
+                                createElement(type.Describe, {
+                                    project,
+                                    journey,
+                                    value: data,
+                                    onChange: () => {},
+                                })
+                            }
+                        </div>
+                    )
+                }
+                {/* {
                     type.Edit && (
                         <div className="journey-step-body">
                             <TextInput
@@ -178,7 +178,7 @@ function JourneyStepNode({
                             }
                         </div>
                     )
-                }
+                } */}
             </div>
             {
                 (
@@ -535,6 +535,78 @@ export default function JourneyEditor() {
 
     const selected = nodes.filter(n => n.selected)
 
+    let stepEdit: ReactNode = null
+    if (selected.length === 1) {
+        const editing = selected[0]
+        const type = getStepType(editing.data.type)
+        if (type) {
+            stepEdit = (
+                <>
+                    <div className="journey-step-header">
+                        <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
+                            {type.icon}
+                        </span>
+                        <h4 className="step-header-title">{type.name}</h4>
+                        {
+                            editing.data.stats && (
+                                <div className="step-header-stats">
+                                    <span className="stat">
+                                        {editing.data.stats.completed ?? 0}
+                                        {statIcons.completed}
+                                    </span>
+                                    {
+                                        !!editing.data.stats.delay && (
+                                            <span className="stat">
+                                                {editing.data.stats.delay ?? 0}
+                                                {statIcons.delay}
+                                            </span>
+                                        )
+                                    }
+                                </div>
+                            )
+                        }
+                    </div>
+                    <div style={{ padding: 10 }}>
+                        <TextInput
+                            label="Name"
+                            name="name"
+                            value={editing.data.name ?? ''}
+                            onChange={name => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, name } } : n))}
+                        />
+                        {
+                            type.hasDataKey && (
+                                <TextInput
+                                    label="Data Key"
+                                    subtitle="Makes data stored at this step available in user update and campaign templates."
+                                    name="data_key"
+                                    value={editing.data.data_key}
+                                    onChange={data_key => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, data_key } } : n))}
+                                />
+                            )
+                        }
+                        {
+                            type.Edit && createElement(type.Edit, {
+                                value: editing.data.data ?? {},
+                                onChange: data => setNodes(nds => nds.map(n => n.id === editing.id
+                                    ? {
+                                        ...editing,
+                                        data: {
+                                            ...editing.data,
+                                            data,
+                                        },
+                                    }
+                                    : n,
+                                )),
+                                project,
+                                journey,
+                            })
+                        }
+                    </div>
+                </>
+            )
+        }
+    }
+
     return (
         <Modal
             size="fullscreen"
@@ -628,7 +700,7 @@ export default function JourneyEditor() {
                                             }}
                                             size="small"
                                         >
-                                            {`Copy Selected Steps (${selected.length})`}
+                                            {`Duplicate Selected Steps (${selected.length})`}
                                         </Button>
                                     )
                                     : (
@@ -638,6 +710,13 @@ export default function JourneyEditor() {
                         </Panel>
                     </ReactFlow>
                 </div>
+                {
+                    stepEdit && (
+                        <div className="journey-options">
+                            {stepEdit}
+                        </div>
+                    )
+                }
             </div>
             <Modal
                 open={editOpen}

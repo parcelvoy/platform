@@ -290,6 +290,7 @@ export interface JourneyStepType<T = any, E = any> {
     icon: ReactNode
     category: 'entrance' | 'delay' | 'flow' | 'action'
     description: string
+    Describe?: ComponentType<JourneyStepTypeEditProps<T>>
     newData?: () => Promise<T>
     newEdgeData?: () => Promise<E>
     Edit?: ComponentType<JourneyStepTypeEditProps<T>>

@@ -1,9 +1,11 @@
 import { useCallback } from 'react'
-import api from '../../../api'
+import api, { apiUrl } from '../../../api'
 import { JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { ActionStepIcon } from '../../../ui/icons'
 import { CampaignForm } from '../../campaign/CampaignForm'
+import { useResolver } from '../../../hooks'
+import PreviewImage from '../../../ui/PreviewImage'
 
 interface ActionConfig {
     campaign_id: number
@@ -14,6 +16,35 @@ export const actionStep: JourneyStepType<ActionConfig> = {
     icon: <ActionStepIcon />,
     category: 'action',
     description: 'Trigger a message (email, sms, push notification, webhook) to be sent.',
+    Describe({
+        project: { id: projectId },
+        value: {
+            campaign_id,
+        },
+    }) {
+
+        const [campaign] = useResolver(useCallback(async () => {
+            if (campaign_id) {
+                return await api.campaigns.get(projectId, campaign_id)
+            }
+            return null
+        }, [projectId, campaign_id]))
+
+        if (campaign) {
+            return (
+                <>
+                    <div>{campaign.name}</div>
+                    <PreviewImage
+                        url={apiUrl(projectId, `campaigns/${campaign.id}/preview`)}
+                        width={200}
+                        height={200}
+                    />
+                </>
+            )
+        }
+
+        return null
+    },
     newData: async () => ({
         campaign_id: 0,
     }),

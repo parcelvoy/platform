@@ -110,3 +110,10 @@
 .rule-form-title span {
     font-weight: 500;
 }
+
+.rule-describe code {
+    word-wrap: break-word;
+    background-color: var(--color-grey-soft);
+    border-radius: 2px;
+    padding: 2px;
+}

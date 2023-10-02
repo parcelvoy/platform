@@ -1,8 +1,11 @@
+import { useContext } from 'react'
 import { JourneyStepType } from '../../../types'
 import OptionField from '../../../ui/form/OptionField'
 import TextInput from '../../../ui/form/TextInput'
 import { DelayStepIcon } from '../../../ui/icons'
-import { snakeToTitle } from '../../../utils'
+import { formatDate, formatDuration, snakeToTitle } from '../../../utils'
+import { PreferencesContext } from '../../../ui/PreferencesContext'
+import { parse, parseISO } from 'date-fns'
 
 interface DelayStepConfig {
     format: 'duration' | 'time' | 'date'
@@ -18,6 +21,46 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
     icon: <DelayStepIcon />,
     category: 'delay',
     description: 'Add a delay between the previous and next step.',
+    Describe({ value }) {
+        const [preferences] = useContext(PreferencesContext)
+        if (value.format === 'duration') {
+            return (
+                <>
+                    {'Wait '}
+                    <strong>
+                        {formatDuration(preferences, {
+                            days: value.days ?? 0,
+                            hours: value.hours ?? 0,
+                            minutes: value.minutes ?? 0,
+                        }) || '--'}
+                    </strong>
+                </>
+            )
+        }
+        if (value.format === 'time') {
+            const parsed = parse(value.time ?? '', 'HH:mm', new Date())
+            return (
+                <>
+                    {'Wait until '}
+                    <strong>
+                        {isNaN(parsed.getTime()) ? '--:--' : formatDate(preferences, parsed, 'p')}
+                    </strong>
+                </>
+            )
+        }
+        if (value.format === 'date') {
+            const parsed = parseISO(value.date ?? '')
+            return (
+                <>
+                    {'Wait until '}
+                    <strong>
+                        {isNaN(parsed.getTime()) ? '--' : formatDate(preferences, parsed, 'PP')}
+                    </strong>
+                </>
+            )
+        }
+        return null
+    },
     newData: async () => ({
         minutes: 0,
         hours: 0,
