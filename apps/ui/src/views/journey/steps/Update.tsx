@@ -40,6 +40,8 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
             <>
                 <p style={{ maxWidth: 400 }}>
                     {'Write a Handlebars template that renders JSON that will be shallow merged into the user\'s profile data.'}
+                    {' The user\'s current profile data is available in the '}<code>{'user'}</code>
+                    {' variable, and data collected at other steps are available in '}<code>{'journey[data_key]'}</code>{'.'}
                 </p>
                 <SourceEditor
                     onChange={(template = '') => onChange({ ...value, template })}

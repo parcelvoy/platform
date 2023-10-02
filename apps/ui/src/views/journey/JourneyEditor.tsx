@@ -68,6 +68,7 @@ function JourneyStepNode({
     id,
     data: {
         type: typeName,
+        name,
         data,
         stats,
     } = {},
@@ -114,7 +115,7 @@ function JourneyStepNode({
                     <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
                         {type.icon}
                     </span>
-                    <h4 className="step-header-title">{type.name}</h4>
+                    <h4 className="step-header-title">{name || type.name}</h4>
                     {
                         stats && (
                             <div className="step-header-stats">
@@ -148,37 +149,6 @@ function JourneyStepNode({
                         </div>
                     )
                 }
-                {/* {
-                    type.Edit && (
-                        <div className="journey-step-body">
-                            <TextInput
-                                label="Name"
-                                name="name"
-                                value={name}
-                                onChange={name => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, name } } : n))}
-                            />
-                            {
-                                createElement(type.Edit, {
-                                    value: data,
-                                    onChange: onDataChange,
-                                    project,
-                                    journey,
-                                })
-                            }
-                            {
-                                type.hasDataKey && (
-                                    <TextInput
-                                        label="Data Key"
-                                        subtitle="Makes data stored at this step available in user update and campaign templates."
-                                        name="data_key"
-                                        value={data_key}
-                                        onChange={data_key => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, data_key } } : n))}
-                                    />
-                                )
-                            }
-                        </div>
-                    )
-                } */}
             </div>
             {
                 (

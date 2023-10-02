@@ -205,6 +205,13 @@ label .switch .slider.round:before {
     justify-content: center;
 }
 
+code {
+    word-wrap: break-word;
+    background-color: var(--color-grey-soft);
+    border-radius: 2px;
+    padding: 2px;
+}
+
 .blue {
     background-color: var(--color-blue-soft);
     color: var(--color-blue-hard);
