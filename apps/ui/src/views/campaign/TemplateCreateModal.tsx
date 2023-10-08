@@ -24,7 +24,7 @@ export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreat
         api.locales.search(project.id, { limit: 100 })
             .then((result) => setLocales(result.results))
             .catch(() => {})
-    })
+    }, [])
 
     async function handleCreateTemplate(params: LocaleParams) {
         const template = await createLocale(params, campaign)
