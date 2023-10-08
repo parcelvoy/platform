@@ -106,7 +106,14 @@ export class EmailTemplate extends Template {
             type: 'object',
             required: ['from', 'subject', 'html'],
             properties: {
-                from: { type: 'string' },
+                from: {
+                    type: 'object',
+                    required: ['address'],
+                    properties: {
+                        name: { type: 'string', nullable: true },
+                        address: { type: 'string' },
+                    },
+                },
                 subject: { type: 'string' },
                 text: { type: 'string' },
                 html: { type: 'string' },

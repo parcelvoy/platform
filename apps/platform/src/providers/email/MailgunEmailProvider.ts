@@ -3,13 +3,14 @@ import crypto from 'crypto'
 import mg from 'nodemailer-mailgun-transport'
 import EmailProvider from './EmailProvider'
 import Router = require('@koa/router')
-import Provider, { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
+import Provider, { ExternalProviderParams, ProviderControllers, ProviderSchema, ProviderSetupMeta } from '../Provider'
 import { createController } from '../ProviderService'
-import { decodeHashid } from '../../utilities'
+import { decodeHashid, encodeHashid } from '../../utilities'
 import { getUserFromEmail } from '../../users/UserRepository'
 import { RequestError } from '../../core/errors'
 import { getCampaign } from '../../campaigns/CampaignService'
 import { trackMessageEvent } from '../../render/LinkService'
+import App from '../../app'
 
 interface MailgunDataParams {
     api_key: string
@@ -50,6 +51,13 @@ export default class MailgunEmailProvider extends EmailProvider {
         },
         additionalProperties: false,
     })
+
+    loadSetup(app: App): ProviderSetupMeta[] {
+        return [{
+            name: 'Webhook URL',
+            value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
+        }]
+    }
 
     boot() {
         const auth = {
