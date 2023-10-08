@@ -10,6 +10,7 @@ import { projectRoleMiddleware } from './ProjectService'
 import { ProjectAdminParams } from './ProjectAdmins'
 import { projectRoles } from './Project'
 import { RequestError } from '../core/errors'
+import { createOrUpdateAdmin } from '../auth/AdminRepository'
 
 const router = new Router<
     ProjectState & { admin?: Admin }
@@ -22,6 +23,31 @@ router.use(projectRoleMiddleware('admin'))
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await pagedProjectAdmins(params, ctx.state.project.id)
+})
+
+const projectCreateAdminParamsSchema: JSONSchemaType<ProjectAdminParams & { email: string }> = {
+    $id: 'projectCreateAdminParams',
+    type: 'object',
+    required: ['role', 'email'],
+    properties: {
+        email: {
+            type: 'string',
+            format: 'email',
+        },
+        role: {
+            type: 'string',
+            enum: projectRoles,
+        },
+    },
+}
+
+router.post('/', async ctx => {
+    const organizationId = ctx.state.project.organization_id
+    const { role, email } = validate(projectCreateAdminParamsSchema, ctx.request.body)
+    const admin = await createOrUpdateAdmin({ organization_id: organizationId, email })
+    if (ctx.state.admin!.id === admin.id) throw new RequestError('You cannot add yourself to a project')
+    await addAdminToProject(ctx.state.project.id, admin.id, role)
+    ctx.body = await getProjectAdmin(ctx.state.project.id, admin.id)
 })
 
 const projectAdminParamsSchema: JSONSchemaType<ProjectAdminParams> = {

@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyStepMap, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -219,6 +219,9 @@ const api = {
             .then(r => r.data),
         add: async (projectId: number, adminId: number, params: ProjectAdminParams) => await client
             .put<ProjectAdmin>(`${projectUrl(projectId)}/admins/${adminId}`, params)
+            .then(r => r.data),
+        invite: async (projectId: number, params: ProjectAdminInviteParams) => await client
+            .post<ProjectAdmin>(`${projectUrl(projectId)}/admins`, params)
             .then(r => r.data),
         get: async (projectId: number, adminId: number) => await client
             .get<ProjectAdmin>(`${projectUrl(projectId)}/admins/${adminId}`)
