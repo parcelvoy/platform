@@ -6,9 +6,11 @@ import LoggerEmailProvider from './LoggerEmailProvider'
 import MailgunEmailProvider from './MailgunEmailProvider'
 import SESEmailProvider from './SESEmailProvider'
 import SMTPEmailProvider from './SMPTEmailProvider'
+import SendGridEmailProvider from './SendgridEmailProvider'
 
 const typeMap = {
     mailgun: MailgunEmailProvider,
+    sendgrid: SendGridEmailProvider,
     ses: SESEmailProvider,
     smtp: SMTPEmailProvider,
     logger: LoggerEmailProvider,

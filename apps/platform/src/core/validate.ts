@@ -32,5 +32,10 @@ export const isValid = (schema: any, data: any): IsValidSchema => {
 
 export const parseError = (errors: ErrorObject[] | null | undefined = []) => {
     if (errors === null || errors.length <= 0) return 'There was an unknown error validating your request.'
-    return capitalizeFirstLetter(errors[0].message ?? '')
+    const error = errors[0]
+    if (error.keyword === 'type') {
+        const path = error.instancePath.replace('/', ' ').trim()
+        return `The value of \`${path}\` must be a ${error.params.type}.`
+    }
+    return capitalizeFirstLetter(error.message ?? '')
 }
