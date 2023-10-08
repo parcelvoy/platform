@@ -146,6 +146,9 @@ export interface ProjectAdmin extends Omit<Admin, 'id'> {
 }
 
 export type ProjectAdminParams = Pick<ProjectAdmin, 'role'>
+export type ProjectAdminInviteParams = ProjectAdminParams & {
+    email: string
+}
 
 export interface Project {
     id: number

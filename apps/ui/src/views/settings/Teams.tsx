@@ -1,25 +1,20 @@
 import { useCallback, useContext, useState } from 'react'
 import api from '../../api'
-import { AdminContext, ProjectContext } from '../../contexts'
-import { ProjectAdmin, projectRoles } from '../../types'
+import { ProjectContext } from '../../contexts'
+import { ProjectAdmin } from '../../types'
 import Button from '../../ui/Button'
-import { EntityIdPicker } from '../../ui/form/EntityIdPicker'
-import FormWrapper from '../../ui/form/FormWrapper'
-import { SingleSelect } from '../../ui/form/SingleSelect'
 import { ArchiveIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import Menu, { MenuItem } from '../../ui/Menu'
-import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { snakeToTitle } from '../../utils'
+import TeamInvite from './TeamInvite'
 
 type EditFormData = Pick<ProjectAdmin, 'admin_id' | 'role'> & { id?: number }
 
 export default function Teams() {
-    const admin = useContext(AdminContext)
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.projectAdmins.search(project.id, params), [project]))
-    const [editing, setEditing] = useState<null | Partial<EditFormData>>(null)
-    const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, limit: 100 }), [])
+    const [editing, setEditing] = useState<Partial<EditFormData>>()
 
     return (
         <>
@@ -69,57 +64,16 @@ export default function Teams() {
                 onSelectRow={setEditing}
                 enableSearch
             />
-            <Modal
-                title={editing?.id ? 'Update Permissions' : 'Add Team Member'}
+
+            <TeamInvite
+                member={editing}
+                onMember={async () => {
+                    await state.reload()
+                    setEditing(undefined)
+                }}
                 open={Boolean(editing)}
-                onClose={() => setEditing(null)}
-                size="small"
-            >
-                {
-                    editing && (
-                        <FormWrapper<EditFormData>
-                            onSubmit={async ({ admin_id, role }) => {
-                                await api.projectAdmins.add(project.id, admin_id, { role })
-                                await state.reload()
-                                setEditing(null)
-                            }}
-                            defaultValues={editing}
-                            submitLabel={editing.id ? 'Update Permissions' : 'Add to Project'}
-                        >
-                            {
-                                form => (
-                                    <>
-                                        <EntityIdPicker.Field
-                                            form={form}
-                                            name="admin_id"
-                                            label="Admin"
-                                            search={searchAdmins}
-                                            get={api.admins.get}
-                                            displayValue={({ first_name, last_name, email }) => `${first_name} ${last_name} (${email})`}
-                                            required
-                                            disabled={!!editing.admin_id}
-                                        />
-                                        <SingleSelect.Field
-                                            form={form}
-                                            name="role"
-                                            label="Role"
-                                            subtitle={admin?.id === editing.admin_id && (
-                                                <span style={{ color: 'red' }}>
-                                                    {'You cannot change your own roles.'}
-                                                </span>
-                                            )}
-                                            options={projectRoles}
-                                            getOptionDisplay={snakeToTitle}
-                                            required
-                                            disabled={!admin || admin.id === editing.admin_id}
-                                        />
-                                    </>
-                                )
-                            }
-                        </FormWrapper>
-                    )
-                }
-            </Modal>
+                onClose={() => setEditing(undefined)}
+            />
         </>
     )
 }
