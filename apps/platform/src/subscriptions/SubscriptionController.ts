@@ -148,7 +148,7 @@ const subscriptionPreferencesTemplate = compileTemplate<SubscriptionPreferencesA
                 <p>Choose which notifications you would like to continue to receive.</p>
                 {{#if showUpdatedMessage}}
                 <div class="alert-success">
-                    Preferenced Saved Successfully!
+                    Your preferences have been updated!
                 </div>
                 {{/if}}
                 {{#each subscriptions}}
