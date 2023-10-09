@@ -10,6 +10,7 @@ import TextInput from '../../ui/form/TextInput'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import Button from '../../ui/Button'
 import { PlusIcon } from '../../ui/icons'
+import { snakeToTitle } from '../../utils'
 
 export default function Subscriptions() {
     const navigate = useNavigate()
@@ -23,7 +24,10 @@ export default function Subscriptions() {
                 {...state}
                 columns={[
                     { key: 'name' },
-                    { key: 'channel' },
+                    {
+                        key: 'channel',
+                        cell: ({ item }) => snakeToTitle(item.channel),
+                    },
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={(row) => navigate(`${row.id}`)}
@@ -48,6 +52,7 @@ export default function Subscriptions() {
             >
                 <FormWrapper<Pick<Subscription, 'name' | 'channel'>>
                     onSubmit={async ({ name, channel }) => {
+                        console.log(channel)
                         await api.subscriptions.create(project.id, { name, channel })
                         await state.reload()
                         setOpen(false)
@@ -69,7 +74,8 @@ export default function Subscriptions() {
                                     form={form}
                                     name="channel"
                                     label="Channel"
-                                    options={['email', 'push', 'text', 'webhook']}
+                                    options={['email', 'push', 'text', 'webhook'].map((channel) => ({ key: channel, label: snakeToTitle(channel) }))}
+                                    toValue={x => x.key}
                                 />
                             </>
                         )
