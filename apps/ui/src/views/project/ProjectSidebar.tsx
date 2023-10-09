@@ -53,7 +53,12 @@ export default function ProjectSidebar({ children, links }: PropsWithChildren<Si
 
     return (
         project && <Sidebar
-            links={links?.filter(({ minRole }) => !minRole || checkProjectRole(minRole, project.role))}
+            links={
+                links?.filter(({ minRole }) =>
+                    !minRole
+                    || checkProjectRole(minRole, project.role),
+                ).map(({ minRole, ...props }) => props)
+            }
             prepend={
                 <SingleSelect
                     value={project}

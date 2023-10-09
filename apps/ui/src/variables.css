@@ -35,6 +35,8 @@
     --color-shadow: rgba(0, 0, 0, 0.1);
     --color-shadow-soft: rgba(0, 0, 0, 0.05);
 
+    --color-editor: #0d121e;
+
     --border-radius: 8px;
     --border-radius-inner: 6px;
     --border-radius-outer: 14px;
