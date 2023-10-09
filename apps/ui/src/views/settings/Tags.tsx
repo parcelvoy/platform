@@ -13,21 +13,14 @@ export default function Tags() {
 
     const [project] = useContext(ProjectContext)
     const search = useSearchTableState(useCallback(async params => await api.tags.search(project.id, params), [project]))
-    const [editing, setEditing] = useState<null | Tag>(null)
+    const [editing, setEditing] = useState<Tag>()
 
     return (
         <>
             <SearchTable
                 {...search}
                 columns={[
-                    {
-                        key: 'name',
-                    },
-                    {
-                        key: 'usage',
-                        title: 'Usage',
-                        cell: () => 'TODO',
-                    },
+                    { key: 'name' },
                 ]}
                 title="Tags"
                 description="Use tags to organize and report on your campaigns, journeys, lists, and users."
@@ -47,30 +40,24 @@ export default function Tags() {
             />
             <Modal
                 open={!!editing}
-                onClose={() => setEditing(null)}
+                onClose={() => setEditing(undefined)}
                 title={editing?.id ? 'Update Tag' : 'Create Tag'}
             >
                 {
                     editing && (
                         <FormWrapper<Tag>
                             onSubmit={async ({ id, name }) => {
-                                if (id) {
-                                    await api.tags.update(project.id, id, { name })
-                                } else {
-                                    await api.tags.create(project.id, { name })
-                                }
+                                id != null
+                                    ? await api.tags.update(project.id, id, { name })
+                                    : await api.tags.create(project.id, { name })
                                 await search.reload()
-                                setEditing(null)
+                                setEditing(undefined)
                             }}
                             defaultValues={editing}
                         >
-                            {
-                                form => (
-                                    <>
-                                        <TextInput.Field form={form} name="name" required />
-                                    </>
-                                )
-                            }
+                            {form => (
+                                <TextInput.Field form={form} name="name" required />
+                            )}
                         </FormWrapper>
                     )
                 }

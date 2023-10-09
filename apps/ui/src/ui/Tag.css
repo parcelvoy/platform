@@ -49,6 +49,10 @@
     border-radius: var(--border-radius-inner);
 }
 
+.ui-tag.large {
+    padding: 10px;
+}
+
 .ui-tag.tiny .icon {
     width: 12px;
     height: 12px;

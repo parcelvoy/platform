@@ -205,6 +205,7 @@ export interface UserEvent {
     id: number
     name: string
     data: Record<string, any>
+    created_at: string
 }
 
 export type ListState = 'ready' | 'loading'
