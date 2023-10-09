@@ -22,6 +22,7 @@ Once you have created a template you can begin designing it! Each channel that a
 You have by far the most customizeability when sending emails. You are able to adjust the entire design to be anything you would like. There are two different options for designing emails and the editor will vary based on your selection.
 
 #### Visual
+The visual editor provides you with a drag-and-drop interface for crafting emails without having to write any code. On the right hand side you are provided with different basic building blocks which you can drag in. Each block can then be customized to have specific styles or layouts.
 
 ![Design Campaign Visual](/img/campaigns_design_visual.png)
 
@@ -31,7 +32,24 @@ If you select to code the email yourself, you are given a code editor window tha
 ![Design Campaign Code](/img/campaigns_design_code.png)
 
 ### Text
+There is no customizeability available for text messages, the only thing you can configure is the body. The provided field accepted Handlebars so you can include user attributes as desired. To edit the body of the text, just hit the `Edit` button in the left hand column.
+
+By default, the render of the message shows you what it would look like inside of a phone.
+
+![Design Campaign Text](/img/campaigns_design_text.png)
+
+#### Opt Out
+Carriers typically require you to send opt out verbiage to a user so they know how they can stop receiving messages. Parcelvoy handles users unsubscribing from receiving text messages automatically for you if you've appropriately configured your provider.
+
+The opt out verbiage can be configured under project settings and will only be sent included in the very first text message you send to a user. Subsequent messages will not include it.
 
 ### Push Notification
+Push notification vary in design OS by OS and phone by phone. Every design however contains the same two basic building blocks: `title` and `body`. 
 
-## Proof
+All fields availabe on push notifications allow for Handlebars templating.
+
+The `deeplink` field will cause the app to automatically navigate to that URL when a user opens the push notification.
+
+If you want to pass custom information down to your application so that you can process it, you can utilize the `Raw JSON` field.
+
+![Design Campaign Push](/img/campaigns_design_push.png)
