@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Image, Template } from '../../../types'
-import SourceEditor, { Monaco } from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
 import Button from '../../../ui/Button'
 import ImageGalleryModal from '../ImageGalleryModal'
 import Preview from '../../../ui/Preview'
 import Tabs from '../../../ui/Tabs'
 import { ImageIcon } from '../../../ui/icons'
+import SourceEditor from '../../../ui/SourceEditor'
 
 export default function HtmlEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
 
@@ -15,19 +15,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [showImages, setShowImages] = useState(false)
 
-    function handleMount(editor: Editor.IStandaloneCodeEditor, instance: Monaco) {
-        instance.editor.defineTheme('default', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [{
-                background: '#0d121e',
-                token: '',
-            }],
-            colors: {
-                'editor.background': '#0d121e',
-            },
-        })
-        instance.editor.setTheme('default')
+    function handleMount(editor: Editor.IStandaloneCodeEditor) {
         if (!monaco) setMonaco(editor)
     }
 
@@ -84,8 +72,6 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                     defaultValue={template.data.html}
                                     onChange={handleHtmlChange}
                                     onMount={handleMount}
-                                    options={{ wordWrap: 'on' }}
-                                    theme="vs-dark"
                                 />
                                 <div className="editor-toolbar">
                                     <Button
@@ -105,8 +91,6 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                 defaultValue={template.data.text}
                                 onChange={handleTextChange}
                                 onMount={handleMount}
-                                options={{ wordWrap: 'on' }}
-                                theme="vs-dark"
                             />,
                         }]}
                     />

@@ -1,6 +1,5 @@
 import { useContext, useMemo, useState, useEffect, useCallback } from 'react'
 import { CampaignContext, LocaleContext, ProjectContext } from '../../contexts'
-import SourceEditor from '@monaco-editor/react'
 import './CampaignPreview.css'
 import api from '../../api'
 import Preview from '../../ui/Preview'
@@ -17,6 +16,7 @@ import Modal, { ModalProps } from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { ChannelType, TemplateProofParams, User } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
+import SourceEditor from '../../ui/SourceEditor'
 
 interface UserLookupProps extends Omit<ModalProps, 'title'> {
     onSelected: (user: User) => void
@@ -115,8 +115,10 @@ export default function CampaignPreview() {
     useEffect(() => { handleEditorChange(value) }, [value, template])
 
     const handleEditorChange = useMemo(() => debounce(async (value?: string) => {
-        const { data } = await api.templates.preview(project.id, template.id, JSON.parse(value ?? '{}'))
-        setData(data)
+        try {
+            const { data } = await api.templates.preview(project.id, template.id, JSON.parse(value ?? '{}'))
+            setData(data)
+        } catch {}
     }), [template])
 
     const handleSendProof = async (recipient: string) => {
@@ -150,10 +152,7 @@ export default function CampaignPreview() {
                         <SourceEditor
                             defaultLanguage="json"
                             defaultValue={value}
-                            value={value}
                             onChange={setValue}
-                            options={{ wordWrap: 'on' }}
-                            theme="vs-dark"
                         />
                     </div>
                 </Column>

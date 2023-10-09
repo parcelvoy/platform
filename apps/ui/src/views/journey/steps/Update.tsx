@@ -1,10 +1,9 @@
 import { JourneyStepType } from '../../../types'
-import SourceEditor from '@monaco-editor/react'
-import { useContext, useState } from 'react'
-import { PreferencesContext } from '../../../ui/PreferencesContext'
+import { useState } from 'react'
 import { UpdateStepIcon } from '../../../ui/icons'
 import Modal from '../../../ui/Modal'
 import Button from '../../../ui/Button'
+import SourceEditor from '../../../ui/SourceEditor'
 
 interface UpdateConfig {
     template: string // handlebars template for json object
@@ -19,7 +18,6 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
         template: '{\n\n}\n',
     }),
     Edit: ({ onChange, value }) => {
-        const [{ mode }] = useContext(PreferencesContext)
         const [open, setOpen] = useState(false)
         return (
             <>
@@ -65,7 +63,6 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
                         value={value.template ?? ''}
                         height={500}
                         width="100%"
-                        theme={mode === 'dark' ? 'vs-dark' : undefined}
                         language="json"
                     />
                 </Modal>
