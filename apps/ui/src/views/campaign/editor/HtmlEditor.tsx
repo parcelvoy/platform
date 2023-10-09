@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Image, Template } from '../../../types'
-import SourceEditor from '@monaco-editor/react'
+import SourceEditor, { Monaco } from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
 import Button from '../../../ui/Button'
 import ImageGalleryModal from '../ImageGalleryModal'
@@ -15,8 +15,20 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [showImages, setShowImages] = useState(false)
 
-    function handleMount(editor: Editor.IStandaloneCodeEditor) {
-        setMonaco(editor)
+    function handleMount(editor: Editor.IStandaloneCodeEditor, instance: Monaco) {
+        instance.editor.defineTheme('default', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [{
+                background: '#0d121e',
+                token: '',
+            }],
+            colors: {
+                'editor.background': '#0d121e',
+            },
+        })
+        instance.editor.setTheme('default')
+        if (!monaco) setMonaco(editor)
     }
 
     function handleHtmlChange(html?: string) {
@@ -92,6 +104,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                 defaultLanguage="handlebars"
                                 defaultValue={template.data.text}
                                 onChange={handleTextChange}
+                                onMount={handleMount}
                                 options={{ wordWrap: 'on' }}
                                 theme="vs-dark"
                             />,

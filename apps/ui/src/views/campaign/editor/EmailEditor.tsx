@@ -19,7 +19,9 @@ export default function EmailEditor() {
     const [project] = useContext(ProjectContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { templates } = campaign
+
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
+
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
     const [isSaving, setIsSaving] = useState(false)
 
@@ -48,7 +50,7 @@ export default function EmailEditor() {
                     size="fullscreen"
                     title={campaign.name}
                     open
-                    onClose={() => navigate(`../campaigns/${campaign.id}/design`)}
+                    onClose={() => navigate(`../campaigns/${campaign.id}/design?locale=${locale.currentLocale?.key}`)}
                     actions={
                         <>
                             <LinkButton
