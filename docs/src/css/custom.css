@@ -85,6 +85,14 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid var(--color-grey);
 }
 
+.navbar__inner .DocSearch-Button-Keys {
+    display: none;
+}
+
+.DocSearch.DocSearch-Button {
+    min-width: 200px;
+}
+
 .theme-doc-sidebar-container {
     border-right-color: var(--color-grey-soft) !important;
 }

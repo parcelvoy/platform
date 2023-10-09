@@ -82,6 +82,26 @@ const config = {
         darkTheme: darkCodeTheme,
         additionalLanguages: ['swift', 'json', 'kotlin'],
       },
+      algolia: {
+        // The application ID provided by Algolia
+        appId: '8ZOD0Z0X8I',
+  
+        // Public API key: it is safe to commit it
+        apiKey: '0a521d036d0eeb2ac5c8bafbcfe5b830',
+  
+        indexName: 'parcelvoy',
+  
+        // Optional: see doc section below
+        contextualSearch: true,
+  
+        // Optional: Algolia search parameters
+        searchParameters: {},
+  
+        // Optional: path for search page that enabled by default (`false` to disable it)
+        searchPagePath: 'search',
+  
+        //... other Algolia params
+      },
     }),
 };
 
