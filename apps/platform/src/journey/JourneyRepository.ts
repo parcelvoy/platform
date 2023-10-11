@@ -5,6 +5,7 @@ import { PageParams } from '../core/searchParams'
 import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
+import { User } from '../users/User'
 
 export const pagedJourneys = async (params: PageParams, projectId: number) => {
     const result = await Journey.search(
@@ -109,12 +110,13 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
         ])
 
         // Create or update steps
-        for (const [external_id, { type, x = 0, y = 0, data = {}, data_key }] of Object.entries(stepMap)) {
+        for (const [external_id, { type, x = 0, y = 0, data = {}, data_key, name = '' }] of Object.entries(stepMap)) {
             const idx = steps.findIndex(s => s.external_id === external_id)
             if (idx === -1) {
                 steps.push(await JourneyStep.insertAndFetch({
                     journey_id: journeyId,
                     type,
+                    name,
                     external_id,
                     data,
                     data_key,
@@ -125,6 +127,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                 const step = steps[idx]
                 steps[idx] = await JourneyStep.updateAndFetch(step.id, {
                     type,
+                    name,
                     external_id,
                     data,
                     data_key,
@@ -203,4 +206,61 @@ export const getEntranceSubsequentSteps = async (entranceId: number) => {
         .where('entrance_id', entranceId)
         .orderBy('id', 'asc'),
     )
+}
+
+export const pagedEntrancesByJourney = async (journeyId: number, params: PageParams) => {
+    const r = await JourneyUserStep.search(params, q => q
+        .where('journey_id', journeyId)
+        .whereNull('entrance_id'),
+    )
+    if (r.results?.length) {
+        const users = await User.findMap(r.results.map(s => s.user_id))
+        return {
+            ...r,
+            results: r.results.map(s => ({
+                id: s.id,
+                user: users.get(s.user_id),
+                created_at: s.created_at,
+                updated_at: s.updated_at,
+                ended_at: s.ended_at,
+            })),
+        }
+    }
+    return r
+}
+
+export const pagedEntrancesByUser = async (userId: number, params: PageParams) => {
+    const r = await JourneyUserStep.search(params, q => q
+        .where('user_id', userId)
+        .whereNull('entrance_id'),
+    )
+    if (r.results?.length) {
+        const journeys = await Journey.findMap(r.results.map(s => s.journey_id))
+        return {
+            ...r,
+            results: r.results.map(s => ({
+                id: s.id,
+                journey: journeys.get(s.journey_id),
+                created_at: s.created_at,
+                updated_at: s.updated_at,
+                ended_at: s.ended_at,
+            })),
+        }
+    }
+    return r
+}
+
+export const getEntranceLog = async (entranceId: number) => {
+    const userSteps = await JourneyUserStep.all(q => q
+        .where(function() {
+            return this.where('id', entranceId).orWhere('entrance_id', entranceId)
+        })
+        .orderBy('id', 'asc'),
+    )
+    if (!userSteps.length) return userSteps
+    const steps = await JourneyStep.findMap(userSteps.map(s => s.step_id))
+    for (const userStep of userSteps) {
+        userStep.step = steps.get(userStep.step_id)
+    }
+    return userSteps
 }

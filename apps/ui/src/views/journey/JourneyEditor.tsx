@@ -57,12 +57,19 @@ const statIcons: Record<string, ReactNode> = {
     ended: <CloseIcon />,
 }
 
+export const stepCategoryColors = {
+    entrance: 'red',
+    action: 'blue',
+    flow: 'green',
+    delay: 'yellow',
+}
+
 function JourneyStepNode({
     id,
     data: {
         type: typeName,
+        name,
         data,
-        data_key,
         stats,
     } = {},
     selected,
@@ -70,19 +77,7 @@ function JourneyStepNode({
 
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
-    const { setNodes, getNode, getEdges } = useReactFlow()
-
-    const onDataChange = useCallback((data: any) => {
-        setNodes(nds => nds.map(n => n.id === id
-            ? {
-                ...n,
-                data: {
-                    ...n.data,
-                    data,
-                },
-            }
-            : n))
-    }, [id, setNodes])
+    const { getNode, getEdges } = useReactFlow()
 
     const type = getStepType(typeName)
 
@@ -117,10 +112,10 @@ function JourneyStepNode({
                 )}
             >
                 <div className="journey-step-header">
-                    <span className="step-header-icon">
+                    <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
                         {type.icon}
                     </span>
-                    <h4 className="step-header-title">{type.name}</h4>
+                    <h4 className="step-header-title">{name || type.name}</h4>
                     {
                         stats && (
                             <div className="step-header-stats">
@@ -141,28 +136,15 @@ function JourneyStepNode({
                     }
                 </div>
                 {
-                    type.Edit && (
+                    type.Describe && (
                         <div className="journey-step-body">
                             {
-                                createElement(type.Edit, {
-                                    value: data,
-                                    onChange: onDataChange,
+                                createElement(type.Describe, {
                                     project,
                                     journey,
+                                    value: data,
+                                    onChange: () => {},
                                 })
-                            }
-                            {
-                                type.hasDataKey && (
-                                    <TextInput
-                                        label="Data Key"
-                                        subtitle="Makes data stored at this step available in user update and campaign templates."
-                                        name="data_key"
-                                        value={data_key}
-                                        onChange={
-                                            data_key => setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, data_key } } : n))
-                                        }
-                                    />
-                                )
                             }
                         </div>
                     )
@@ -318,7 +300,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, children, stats, stats_at }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, name, children, stats, stats_at }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -328,6 +310,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
             type: 'step',
             data: {
                 type,
+                name,
                 data,
                 stats,
                 stats_at,
@@ -353,6 +336,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         id,
         data: {
             type,
+            name = '',
             data = {},
         },
         position: {
@@ -363,6 +347,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         a[id] = {
             type,
             data,
+            name,
             x,
             y,
             children: edges
@@ -520,6 +505,78 @@ export default function JourneyEditor() {
 
     const selected = nodes.filter(n => n.selected)
 
+    let stepEdit: ReactNode = null
+    if (selected.length === 1) {
+        const editing = selected[0]
+        const type = getStepType(editing.data.type)
+        if (type) {
+            stepEdit = (
+                <>
+                    <div className="journey-step-header">
+                        <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
+                            {type.icon}
+                        </span>
+                        <h4 className="step-header-title">{type.name}</h4>
+                        {
+                            editing.data.stats && (
+                                <div className="step-header-stats">
+                                    <span className="stat">
+                                        {editing.data.stats.completed ?? 0}
+                                        {statIcons.completed}
+                                    </span>
+                                    {
+                                        !!editing.data.stats.delay && (
+                                            <span className="stat">
+                                                {editing.data.stats.delay ?? 0}
+                                                {statIcons.delay}
+                                            </span>
+                                        )
+                                    }
+                                </div>
+                            )
+                        }
+                    </div>
+                    <div style={{ padding: 10 }}>
+                        <TextInput
+                            label="Name"
+                            name="name"
+                            value={editing.data.name ?? ''}
+                            onChange={name => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, name } } : n))}
+                        />
+                        {
+                            type.hasDataKey && (
+                                <TextInput
+                                    label="Data Key"
+                                    subtitle="Makes data stored at this step available in user update and campaign templates."
+                                    name="data_key"
+                                    value={editing.data.data_key}
+                                    onChange={data_key => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, data_key } } : n))}
+                                />
+                            )
+                        }
+                        {
+                            type.Edit && createElement(type.Edit, {
+                                value: editing.data.data ?? {},
+                                onChange: data => setNodes(nds => nds.map(n => n.id === editing.id
+                                    ? {
+                                        ...editing,
+                                        data: {
+                                            ...editing.data,
+                                            data,
+                                        },
+                                    }
+                                    : n,
+                                )),
+                                project,
+                                journey,
+                            })
+                        }
+                    </div>
+                </>
+            )
+        }
+    }
+
     return (
         <Modal
             size="fullscreen"
@@ -568,7 +625,7 @@ export default function JourneyEditor() {
                                     event.dataTransfer.effectAllowed = 'move'
                                 }}
                             >
-                                <span className="component-handle">
+                                <span className={clsx('component-handle', type.category)}>
                                     {type.icon}
                                 </span>
                                 <div className="component-title">{type.name}</div>
@@ -594,7 +651,7 @@ export default function JourneyEditor() {
                         panOnScroll
                         selectNodesOnDrag
                         fitView
-                        maxZoom={1.5}
+                        maxZoom={1}
                     >
                         <Background className="internal-canvas" />
                         <Controls />
@@ -614,7 +671,7 @@ export default function JourneyEditor() {
                                             }}
                                             size="small"
                                         >
-                                            {`Copy Selected Steps (${selected.length})`}
+                                            {`Duplicate Selected Steps (${selected.length})`}
                                         </Button>
                                     )
                                     : (
@@ -624,6 +681,13 @@ export default function JourneyEditor() {
                         </Panel>
                     </ReactFlow>
                 </div>
+                {
+                    stepEdit && (
+                        <div className="journey-options">
+                            {stepEdit}
+                        </div>
+                    )
+                }
             </div>
             <Modal
                 open={editOpen}

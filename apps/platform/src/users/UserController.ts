@@ -13,6 +13,7 @@ import { getUserSubscriptions, toggleSubscription } from '../subscriptions/Subsc
 import { SubscriptionState } from '../subscriptions/Subscription'
 import { getUserEvents } from './UserEventRepository'
 import { projectRoleMiddleware } from '../projects/ProjectService'
+import { pagedEntrancesByUser } from '../journey/JourneyRepository'
 
 const router = new Router<
     ProjectState & { user?: User }
@@ -186,6 +187,11 @@ router.patch('/:userId/subscriptions', async ctx => {
         )
     }
     ctx.body = await getUser(ctx.state.user!.id)
+})
+
+router.get('/:userId/journeys', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    ctx.body = await pagedEntrancesByUser(ctx.state.user!.id, params)
 })
 
 export default router

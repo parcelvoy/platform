@@ -12,6 +12,7 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
     icon: <ExperimentStepIcon />,
     category: 'flow',
     description: 'Randomly send users down different paths.',
+    Describe: () => <>{'Proportionally split users between paths.'}</>,
     newEdgeData: async () => ({ ratio: 1 }),
     Edit: () => (
         <div style={{ maxWidth: 300 }}>

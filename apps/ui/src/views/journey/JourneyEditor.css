@@ -15,15 +15,22 @@
 
 .journey-options {
     max-width: 300px;
-    border-right: 1px solid var(--color-grey);
+    border-color: var(--color-grey);
+    border-style: solid;
+    border-right-width: 1px;
     position: relative;
     overflow: scroll;
+}
+
+* + .journey-options {
+    border-right-width: 0;
+    border-left-width: 1px;
+    max-width: none;
 }
 
 .journey-options h4 {
     padding: 10px 20px;
     margin: 0;
-    border-bottom: 1px solid var(--color-grey);
 }
 
 .journey-options .options-section {
@@ -276,7 +283,7 @@
 }
 
 .journey-step-labelled-sources {
-    padding-bottom: 20px;
+    padding-bottom: 36px;
 }
 
 .step-handle-label {

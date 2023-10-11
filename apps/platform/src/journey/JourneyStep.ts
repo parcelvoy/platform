@@ -22,9 +22,12 @@ export class JourneyUserStep extends Model {
     data?: Record<string, unknown>
     ref?: string
 
+    step?: JourneyStep
+
     static tableName = 'journey_user_step'
 
     static jsonAttributes = ['data']
+    static virtualAttributes = ['step']
 
     static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
         return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
@@ -52,6 +55,7 @@ export class JourneyStepChild extends Model {
 export class JourneyStep extends Model {
     type!: string
     journey_id!: number
+    name?: string
     data?: Record<string, unknown>
     external_id!: string
     data_key?: string // make data stored in user steps available in templates
@@ -396,6 +400,7 @@ export const journeyStepTypes = [
 
 interface JourneyStepMapItem {
     type: string
+    name?: string
     data?: Record<string, unknown>
     data_key?: string
     x: number
@@ -420,6 +425,7 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
     for (const step of steps) {
         editData[step.external_id] = {
             type: step.type,
+            name: step.name ?? '',
             data: step.data ?? {},
             data_key: step.data_key,
             x: step.x ?? 0,

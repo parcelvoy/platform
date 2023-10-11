@@ -195,6 +195,43 @@ label .switch .slider.round:before {
     height: 16px;
 }
 
+.icon-box {
+    align-self: start;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+code {
+    word-wrap: break-word;
+    background-color: var(--color-grey-soft);
+    border-radius: 2px;
+    padding: 2px;
+}
+
+.blue {
+    background-color: var(--color-blue-soft);
+    color: var(--color-blue-hard);
+}
+
+.green {
+    background-color: var(--color-green-soft);
+    color: var(--color-green-hard);
+}
+
+.red {
+    background-color: var(--color-red-soft);
+    color: var(--color-red-hard);
+}
+
+.yellow {
+    background-color: var(--color-yellow-soft);
+    color: var(--color-yellow-hard);
+}
+
 @media only screen and (max-width: 600px) {
     .page-content {
         padding: 0 20px 20px;

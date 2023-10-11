@@ -1,6 +1,8 @@
+import { useContext } from 'react'
 import { JourneyStepType, Rule } from '../../../types'
 import { GateStepIcon } from '../../../ui/icons'
-import RuleBuilder, { createWrapperRule } from '../../users/RuleBuilder'
+import RuleBuilder, { createWrapperRule, ruleDescription } from '../../users/RuleBuilder'
+import { PreferencesContext } from '../../../ui/PreferencesContext'
 
 interface GateConfig {
     rule: Rule
@@ -11,6 +13,19 @@ export const gateStep: JourneyStepType<GateConfig> = {
     icon: <GateStepIcon />,
     category: 'flow',
     description: 'Proceed on different paths depending on condition results.',
+    Describe({
+        value,
+    }) {
+        const [preferences] = useContext(PreferencesContext)
+        if (value.rule) {
+            return (
+                <div style={{ maxWidth: 300 }}>
+                    {ruleDescription(preferences, value.rule)}
+                </div>
+            )
+        }
+        return null
+    },
     newData: async () => ({
         rule: createWrapperRule(),
     }),
