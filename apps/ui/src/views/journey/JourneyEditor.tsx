@@ -651,7 +651,7 @@ export default function JourneyEditor() {
                         panOnScroll
                         selectNodesOnDrag
                         fitView
-                        maxZoom={1.5}
+                        maxZoom={1}
                     >
                         <Background className="internal-canvas" />
                         <Controls />
