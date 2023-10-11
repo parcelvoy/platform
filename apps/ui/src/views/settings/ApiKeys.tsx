@@ -42,10 +42,15 @@ export default function ProjectApiKeys() {
                 {...state}
                 columns={[
                     { key: 'name' },
-                    { key: 'scope' },
+                    {
+                        key: 'scope',
+                        cell: ({ item }) => snakeToTitle(item.scope),
+                    },
                     {
                         key: 'role',
-                        cell: ({ item }) => item.scope === 'public' ? undefined : item.role,
+                        cell: ({ item }) => item.scope === 'public'
+                            ? undefined
+                            : snakeToTitle(item.role ?? ''),
                     },
                     {
                         key: 'value',

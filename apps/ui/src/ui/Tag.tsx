@@ -3,7 +3,7 @@ import './Tag.css'
 import clsx from 'clsx'
 
 export type TagVariant = 'info' | 'plain' | 'success' | 'error' | 'warn'
-export type TagSize = 'tiny' | 'regular'
+export type TagSize = 'tiny' | 'regular' | 'large'
 
 export type TagProps = PropsWithChildren<{
     onClick?: () => void

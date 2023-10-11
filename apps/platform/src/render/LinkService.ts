@@ -113,9 +113,10 @@ export const injectInBody = (html: string, injection: string, placement: 'start'
     return html
 }
 
+export type TrackMessageType = 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed'
 export const trackMessageEvent = async (
     parts: Partial<TrackedLinkExport>,
-    type: 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed',
+    type: TrackMessageType,
     action?: 'unsubscribe',
     context?: any,
 ) => {

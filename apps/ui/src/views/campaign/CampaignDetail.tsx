@@ -30,8 +30,12 @@ export const locales = (templates: Template[]) => templates?.map(item => localeO
 
 export const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)
+
+    const url: URL = new URL(window.location.href)
+    const searchParams: URLSearchParams = url.searchParams
+    const queryLocale = localeOption(searchParams.get('locale') ?? 'en')
     return {
-        currentLocale: allLocales[0],
+        currentLocale: queryLocale ?? allLocales[0],
         allLocales: locales(templates ?? []),
     }
 }
@@ -44,7 +48,7 @@ export const createLocale = async ({ locale, data }: LocaleParams, campaign: Cam
         campaign_id: campaign.id,
         type: campaign.channel,
         locale,
-        data: template?.data ? { ...template?.data, ...data } : undefined,
+        data: template?.data || data ? { ...template?.data, ...data } : undefined,
     })
 }
 

@@ -93,9 +93,10 @@
     padding: 20px;
 }
 
-.source-editor {
-    background: #1E1E1E;
+.source-editor {    
+    background: var(--color-editor);
     border-radius: var(--border-radius);
+    border: 1px solid #1a1f2b;
     overflow: hidden;
     padding: 0;
     display: flex;
@@ -110,7 +111,8 @@
     color: var(--color-white);
 }
 
-.source-editor .ui-tabs .tab.selected {
+.source-editor .ui-tabs .tab.selected,
+.source-editor .ui-tabs .tab:hover {
     color: var(--color-white);
     border-color: var(--color-white);
 }

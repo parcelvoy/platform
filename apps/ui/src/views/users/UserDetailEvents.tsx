@@ -1,4 +1,3 @@
-import { JsonViewer } from '@textea/json-viewer'
 import { useCallback, useContext, useState } from 'react'
 import api from '../../api'
 import { ProjectContext, UserContext } from '../../contexts'
@@ -6,8 +5,12 @@ import { useResolver } from '../../hooks'
 import { SearchParams, UserEvent } from '../../types'
 import Modal from '../../ui/Modal'
 import { SearchTable } from '../../ui/SearchTable'
+import { JsonPreview } from '../../ui'
+import { PreferencesContext } from '../../ui/PreferencesContext'
+import { formatDate } from '../../utils'
 
 export default function UserDetailEvents() {
+    const [preferences] = useContext(PreferencesContext)
     const [project] = useContext(ProjectContext)
     const [user] = useContext(UserContext)
     const [params, setParams] = useState<SearchParams>({
@@ -30,16 +33,18 @@ export default function UserDetailEvents() {
                 { key: 'name' },
                 { key: 'created_at' },
             ]}
-            onSelectRow={(event) => {
-                setEvent(event)
-            }}
+            onSelectRow={setEvent}
         />
-        <Modal title={event?.name}
-            size="large"
-            open={event != null}
-            onClose={() => setEvent(undefined)}
-        >
-            <JsonViewer value={{ name: event?.name, ...event?.data }} rootName={false} />
-        </Modal>
+        {event && (
+            <Modal
+                title={event.name}
+                description={formatDate(preferences, event.created_at)}
+                size="large"
+                open={event != null}
+                onClose={() => setEvent(undefined)}
+            >
+                <JsonPreview value={{ name: event.name, ...event.data, created_at: event.created_at }} />
+            </Modal>
+        )}
     </>
 }

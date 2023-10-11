@@ -585,12 +585,13 @@ export default function JourneyEditor() {
             onClose={() => navigate('../journeys')}
             actions={
                 <>
-                    <Tag variant={journey.published ? 'success' : 'plain'}>
+                    <Tag
+                        variant={journey.published ? 'success' : 'plain'}
+                        size="large">
                         {journey.published ? 'Published' : 'Draft'}
                     </Tag>
                     <Button
                         variant="secondary"
-                        style={{ marginRight: 5 }}
                         onClick={() => setEditOpen(true)}
                     >
                         {'Edit Details'}

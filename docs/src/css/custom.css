@@ -85,6 +85,14 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: 1px solid var(--color-grey);
 }
 
+.navbar__inner .DocSearch-Button-Keys {
+    display: none;
+}
+
+.DocSearch.DocSearch-Button {
+    min-width: 200px;
+}
+
 .theme-doc-sidebar-container {
     border-right-color: var(--color-grey-soft) !important;
 }
@@ -204,4 +212,9 @@ h1, h2, h3, h4, h5, h6 {
 .markdown a.hash-link:hover {
     color: var(--color-primary);
     /* text-decoration: underline; */
+}
+
+.markdown p img {
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }

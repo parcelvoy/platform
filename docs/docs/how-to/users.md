@@ -1,3 +1,8 @@
+---
+title: Users
+sidebar_position: 3
+---
+
 # Users
 This section contains a list of every single user that Parcelvoy can target. Users can be imported either via API or our client libraries. At its core, each user is a data record that contains a set of reserved properties (email, etc) as well as custom properties that you define.
 

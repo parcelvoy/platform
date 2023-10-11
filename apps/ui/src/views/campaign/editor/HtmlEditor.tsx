@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Image, Template } from '../../../types'
-import SourceEditor from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor'
 import Button from '../../../ui/Button'
 import ImageGalleryModal from '../ImageGalleryModal'
 import Preview from '../../../ui/Preview'
 import Tabs from '../../../ui/Tabs'
 import { ImageIcon } from '../../../ui/icons'
+import SourceEditor from '../../../ui/SourceEditor'
 
 export default function HtmlEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
 
@@ -16,7 +16,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
     const [showImages, setShowImages] = useState(false)
 
     function handleMount(editor: Editor.IStandaloneCodeEditor) {
-        setMonaco(editor)
+        if (!monaco) setMonaco(editor)
     }
 
     function handleHtmlChange(html?: string) {
@@ -72,8 +72,6 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                     defaultValue={template.data.html}
                                     onChange={handleHtmlChange}
                                     onMount={handleMount}
-                                    options={{ wordWrap: 'on' }}
-                                    theme="vs-dark"
                                 />
                                 <div className="editor-toolbar">
                                     <Button
@@ -92,8 +90,7 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                 defaultLanguage="handlebars"
                                 defaultValue={template.data.text}
                                 onChange={handleTextChange}
-                                options={{ wordWrap: 'on' }}
-                                theme="vs-dark"
+                                onMount={handleMount}
                             />,
                         }]}
                     />

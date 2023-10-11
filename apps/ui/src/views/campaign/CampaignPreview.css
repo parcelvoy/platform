@@ -1,5 +1,5 @@
 .preview-source-editor {
-    background: #1E1E1E;
+    background: var(--color-editor);
     display: flex;
     position: relative;
     align-items: stretch;

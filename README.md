@@ -56,3 +56,6 @@ AUTH_BASIC_PASSWORD=password
 For full documentation on the platform and more information on deployment, check out our docs.
 
 **[Explore the Docs »](https://docs.parcelvoy.com)**
+
+### Contributing
+You can report bugs, suggest features, or just say hi on [Github discussions](https://github.com/parcelvoy/platform/discussions/new/choose) 

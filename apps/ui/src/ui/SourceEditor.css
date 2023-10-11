@@ -1,0 +1,7 @@
+.monaco-editor {
+    --vscode-editor-background: var(--color-editor);
+    --vscode-editorStickyScroll-background: var(--color-editor);
+    --vscode-breadcrumb-background: var(--color-editor);
+    --vscode-editorGutter-background: var(--color-editor);
+    --vscode-editorMarkerNavigation-background: var(--color-editor);
+}
