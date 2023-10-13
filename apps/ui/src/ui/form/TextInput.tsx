@@ -24,6 +24,7 @@ export interface BaseTextInputProps<T extends TextInputValue> extends Partial<Co
     max?: number | string
     maxLength?: number
     icon?: ReactNode
+    suffix?: ReactNode
 }
 
 export type TextInputProps<T extends TextInputValue> = BaseTextInputProps<T> & (
@@ -61,6 +62,7 @@ export default function TextInput<X extends TextInputValue>({
     inputRef,
     hideLabel = false,
     icon,
+    suffix,
 }: TextInputProps<X>) {
     return (
         <label ref={labelRef} className={clsx('ui-text-input', { 'hide-label': hideLabel })}>
@@ -73,7 +75,10 @@ export default function TextInput<X extends TextInputValue>({
                 )
             }
             {subtitle && <span className="label-subtitle">{subtitle}</span>}
-            <div className={clsx(icon && 'ui-text-input-icon-wrapper')}>
+            <div className={clsx(
+                icon && 'ui-text-input-icon-wrapper',
+                suffix && 'ui-text-input-suffix-wrapper',
+            )}>
                 {
                     textarea
                         ? (
@@ -116,6 +121,13 @@ export default function TextInput<X extends TextInputValue>({
                         <span className="ui-text-input-icon">
                             {icon}
                         </span>
+                    )
+                }
+                {
+                    suffix && (
+                        <div className="ui-text-input-suffix">
+                            {suffix}
+                        </div>
                     )
                 }
             </div>

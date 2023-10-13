@@ -5,6 +5,7 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import SwitchField from '../../ui/form/SwitchField'
 import Heading from '../../ui/Heading'
+import { LocaleTextField } from '../settings/Locales'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Intl {
@@ -38,8 +39,10 @@ interface ProjectFormProps {
 
 export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     const timeZones = Intl.supportedValuesOf('timeZone')
+    const locale = navigator.languages[0]?.split('-')[0] ?? 'en'
     const defaults = project ?? {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locale,
     }
     return (
         <FormWrapper<Project>
@@ -61,7 +64,7 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                         <TextInput.Field form={form} name="name" required />
                         <TextInput.Field form={form} name="description" textarea />
                         <Heading size="h4" title="Defaults" />
-                        <TextInput.Field
+                        <LocaleTextField
                             form={form}
                             name="locale"
                             label="Default Locale"

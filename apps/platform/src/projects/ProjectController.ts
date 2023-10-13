@@ -56,17 +56,14 @@ router.get('/all', async ctx => {
 const projectCreateParams: JSONSchemaType<ProjectParams> = {
     $id: 'projectCreate',
     type: 'object',
-    required: ['name', 'timezone'],
+    required: ['name', 'timezone', 'locale'],
     properties: {
         name: { type: 'string' },
         description: {
             type: 'string',
             nullable: true,
         },
-        locale: {
-            type: 'string',
-            nullable: true,
-        },
+        locale: { type: 'string' },
         timezone: { type: 'string' },
         text_opt_out_message: {
             type: 'string',
