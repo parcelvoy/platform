@@ -96,6 +96,7 @@ export function Projects() {
                 open={open}
                 onClose={setOpen}
                 title="Create Project"
+                size="regular"
             >
                 <ProjectForm
                     onSave={project => {

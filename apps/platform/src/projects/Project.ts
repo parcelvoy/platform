@@ -5,7 +5,7 @@ export default class Project extends Model {
     name!: string
     description?: string
     deleted_at?: Date
-    locale?: string
+    locale!: string
     timezone!: string
     text_opt_out_message?: string
     link_wrap?: boolean

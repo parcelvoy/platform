@@ -65,6 +65,14 @@ export const createProject = async (admin: Admin, params: ProjectParams): Promis
         role: 'admin',
     })
 
+    // Create initial locale for project
+    const languages = new Intl.DisplayNames([params.locale], { type: 'language' })
+    await Locale.insert({
+        project_id: projectId,
+        key: languages.of(params.locale),
+        label: params.locale,
+    })
+
     // Create a single subscription for each type
     await createSubscription(projectId, { name: 'Default Email', channel: 'email' })
     await createSubscription(projectId, { name: 'Default SMS', channel: 'text' })

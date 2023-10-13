@@ -15,3 +15,24 @@
     width: 16px;
     transform: translate(0, -50%);
 }
+
+.ui-text-input-suffix-wrapper {
+    width: 100%;
+    display: flex;
+}
+
+.ui-text-input-suffix-wrapper input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    width: auto;
+    flex-grow: 1;
+}
+
+.ui-text-input-suffix {
+    border: 1px solid var(--color-grey);
+    border-left-width: 0;
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    padding: 12px 15px;
+    /* flex-shrink: 0; */
+}
