@@ -22,6 +22,7 @@ describe('TextChannel', () => {
             name: uuid(),
             timezone: 'utc',
             text_opt_out_message,
+            locale: 'en',
         })
         const user = await createUser(project.id, {
             anonymous_id: uuid(),
