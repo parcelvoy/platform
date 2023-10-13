@@ -20,7 +20,9 @@ export const gateStep: JourneyStepType<GateConfig> = {
         if (value.rule) {
             return (
                 <div style={{ maxWidth: 300 }}>
+                    {'Does '}
                     {ruleDescription(preferences, value.rule)}
+                    {'?'}
                 </div>
             )
         }

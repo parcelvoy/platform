@@ -2,23 +2,87 @@ import { User } from '../users/User'
 import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
 import { JourneyEntrance, JourneyGate, JourneyStep, JourneyStepChild, JourneyUserStep, journeyStepTypes } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
-import List, { UserList } from '../lists/List'
-import { chunk, groupBy, shallowEqual, uuid } from '../utilities'
+import { shallowEqual } from '../utilities'
 import App from '../app'
 import { Job } from '../queue'
 import { getProject } from '../projects/ProjectService'
 import { getUserEventsForRules } from '../users/UserRepository'
 import Rule from '../rules/Rule'
 import { acquireLock, releaseLock } from '../config/scheduler'
+import { check } from '../rules/RuleEngine'
+import JourneyProcessJob from './JourneyProcessJob'
 
-const getActiveEntrancesForList = async (list: List) => {
-    return await JourneyStep.all(q => q
-        .leftJoin('journeys', 'journeys.id', 'journey_steps.journey_id')
-        .where('journeys.project_id', list.project_id)
+export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
+
+    // look up all entrances in published journeys
+    const entrances = await JourneyEntrance.all(q => q
+        .join('journeys', 'journey_steps.journey_id', '=', 'journeys.id')
+        .where('journeys.project_id', event.project_id)
         .where('journeys.published', true)
-        .where('type', JourneyEntrance.type)
-        .whereJsonPath('data', '$.list_id', '=', list.id),
+        .where('journey_steps.type', JourneyEntrance.type)
+        .whereJsonPath('journey_steps.data', '$.trigger', '=', 'event')
+        .whereJsonPath('journey_steps.data', '$.eventName', '=', event.name),
     )
+
+    if (!entrances.length) return
+
+    if (!user) {
+        user = await User.find(event.user_id)
+    }
+
+    const input = {
+        user: user!.flatten(),
+        events: [event!.flatten()],
+    }
+
+    const entranceIds: number[] = []
+    for (const entrance of entrances) {
+
+        // if a rule is specified, check it before pushing user into journey
+        if (entrance.rule) {
+            const rule: Rule = {
+                ...entrance.rule as Rule,
+                group: 'event',
+                path: '$.name',
+                value: event.name, // ensure that the expected event name is here
+            }
+            if (!check(input, rule)) {
+                continue
+            }
+        }
+
+        // skip if user has any entrances (active or ended)
+        // into this journey and multiple are not allowed
+        if (!entrance.multiple) {
+            const hasAny = await JourneyUserStep.exists(q => q
+                .where('user_id', event.user_id)
+                .where('step_id', entrance.id),
+            )
+            if (hasAny) continue
+        } else if (!entrance.concurrent) {
+            const hasActive = await JourneyUserStep.exists(q => q
+                .where('step_id', entrance.id)
+                .where('user_id', event.user_id)
+                .whereNull('ended_at'),
+            )
+            if (hasActive) continue
+        }
+
+        // create new entrance
+        entranceIds.push(await JourneyUserStep.insert({
+            journey_id: entrance.journey_id,
+            step_id: entrance.id,
+            user_id: event.user_id,
+            type: 'completed',
+            data: {
+                event: event.flatten(),
+            },
+        }))
+    }
+
+    if (entranceIds.length) {
+        await App.main.queue.enqueueBatch(entranceIds.map(entrance_id => JourneyProcessJob.from({ entrance_id })))
+    }
 }
 
 export const loadUserStepDataMap = async (userStepId: number) => {
@@ -30,89 +94,6 @@ export const loadUserStepDataMap = async (userStepId: number) => {
         getEntranceSubsequentSteps(step!.id),
     ])
     return JourneyUserStep.getDataMap(steps, [step!, ...userSteps])
-}
-
-/**
- * enter a single user into all unstarted journeys that reference a given list.
- * NOTE: this does not actually enqueue list processing.
- * Call resumeUserJourneys to do that.
- * @param list find all entrances that reference this list
- * @param user user to add to journeys
- * @param event (optional) event to link to entrance(s)
- */
-export const enterJourneysFromList = async (list: List, user: User, event?: UserEvent) => {
-
-    let entrances = await getActiveEntrancesForList(list)
-
-    if (!entrances.length) return []
-
-    // only include first with this list per journey
-    entrances = entrances.filter((e, i, a) => a.findIndex(x => x.journey_id === e.journey_id) === i)
-
-    const userSteps = await JourneyUserStep.all(q => q
-        .where('user_id', user.id)
-        .whereIn('step_id', entrances.map(s => s.id))
-        .whereNull('entrance_id'),
-    )
-
-    const userStepIds: number[] = []
-    for (const entrance of entrances) {
-        if (userSteps.find(us => us.step_id === entrance.id)) {
-            continue
-        }
-        userStepIds.push(await JourneyUserStep.insert({
-            journey_id: entrance.journey_id,
-            step_id: entrance.id,
-            user_id: user.id,
-            type: 'completed',
-            data: {
-                event: event
-                    ? {
-                        name: event.name,
-                        data: event.data,
-                    }
-                    : undefined,
-            },
-        }))
-    }
-    return userStepIds
-}
-
-export const enterAllUnstartedJourneysFromList = async (list: List) => {
-
-    // find all entrances that use this list
-    const entrances = await getActiveEntrancesForList(list)
-
-    if (!entrances.length) return
-
-    const ref = uuid()
-
-    const byJourneyId = groupBy(entrances, js => js.journey_id)
-
-    for (const [journey_id, [entrance]] of byJourneyId) {
-
-        // all users who have never started this journey
-        const query = UserList.query()
-            .select('user_lists.user_id as \'user_id\'')
-            .leftJoin('journey_user_step', 'user_lists.user_id', '=', 'journey_user_step.user_id')
-            .where('user_lists.list_id', list.id)
-            .where(qb => qb.whereNull('journey_user_step.user_id').orWhere('journey_user_step.journey_id', journey_id))
-            .groupBy('user_lists.user_id')
-            .having(UserList.raw('count(journey_user_step.id) = 0'))
-
-        await chunk<{ user_id: number }>(query, 100, async items => {
-            if (!items.length) return
-            await JourneyUserStep.insert(items.map(({ user_id }) => ({
-                journey_id,
-                user_id,
-                step_id: entrance.id,
-                type: 'completed',
-                ref,
-            })))
-        })
-    }
-
-    return ref
 }
 
 type JobOrJobFunc = Job | ((state: JourneyState) => Job)

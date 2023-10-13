@@ -1,13 +1,11 @@
 import { addDays } from 'date-fns'
-import List, { UserList } from '../../lists/List'
 import Organization from '../../organizations/Organization'
 import Project from '../../projects/Project'
 import Rule from '../../rules/Rule'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
-import { uuid } from '../../utilities'
 import Journey from '../Journey'
-import { JourneyState, enterJourneysFromList } from '../JourneyService'
+import { JourneyState, enterJourneysFromEvent } from '../JourneyService'
 import { JourneyStep, JourneyStepMap, JourneyUserStep } from '../JourneyStep'
 import { make } from '../../rules/RuleEngine'
 
@@ -147,66 +145,37 @@ describe('JourneyService', () => {
         })
     }
 
-    test('Entrance - Single User', async () => {
+    test('Steps - Entrance - Event-Based', async () => {
 
-        const { project } = await setup()
-
-        const list = await List.insertAndFetch({
-            project_id: project.id,
-            name: 'list',
+        const { steps, user } = await setupJourney({
+            data: {},
+            stepMap: {
+                e: {
+                    ...baseStep,
+                    type: 'entrance',
+                    data: {
+                        trigger: 'event',
+                        eventName: 'purchased gourd',
+                    },
+                },
+            },
         })
 
-        const user = await User.insertAndFetch({
-            project_id: project.id,
-            external_id: uuid(),
-        })
-
-        await UserList.insert({
+        const event = await UserEvent.insertAndFetch({
+            project_id: user.project_id,
             user_id: user.id,
-            list_id: list.id,
+            name: 'purchased gourd',
+            data: {
+                color: 'yellow',
+            },
         })
 
-        // user should get added to this one
-        const journey1 = await Journey.create(project.id, 'Journey 1', {
-            e1: entrance(list.id, ''),
-        })
+        await enterJourneysFromEvent(event, user)
 
-        // user should NOT get added to this one
-        const journey2 = await Journey.create(project.id, 'Journey 2', {
-            e1: entrance(0, ''),
-        })
+        const entrances = await JourneyUserStep.all(q => q.where('user_id', user.id))
 
-        // user should only enter this journey once, at the first entrance step
-        const journey3 = await Journey.create(project.id, 'Journey 3', {
-            e1: entrance(list.id, ''),
-            e2: entrance(list.id, ''),
-        })
+        expect(entrances.map(e => e.step_id)).toContain(steps.find(s => s.external_id === 'e')!.id)
 
-        // user should have entered at these two steps
-        const j1 = journey1.steps.find(s => s.external_id === 'e1')!
-        const j2 = journey2.steps.find(s => s.external_id === 'e1')!
-        const j3 = journey3.steps.find(s => s.external_id === 'e1')!
-        const j4 = journey3.steps.find(s => s.external_id === 'e2')!
-
-        await enterJourneysFromList(list, user)
-
-        const entranceStepIds = await JourneyUserStep.all(qb => qb
-            .whereNull('entrance_id')
-            .where('user_id', user.id),
-        ).then(x => x.map(e => e.step_id))
-
-        expect(entranceStepIds.length).toBe(2)
-        expect(entranceStepIds).toContain(j1.id)
-        expect(entranceStepIds).not.toContain(j2.id)
-        expect(entranceStepIds).toContain(j3.id)
-        expect(entranceStepIds).not.toContain(j4.id)
-
-    })
-
-    test('Entrance - List', async () => {
-
-        // TODO
-        expect(0).toBe(0)
     })
 
     test('Steps - Delay', async () => {

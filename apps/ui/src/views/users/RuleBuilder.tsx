@@ -105,17 +105,17 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
     const root = nodes.length === 0
     if (rule.type === 'wrapper') {
         if (rule.group === 'event' && (rule.path === '$.name' || rule.path === 'name')) {
-            nodes.push(
-                'has user ',
-                <strong key={nodes.length}>
-                    {rule.value ?? ''}
-                </strong>,
-            )
+            if (!root) {
+                nodes.push(
+                    'has user done ',
+                    <strong key={nodes.length}>
+                        {rule.value ?? ''}
+                    </strong>,
+                )
+            }
             if (rule.children?.length) {
                 nodes.push(' where ')
             }
-        } else {
-            nodes.push('user ')
         }
         if (rule.children?.length) {
             const grouped: GroupedRule[] = []
@@ -214,7 +214,7 @@ interface RuleEditProps {
     eventName?: string
     depth?: number
     controls?: ReactNode
-    headerPrefix?: string
+    headerPrefix?: ReactNode
 }
 
 function RuleEdit({
@@ -272,7 +272,7 @@ function RuleEdit({
             <div className="rule-set">
                 <div className="rule-set-header">
                     {
-                        rule.group === 'event'
+                        (rule.group === 'event' && !eventName)
                             ? (
                                 <>
                                     Did
@@ -396,7 +396,7 @@ function RuleEdit({
                         }
                     </Button>
                     {
-                        depth === 0 && (
+                        (depth === 0 && rule.group === 'user') && (
                             <Button
                                 size="small"
                                 variant="secondary"
@@ -508,10 +508,11 @@ function RuleEdit({
 interface RuleBuilderParams {
     rule: Rule
     setRule: (rule: Rule) => void
-    headerPrefix?: string
+    headerPrefix?: ReactNode
+    eventName?: string
 }
 
-export default function RuleBuilder({ headerPrefix, rule, setRule }: RuleBuilderParams) {
+export default function RuleBuilder({ eventName, headerPrefix, rule, setRule }: RuleBuilderParams) {
     const [{ id: projectId }] = useContext(ProjectContext)
     const [suggestions] = useResolver(useCallback(async () => await api.projects.pathSuggestions(projectId), [projectId]))
     return (
@@ -519,7 +520,8 @@ export default function RuleBuilder({ headerPrefix, rule, setRule }: RuleBuilder
             <RuleEdit
                 rule={rule}
                 setRule={setRule}
-                group="user"
+                group={eventName ? 'event' : 'user'}
+                eventName={eventName}
                 headerPrefix={headerPrefix}
             />
         </RuleEditContext.Provider>

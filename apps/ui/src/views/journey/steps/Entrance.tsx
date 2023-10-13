@@ -1,12 +1,39 @@
-import { useCallback } from 'react'
-import api from '../../../api'
-import { JourneyStepType } from '../../../types'
-import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
+import { JourneyStepType, Rule } from '../../../types'
 import { EntranceStepIcon } from '../../../ui/icons'
-import { ListCreateForm } from '../../users/ListCreateForm'
+import OptionField from '../../../ui/form/OptionField'
+import TextInput from '../../../ui/form/TextInput'
+import RuleBuilder, { ruleDescription } from '../../users/RuleBuilder'
+import { useContext } from 'react'
+import { PreferencesContext } from '../../../ui/PreferencesContext'
+import SwitchField from '../../../ui/form/SwitchField'
 
 interface EntranceConfig {
-    list_id: number
+    trigger: 'none' | 'event' | 'schedule'
+    eventName?: string
+    rule?: Rule
+    multiple?: boolean
+    // list_id?: number
+    // schedule?: string
+    concurrent?: boolean
+}
+
+const triggerOptions = [
+    {
+        key: 'none',
+        label: 'None',
+    },
+    {
+        key: 'event',
+        label: 'Event',
+    },
+]
+
+const wrapper: Rule = {
+    type: 'wrapper',
+    group: 'event',
+    path: '$.name',
+    operator: 'and',
+    children: [],
 }
 
 export const entranceStep: JourneyStepType<EntranceConfig> = {
@@ -15,31 +42,87 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
     category: 'entrance',
     description: 'How users are added to this journey.',
     newData: async () => ({
-        list_id: 0,
+        trigger: 'none',
+        max: 1,
+        concurrent: false,
     }),
-    Edit({
-        onChange,
-        project: {
-            id: projectId,
-        },
-        value,
-    }) {
-        const getList = useCallback(async (id: number) => await api.lists.get(projectId, id), [projectId])
-        const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, limit: 50 }), [projectId])
+    Describe({ value }) {
+        const [preferences] = useContext(PreferencesContext)
+
+        if (value.trigger === 'event') {
+            return (
+                <>
+                    Enter on event: <strong>{value.eventName ?? ''}</strong>
+                    {
+                        !!value.rule?.children?.length && (
+                            <>
+                                {ruleDescription(preferences, value.rule)}
+                            </>
+                        )
+                    }
+                </>
+            )
+        }
+
         return (
-            <EntityIdPicker
-                label="List"
-                subtitle="When users are added to this list they will automatically enter this journey."
-                required
-                get={getList}
-                search={searchLists}
-                value={value.list_id}
-                onChange={list_id => onChange({ ...value, list_id })}
-                renderCreateForm={onCreated => (
-                    <ListCreateForm onCreated={onCreated} />
-                )}
-                onEditLink={list => window.open(`/projects/${projectId}/lists/${list.id}`)}
-            />
+            <>
+                {'No automated trigger'}
+            </>
+        )
+    },
+    Edit({ onChange, value }) {
+        return (
+            <>
+                <OptionField
+                    name="trigger"
+                    label="Trigger"
+                    value={value.trigger}
+                    options={triggerOptions}
+                    onChange={trigger => onChange({ ...value, trigger })}
+                    required
+                />
+                {
+                    value.trigger === 'event' && (
+                        <>
+                            <TextInput
+                                name="eventName"
+                                label="Event Name"
+                                required
+                                value={value.eventName ?? ''}
+                                onChange={eventName => onChange({ ...value, eventName })}
+                            />
+                            {
+                                value.eventName && (
+                                    <RuleBuilder
+                                        rule={value.rule ?? wrapper}
+                                        setRule={rule => onChange({ ...value, rule })}
+                                        eventName={value.eventName}
+                                        headerPrefix="Matching"
+                                    />
+                                )
+                            }
+                            <SwitchField
+                                name="multiple"
+                                label="Multiple Entries"
+                                subtitle="Should people enter this journey multiple times?"
+                                checked={Boolean(value.multiple)}
+                                onChange={multiple => onChange({ ...value, multiple })}
+                            />
+                        </>
+                    )
+                }
+                {
+                    (value.trigger !== 'event' || value.multiple) && (
+                        <SwitchField
+                            name="concurrent"
+                            label="Simultaneous Entries"
+                            subtitle="If enabled, user could join this journey multiple times before finishing previous ones."
+                            checked={Boolean(value.concurrent)}
+                            onChange={concurrent => onChange({ ...value, concurrent })}
+                        />
+                    )
+                }
+            </>
         )
     },
     hasDataKey: true,
