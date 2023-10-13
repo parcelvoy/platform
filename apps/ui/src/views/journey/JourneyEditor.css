@@ -17,6 +17,7 @@
     max-width: 300px;
     border-color: var(--color-grey);
     border-style: solid;
+    border-width: 0;
     border-right-width: 1px;
     position: relative;
     overflow: scroll;
@@ -34,7 +35,7 @@
 }
 
 .journey-options .options-section {
-    margin-bottom: 20px;
+    padding: 10px 20px;
 }
 
 .journey-options .component {
@@ -52,6 +53,15 @@
 
 .journey-options .component:last-child {
     border-bottom: 0px;
+}
+
+.journey-options .journey-step-header {
+    padding: 15px 20px;
+}
+
+.journey-options .journey-step-header h4 {
+    font-size: 18px;
+    line-height: 22px;
 }
 
 .component-handle {
@@ -229,6 +239,8 @@
 .journey-step-header h4 {
     padding: 5px 0;
     margin: 0;
+    font-size: 16px;
+    line-height: 20px;
 }
 
 .journey-step-header .step-header-stats {
@@ -290,4 +302,8 @@
     position: absolute;
     bottom: 10px;
     transform: translate(-50%, 0)
+}
+
+.react-flow__attribution {
+    display: none;
 }

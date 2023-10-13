@@ -13,7 +13,6 @@
 }
 
 .options-group .option {
-    /* border: 1px solid var(--color-grey); */
     flex-grow: 1;
     border-radius: var(--border-radius-inner);
     padding: 8px 10px;
@@ -28,7 +27,7 @@
     display: block;
 }
 
-.options-group .option:hover {
+.options-group .option:hover:not(.disabled) {
     background: var(--color-grey-soft);
     border-color: var(--color-grey-hard);
 }
@@ -37,4 +36,8 @@
     background: var(--color-primary);
     color: var(--color-on-primary);
     border-color: var(--color-primary);
+}
+
+.options-group .option.disabled {
+    cursor: not-allowed;
 }

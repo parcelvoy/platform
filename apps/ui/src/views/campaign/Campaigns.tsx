@@ -73,7 +73,7 @@ export default function Campaigns() {
                     actions={
                         <LinkButton to={`/projects/${project.id}/settings/integrations`}>Setup Integration</LinkButton>
                     }
-                >Campaigns depend on message integrations to be able to send. Configure an integration to start being able to send messages!
+                >Campaigns depend on message integrations to be able to send. Configure an integration to start sending messages!
                 </Alert>
             )}>
                 <SearchTable

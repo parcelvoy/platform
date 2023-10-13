@@ -90,10 +90,14 @@ export function formatDuration(_preferences: Preferences, duration: Duration) {
 }
 
 export function languageName(locale: string) {
-    const languages = new Intl.DisplayNames([locale], {
-        type: 'language',
-    })
-    return languages.of(locale)
+    try {
+        const languages = new Intl.DisplayNames([locale], {
+            type: 'language',
+        })
+        return languages.of(locale)
+    } catch {
+        return undefined
+    }
 }
 
 export function createComparator<T>(getter: (o: T) => any, desc = false) {

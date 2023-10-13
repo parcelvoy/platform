@@ -536,7 +536,7 @@ export default function JourneyEditor() {
                             )
                         }
                     </div>
-                    <div style={{ padding: 10 }}>
+                    <div className="options-section">
                         <TextInput
                             label="Name"
                             name="name"

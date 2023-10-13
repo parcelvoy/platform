@@ -4,32 +4,24 @@ import { ProjectContext } from '../../contexts'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import { Locale, LocaleOption } from '../../types'
-import TextInput from '../../ui/form/TextInput'
-import { UseFormReturn } from 'react-hook-form'
+import { Locale, LocaleOption, FieldProps } from '../../types'
+import TextInput, { TextInputProps } from '../../ui/form/TextInput'
+import { FieldPath, FieldValues } from 'react-hook-form'
 import Button from '../../ui/Button'
 import { PlusIcon } from '../../ui/icons'
 import { languageName } from '../../utils'
 
-const LocaleTextField = ({ form }: { form: UseFormReturn<{ key: string }> }) => {
+export const LocaleTextField = <X extends FieldValues, P extends FieldPath<X>>(params: TextInputProps<P> & FieldProps<X, P>) => {
 
-    const [language, setLanguage] = useState<string | undefined>(undefined)
+    const [language, setLanguage] = useState<string | undefined>(languageName(params.form.getValues()[params.name]))
     const handlePreviewLanguage = (locale: string) => {
-        try {
-            return setLanguage(languageName(locale))
-        } catch {
-            return setLanguage(undefined)
-        }
+        setLanguage(languageName(locale))
     }
 
     return <>
-        <TextInput.Field form={form}
-            name="key"
-            label="Locale"
-            subtitle="The abbreviated language code i.e. en, es, fr"
+        <TextInput.Field {...params}
             onChange={handlePreviewLanguage}
-            required />
-        <p>{language}</p>
+            suffix={language} />
     </>
 }
 
@@ -92,7 +84,12 @@ export default function Locales() {
                     {
                         form => (
                             <>
-                                <LocaleTextField form={form} />
+                                <LocaleTextField
+                                    form={form}
+                                    name="key"
+                                    label="Locale"
+                                    subtitle="The abbreviated language code i.e. en, es, fr"
+                                    required />
                             </>
                         )
                     }
