@@ -47,7 +47,7 @@ export default function Tags() {
                     editing && (
                         <FormWrapper<Tag>
                             onSubmit={async ({ id, name }) => {
-                                id != null
+                                id
                                     ? await api.tags.update(project.id, id, { name })
                                     : await api.tags.create(project.id, { name })
                                 await search.reload()

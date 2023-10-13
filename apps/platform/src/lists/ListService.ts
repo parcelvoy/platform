@@ -3,7 +3,6 @@ import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
 import List, { DynamicList, ListCreateParams, UserList } from './List'
 import Rule from '../rules/Rule'
-import { enterJourneysFromList } from '../journey/JourneyService'
 import { PageParams } from '../core/searchParams'
 import App from '../app'
 import ListPopulateJob from './ListPopulateJob'
@@ -12,7 +11,6 @@ import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { Chunker, groupBy } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
-import JourneyProcessJob from '../journey/JourneyProcessJob'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -241,7 +239,6 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
         events: events.map(e => e.flatten()),
     }
 
-    const userStepIds: number[] = []
     for (const list of lists) {
         let result: boolean
         try {
@@ -254,12 +251,7 @@ export const updateUsersLists = async (user: User, event?: UserEvent) => {
         }
         if (result) {
             await addUserToList(user, list, event)
-            userStepIds.push(...await enterJourneysFromList(list, user, event))
         }
-    }
-
-    if (userStepIds.length) {
-        App.main.queue.enqueueBatch(userStepIds.map(entrance_id => JourneyProcessJob.from({ entrance_id })))
     }
 }
 

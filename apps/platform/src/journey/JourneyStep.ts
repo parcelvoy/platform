@@ -88,11 +88,29 @@ export class JourneyStep extends Model {
 export class JourneyEntrance extends JourneyStep {
     static type = 'entrance'
 
-    list_id!: number
+    trigger: 'none' | 'event' | 'schedule' = 'none'
+
+    // event driven
+    eventName!: string
+    rule?: Rule
+    multiple = false // multiple entries allowed
+
+    // schedule driven
+    // start?: string
+    // list_id!: number
+    // schedule!: string // rrule string
+
+    concurrent = false
 
     parseJson(json: any) {
         super.parseJson(json)
-        this.list_id = json?.data.list_id
+        this.trigger = json?.data?.trigger ?? 'none'
+        this.eventName = json?.data?.eventName
+        this.rule = json?.data?.rule
+        this.multiple = json?.data?.multiple
+        // this.list_id = json?.data?.list_id
+        // this.schedule = json.data?.schedule
+        this.concurrent = json?.data?.concurrent
     }
 
     static async create(journeyId: number, listId?: number, db?: Database): Promise<JourneyEntrance> {

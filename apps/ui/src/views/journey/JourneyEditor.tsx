@@ -652,6 +652,7 @@ export default function JourneyEditor() {
                         selectNodesOnDrag
                         fitView
                         maxZoom={1}
+                        minZoom={0.2}
                     >
                         <Background className="internal-canvas" />
                         <Controls />

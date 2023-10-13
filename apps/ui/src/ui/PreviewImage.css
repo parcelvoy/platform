@@ -1,11 +1,22 @@
 .preview-image {
     border-radius: var(--border-radius-inner);
     overflow: hidden;
+    position: relative;
 }
 
 .preview-image iframe {
     transform-origin: top left;
     overflow: hidden;
+}
+
+.preview-image::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 @media only screen and (max-width: 600px) {

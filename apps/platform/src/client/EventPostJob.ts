@@ -4,6 +4,7 @@ import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
 import { logger } from '../config/logger'
 import { createAndFetchEvent } from '../users/UserEventRepository'
+import { enterJourneysFromEvent } from '../journey/JourneyService'
 
 interface EventPostTrigger {
     project_id: number
@@ -39,5 +40,8 @@ export default class EventPostJob extends Job {
 
         // Check to see if a user has any lists
         await updateUsersLists(user, dbEvent)
+
+        // enter any journey entrances associated with this event
+        await enterJourneysFromEvent(dbEvent, user)
     }
 }

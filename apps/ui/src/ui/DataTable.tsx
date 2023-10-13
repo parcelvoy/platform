@@ -121,7 +121,8 @@ export function DataTable<T>({
                                         let value: any = col.cell
                                             ? col.cell(args)
                                             : item[col.key as keyof T]
-                                        if ((col.key.endsWith('_at') || col.key.endsWith('_until')) && value) {
+                                        if ((col.key.endsWith('_at') || col.key.endsWith('_until'))
+                                            && (typeof value === 'string' || typeof value === 'number')) {
                                             value = formatDate(preferences, value, 'Ppp')
                                         }
                                         if (typeof value === 'boolean') {

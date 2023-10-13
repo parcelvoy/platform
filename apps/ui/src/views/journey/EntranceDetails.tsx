@@ -37,7 +37,7 @@ export default function EntranceDetails() {
                         }
                     </Tag>
                     {
-                        entrance.ended_at && ` at ${formatDate(preferences, entrance.ended_at)}`
+                        entrance.ended_at && ` at ${formatDate(preferences, new Date())}`
                     }
                 </>
             }
