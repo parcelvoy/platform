@@ -11,5 +11,6 @@ export const createTestProject = async () => {
     return await createProject(admin, {
         name: uuid(),
         timezone: 'utc',
+        locale: 'en',
     })
 }
