@@ -15,6 +15,7 @@ describe('LinkService', () => {
             const project = await createProject(admin, {
                 name: uuid(),
                 timezone: 'utc',
+                locale: 'en',
             })
             const user = await createUser(project.id, {
                 anonymous_id: uuid(),
