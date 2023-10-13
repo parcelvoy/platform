@@ -4,6 +4,7 @@ import { RadioGroup } from '@headlessui/react'
 import { FieldProps, FieldOption } from './Field'
 import './OptionField.css'
 import { snakeToTitle } from '../../utils'
+import clsx from 'clsx'
 
 interface OptionFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
     options: FieldOption[]
@@ -51,10 +52,9 @@ export default function OptionField<X extends FieldValues, P extends FieldPath<X
                     <RadioGroup.Option
                         key={key}
                         value={key}
-                        className={({ active, checked }) =>
-                            `option ${active ? 'active' : ''}
-                            ${checked ? 'selected' : ''}`
-                        }>{label}</RadioGroup.Option>
+                        className={({ active, checked, disabled }) => clsx(
+                            'option', { selected: checked, active, disabled },
+                        )}>{label}</RadioGroup.Option>
                 ))}
             </div>
         </RadioGroup>
