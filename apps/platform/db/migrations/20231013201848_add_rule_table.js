@@ -44,7 +44,6 @@ exports.up = async function(knex) {
     await knex.schema.alterTable('lists', function(table) {
         table.integer('rule_id')
             .unsigned()
-            .notNullable()
             .references('id')
             .inTable('rules')
             .onDelete('CASCADE')
