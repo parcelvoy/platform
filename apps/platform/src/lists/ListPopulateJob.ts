@@ -6,7 +6,6 @@ import ListStatsJob from './ListStatsJob'
 interface ListPopulateParams {
     listId: number
     projectId: number
-    syncJourneys?: boolean
 }
 
 export default class ListPopulateJob extends Job {
@@ -21,7 +20,7 @@ export default class ListPopulateJob extends Job {
         const list = await getList(listId, projectId) as DynamicList
         if (!list) return
 
-        await populateList(list, list.rule)
+        await populateList(list)
 
         await ListStatsJob.from(listId, projectId).queue()
     }

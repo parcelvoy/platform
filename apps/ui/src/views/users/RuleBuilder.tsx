@@ -1,5 +1,5 @@
 import { Combobox } from '@headlessui/react'
-import { Operator, Rule, RuleSuggestions, RuleType, WrapperRule, ControlledInputProps, FieldProps, Preferences } from '../../types'
+import { Operator, Rule, RuleSuggestions, RuleType, WrapperRule, ControlledInputProps, FieldProps, Preferences, RuleGroup } from '../../types'
 import { FieldPath, FieldValues, useController } from 'react-hook-form'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
@@ -13,12 +13,13 @@ import { useResolver } from '../../hooks'
 import api from '../../api'
 import { highlightSearch, usePopperSelectDropdown } from '../../ui/utils'
 import clsx from 'clsx'
-import { formatDate, snakeToTitle } from '../../utils'
+import { createUuid, formatDate, snakeToTitle } from '../../utils'
 
 export const createWrapperRule = (): WrapperRule => ({
+    uuid: createUuid(),
     path: '$',
     type: 'wrapper',
-    group: 'user',
+    group: 'parent',
     operator: 'and',
     children: [],
 })
@@ -209,8 +210,9 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
 
 interface RuleEditProps {
     rule: Rule
+    root: Rule
     setRule: (value: Rule) => void
-    group: 'user' | 'event'
+    group: RuleGroup
     eventName?: string
     depth?: number
     controls?: ReactNode
@@ -223,6 +225,7 @@ function RuleEdit({
     eventName = '',
     group,
     headerPrefix = 'Include users matching ',
+    root,
     rule,
     setRule,
 }: RuleEditProps) {
@@ -350,6 +353,7 @@ function RuleEdit({
                         rule.children?.map((child, index, arr) => (
                             <RuleEdit
                                 key={index}
+                                root={root}
                                 rule={child}
                                 setRule={child => setRule({
                                     ...rule,
@@ -381,6 +385,9 @@ function RuleEdit({
                         onClick={() => setRule({
                             ...rule,
                             children: [...rule.children ?? [], {
+                                uuid: createUuid(),
+                                root_uuid: root.uuid,
+                                parent_uuid: rule.uuid,
                                 path: '',
                                 type: 'string',
                                 group: rule.group,
@@ -404,6 +411,9 @@ function RuleEdit({
                                 onClick={() => setRule({
                                     ...rule,
                                     children: [...rule.children ?? [], {
+                                        uuid: createUuid(),
+                                        root_uuid: root.uuid,
+                                        parent_uuid: rule.uuid,
                                         path: '$.name',
                                         type: 'wrapper',
                                         group: 'event',
@@ -518,6 +528,7 @@ export default function RuleBuilder({ eventName, headerPrefix, rule, setRule }: 
     return (
         <RuleEditContext.Provider value={useMemo(() => ({ suggestions: suggestions ?? emptySuggestions }), [suggestions])}>
             <RuleEdit
+                root={rule}
                 rule={rule}
                 setRule={setRule}
                 group={eventName ? 'event' : 'user'}

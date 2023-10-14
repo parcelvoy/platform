@@ -1,7 +1,7 @@
 import Model from '../core/Model'
-import Rule from '../rules/Rule'
+import { RuleTree } from '../rules/Rule'
 
-type ListState = 'ready' | 'loading'
+export type ListState = 'ready' | 'loading'
 type ListType = 'static' | 'dynamic'
 
 export default class List extends Model {
@@ -9,17 +9,16 @@ export default class List extends Model {
     name!: string
     type!: ListType
     state!: ListState
-    rule?: Rule
+    rule_id?: number
+    rule?: RuleTree
     version!: number
     users_count?: number
     tags?: string[]
     is_visible!: boolean
     deleted_at?: Date
-
-    static jsonAttributes = ['rule']
 }
 
-export type DynamicList = List & { rule: Rule }
+export type DynamicList = List & { rule: RuleTree }
 
 export class UserList extends Model {
     user_id!: number
@@ -31,5 +30,5 @@ export class UserList extends Model {
     static tableName = 'user_list'
 }
 
-export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'> & { syncJourneys?: boolean }
-export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'>
+export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { rule?: RuleTree }
+export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'> & { rule?: RuleTree }

@@ -1,9 +1,9 @@
 import jsonpath from 'jsonpath'
-import Rule, { AnyJson } from './Rule'
+import { AnyJson, RuleTree } from './Rule'
 import { compileTemplate } from '../render'
 import { visit } from '../utilities'
 
-export const queryValue = <T>(value: Record<string, unknown>, rule: Rule, cast: (item: any) => T): T[] => {
+export const queryValue = <T>(value: Record<string, unknown>, rule: RuleTree, cast: (item: any) => T): T[] => {
     let path = rule.path
     if (!value || !path) return []
     if (!path.startsWith('$.')) path = '$.' + path
@@ -12,7 +12,7 @@ export const queryValue = <T>(value: Record<string, unknown>, rule: Rule, cast: 
 
 // TODO: rule tree "compile step"... we shouldn't do this once per user
 // it would be nice if JSON path also supported a parsed/compiled intermediate format too
-export const compile = <Y>(rule: Rule, cast: (item: AnyJson) => Y): Y => {
+export const compile = <Y>(rule: RuleTree, cast: (item: AnyJson) => Y): Y => {
     let value = rule.value as AnyJson
     if (typeof value === 'string' && value.includes('{')) {
         value = compileTemplate(value)({})
@@ -35,12 +35,12 @@ export const reservedPaths = {
     ],
 }
 
-export const isEventWrapper = (rule: Rule) => {
+export const isEventWrapper = (rule: RuleTree) => {
     return rule.group === 'event'
         && (rule.path === '$.name' || rule.path === 'name')
 }
 
-export const getRuleEventNames = (rule: Rule) => {
+export const getRuleEventNames = (rule: RuleTree) => {
     const names: string[] = []
     visit(rule, r => r.children, r => {
         if (isEventWrapper(r)) {

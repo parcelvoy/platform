@@ -1,7 +1,7 @@
 import App from '../app'
 import { cacheGet, cacheSet } from '../config/redis'
 import { Job } from '../queue'
-import { getList, listUserCount, updateList } from './ListService'
+import { getList, listUserCount, updateListState } from './ListService'
 
 interface ListStatsParams {
     listId: number
@@ -26,7 +26,7 @@ export default class ListStatsJob extends Job {
         if (!list) return
 
         // Fetch previous values from cache
-        const key = `list:${list.id}:users_count`
+        const key = `list:${list.id}:${list.version}:users_count`
         const value = await cacheGet<ListStatCache>(App.main.redis, key)
         let date: Date | undefined
         let previousCount = 0
@@ -40,7 +40,7 @@ export default class ListStatsJob extends Job {
         const count = previousCount + await listUserCount(list.id, date)
 
         // Update the list with the new totals
-        await updateList(list.id, { users_count: count })
+        await updateListState(list.id, { users_count: count })
 
         // Set the cache to the values we just pulled
         await cacheSet(App.main.redis, key, {

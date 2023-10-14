@@ -6,6 +6,7 @@ import RuleBuilder, { ruleDescription } from '../../users/RuleBuilder'
 import { useContext } from 'react'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SwitchField from '../../../ui/form/SwitchField'
+import { createUuid } from '../../../utils'
 
 interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
@@ -29,6 +30,7 @@ const triggerOptions = [
 ]
 
 const wrapper: Rule = {
+    uuid: createUuid(),
     type: 'wrapper',
     group: 'event',
     path: '$.name',

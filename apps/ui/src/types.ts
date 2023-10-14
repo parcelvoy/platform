@@ -44,13 +44,16 @@ export interface OAuthResponse {
 
 export type Operator = '=' | '!=' | '<' | '<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor' | 'empty' | 'contains' | 'starts with' | 'any' | 'none'
 export type RuleType = 'wrapper' | 'string' | 'number' | 'boolean' | 'date' | 'array'
-export type RuleGroup = 'user' | 'event'
+export type RuleGroup = 'user' | 'event' | 'parent'
 
 export type AnyJson = boolean | number | string | null | JsonArray | JsonMap
 export interface JsonMap { [key: string]: AnyJson }
 export type JsonArray = AnyJson[]
 
 export type Rule = {
+    uuid: string
+    root_uuid?: string
+    parent_uuid?: string
     type: RuleType
     group: RuleGroup
     path: string

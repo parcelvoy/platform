@@ -88,9 +88,7 @@ export const validateTemplates = async (projectId: number, campaignId: number) =
 export const sendProof = async (template: TemplateType, variables: Variables, recipient: string) => {
 
     // Ensure proof is ready to send
-    console.log(template)
     const [isValid, error] = template.validate()
-    console.log(error)
     if (!isValid) throw error
 
     const campaign = await getCampaign(template.campaign_id, template.project_id)

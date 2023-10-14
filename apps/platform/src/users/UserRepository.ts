@@ -1,4 +1,4 @@
-import Rule from '../rules/Rule'
+import { RuleTree } from '../rules/Rule'
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { PageParams } from '../core/searchParams'
 import { RetryError } from '../queue/Job'
@@ -156,7 +156,7 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
     return true
 }
 
-export const getUserEventsForRules = async (userIds: number[], rules: Rule[]) => {
+export const getUserEventsForRules = async (userIds: number[], rules: RuleTree[]) => {
     if (!userIds.length || !rules.length) return []
     const names = rules.reduce<string[]>((a, rule) => {
         if (rule) {
