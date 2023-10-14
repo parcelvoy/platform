@@ -36,7 +36,7 @@ describe('ListService', () => {
                     value: 'chris',
                 },
                 {
-                    uuid: uuid(),
+                    uuid: eventUuid,
                     parent_uuid: ruleUuid,
                     root_uuid: ruleUuid,
                     group: 'event',
