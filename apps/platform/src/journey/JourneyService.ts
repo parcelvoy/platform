@@ -7,7 +7,7 @@ import App from '../app'
 import { Job } from '../queue'
 import { getProject } from '../projects/ProjectService'
 import { getUserEventsForRules } from '../users/UserRepository'
-import Rule from '../rules/Rule'
+import Rule, { RuleTree } from '../rules/Rule'
 import { acquireLock, releaseLock } from '../config/scheduler'
 import { check } from '../rules/RuleEngine'
 import JourneyProcessJob from './JourneyProcessJob'
@@ -38,9 +38,9 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
     const entranceIds: number[] = []
     for (const entrance of entrances) {
 
-        // if a rule is specified, check it before pushing user into journey
+        // If a rule is specified, check it before pushing user into journey
         if (entrance.rule) {
-            const rule: Rule = {
+            const rule: RuleTree = {
                 ...entrance.rule as Rule,
                 group: 'event',
                 path: '$.name',
@@ -51,7 +51,7 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
             }
         }
 
-        // skip if user has any entrances (active or ended)
+        // Skip if user has any entrances (active or ended)
         // into this journey and multiple are not allowed
         if (!entrance.multiple) {
             const hasAny = await JourneyUserStep.exists(q => q
@@ -68,7 +68,7 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
             if (hasActive) continue
         }
 
-        // create new entrance
+        // Create new entrance
         entranceIds.push(await JourneyUserStep.insert({
             journey_id: entrance.journey_id,
             step_id: entrance.id,
@@ -101,7 +101,7 @@ type JobOrJobFunc = Job | ((state: JourneyState) => Job)
 export class JourneyState {
 
     /**
-     * resumes journey sequence/cycle processing for a given entrance (user can have multiple entrances, be in the journey multiple times)
+     * Resumes journey sequence/cycle processing for a given entrance (user can have multiple entrances, be in the journey multiple times)
      * @param entrance entrance user step
      * @param user target user to run journey for
      * @returns promise that resolves when processing ends
@@ -122,12 +122,12 @@ export class JourneyState {
             }
         }
 
-        // entrance has already ended
+        // Entrance has already ended
         if (entrance.ended_at) {
             return
         }
 
-        // find user
+        // Find user
         if (!user) {
             user = await User.find(entrance.user_id)
         }
@@ -135,7 +135,7 @@ export class JourneyState {
             return
         }
 
-        // user-entrance mismatch
+        // User-entrance mismatch
         if (entrance.user_id !== user.id) {
             return
         }
@@ -147,7 +147,7 @@ export class JourneyState {
             return
         }
 
-        // load all journey dependencies
+        // Load all journey dependencies
         const [steps, children, userSteps] = await Promise.all([
             getJourneySteps(entrance.journey_id)
                 .then(steps => steps.map(s => journeyStepTypes[s.type]?.fromJson(s))),
@@ -164,11 +164,11 @@ export class JourneyState {
         return state
     }
 
-    // load step dependencies once and cache in state
+    // Load step dependencies once and cache in state
     private _events?: UserEvent[]
     private _timezone?: string
 
-    // batch enqueue jobs after processing
+    // Batch enqueue jobs after processing
     private _jobs: JobOrJobFunc[] = []
 
     private constructor(
