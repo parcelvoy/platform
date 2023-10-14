@@ -1,12 +1,13 @@
 import { TemplateEvent } from '../users/UserEvent'
 import { TemplateUser } from '../users/User'
-import Rule, { AnyJson, Operator, RuleGroup, RuleType } from './Rule'
+import Rule, { AnyJson, RuleTree, Operator, RuleGroup, RuleType } from './Rule'
 import NumberRule from './NumberRule'
 import StringRule from './StringRule'
 import BooleanRule from './BooleanRule'
 import DateRule from './DateRule'
 import ArrayRule from './ArrayRule'
 import WrapperRule from './WrapperRule'
+import { uuid } from '../utilities'
 
 class Registry<T> {
     #registered: { [key: string]: T } = {}
@@ -29,7 +30,7 @@ export interface RuleCheckInput {
 export interface RuleCheckParams {
     registry: typeof ruleRegistry
     input: RuleCheckInput // all contextual input data
-    rule: Rule // current rule to use
+    rule: RuleTree // current rule to use
     value: Record<string, unknown> // current value to evaluate against
 }
 
@@ -40,7 +41,7 @@ export interface RuleCheck {
 const ruleRegistry = new Registry<RuleCheck>()
 
 export class RuleEvalException extends Error {
-    constructor(rule: Rule, message: string) {
+    constructor(rule: Rule | RuleTree, message: string) {
         super(message)
     }
 }
@@ -52,7 +53,7 @@ ruleRegistry.register('date', DateRule)
 ruleRegistry.register('array', ArrayRule)
 ruleRegistry.register('wrapper', WrapperRule)
 
-export const check = (input: RuleCheckInput, rule: Rule | Rule[]) => {
+export const check = (input: RuleCheckInput, rule: RuleTree | RuleTree[]) => {
     if (Array.isArray(rule)) {
         rule = make({
             type: 'wrapper',
@@ -69,11 +70,17 @@ interface RuleMake {
     path?: string
     operator?: Operator
     value?: AnyJson
-    children?: Rule[]
+    children?: RuleTree[]
 }
 
-export const make = ({ type, group = 'user', path = '$', operator = '=', value, children }: RuleMake): Rule => {
+export const make = ({ type, group = 'user', path = '$', operator = '=', value, children }: RuleMake): RuleTree => {
     return {
-        type, group, path, operator, value, children,
+        uuid: uuid(),
+        type,
+        group,
+        path,
+        operator,
+        value,
+        children,
     }
 }

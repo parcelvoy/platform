@@ -1,0 +1,48 @@
+exports.up = async function(knex) {
+    await knex.schema.createTable('rules', function(table) {
+        table.increments()
+        table.string('uuid').index()
+        table.string('root_uuid')
+            .nullable()
+            .references('uuid')
+            .inTable('rules')
+            .onDelete('CASCADE')
+        table.string('parent_uuid')
+            .nullable()
+            .references('uuid')
+            .inTable('rules')
+            .onDelete('CASCADE')
+        table.string('type').index()
+        table.string('group').index()
+        table.string('path')
+        table.string('operator')
+        table.string('value').index()
+        table.timestamp('created_at').defaultTo(knex.fn.now())
+        table.timestamp('updated_at').defaultTo(knex.fn.now())
+    })
+
+    await knex.schema.createTable('rule_evaluations', function(table) {
+        table.increments()
+        table.integer('rule_id')
+            .unsigned()
+            .notNullable()
+            .references('id')
+            .inTable('rules')
+            .onDelete('CASCADE')
+        table.integer('user_id')
+            .unsigned()
+            .notNullable()
+            .references('id')
+            .inTable('users')
+            .onDelete('CASCADE')
+        table.boolean('result')
+        table.timestamp('created_at').defaultTo(knex.fn.now())
+        table.timestamp('updated_at').defaultTo(knex.fn.now())
+        table.unique(['user_id', 'rule_id'])
+    })
+}
+
+exports.down = async function(knex) {
+    await knex.schema.dropTable('rules')
+    await knex.schema.dropTable('rule_evaluations')
+}

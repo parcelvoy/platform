@@ -1,4 +1,5 @@
 import { Job } from '../queue'
+import Rule from '../rules/Rule'
 import { DynamicList } from './List'
 import { getList, populateList } from './ListService'
 import ListStatsJob from './ListStatsJob'
@@ -6,7 +7,6 @@ import ListStatsJob from './ListStatsJob'
 interface ListPopulateParams {
     listId: number
     projectId: number
-    syncJourneys?: boolean
 }
 
 export default class ListPopulateJob extends Job {
@@ -21,7 +21,10 @@ export default class ListPopulateJob extends Job {
         const list = await getList(listId, projectId) as DynamicList
         if (!list) return
 
-        await populateList(list, list.rule)
+        const rule = await Rule.find(list.rule_id)
+        if (!rule) return
+
+        await populateList(list, rule)
 
         await ListStatsJob.from(listId, projectId).queue()
     }

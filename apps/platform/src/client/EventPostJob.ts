@@ -4,6 +4,7 @@ import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
 import { logger } from '../config/logger'
 import { createAndFetchEvent } from '../users/UserEventRepository'
+import { matchingRulesForEvent } from '../rules/RuleService'
 import { enterJourneysFromEvent } from '../journey/JourneyService'
 
 interface EventPostTrigger {
@@ -38,10 +39,12 @@ export default class EventPostJob extends Job {
             data: event.data || {},
         }, forward)
 
-        // Check to see if a user has any lists
-        await updateUsersLists(user, dbEvent)
+        const eventResult = await matchingRulesForEvent(user, dbEvent)
 
-        // enter any journey entrances associated with this event
+        // Check to see if a user has any lists
+        await updateUsersLists(user, eventResult, dbEvent)
+
+        // Enter any journey entrances associated with this event
         await enterJourneysFromEvent(dbEvent, user)
     }
 }
