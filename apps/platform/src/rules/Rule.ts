@@ -9,6 +9,7 @@ export interface JsonMap { [key: string]: AnyJson }
 export type JsonArray = Array<AnyJson>
 
 export default class Rule extends Model {
+    project_id!: number
     uuid!: string
     root_uuid?: string
     parent_uuid?: string

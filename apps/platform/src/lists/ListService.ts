@@ -10,7 +10,7 @@ import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { Chunker, visit } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
-import { RuleResults, RuleWithEvaluationResult, checkRules, compileRule, decompileRule, mergeInsertRules } from '../rules/RuleService'
+import { RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, mergeInsertRules } from '../rules/RuleService'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -55,7 +55,7 @@ export const getList = async (id: number, projectId: number) => {
     const list = await List.find(id, qb => qb.where('project_id', projectId))
     if (list) {
         list.tags = await getTags(List.tableName, [list.id]).then(m => m.get(list.id))
-        if (list.rule_id) list.rule = await compileRule(list.rule_id)
+        if (list.rule_id) list.rule = await fetchAndCompileRule(list.rule_id)
     }
     return list
 }
@@ -100,7 +100,7 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
 
     if (rule && list.type === 'dynamic') {
         // Decompile rule into separate flat parts
-        const [wrapper, ...rules] = decompileRule(rule)
+        const [wrapper, ...rules] = decompileRule(rule, { project_id: projectId })
 
         // Insert top level wrapper to get ID to associate
         list.rule_id = await Rule.insert(wrapper)
@@ -129,7 +129,8 @@ export const updateList = async (id: number, { tags, rule, ...params }: ListUpda
 
     if (rule && list.type === 'dynamic') {
 
-        await mergeInsertRules(rule)
+        const rules = decompileRule(rule, { project_id: list.project_id })
+        await mergeInsertRules(rules)
         await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
@@ -194,7 +195,7 @@ export const populateList = async (list: List) => {
 
     if (!rule_id) return
 
-    const rule = await compileRule(rule_id) as RuleTree
+    const rule = await fetchAndCompileRule(rule_id) as RuleTree
 
     // Collect matching user ids, insert in batches of 100
     const userChunker = new Chunker<number>(async userIds => {
