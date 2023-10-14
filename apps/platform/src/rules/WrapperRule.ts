@@ -1,10 +1,10 @@
-import Rule from './Rule'
+import { RuleTree } from './Rule'
 import { RuleCheck, RuleCheckParams, RuleEvalException } from './RuleEngine'
 import { isEventWrapper } from './RuleHelpers'
 
 const checkWrapper = ({ input, registry, rule, value }: RuleCheckParams) => {
 
-    const predicate = (child: Rule) => registry.get(child.type)?.check({ input, registry, rule: child, value })
+    const predicate = (child: RuleTree) => registry.get(child.type)?.check({ input, registry, rule: child, value })
 
     if (!rule.children) return true
 

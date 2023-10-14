@@ -22,12 +22,16 @@ export type RuleResults = { success: string[], failure: string[] }
  * This is the fastest option available for checking a rule set since it
  * uses cached values.
  */
-export const checkRules = (user: User, rules: Array<RuleWithEvaluationResult>) => {
-    return rules.every(rule => {
+export const checkRules = (user: User, root: Rule | RuleTree, rules: RuleWithEvaluationResult[]) => {
+    const predicate = (rule: RuleWithEvaluationResult) => {
         return rule.group === 'user'
             ? check({ user: user.flatten(), events: [] }, rule as Rule)
             : rule.result ?? false
-    })
+    }
+    if (root.operator === 'or') return rules.some(predicate)
+    if (root.operator === 'none') return !rules.some(predicate)
+    if (root.operator === 'xor') return rules.filter(predicate).length === 1
+    return rules.every(predicate)
 }
 
 /**
@@ -37,13 +41,16 @@ export const checkRules = (user: User, rules: Array<RuleWithEvaluationResult>) =
  * This uses cached result values for evaluations.
  */
 export const checkRootRule = async (uuid: string, user: User) => {
-    const rules = await Rule.all(qb =>
-        qb.leftJoin('rule_evaluations', 'rule_evaluations.rule_id', 'rules.id')
-            .where('parent_uuid', uuid)
-            .where('user_id', user.id)
-            .select('rules.*', 'result'),
+    const [root, ...rules] = await Rule.all(qb => qb
+        .leftJoin('rule_evaluations', function() {
+            this.on('rule_evaluations.rule_id', 'rules.id')
+                .andOn('rule_evaluations.user_id', Rule.raw(user.id))
+        })
+        .where('parent_uuid', uuid)
+        .orWhere('uuid', uuid)
+        .select('rules.*', 'result'),
     ) as Array<Rule & { result?: boolean }>
-    return checkRules(user, rules)
+    return checkRules(user, root, rules)
 }
 
 /**

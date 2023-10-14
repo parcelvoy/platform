@@ -20,7 +20,7 @@ describe('ListService', () => {
         const eventUuid = uuid()
         const rule: RuleTree = {
             uuid: ruleUuid,
-            group: 'user',
+            group: 'parent',
             type: 'wrapper',
             operator: 'or',
             path: '',
@@ -32,7 +32,7 @@ describe('ListService', () => {
                     group: 'user',
                     type: 'string',
                     operator: '=',
-                    path: 'first_name',
+                    path: '$.first_name',
                     value: 'chris',
                 },
                 {
@@ -42,7 +42,7 @@ describe('ListService', () => {
                     group: 'event',
                     type: 'wrapper',
                     operator: 'and',
-                    path: 'name',
+                    path: '$.name',
                     value: 'purchased',
                     children: [
                         {
@@ -52,7 +52,7 @@ describe('ListService', () => {
                             group: 'event',
                             type: 'string',
                             operator: '=',
-                            path: 'food',
+                            path: '$.food',
                             value: 'cake',
                         },
                     ],

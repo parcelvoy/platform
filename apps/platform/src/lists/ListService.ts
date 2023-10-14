@@ -103,11 +103,11 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
         const [wrapper, ...rules] = decompileRule(rule)
 
         // Insert top level wrapper to get ID to associate
-        const wrapperId = await Rule.insert(wrapper)
+        list.rule_id = await Rule.insert(wrapper)
 
         // Insert rest of rules and update list
         await Rule.insert(rules)
-        await List.update(qb => qb.where('id', list.id), { rule_id: wrapperId })
+        await List.update(qb => qb.where('id', list.id), { rule_id: list.rule_id })
 
         await ListPopulateJob.from(list.id, list.project_id).queue()
     }
@@ -254,7 +254,7 @@ export const populateList = async (list: List) => {
                 parts.push({ ...rule, result })
             }
 
-            const result = checkRules(user, [...parts, ...userRules])
+            const result = checkRules(user, rule, [...parts, ...userRules])
             if (result) {
                 await userChunker.add(user.id)
             }
