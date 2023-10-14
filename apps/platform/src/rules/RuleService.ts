@@ -188,7 +188,7 @@ export const fetchAndCompileRule = async (rootId: number): Promise<RuleTree | un
 }
 
 export const compileRule = (root: Rule, rules: Rule[]): RuleTree => {
-    const build = ({ uuid, created_at, updated_at, ...rest }: Rule): RuleTree => {
+    const build = ({ uuid, project_id, created_at, updated_at, ...rest }: Rule): RuleTree => {
         const children = rules.filter(rule => rule.parent_uuid === uuid)
         return {
             ...rest,
