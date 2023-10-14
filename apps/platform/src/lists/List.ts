@@ -10,13 +10,12 @@ export default class List extends Model {
     type!: ListType
     state!: ListState
     rule_id?: number
+    rule?: RuleTree
     version!: number
     users_count?: number
     tags?: string[]
     is_visible!: boolean
     deleted_at?: Date
-
-    static jsonAttributes = ['rule']
 }
 
 export type DynamicList = List & { rule: RuleTree }
@@ -31,5 +30,5 @@ export class UserList extends Model {
     static tableName = 'user_list'
 }
 
-export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { syncJourneys?: boolean, rule?: RuleTree }
+export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { rule?: RuleTree }
 export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'> & { rule?: RuleTree }

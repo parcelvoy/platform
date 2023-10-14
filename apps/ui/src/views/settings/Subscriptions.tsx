@@ -52,7 +52,6 @@ export default function Subscriptions() {
             >
                 <FormWrapper<Pick<Subscription, 'name' | 'channel'>>
                     onSubmit={async ({ name, channel }) => {
-                        console.log(channel)
                         await api.subscriptions.create(project.id, { name, channel })
                         await state.reload()
                         setOpen(false)

@@ -1,16 +1,16 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
-import List, { DynamicList, ListCreateParams, ListState, ListUpdateParams, UserList } from './List'
-import Rule, { RuleEvaluation } from '../rules/Rule'
+import List, { DynamicList, ListCreateParams, ListUpdateParams, UserList } from './List'
+import Rule, { RuleEvaluation, RuleTree } from '../rules/Rule'
 import { PageParams } from '../core/searchParams'
 import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
-import { Chunker } from '../utilities'
+import { Chunker, visit } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
-import { RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, mergeInsertRules } from '../rules/RuleService'
+import { RuleResults, RuleWithEvaluationResult, checkRules, compileRule, decompileRule, mergeInsertRules } from '../rules/RuleService'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -55,6 +55,7 @@ export const getList = async (id: number, projectId: number) => {
     const list = await List.find(id, qb => qb.where('project_id', projectId))
     if (list) {
         list.tags = await getTags(List.tableName, [list.id]).then(m => m.get(list.id))
+        if (list.rule_id) list.rule = await compileRule(list.rule_id)
     }
     return list
 }
@@ -79,9 +80,10 @@ export const getUserLists = async (id: number, params: PageParams, projectId: nu
     )
 }
 
-export const createList = async (projectId: number, { tags, syncJourneys, ...params }: ListCreateParams): Promise<List> => {
+export const createList = async (projectId: number, { tags, name, type, rule }: ListCreateParams): Promise<List> => {
     const list = await List.insertAndFetch({
-        ...params,
+        name,
+        type,
         state: 'ready',
         users_count: 0,
         project_id: projectId,
@@ -96,9 +98,9 @@ export const createList = async (projectId: number, { tags, syncJourneys, ...par
         })
     }
 
-    if (params.rule && list.type === 'dynamic') {
+    if (rule && list.type === 'dynamic') {
         // Decompile rule into separate flat parts
-        const [wrapper, ...rules] = decompileRule(params.rule)
+        const [wrapper, ...rules] = decompileRule(rule)
 
         // Insert top level wrapper to get ID to associate
         const wrapperId = await Rule.insert(wrapper)
@@ -113,7 +115,7 @@ export const createList = async (projectId: number, { tags, syncJourneys, ...par
     return list
 }
 
-export const updateList = async (id: number, { tags, ...params }: ListUpdateParams): Promise<List | undefined> => {
+export const updateList = async (id: number, { tags, rule, ...params }: ListUpdateParams): Promise<List | undefined> => {
     const list = await List.updateAndFetch(id, params)
 
     if (tags) {
@@ -125,9 +127,9 @@ export const updateList = async (id: number, { tags, ...params }: ListUpdatePara
         })
     }
 
-    if (params.rule && list.type === 'dynamic') {
+    if (rule && list.type === 'dynamic') {
 
-        await mergeInsertRules(params.rule)
+        await mergeInsertRules(rule)
         await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
@@ -147,14 +149,14 @@ export const deleteList = async (id: number, projectId: number) => {
     return await List.delete(qb => qb.where('id', id).where('project_id', projectId))
 }
 
-export const addUserToList = async (user: User | number, list: List | number, event?: UserEvent) => {
+export const addUserToList = async (user: User | number, list: List, event?: UserEvent) => {
     const userId = user instanceof User ? user.id : user
-    const listId = list instanceof List ? list.id : list
     return await UserList.query()
         .insert({
             user_id: userId,
-            list_id: listId,
+            list_id: list.id,
             event_id: event?.id ?? undefined,
+            version: list.version,
         })
         .onConflict(['user_id', 'list_id'])
         .ignore()
@@ -170,7 +172,7 @@ export const removeUserFromList = async (user: User | number, list: List | numbe
 }
 
 export const importUsersToList = async (list: List, stream: FileStream) => {
-    await updateListState(list.id, 'loading')
+    await updateListState(list.id, { state: 'loading' })
 
     try {
         await importUsers({
@@ -179,22 +181,18 @@ export const importUsersToList = async (list: List, stream: FileStream) => {
             stream,
         })
     } finally {
-        await updateListState(list.id, 'ready')
+        await updateListState(list.id, { state: 'ready' })
     }
 
-    await updateListState(list.id, 'ready')
+    await updateListState(list.id, { state: 'ready' })
 }
 
-export const populateList = async (list: List, rule: Rule) => {
+export const populateList = async (list: List, { id: ruleId }: Rule) => {
     const { id, version: oldVersion = 0 } = list
     const version = oldVersion + 1
-    await updateListState(id, 'loading', version)
+    await updateListState(id, { state: 'loading', version })
 
-    const rules = await Rule.all(qb =>
-        qb.where('parent_uuid', rule.uuid)
-            .where('type', 'wrapper')
-            .where('group', 'event'),
-    )
+    const rule = await compileRule(ruleId) as RuleTree
 
     // Collect matching user ids, insert in batches of 100
     const userChunker = new Chunker<number>(async userIds => {
@@ -211,17 +209,27 @@ export const populateList = async (list: List, rule: Rule) => {
     // Collect rule evaluations, insert in batches of 100
     const ruleChunker = new Chunker<Partial<RuleEvaluation>>(async items => {
         await RuleEvaluation.query()
-            .insert(items.map(({ user_id, rule_id }) => ({
+            .insert(items.map(({ user_id, rule_id, result }) => ({
                 user_id,
                 rule_id,
-                result: false,
+                result,
             })))
             .onConflict(['user_id', 'rule_id'])
-            .ignore()
+            .merge(['result'])
     }, 100)
 
     // Fetch all users and iterate over them
     const scroll = User.scroll(q => q.where('project_id', list.project_id))
+
+    const eventRules: RuleTree[] = []
+    const userRules: RuleTree[] = []
+    visit(rule, r => r.children, r => {
+        if (r.type === 'wrapper' && r.group === 'event') {
+            eventRules.push(r)
+        } else if (r.group === 'user') {
+            userRules.push(r)
+        }
+    })
 
     for await (const users of scroll) {
 
@@ -229,9 +237,9 @@ export const populateList = async (list: List, rule: Rule) => {
         for (const user of users) {
 
             const parts: RuleWithEvaluationResult[] = []
-            const events = await getUserEventsForRules(users.map(u => u.id), rules)
+            const events = await getUserEventsForRules([user.id], eventRules)
 
-            for (const rule of rules) {
+            for (const rule of eventRules) {
                 const result = check({
                     user: user.flatten(),
                     events: events.map(e => e.flatten()),
@@ -244,9 +252,9 @@ export const populateList = async (list: List, rule: Rule) => {
                 parts.push({ ...rule, result })
             }
 
-            const result = checkRules(user, parts)
+            const result = checkRules(user, [...parts, ...userRules])
             if (result) {
-                userChunker.add(user.id)
+                await userChunker.add(user.id)
             }
         }
     }
@@ -261,7 +269,7 @@ export const populateList = async (list: List, rule: Rule) => {
         .where('list_id', list.id))
 
     // Update list status to ready
-    await updateListState(id, 'ready')
+    await updateListState(id, { state: 'ready' })
 }
 
 export const isUserInList = async (user_id: number, list_id: number) => {
@@ -292,7 +300,7 @@ const listsForRule = async (ruleUuids: string[], projectId: number): Promise<Dyn
     return await List.all(
         qb => qb.leftJoin('rules', 'rules.id', 'lists.rule_id')
             .where('project_id', projectId)
-            .where('type', 'dynamic')
+            .where('lists.type', 'dynamic')
             .whereIn('rules.uuid', ruleUuids),
     ) as DynamicList[]
 }
@@ -307,6 +315,6 @@ export const listUserCount = async (listId: number, since?: Date): Promise<numbe
     })
 }
 
-export const updateListState = async (id: number, state: ListState, version?: number) => {
-    return await List.updateAndFetch(id, { state, version })
+export const updateListState = async (id: number, params: Partial<Pick<List, 'state' | 'version' | 'users_count'>>) => {
+    return await List.updateAndFetch(id, params)
 }

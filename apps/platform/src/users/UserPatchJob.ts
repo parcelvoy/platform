@@ -1,8 +1,9 @@
 import { User, UserParams } from './User'
 import { Job } from '../queue'
 import { createUser, getUsersFromIdentity } from './UserRepository'
-import { addUserToList, updateUsersLists } from '../lists/ListService'
+import { addUserToList, getList, updateUsersLists } from '../lists/ListService'
 import { ClientIdentity } from '../client/Client'
+import { matchingRulesForUser } from '../rules/RuleService'
 
 interface UserPatchTrigger {
     project_id: number
@@ -62,12 +63,14 @@ export default class UserPatchJob extends Job {
 
         // Use updated user to check for list membership
         if (!skip_list_updating) {
-            await updateUsersLists(user)
+            const results = await matchingRulesForUser(user)
+            await updateUsersLists(user, results)
         }
 
         // If provided a list to join, add user to it
         if (join_list_id) {
-            await addUserToList(user, join_list_id)
+            const list = await getList(join_list_id, patch.project_id)
+            if (list) await addUserToList(user, list)
         }
     }
 }

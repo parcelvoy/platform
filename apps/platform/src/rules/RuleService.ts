@@ -5,10 +5,11 @@ import { groupBy, uuid } from '../utilities'
 import Rule, { RuleEvaluation, RuleTree } from './Rule'
 import { check } from './RuleEngine'
 
-export type RuleWithEvaluationResult = Omit<Rule, ModelParams> & { result?: boolean }
+export type RuleWithEvaluationResult = Omit<Rule, ModelParams | 'equals'> & { result?: boolean }
 
 type RuleWithEvaluationId = Rule & {
     evaluation_id: number,
+    parent_id: number,
     parent_uuid: string,
     root_uuid: string,
 }
@@ -22,12 +23,11 @@ export const checkRules = (user: User, rules: Array<RuleWithEvaluationResult>) =
     })
 }
 
-export const checkParentRule = async (uuid: string, user: User) => {
+export const checkRootRule = async (uuid: string, user: User) => {
     const rules = await Rule.all(qb =>
         qb.leftJoin('rule_evaluations', 'rule_evaluations.rule_id', 'rules.id')
             .where('parent_uuid', uuid)
             .where('user_id', user.id)
-            .where('result', false)
             .select('rules.*', 'result'),
     ) as Array<Rule & { result?: boolean }>
     return checkRules(user, rules)
@@ -46,13 +46,14 @@ export const matchingRulesForEvent = async (user: User, event: UserEvent): Promi
     // Get all rules where the event name matches and the evaluation is false
     const children = await Rule.all(qb =>
         qb.leftJoin('rules as p', 'p.uuid', 'rules.parent_uuid')
-            .leftJoin('rule_evaluations', 'rule_evaluations.rule_id', 'p.id')
+            .leftJoin('rule_evaluations', function() {
+                this.on('rule_evaluations.rule_id', 'p.id')
+                    .andOn('rule_evaluations.user_id', Rule.raw(user.id))
+            })
             .where('p.value', event.name)
             .where('p.group', 'event')
             .where('p.type', 'wrapper')
-            .where('user_id', user.id)
-            .where('result', false)
-            .select('rules.*', 'rule_evaluations.id as evaluation_id'),
+            .select('rules.*', 'rule_evaluations.id as evaluation_id', 'p.id as parent_id'),
     ) as Array<RuleWithEvaluationId>
 
     // Group children together to form event wrapper rules
@@ -61,8 +62,8 @@ export const matchingRulesForEvent = async (user: User, event: UserEvent): Promi
     // Iterate through all rules to see if any are true and need to be updated
     const success: string[] = []
     const failure: string[] = []
-    for (const [parentUuid, group] of groups) {
-        const result = await checkEventRule(parentUuid, group, user, event)
+    for (const [_, group] of groups) {
+        const result = await checkEventRule(group[0].root_uuid, group, user, event)
         result
             ? success.push(group[0].root_uuid)
             : failure.push(group[0].root_uuid)
@@ -75,13 +76,13 @@ export const matchingRulesForUser = async (user: User): Promise<RuleResults> => 
         qb.where('rules.group', 'parent')
             .where('rules.type', 'wrapper')
             .where('user_id', user.id)
-            .select('rules.*', 'rule_evaluations.id as evaluation_id'),
+            .select('rules.*', 'rule_evaluations.id as evaluation_id', 'p.id as parent_id'),
     ) as Array<RuleWithEvaluationId>
 
     const success = []
     const failure = []
     for (const rule of rules) {
-        const result = await checkParentRule(rule.uuid, user)
+        const result = await checkRootRule(rule.root_uuid, user)
         result
             ? success.push(rule.uuid)
             : failure.push(rule.uuid)
@@ -111,8 +112,14 @@ const checkEventRule = async (
 
     // If event is true, update the evaluation and recheck parent rule
     if (result) {
-        await RuleEvaluation.update(qb => qb.where('id', evaluationId), { result: true })
-        return await checkParentRule(parentUuid, user)
+        evaluationId
+            ? await RuleEvaluation.update(qb => qb.where('id', evaluationId), { result: true })
+            : await RuleEvaluation.insert({
+                rule_id: rules[0].parent_id,
+                user_id: user.id,
+                result: true,
+            })
+        return await checkRootRule(parentUuid, user)
     }
     return false
 }
@@ -125,10 +132,11 @@ export const mergeInsertRules = async (newRule: RuleTree) => {
     const removedItems: number[] = []
     for (const item of rules) {
         const previous = previousRules.find(r => r.uuid === item.uuid)
-        if (previous) {
+        if (previous && !previous.equals(item)) {
             removedItems.push(previous.id)
+            newItems.push({ ...item, id: undefined })
         }
-        newItems.push(item)
+        if (!previous) newItems.push(item)
     }
 
     for (const item of previousRules) {
@@ -139,37 +147,35 @@ export const mergeInsertRules = async (newRule: RuleTree) => {
     }
 
     await Rule.delete(qb => qb.whereIn('id', removedItems))
-    await Rule.insert(newItems)
+    if (newItems.length) await Rule.insert(newItems)
 
     return newItems
 }
 
 export const compileRule = async (rootId: number): Promise<RuleTree | undefined> => {
-    const rules = await Rule.all(qb =>
-        qb.where('root_id', rootId)
-            .orWhere('id', rootId),
-    )
-    const node = rules.find(rule => rule.id === rootId) as RuleTree
-    if (!node) return undefined
+    const wrapper = await Rule.find(rootId)
+    if (!wrapper) return undefined
 
-    const build = (node: RuleTree): RuleTree => {
-        const children = rules.filter(rule => rule.parent_uuid === node.uuid)
-        node.children = children
-        for (const child of children) {
-            build(child)
+    const rules = await Rule.all(qb => qb.where('root_uuid', wrapper!.uuid))
+
+    const build = ({ uuid, created_at, updated_at, ...rest }: Rule): RuleTree => {
+        const children = rules.filter(rule => rule.parent_uuid === uuid)
+        return {
+            ...rest,
+            uuid,
+            children: children.map(build),
         }
-        return node
     }
 
-    return build(node)
+    return build(wrapper)
 }
 
-export const decompileRule = (rule: RuleTree): Partial<Rule>[] => {
-    const rules = [rule]
-    const build = (rule: RuleTree) => {
-        if (rule.children) {
-            for (const child of rule.children) {
-                rules.push(child)
+export const decompileRule = (rule: RuleTree): Rule[] => {
+    const rules: Rule[] = []
+    const build = ({ children, ...rule }: RuleTree) => {
+        rules.push(Rule.fromJson(rule))
+        if (children) {
+            for (const child of children) {
                 build(child)
             }
         }

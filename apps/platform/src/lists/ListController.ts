@@ -23,10 +23,23 @@ router.get('/', async ctx => {
 
 const ruleDefinition = (nullable = false) => ({
     type: 'object',
-    required: ['type', 'group', 'path', 'operator'],
+    required: ['uuid', 'type', 'group', 'path', 'operator'],
     properties: {
+        id: {
+            type: 'number',
+            nullable: true,
+        },
+        uuid: { type: 'string' },
+        root_uuid: {
+            type: 'string',
+            nullable: true,
+        },
+        parent_uuid: {
+            type: 'string',
+            nullable: true,
+        },
         type: { type: 'string', enum: ['wrapper', 'string', 'number', 'boolean', 'date', 'array'] },
-        group: { type: 'string', enum: ['user', 'event'] },
+        group: { type: 'string', enum: ['user', 'event', 'parent'] },
         path: { type: 'string' },
         operator: { type: 'string' },
         value: {
@@ -74,10 +87,6 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 type: 'boolean',
                 nullable: true,
             },
-            syncJourneys: {
-                type: 'boolean',
-                nullable: true,
-            },
         },
         additionalProperties: false,
     },
@@ -100,10 +109,6 @@ const listParams: JSONSchemaType<ListCreateParams> = {
                 nullable: true,
             },
             is_visible: {
-                type: 'boolean',
-                nullable: true,
-            },
-            syncJourneys: {
                 type: 'boolean',
                 nullable: true,
             },
@@ -147,10 +152,6 @@ const listUpdateParams: JSONSchemaType<ListUpdateParams> = {
             items: {
                 type: 'string',
             },
-            nullable: true,
-        },
-        syncJourneys: {
-            type: 'boolean',
             nullable: true,
         },
     },

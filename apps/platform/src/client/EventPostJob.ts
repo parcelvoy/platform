@@ -39,10 +39,10 @@ export default class EventPostJob extends Job {
             data: event.data || {},
         }, forward)
 
-        const eventResult = await matchingRulesForEvent(user, dbEvent)
+        const results = await matchingRulesForEvent(user, dbEvent)
 
         // Check to see if a user has any lists
-        await updateUsersLists(user, eventResult, dbEvent)
+        await updateUsersLists(user, results, dbEvent)
 
         // Enter any journey entrances associated with this event
         await enterJourneysFromEvent(dbEvent, user)

@@ -17,9 +17,16 @@ export default class Rule extends Model {
     path!: string
     operator!: Operator
     value?: AnyJson
+
+    equals(other: Rule) {
+        return this.uuid === other.uuid
+            && this.path === other.path
+            && this.operator === other.operator
+            && this.value === other.value
+    }
 }
 
-export type RuleTree = Omit<Rule, ModelParams> & { children?: RuleTree[], id?: number }
+export type RuleTree = Omit<Rule, ModelParams | 'equals'> & { children?: RuleTree[], id?: number }
 
 export class RuleEvaluation extends Model {
     rule_id!: number

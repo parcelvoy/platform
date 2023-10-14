@@ -40,6 +40,16 @@ exports.up = async function(knex) {
         table.timestamp('updated_at').defaultTo(knex.fn.now())
         table.unique(['user_id', 'rule_id'])
     })
+
+    await knex.schema.alterTable('lists', function(table) {
+        table.integer('rule_id')
+            .unsigned()
+            .notNullable()
+            .references('id')
+            .inTable('rules')
+            .onDelete('CASCADE')
+            .after('rule')
+    })
 }
 
 exports.down = async function(knex) {
