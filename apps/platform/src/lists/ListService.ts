@@ -187,12 +187,14 @@ export const importUsersToList = async (list: List, stream: FileStream) => {
     await updateListState(list.id, { state: 'ready' })
 }
 
-export const populateList = async (list: List, { id: ruleId }: Rule) => {
-    const { id, version: oldVersion = 0 } = list
+export const populateList = async (list: List) => {
+    const { id, version: oldVersion = 0, rule_id } = list
     const version = oldVersion + 1
     await updateListState(id, { state: 'loading', version })
 
-    const rule = await compileRule(ruleId) as RuleTree
+    if (!rule_id) return
+
+    const rule = await compileRule(rule_id) as RuleTree
 
     // Collect matching user ids, insert in batches of 100
     const userChunker = new Chunker<number>(async userIds => {
