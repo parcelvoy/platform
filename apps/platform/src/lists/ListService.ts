@@ -304,6 +304,7 @@ const listsForRule = async (ruleUuids: string[], projectId: number): Promise<Dyn
         qb => qb.leftJoin('rules', 'rules.id', 'lists.rule_id')
             .where('project_id', projectId)
             .where('lists.type', 'dynamic')
+            .whereNull('deleted_at')
             .whereIn('rules.uuid', ruleUuids),
     ) as DynamicList[]
 }
