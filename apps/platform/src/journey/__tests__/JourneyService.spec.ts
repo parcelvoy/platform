@@ -1,13 +1,14 @@
 import { addDays } from 'date-fns'
 import Organization from '../../organizations/Organization'
 import Project from '../../projects/Project'
-import Rule from '../../rules/Rule'
+import { RuleTree } from '../../rules/Rule'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { JourneyState, enterJourneysFromEvent } from '../JourneyService'
 import { JourneyStep, JourneyStepMap, JourneyUserStep } from '../JourneyStep'
 import { make } from '../../rules/RuleEngine'
+import { uuid } from '../../utilities'
 
 describe('JourneyService', () => {
 
@@ -42,7 +43,7 @@ describe('JourneyService', () => {
         }
     }
 
-    const gate = (rule: Rule, childIds: string[]) => {
+    const gate = (rule: RuleTree, childIds: string[]) => {
         return {
             ...baseStep,
             type: 'gate',
@@ -211,6 +212,8 @@ describe('JourneyService', () => {
 
     test('Steps - Gates', async () => {
 
+        const parentId = uuid()
+
         const { steps, user } = await setupJourney({
             data: {
                 state: 'AL',
@@ -220,6 +223,7 @@ describe('JourneyService', () => {
 
                 // match if user's State is Alabama
                 g1: gate({
+                    uuid: uuid(),
                     group: 'user',
                     type: 'string',
                     path: 'state',
@@ -229,6 +233,7 @@ describe('JourneyService', () => {
 
                 // match if users favorite guitar brand is Fender
                 g2: gate({
+                    uuid: parentId,
                     group: 'event',
                     type: 'wrapper',
                     path: '$.name',
@@ -236,6 +241,8 @@ describe('JourneyService', () => {
                     value: 'purchased_guitar',
                     children: [
                         {
+                            uuid: uuid(),
+                            parent_uuid: parentId,
                             group: 'event',
                             type: 'string',
                             path: '$.brand',

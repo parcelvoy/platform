@@ -27,7 +27,7 @@
     display: block;
 }
 
-.options-group .option:hover:not(.disabled) {
+.options-group .option:hover:not(.disabled):not(.selected) {
     background: var(--color-grey-soft);
     border-color: var(--color-grey-hard);
 }

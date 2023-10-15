@@ -10,6 +10,8 @@ import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import { JourneyState } from './JourneyService'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
+import App from '../app'
+import { RRule } from 'rrule'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -61,6 +63,7 @@ export class JourneyStep extends Model {
     data_key?: string // make data stored in user steps available in templates
     stats?: Record<string, number>
     stats_at?: Date
+    next_scheduled_at: Date | null = null
 
     // UI variables
     x = 0
@@ -94,23 +97,39 @@ export class JourneyEntrance extends JourneyStep {
     eventName!: string
     rule?: Rule
     multiple = false // multiple entries allowed
+    concurrent = false
 
     // schedule driven
-    // start?: string
-    // list_id!: number
-    // schedule!: string // rrule string
-
-    concurrent = false
+    list_id!: number
+    schedule?: string
 
     parseJson(json: any) {
         super.parseJson(json)
         this.trigger = json?.data?.trigger ?? 'none'
+
         this.eventName = json?.data?.eventName
         this.rule = json?.data?.rule
         this.multiple = json?.data?.multiple
-        // this.list_id = json?.data?.list_id
-        // this.schedule = json.data?.schedule
         this.concurrent = json?.data?.concurrent
+
+        this.list_id = json?.data?.list_id
+        this.schedule = json?.data?.schedule
+    }
+
+    nextDate(after = this.next_scheduled_at): Date | null {
+
+        if (this.trigger !== 'schedule' || !after) return null
+
+        if (this.schedule) {
+            try {
+                return RRule.fromString(this.schedule).after(after)
+            } catch (err) {
+                App.main.error.notify(err as Error, {
+                    entranceId: this.id,
+                })
+            }
+        }
+        return null
     }
 
     static async create(journeyId: number, listId?: number, db?: Database): Promise<JourneyEntrance> {
@@ -432,6 +451,7 @@ interface JourneyStepMapItem {
 export type JourneyStepMap = Record<string, JourneyStepMapItem & {
     stats?: Record<string, number>
     stats_at?: Date
+    next_scheduled_at?: Date
 }>
 
 export type JourneyStepMapParams = Record<string, JourneyStepMapItem>

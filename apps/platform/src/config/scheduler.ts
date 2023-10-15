@@ -9,6 +9,7 @@ import CampaignStateJob from '../campaigns/CampaignStateJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import { uuid } from '../utilities'
 import UpdateJourneysJob from '../journey/UpdateJourneysJob'
+import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -36,6 +37,7 @@ export default (app: App) => {
                 delta: subHours(new Date(), 1),
             }))
             app.queue.enqueue(UpdateJourneysJob.from())
+            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
     })
     return scheduler

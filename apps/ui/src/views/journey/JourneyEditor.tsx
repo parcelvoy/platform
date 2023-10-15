@@ -15,6 +15,7 @@ import ReactFlow, {
     MarkerType,
     MiniMap,
     Node,
+    NodeMouseHandler,
     NodeProps,
     NodeTypes,
     OnEdgeUpdateFunc,
@@ -71,6 +72,7 @@ function JourneyStepNode({
         name,
         data,
         stats,
+        editing,
     } = {},
     selected,
 }: NodeProps) {
@@ -109,6 +111,7 @@ function JourneyStepNode({
                     type.category,
                     selected && 'selected',
                     Array.isArray(type.sources) && 'journey-step-labelled-sources',
+                    editing && 'editing',
                 )}
             >
                 <div className="journey-step-header">
@@ -505,10 +508,27 @@ export default function JourneyEditor() {
 
     const selected = nodes.filter(n => n.selected)
 
+    const editNode = nodes.find(n => n.data.editing)
+
+    const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => {
+        setNodes(nds => nds.map(x => x.id === n.id
+            ? {
+                ...n,
+                data: {
+                    ...n.data,
+                    editing: true,
+                },
+            }
+            : x,
+        ))
+        const x = n.position.x + ((n.width ?? 120) / 2)
+        const y = n.position.y + ((n.height ?? 120) / 2)
+        setTimeout(() => flowInstance?.setCenter(x, y, { zoom: 1 }), 10)
+    }, [flowInstance?.setCenter])
+
     let stepEdit: ReactNode = null
-    if (selected.length === 1) {
-        const editing = selected[0]
-        const type = getStepType(editing.data.type)
+    if (editNode) {
+        const type = getStepType(editNode.data.type)
         if (type) {
             stepEdit = (
                 <>
@@ -518,16 +538,16 @@ export default function JourneyEditor() {
                         </span>
                         <h4 className="step-header-title">{type.name}</h4>
                         {
-                            editing.data.stats && (
+                            editNode.data.stats && (
                                 <div className="step-header-stats">
                                     <span className="stat">
-                                        {editing.data.stats.completed ?? 0}
+                                        {editNode.data.stats.completed ?? 0}
                                         {statIcons.completed}
                                     </span>
                                     {
-                                        !!editing.data.stats.delay && (
+                                        !!editNode.data.stats.delay && (
                                             <span className="stat">
-                                                {editing.data.stats.delay ?? 0}
+                                                {editNode.data.stats.delay ?? 0}
                                                 {statIcons.delay}
                                             </span>
                                         )
@@ -536,12 +556,12 @@ export default function JourneyEditor() {
                             )
                         }
                     </div>
-                    <div className="options-section">
+                    <div className="journey-options-edit">
                         <TextInput
                             label="Name"
                             name="name"
-                            value={editing.data.name ?? ''}
-                            onChange={name => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, name } } : n))}
+                            value={editNode.data.name ?? ''}
+                            onChange={name => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, name } } : n))}
                         />
                         {
                             type.hasDataKey && (
@@ -549,19 +569,19 @@ export default function JourneyEditor() {
                                     label="Data Key"
                                     subtitle="Makes data stored at this step available in user update and campaign templates."
                                     name="data_key"
-                                    value={editing.data.data_key}
-                                    onChange={data_key => setNodes(nds => nds.map(n => n.id === editing.id ? { ...n, data: { ...n.data, data_key } } : n))}
+                                    value={editNode.data.data_key}
+                                    onChange={data_key => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, data_key } } : n))}
                                 />
                             )
                         }
                         {
                             type.Edit && createElement(type.Edit, {
-                                value: editing.data.data ?? {},
-                                onChange: data => setNodes(nds => nds.map(n => n.id === editing.id
+                                value: editNode.data.data ?? {},
+                                onChange: data => setNodes(nds => nds.map(n => n.id === editNode.id
                                     ? {
-                                        ...editing,
+                                        ...editNode,
                                         data: {
-                                            ...editing.data,
+                                            ...editNode.data,
                                             data,
                                         },
                                     }
@@ -606,34 +626,7 @@ export default function JourneyEditor() {
                 </>
             }
         >
-            <div className="journey">
-                <div className="journey-options">
-                    <h4>Components</h4>
-                    {
-                        Object.entries(journeySteps).sort(createComparator(x => x[1].category)).map(([key, type]) => (
-                            <div
-                                key={key}
-                                className={clsx('component', type.category)}
-                                draggable
-                                onDragStart={event => {
-                                    const rect = (event.target as HTMLDivElement).getBoundingClientRect()
-                                    event.dataTransfer.setData(DATA_FORMAT, JSON.stringify({
-                                        type: key,
-                                        x: event.clientX - rect.left,
-                                        y: event.clientY - rect.top,
-                                    }))
-                                    event.dataTransfer.effectAllowed = 'move'
-                                }}
-                            >
-                                <span className={clsx('component-handle', type.category)}>
-                                    {type.icon}
-                                </span>
-                                <div className="component-title">{type.name}</div>
-                                <div className="component-desc">{type.description}</div>
-                            </div>
-                        ))
-                    }
-                </div>
+            <div className={clsx('journey', editNode && 'editing')}>
                 <div className="journey-builder" ref={wrapper}>
                     <ReactFlow
                         nodeTypes={nodeTypes}
@@ -645,6 +638,12 @@ export default function JourneyEditor() {
                         onConnect={onConnect}
                         onEdgeUpdate={onEdgeUpdate}
                         onInit={setFlowInstance}
+                        onNodeDoubleClick={onNodeDoubleClick}
+                        onClick={() => {
+                            if (editNode) {
+                                setNodes(nds => nds.map(n => n.data.editing ? { ...n, data: { ...n.data, editing: false } } : n))
+                            }
+                        }}
                         elementsSelectable
                         onDragOver={onDragOver}
                         onDrop={onDrop}
@@ -653,42 +652,75 @@ export default function JourneyEditor() {
                         fitView
                         maxZoom={1}
                         minZoom={0.2}
+                        zoomOnDoubleClick={false}
                     >
                         <Background className="internal-canvas" />
-                        <Controls />
-                        <MiniMap
-                            nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
-                        />
-                        <Panel position="top-left">
-                            {
-                                selected.length
-                                    ? (
-                                        <Button
-                                            icon={<CopyIcon />}
-                                            onClick={() => {
-                                                const { nodeCopies, edgeCopies } = cloneNodes(edges, selected)
-                                                setNodes([...nodes.map(n => ({ ...n, selected: false })), ...nodeCopies])
-                                                setEdges([...edges.map(e => ({ ...e, selected: false })), ...edgeCopies])
-                                            }}
-                                            size="small"
-                                        >
-                                            {`Duplicate Selected Steps (${selected.length})`}
-                                        </Button>
-                                    )
-                                    : (
-                                        'Shift+Drag to Multi Select'
-                                    )
-                            }
-                        </Panel>
+                        {
+                            !editNode && (
+                                <>
+                                    <Controls />
+                                    <MiniMap
+                                        nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
+                                    />
+                                    <Panel position="top-left">
+                                        {
+                                            selected.length
+                                                ? (
+                                                    <Button
+                                                        icon={<CopyIcon />}
+                                                        onClick={() => {
+                                                            const { nodeCopies, edgeCopies } = cloneNodes(edges, selected)
+                                                            setNodes([...nodes.map(n => ({ ...n, selected: false })), ...nodeCopies])
+                                                            setEdges([...edges.map(e => ({ ...e, selected: false })), ...edgeCopies])
+                                                        }}
+                                                        size="small"
+                                                    >
+                                                        {`Duplicate Selected Steps (${selected.length})`}
+                                                    </Button>
+                                                )
+                                                : (
+                                                    'Shift+Drag to Multi Select'
+                                                )
+                                        }
+                                    </Panel>
+                                </>
+                            )
+                        }
                     </ReactFlow>
                 </div>
-                {
-                    stepEdit && (
-                        <div className="journey-options">
-                            {stepEdit}
-                        </div>
-                    )
-                }
+                <div className="journey-options">
+                    {
+                        stepEdit ?? (
+                            <>
+                                <h4>Components</h4>
+                                {
+                                    Object.entries(journeySteps).sort(createComparator(x => x[1].category)).map(([key, type]) => (
+                                        <div
+                                            key={key}
+                                            className={clsx('component', type.category)}
+                                            draggable
+                                            onDragStart={event => {
+                                                const rect = (event.target as HTMLDivElement).getBoundingClientRect()
+                                                event.dataTransfer.setData(DATA_FORMAT, JSON.stringify({
+                                                    type: key,
+                                                    x: event.clientX - rect.left,
+                                                    y: event.clientY - rect.top,
+                                                }))
+                                                event.dataTransfer.effectAllowed = 'move'
+                                            }}
+                                        >
+                                            <span className={clsx('component-handle', type.category)}>
+                                                {type.icon}
+                                            </span>
+                                            <div className="component-title">{type.name}</div>
+                                            <div className="component-desc">{type.description}</div>
+                                        </div>
+                                    ))
+                                }
+                            </>
+                        )
+                    }
+                </div>
             </div>
             <Modal
                 open={editOpen}

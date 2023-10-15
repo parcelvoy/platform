@@ -109,32 +109,32 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             getJourneyStepChildren(journeyId, trx),
         ])
 
+        const now = new Date()
+
         // Create or update steps
         for (const [external_id, { type, x = 0, y = 0, data = {}, data_key, name = '' }] of Object.entries(stepMap)) {
-            const idx = steps.findIndex(s => s.external_id === external_id)
-            if (idx === -1) {
-                steps.push(await JourneyStep.insertAndFetch({
+            let step = steps.find(s => s.external_id === external_id)
+            if (!step) {
+                steps.push(step = new JourneyStep())
+            }
+            let next_scheduled_at: null | Date = null
+            if (type === JourneyEntrance.type) {
+                if (data.trigger === 'schedule') {
+                    next_scheduled_at = JourneyEntrance.fromJson({ data }).nextDate(now)
+                } else {
+                    next_scheduled_at = null
+                }
+            }
+            const fields = { data, data_key, name, next_scheduled_at, x, y }
+            step.parseJson(step.id
+                ? await JourneyStep.updateAndFetch(step.id, fields, trx)
+                : await JourneyStep.insertAndFetch({
+                    ...fields,
+                    external_id,
                     journey_id: journeyId,
                     type,
-                    name,
-                    external_id,
-                    data,
-                    data_key,
-                    x,
-                    y,
-                }, trx))
-            } else {
-                const step = steps[idx]
-                steps[idx] = await JourneyStep.updateAndFetch(step.id, {
-                    type,
-                    name,
-                    external_id,
-                    data,
-                    data_key,
-                    x,
-                    y,
-                }, trx)
-            }
+                }, trx),
+            )
         }
 
         // Delete removed or unused steps
