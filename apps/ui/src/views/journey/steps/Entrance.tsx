@@ -3,19 +3,28 @@ import { EntranceStepIcon } from '../../../ui/icons'
 import OptionField from '../../../ui/form/OptionField'
 import TextInput from '../../../ui/form/TextInput'
 import RuleBuilder, { ruleDescription } from '../../users/RuleBuilder'
-import { useContext } from 'react'
+import { useCallback, useContext } from 'react'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SwitchField from '../../../ui/form/SwitchField'
 import { createUuid } from '../../../utils'
+import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
+import api from '../../../api'
+import { RRule } from 'rrule'
+import { useResolver } from '../../../hooks'
+import RRuleEditor from '../../../ui/RRuleEditor'
 
 interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
+
+    // event based
     eventName?: string
     rule?: Rule
     multiple?: boolean
-    // list_id?: number
-    // schedule?: string
     concurrent?: boolean
+
+    // schedule based
+    list_id?: number
+    schedule?: string
 }
 
 const triggerOptions = [
@@ -26,6 +35,10 @@ const triggerOptions = [
     {
         key: 'event',
         label: 'Event',
+    },
+    {
+        key: 'schedule',
+        label: 'Schedule',
     },
 ]
 
@@ -45,24 +58,61 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
     description: 'How users are added to this journey.',
     newData: async () => ({
         trigger: 'none',
-        max: 1,
-        concurrent: false,
     }),
-    Describe({ value }) {
+    Describe({
+        project: {
+            id: projectId,
+        },
+        value: {
+            trigger,
+            eventName,
+            rule,
+            list_id,
+            schedule,
+        },
+    }) {
         const [preferences] = useContext(PreferencesContext)
 
-        if (value.trigger === 'event') {
+        const [list] = useResolver(useCallback(async () => {
+            if (trigger === 'schedule' && list_id) {
+                return await api.lists.get(projectId, list_id)
+            }
+            return null
+        }, [projectId, list_id, trigger]))
+
+        if (trigger === 'schedule') {
+            let s = ''
+            if (schedule) {
+                try {
+                    s = RRule.fromString(schedule).toText()
+                } catch {}
+            }
             return (
-                <>
-                    Enter on event: <strong>{value.eventName ?? ''}</strong>
+                <div style={{ maxWidth: 300 }}>
+                    {'Add everyone from '}
+                    <strong>
+                        {list?.name ?? '--'}
+                    </strong>
+                    {' '}
+                    {s}
+                </div>
+            )
+        }
+
+        if (trigger === 'event') {
+            return (
+                <div style={{ maxWidth: 300 }}>
+                    {'Add anyone when '}
+                    <strong>{eventName ?? ''}</strong>
+                    {' occurs'}
                     {
-                        !!value.rule?.children?.length && (
+                        !!rule?.children?.length && (
                             <>
-                                {ruleDescription(preferences, value.rule)}
+                                {ruleDescription(preferences, rule)}
                             </>
                         )
                     }
-                </>
+                </div>
             )
         }
 
@@ -72,7 +122,11 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             </>
         )
     },
-    Edit({ onChange, value }) {
+    Edit({ onChange, project: { id: projectId }, value }) {
+
+        const getList = useCallback(async (id: number) => await api.lists.get(projectId, id), [projectId])
+        const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, limit: 50 }), [projectId])
+
         return (
             <>
                 <OptionField
@@ -110,18 +164,38 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                 checked={Boolean(value.multiple)}
                                 onChange={multiple => onChange({ ...value, multiple })}
                             />
+                            {
+                                value.multiple && (
+                                    <SwitchField
+                                        name="concurrent"
+                                        label="Simultaneous Entries"
+                                        subtitle="If enabled, user could join this journey multiple times before finishing previous ones."
+                                        checked={Boolean(value.concurrent)}
+                                        onChange={concurrent => onChange({ ...value, concurrent })}
+                                    />
+                                )
+                            }
                         </>
                     )
                 }
                 {
-                    (value.trigger !== 'event' || value.multiple) && (
-                        <SwitchField
-                            name="concurrent"
-                            label="Simultaneous Entries"
-                            subtitle="If enabled, user could join this journey multiple times before finishing previous ones."
-                            checked={Boolean(value.concurrent)}
-                            onChange={concurrent => onChange({ ...value, concurrent })}
-                        />
+                    value.trigger === 'schedule' && (
+                        <>
+                            <EntityIdPicker
+                                get={getList}
+                                search={searchLists}
+                                value={value.list_id ?? 0}
+                                onChange={list_id => onChange({ ...value, list_id })}
+                                label="List"
+                                subtitle="All users from this list will start this journey on the configured schedule."
+                                required
+                            />
+                            <RRuleEditor
+                                label="Schedule"
+                                value={value.schedule ?? ''}
+                                onChange={schedule => onChange({ ...value, schedule })}
+                            />
+                        </>
                     )
                 }
             </>

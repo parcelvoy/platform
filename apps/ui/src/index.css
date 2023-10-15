@@ -190,6 +190,14 @@ label .switch .slider.round:before {
     border-radius: 50%;
 }
 
+fieldset {
+    border: 1px solid var(--color-grey-soft);
+    border-radius: var(--border-radius);
+    padding: 0 10px 10px;
+    margin: 15px 0;
+    min-width: 0;
+}
+
 .icon {
     width: 16px;
     height: 16px;

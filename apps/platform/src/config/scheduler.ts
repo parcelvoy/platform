@@ -9,6 +9,7 @@ import CampaignStateJob from '../campaigns/CampaignStateJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import { uuid } from '../utilities'
 import UpdateJourneysJob from '../journey/UpdateJourneysJob'
+import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -20,6 +21,13 @@ export default (app: App) => {
             app.queue.enqueue(CampaignStateJob.from())
         },
         lockLength: 120,
+    })
+    scheduler.schedule({
+        rule: '*/15 * * * *',
+        callback: () => {
+            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
+        },
+        lockLength: 360,
     })
     scheduler.schedule({
         rule: '*/5 * * * *',

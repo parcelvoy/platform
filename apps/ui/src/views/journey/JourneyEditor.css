@@ -18,14 +18,16 @@
     border-color: var(--color-grey);
     border-style: solid;
     border-width: 0;
-    border-right-width: 1px;
+    border-left-width: 1px;
     position: relative;
     overflow: scroll;
 }
 
-* + .journey-options {
-    border-right-width: 0;
-    border-left-width: 1px;
+.journey-options-edit {
+    padding: 15px 20px;
+}
+
+.editing .journey-options {
     max-width: none;
 }
 
@@ -159,12 +161,24 @@
     background: var(--color-background-soft);
 }
 
+.editing .internal-canvas {
+    background: var(--color-grey);
+}
+
 .journey-step {
     background: var(--color-background);
     border: 1px solid var(--color-grey);
     box-shadow: 0px 4px 30px rgba(22, 33, 74, 0.05);
     border-radius: 8px;
     min-width: 200px;
+}
+
+.editing .journey-step {
+    opacity: 0.5;
+}
+
+.editing .journey-step.editing {
+    opacity: 1;
 }
 
 .journey-step.entrance.selected {
