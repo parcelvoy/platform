@@ -390,7 +390,7 @@ function RuleEdit({
                                 parent_uuid: rule.uuid,
                                 path: '',
                                 type: 'string',
-                                group: rule.group,
+                                group: rule.group === 'event' ? 'event' : 'user',
                                 value: '',
                                 operator: '=',
                             }],
