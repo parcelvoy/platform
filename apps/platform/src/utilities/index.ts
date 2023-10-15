@@ -5,7 +5,6 @@ import Hashids from 'hashids'
 import { differenceInSeconds } from 'date-fns'
 import { utcToZonedTime } from 'date-fns-tz'
 import { Database } from '../config/database'
-import { RRule } from 'rrule'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
@@ -258,15 +257,4 @@ export function visit<T>(item: T, children: (item: T) => undefined | T[], callba
             visit(item, children, callback)
         }
     }
-}
-
-export function nextDate(rrule: string, referenceDate: Date) {
-    let rule: RRule
-    try {
-        rule = RRule.fromString(rrule)
-    } catch (err) {
-        return null
-    }
-    rule.options.dtstart
-    return rule.after(referenceDate)
 }
