@@ -652,6 +652,7 @@ export default function JourneyEditor() {
                         fitView
                         maxZoom={1}
                         minZoom={0.2}
+                        zoomOnDoubleClick={false}
                     >
                         <Background className="internal-canvas" />
                         {

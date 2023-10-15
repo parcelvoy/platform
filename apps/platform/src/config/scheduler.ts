@@ -23,13 +23,6 @@ export default (app: App) => {
         lockLength: 120,
     })
     scheduler.schedule({
-        rule: '*/15 * * * *',
-        callback: () => {
-            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
-        },
-        lockLength: 360,
-    })
-    scheduler.schedule({
         rule: '*/5 * * * *',
         callback: () => {
             app.queue.enqueue(ProcessListsJob.from())
@@ -44,6 +37,7 @@ export default (app: App) => {
                 delta: subHours(new Date(), 1),
             }))
             app.queue.enqueue(UpdateJourneysJob.from())
+            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
     })
     return scheduler

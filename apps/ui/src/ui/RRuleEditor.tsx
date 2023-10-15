@@ -3,7 +3,7 @@ import { ControlledProps } from '../types'
 import { Frequency, Options, RRule, Weekday } from 'rrule'
 import TextInput from './form/TextInput'
 import OptionField from './form/OptionField'
-import { format, parseISO } from 'date-fns'
+import { format } from 'date-fns'
 import { FieldOption } from './form/Field'
 import { MultiOptionField } from './form/MultiOptionField'
 
@@ -81,36 +81,8 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
                 type="date"
                 required
                 value={options.dtstart ? format(options.dtstart, 'yyyy-MM-dd') : ''}
-                onChange={date => {
-                    if (date) {
-                        const time = options.dtstart ? format(options.dtstart, 'HH:mm:ss') : '00:00:00'
-                        const dtstart = parseISO(date + 'T' + time)
-                        if (!isNaN(dtstart.getTime())) {
-                            onChange(RRule.optionsToString({ ...options, dtstart }))
-                        }
-                    }
-                }}
+                onChange={dtstart => onChange(RRule.optionsToString({ ...options, dtstart: dtstart ? new Date(dtstart) : null }))}
             />
-            {
-                options.dtstart && (
-                    <TextInput
-                        name="startTime"
-                        label="Start Time"
-                        type="time"
-                        required
-                        value={options.dtstart && format(options.dtstart, 'HH:mm')}
-                        onChange={time => {
-                            if (time) {
-                                const date = format(options.dtstart!, 'yyyy-MM-hh')
-                                const dtstart = parseISO(date + 'T' + time + ':00')
-                                if (!isNaN(dtstart.getTime())) {
-                                    onChange(RRule.optionsToString({ ...options, dtstart }))
-                                }
-                            }
-                        }}
-                    />
-                )
-            }
             <TextInput
                 name="endDate"
                 label="End Date"
