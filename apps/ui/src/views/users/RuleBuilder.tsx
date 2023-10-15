@@ -330,7 +330,7 @@ function RuleEdit({
                             : headerPrefix
                     }
                     {
-                        Boolean(rule.group === 'user' || rule.children?.length) && (
+                        Boolean(rule.group === 'user' || rule.group === 'parent' || rule.children?.length) && (
                             <>
                                 <SingleSelect
                                     value={rule.operator}
@@ -403,7 +403,7 @@ function RuleEdit({
                         }
                     </Button>
                     {
-                        (depth === 0 && rule.group === 'user') && (
+                        (depth === 0 && (rule.group === 'user' || rule.group === 'parent')) && (
                             <Button
                                 size="small"
                                 variant="secondary"
@@ -531,7 +531,7 @@ export default function RuleBuilder({ eventName, headerPrefix, rule, setRule }: 
                 root={rule}
                 rule={rule}
                 setRule={setRule}
-                group={eventName ? 'event' : 'user'}
+                group={eventName ? 'event' : 'parent'}
                 eventName={eventName}
                 headerPrefix={headerPrefix}
             />

@@ -104,12 +104,15 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
 
         // Insert top level wrapper to get ID to associate
         list.rule_id = await Rule.insert(wrapper)
-
-        // Insert rest of rules and update list
-        await Rule.insert(rules)
         await List.update(qb => qb.where('id', list.id), { rule_id: list.rule_id })
 
-        await ListPopulateJob.from(list.id, list.project_id).queue()
+        // Insert rest of rules
+        if (rules && rules.length) {
+            await Rule.insert(rules)
+
+            // If we have additional rules, populate
+            await ListPopulateJob.from(list.id, list.project_id).queue()
+        }
     }
 
     return list
