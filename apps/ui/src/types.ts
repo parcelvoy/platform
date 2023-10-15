@@ -277,6 +277,7 @@ export interface JourneyStepMap {
         children?: JourneyStepMapChild[]
         stats?: Record<string, number>
         stats_at?: Date
+        id?: number
     }
 }
 

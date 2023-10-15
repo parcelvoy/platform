@@ -46,6 +46,8 @@ import { JourneyForm } from './JourneyForm'
 import { ActionStepIcon, CheckCircleIcon, CloseIcon, CopyIcon, DelayStepIcon, EntranceStepIcon, ForbiddenIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
 import TextInput from '../../ui/form/TextInput'
+import { SearchTable } from '../../ui'
+import { useSearchTableState } from '../../ui/SearchTable'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -63,6 +65,58 @@ export const stepCategoryColors = {
     action: 'blue',
     flow: 'green',
     delay: 'yellow',
+}
+
+interface StepUsersProps {
+    stepId: number
+    entrance?: boolean
+}
+
+function StepUsers({ entrance, stepId }: StepUsersProps) {
+
+    const [{ id: projectId }] = useContext(ProjectContext)
+    const [{ id: journeyId }] = useContext(JourneyContext)
+
+    const state = useSearchTableState(useCallback(async params => await api.journeys.steps.searchUsers(projectId, journeyId, stepId, params), [projectId, journeyId, stepId]), {
+        limit: 10,
+    })
+
+    return (
+        <>
+            <SearchTable
+                {...state}
+                columns={[
+                    {
+                        key: 'name',
+                        cell: ({ item }) => item.user!.full_name ?? '-',
+                    },
+                    {
+                        key: 'external_id',
+                        cell: ({ item }) => item.user?.external_id ?? '-',
+                    },
+                    {
+                        key: 'email',
+                        cell: ({ item }) => item.user?.email ?? '-',
+                    },
+                    {
+                        key: 'phone',
+                        cell: ({ item }) => item.user?.phone ?? '-',
+                    },
+                    {
+                        key: 'created_at',
+                        title: 'Step Date',
+                        cell: ({ item }) => item.created_at,
+                    },
+                    {
+                        key: 'delay_until',
+                        title: 'Delay Until',
+                        cell: ({ item }) => item.delay_until,
+                    },
+                ]}
+                onSelectRow={entrance ? ({ id }) => window.open(`/projects/${projectId}/entrances/${id}`, '_blank') : undefined}
+            />
+        </>
+    )
 }
 
 function JourneyStepNode({
@@ -303,7 +357,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, name, children, stats, stats_at }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, name, children, stats, stats_at, id: stepId }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -317,6 +371,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
                 data,
                 stats,
                 stats_at,
+                stepId,
             },
         })
         const stepType = getStepType(type)
@@ -510,6 +565,8 @@ export default function JourneyEditor() {
 
     const editNode = nodes.find(n => n.data.editing)
 
+    const [viewUsersStep, setViewUsersStep] = useState<null | { stepId: number, entrance?: boolean }>(null)
+
     const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => {
         setNodes(nds => nds.map(x => x.id === n.id
             ? {
@@ -539,7 +596,17 @@ export default function JourneyEditor() {
                         <h4 className="step-header-title">{type.name}</h4>
                         {
                             editNode.data.stats && (
-                                <div className="step-header-stats">
+                                <div
+                                    className="step-header-stats"
+                                    role={editNode.data.stepId ? 'button' : undefined}
+                                    onClick={editNode.data.stepId
+                                        ? () => setViewUsersStep({ stepId: editNode.data.stepId, entrance: editNode.data.type === 'entrance' })
+                                        : undefined
+                                    }
+                                    style={{
+                                        cursor: editNode.data.stepId ? 'cursor' : undefined,
+                                    }}
+                                >
                                     <span className="stat">
                                         {editNode.data.stats.completed ?? 0}
                                         {statIcons.completed}
@@ -734,6 +801,18 @@ export default function JourneyEditor() {
                         setJourney(journey)
                     }}
                 />
+            </Modal>
+            <Modal
+                open={!!viewUsersStep}
+                onClose={() => setViewUsersStep(null)}
+                title="Users"
+                size="large"
+            >
+                {
+                    viewUsersStep && (
+                        <StepUsers {...viewUsersStep} />
+                    )
+                }
             </Modal>
         </Modal>
     )

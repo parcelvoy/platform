@@ -452,6 +452,7 @@ export type JourneyStepMap = Record<string, JourneyStepMapItem & {
     stats?: Record<string, number>
     stats_at?: Date
     next_scheduled_at?: Date
+    id?: number
 }>
 
 export type JourneyStepMapParams = Record<string, JourneyStepMapItem>
@@ -481,6 +482,8 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
                 return a
             }, []),
             stats: step.stats,
+            next_scheduled_at: step.next_scheduled_at ?? undefined,
+            id: step.id,
         }
     }
 
