@@ -134,11 +134,14 @@ const checkEventRule = async (
                     .where('user_id', user.id),
                 { result: true },
             )
-            : await RuleEvaluation.insert({
-                rule_id: node.id,
-                user_id: user.id,
-                result: true,
-            })
+            : await RuleEvaluation.query()
+                .insert({
+                    rule_id: node.id,
+                    user_id: user.id,
+                    result: true,
+                })
+                .onConflict(['user_id', 'rule_id'])
+                .merge(['result'])
         return await checkRootRule(node.root_uuid!, user)
     }
     return false
