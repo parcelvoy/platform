@@ -5,8 +5,8 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
-import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog } from './JourneyRepository'
-import { JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep } from './JourneyRepository'
+import { JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 import { User } from '../users/User'
 
 const router = new Router<
@@ -159,6 +159,19 @@ router.put('/:journeyId/steps', async ctx => {
 router.get('/:journeyId/entrances', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await pagedEntrancesByJourney(ctx.state.journey!.id, params)
+})
+
+router.get('/:journeyId/steps/:stepId/users', async ctx => {
+    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const step = await JourneyStep.first(q => q
+        .where('journey_id', ctx.state.journey!.id)
+        .where('id', parseInt(ctx.params.stepId)),
+    )
+    if (!step) {
+        ctx.throw(404)
+        return
+    }
+    ctx.body = await pagedUsersByStep(step.id, params)
 })
 
 export default router

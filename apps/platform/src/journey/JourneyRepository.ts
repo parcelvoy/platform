@@ -250,6 +250,27 @@ export const pagedEntrancesByUser = async (userId: number, params: PageParams) =
     return r
 }
 
+export const pagedUsersByStep = async (stepId: number, params: PageParams) => {
+    const r = await JourneyUserStep.search(params, q => q
+        .where('step_id', stepId)
+        .orderBy('id', 'desc'),
+    )
+    if (r.results?.length) {
+        const users = await User.findMap(r.results.map(s => s.user_id))
+        return {
+            ...r,
+            results: r.results.map(s => ({
+                id: s.id,
+                user: users.get(s.user_id),
+                created_at: s.created_at,
+                updated_at: s.updated_at,
+                ended_at: s.ended_at,
+            })),
+        }
+    }
+    return r
+}
+
 export const getEntranceLog = async (entranceId: number) => {
     const userSteps = await JourneyUserStep.all(q => q
         .where(function() {

@@ -176,6 +176,9 @@ const api = {
             set: async (projectId: number | string, journeyId: number | string, stepData: JourneyStepMap) => await client
                 .put<JourneyStepMap>(`/admin/projects/${projectId}/journeys/${journeyId}/steps`, stepData)
                 .then(r => r.data),
+            searchUsers: async (projectId: number | string, journeyId: number | string, stepId: number | string, params: SearchParams) => await client
+                .get<SearchResult<JourneyUserStep>>(`/admin/projects/${projectId}/journeys/${journeyId}/steps/${stepId}/users`, { params })
+                .then(r => r.data),
         },
         entrances: {
             search: async (projectId: number | string, journeyId: number | string, params: SearchParams) => await client

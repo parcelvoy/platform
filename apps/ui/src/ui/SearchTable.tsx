@@ -73,11 +73,12 @@ export const useTableSearchParams = () => {
 /**
  * local state
  */
-export function useSearchTableState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>) {
+export function useSearchTableState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>, initialParams?: Partial<SearchParams>) {
 
     const [params, setParams] = useState<SearchParams>({
         limit: 25,
         q: '',
+        ...initialParams ?? {},
     })
 
     const [results,, reload] = useResolver(useCallback(async () => await loader(params), [loader, params]))
