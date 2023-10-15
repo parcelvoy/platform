@@ -150,17 +150,19 @@ const checkEventRule = async (
 /**
  * For a given new rule tree intelligently merge with the existing rules
  */
-export const mergeInsertRules = async (newRules: Rule[]) => {
-    const [wrapper, ...rules] = newRules
-    const previousRules = await Rule.all(qb => qb.where('root_uuid', wrapper.uuid))
+export const mergeInsertRules = async (rules: Rule[]) => {
+    const root = rules[0]
+    const previousRules = await Rule.all(qb => qb
+        .where('root_uuid', root.uuid)
+        .orWhere('uuid', root.uuid),
+    )
 
     const newItems = []
     const removedItems: number[] = []
     for (const item of rules) {
         const previous = previousRules.find(r => r.uuid === item.uuid)
         if (previous && !previous.equals(item)) {
-            removedItems.push(previous.id)
-            newItems.push({ ...item, id: undefined })
+            newItems.push({ ...item, id: previous.id })
         }
         if (!previous) newItems.push(item)
     }
@@ -173,7 +175,11 @@ export const mergeInsertRules = async (newRules: Rule[]) => {
     }
 
     await Rule.delete(qb => qb.whereIn('id', removedItems))
-    if (newItems.length) await Rule.insert(newItems)
+    for (const rule of newItems) {
+        rule.id
+            ? await Rule.update(qb => qb.where('id', rule.id), rule)
+            : await Rule.insert(rule)
+    }
 
     return newItems
 }

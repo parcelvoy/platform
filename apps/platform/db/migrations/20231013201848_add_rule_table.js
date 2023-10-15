@@ -54,7 +54,7 @@ exports.up = async function(knex) {
             .unsigned()
             .references('id')
             .inTable('rules')
-            .onDelete('CASCADE')
+            .onDelete('SET NULL')
             .after('rule')
     })
 
