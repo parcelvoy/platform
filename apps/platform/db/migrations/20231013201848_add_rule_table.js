@@ -1,3 +1,5 @@
+const crypto = require('crypto')
+
 exports.up = async function(knex) {
     await knex.schema.createTable('rules', function(table) {
         table.increments()
@@ -55,6 +57,40 @@ exports.up = async function(knex) {
             .onDelete('CASCADE')
             .after('rule')
     })
+
+    const lists = await knex('lists').select('*')
+    const decompile = (json) => {
+        const rules = []
+        const root_uuid = crypto.randomUUID()
+        const build = ({ children, ...rule }) => {
+            const newRule = {
+                ...rule,
+                project_id: 1,
+            }
+            rules.push(newRule)
+            if (children) {
+                for (const child of children) {
+                    build({
+                        ...child,
+                        parent_uuid: newRule.uuid,
+                        root_uuid,
+                        uuid: crypto.randomUUID(),
+                    })
+                }
+            }
+        }
+        build({ ...json, uuid: root_uuid })
+        return rules
+    }
+
+    for (const list of lists) {
+        const [rule, ...rules] = decompile(list.rule)
+        if (rule) {
+            const id = await knex('rules').insert(rule)
+            if (rules && rules.length) await knex('rules').insert(rules)
+            await knex('lists').where('id', list.id).update({ rule_id: id, rule: null })
+        }
+    }
 }
 
 exports.down = async function(knex) {
