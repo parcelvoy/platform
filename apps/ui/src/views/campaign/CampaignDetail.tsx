@@ -33,9 +33,9 @@ export const localeState = (templates: Template[]) => {
 
     const url: URL = new URL(window.location.href)
     const searchParams: URLSearchParams = url.searchParams
-    const queryLocale = localeOption(searchParams.get('locale') ?? 'en')
+    const queryLocale = searchParams.get('locale')
     return {
-        currentLocale: queryLocale ?? allLocales[0],
+        currentLocale: allLocales.find(item => item.key === queryLocale) ?? allLocales[0],
         allLocales: locales(templates ?? []),
     }
 }
