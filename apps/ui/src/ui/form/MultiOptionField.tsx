@@ -2,11 +2,11 @@ import clsx from 'clsx'
 import { ControlledInputProps } from '../../types'
 import { FieldOption } from './Field'
 
-interface ToggleButtonGroupInputProps extends ControlledInputProps<any[]> {
+interface MultiOptionFieldProps extends ControlledInputProps<any[]> {
     options: FieldOption[]
 }
 
-export function ToggleButtonGroupInput({
+export function MultiOptionField({
     disabled,
     label,
     onChange,
@@ -14,7 +14,7 @@ export function ToggleButtonGroupInput({
     subtitle,
     required,
     value,
-}: ToggleButtonGroupInputProps) {
+}: MultiOptionFieldProps) {
 
     return (
         <div className="options-group">

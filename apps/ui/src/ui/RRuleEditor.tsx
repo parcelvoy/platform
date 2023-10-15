@@ -5,7 +5,7 @@ import TextInput from './form/TextInput'
 import OptionField from './form/OptionField'
 import { format, parseISO } from 'date-fns'
 import { FieldOption } from './form/Field'
-import { ToggleButtonGroupInput } from './form/ToggleButtonGroupInput'
+import { MultiOptionField } from './form/MultiOptionField'
 
 const frequencyOptions: FieldOption[] = [
     {
@@ -129,7 +129,7 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
             />
             {
                 options.freq === Frequency.DAILY && (
-                    <ToggleButtonGroupInput
+                    <MultiOptionField
                         options={dayOptions}
                         value={(Array.isArray(options.byweekday) ? options.byweekday : options.byweekday ? [options.byweekday] : []).map(w => {
                             if (w instanceof Weekday) {

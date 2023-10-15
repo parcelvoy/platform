@@ -510,16 +510,21 @@ export default function JourneyEditor() {
 
     const editNode = nodes.find(n => n.data.editing)
 
-    const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => setNodes(nds => nds.map(x => x.id === n.id
-        ? {
-            ...n,
-            data: {
-                ...n.data,
-                editing: true,
-            },
-        }
-        : x,
-    )), [])
+    const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => {
+        setNodes(nds => nds.map(x => x.id === n.id
+            ? {
+                ...n,
+                data: {
+                    ...n.data,
+                    editing: true,
+                },
+            }
+            : x,
+        ))
+        const x = n.position.x + ((n.width ?? 120) / 2)
+        const y = n.position.y + ((n.height ?? 120) / 2)
+        setTimeout(() => flowInstance?.setCenter(x, y, { zoom: 1 }), 10)
+    }, [flowInstance?.setCenter])
 
     let stepEdit: ReactNode = null
     if (editNode) {
