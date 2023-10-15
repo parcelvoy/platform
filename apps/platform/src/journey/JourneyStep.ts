@@ -446,12 +446,12 @@ interface JourneyStepMapItem {
         external_id: string
         data?: Record<string, unknown>
     }>
-    next_scheduled_at?: Date
 }
 
 export type JourneyStepMap = Record<string, JourneyStepMapItem & {
     stats?: Record<string, number>
     stats_at?: Date
+    next_scheduled_at?: Date
 }>
 
 export type JourneyStepMapParams = Record<string, JourneyStepMapItem>
