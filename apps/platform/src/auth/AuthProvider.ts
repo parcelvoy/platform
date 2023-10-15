@@ -34,12 +34,12 @@ export default abstract class AuthProvider {
         return await createOrganization(domain)
     }
 
-    async login(params: AuthAdminParams, ctx: AuthContext, redirect?: string): Promise<OAuthResponse> {
+    async login({ domain, ...params }: AuthAdminParams, ctx: AuthContext, redirect?: string): Promise<OAuthResponse> {
 
         // Check for existing, otherwise create one
         let admin = await getAdminByEmail(params.email)
         if (!admin) {
-            const organization = await this.loadAuthOrganization(ctx, params.domain)
+            const organization = await this.loadAuthOrganization(ctx, domain)
             admin = await Admin.insertAndFetch({
                 ...params,
                 organization_id: organization.id,
