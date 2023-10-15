@@ -302,7 +302,8 @@ export const updateUsersLists = async (user: User, results: RuleResults, event?:
 const listsForRule = async (ruleUuids: string[], projectId: number): Promise<DynamicList[]> => {
     return await List.all(
         qb => qb.leftJoin('rules', 'rules.id', 'lists.rule_id')
-            .where('project_id', projectId)
+            .where('lists.project_id', projectId)
+            .where('rules.project_id', projectId)
             .where('lists.type', 'dynamic')
             .whereNull('deleted_at')
             .whereIn('rules.uuid', ruleUuids),
