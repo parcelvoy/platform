@@ -4,7 +4,7 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
 import { UserList } from '../lists/List'
 import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
@@ -12,7 +12,7 @@ import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
 import { getSubscription } from '../subscriptions/SubscriptionService'
-import { chunk, crossTimezoneCopy, pick } from '../utilities'
+import { chunk, crossTimezoneCopy, pick, shallowEqual } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
@@ -147,7 +147,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         })
     }
 
-    if (data.state === 'pending' && data.type === 'blast') {
+    if (data.state === 'pending' && campaign.type === 'blast') {
         await CampaignGenerateListJob.from(campaign).queue()
     }
 
@@ -283,7 +283,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
 
 export const campaignSendReadyQuery = (campaignId: number) => {
     return CampaignSend.query()
-        .where('campaign_sends.send_at', '<', CampaignSend.raw('NOW()'))
+        .where('campaign_sends.send_at', '<=', CampaignSend.raw('NOW()'))
         .where('campaign_sends.state', 'pending')
         .where('campaign_id', campaignId)
         .select('user_id', 'campaign_sends.id AS send_id')
@@ -376,9 +376,9 @@ const initialUsersCount = async (campaign: Campaign): Promise<number> => {
     return Math.max(0, count)
 }
 
-export const campaignProgress = async (campaign: Campaign): Promise<CampaignProgress> => {
+export const campaignProgress = async (campaignId: number): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
-        .where('campaign_id', campaign.id)
+        .where('campaign_id', campaignId)
         .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state IN('pending', 'throttled'), 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
         .first()
     return {
@@ -390,13 +390,20 @@ export const campaignProgress = async (campaign: Campaign): Promise<CampaignProg
     }
 }
 
-export const updateCampaignProgress = async (
-    id: number,
-    projectId: number,
-    state: CampaignState,
-    delivery: CampaignDelivery,
-): Promise<void> => {
-    await Campaign.update(qb => qb.where('id', id).where('project_id', projectId), { state, delivery })
+export const updateCampaignProgress = async (campaign: Campaign): Promise<void> => {
+    const currentState = (pending: number, delivery: CampaignDelivery) => {
+        if (campaign.type === 'trigger') return 'running'
+        if (pending <= 0) return 'finished'
+        if (delivery.sent === 0) return 'scheduled'
+        return 'running'
+    }
+
+    const { pending, ...delivery } = await campaignProgress(campaign.id)
+    const state = currentState(pending, delivery)
+
+    // If nothing has changed, continue otherwise update
+    if (shallowEqual(campaign.delivery, delivery) && state === campaign.state) return
+    await Campaign.update(qb => qb.where('id', campaign.id).where('project_id', campaign.project_id), { state, delivery })
 }
 
 export const getCampaignSend = async (campaignId: number, userId: number, userStepId: number) => {

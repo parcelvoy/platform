@@ -15,7 +15,7 @@ export interface CampaignDelivery {
 
 export type CampaignProgress = CampaignDelivery & { pending: number }
 
-type CampaignType = 'blast' | 'trigger'
+export type CampaignType = 'blast' | 'trigger'
 
 export default class Campaign extends Model {
     project_id!: number
