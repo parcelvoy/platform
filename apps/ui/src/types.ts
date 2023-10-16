@@ -272,6 +272,7 @@ export interface JourneyStepMap {
         type: string
         name: string
         data?: Record<string, unknown>
+        data_key?: string
         x: number
         y: number
         children?: JourneyStepMapChild[]

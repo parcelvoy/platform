@@ -357,7 +357,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, name, children, stats, stats_at, id: stepId }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, data_key, name, children, stats, stats_at, id: stepId }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -369,6 +369,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
                 type,
                 name,
                 data,
+                data_key,
                 stats,
                 stats_at,
                 stepId,
@@ -396,6 +397,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
             type,
             name = '',
             data = {},
+            data_key,
         },
         position: {
             x,
@@ -405,6 +407,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         a[id] = {
             type,
             data,
+            data_key,
             name,
             x,
             y,
@@ -716,6 +719,7 @@ export default function JourneyEditor() {
                         onDrop={onDrop}
                         panOnScroll
                         selectNodesOnDrag
+                        panOnDrag={false}
                         fitView
                         maxZoom={1}
                         minZoom={0.2}
