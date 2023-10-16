@@ -96,7 +96,7 @@ export const loadUserStepDataMap = async (userStepId: number) => {
     return JourneyUserStep.getDataMap(steps, [step!, ...userSteps])
 }
 
-type JobOrJobFunc = Job | ((state: JourneyState) => Job)
+type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job>)
 
 export class JourneyState {
 
@@ -236,7 +236,14 @@ export class JourneyState {
         }
 
         if (this._jobs.length) {
-            await App.main.queue.enqueueBatch(this._jobs.map(j => typeof j === 'function' ? j(this) : j))
+            const jobs: Job[] = []
+            for (let j of this._jobs) {
+                if (typeof j === 'function') {
+                    j = await j(this)
+                }
+                jobs.push(j)
+            }
+            await App.main.queue.enqueueBatch(jobs)
         }
     }
 

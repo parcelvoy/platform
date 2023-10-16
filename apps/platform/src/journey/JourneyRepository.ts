@@ -262,6 +262,8 @@ export const pagedUsersByStep = async (stepId: number, params: PageParams) => {
             results: r.results.map(s => ({
                 id: s.id,
                 user: users.get(s.user_id),
+                type: s.type,
+                delay_until: s.delay_until,
                 created_at: s.created_at,
                 updated_at: s.updated_at,
                 ended_at: s.ended_at,

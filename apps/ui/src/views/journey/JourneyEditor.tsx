@@ -30,7 +30,7 @@ import ReactFlow, {
     useReactFlow,
 } from 'reactflow'
 import { JourneyContext, ProjectContext } from '../../contexts'
-import { createComparator, createUuid } from '../../utils'
+import { camelToTitle, createComparator, createUuid } from '../../utils'
 import * as journeySteps from './steps/index'
 import clsx from 'clsx'
 import api from '../../api'
@@ -48,6 +48,7 @@ import Tag from '../../ui/Tag'
 import TextInput from '../../ui/form/TextInput'
 import { SearchTable } from '../../ui'
 import { useSearchTableState } from '../../ui/SearchTable'
+import { typeVariants } from './EntranceDetails'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -103,6 +104,14 @@ function StepUsers({ entrance, stepId }: StepUsersProps) {
                         cell: ({ item }) => item.user?.phone ?? '-',
                     },
                     {
+                        key: 'type',
+                        cell: ({ item }) => (
+                            <Tag variant={typeVariants[item.type]}>
+                                {camelToTitle(item.type)}
+                            </Tag>
+                        ),
+                    },
+                    {
                         key: 'created_at',
                         title: 'Step Date',
                         cell: ({ item }) => item.created_at,
@@ -130,6 +139,8 @@ function JourneyStepNode({
     } = {},
     selected,
 }: NodeProps) {
+
+    if (!stats) stats = {}
 
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
@@ -173,24 +184,28 @@ function JourneyStepNode({
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{name || type.name}</h4>
-                    {
-                        stats && (
-                            <div className="step-header-stats">
+                    <div className="step-header-stats">
+                        <span className="stat">
+                            {stats.completed ?? 0}
+                            {statIcons.completed}
+                        </span>
+                        {
+                            (typeName === 'delay' || !!stats.delay) && (
                                 <span className="stat">
-                                    {stats.completed ?? 0}
-                                    {statIcons.completed}
+                                    {stats.delay ?? 0}
+                                    {statIcons.delay}
                                 </span>
-                                {
-                                    !!stats.delay && (
-                                        <span className="stat">
-                                            {stats.delay ?? 0}
-                                            {statIcons.delay}
-                                        </span>
-                                    )
-                                }
-                            </div>
-                        )
-                    }
+                            )
+                        }
+                        {
+                            (typeName === 'action' || !!stats.action) && (
+                                <span className="stat">
+                                    {stats.action ?? 0}
+                                    {statIcons.action}
+                                </span>
+                            )
+                        }
+                    </div>
                 </div>
                 {
                     type.Describe && (
@@ -587,6 +602,7 @@ export default function JourneyEditor() {
     if (editNode) {
         const type = getStepType(editNode.data.type)
         if (type) {
+            const stats = editNode.data.stats ?? {}
             stepEdit = (
                 <>
                     <div className="journey-step-header">
@@ -594,34 +610,38 @@ export default function JourneyEditor() {
                             {type.icon}
                         </span>
                         <h4 className="step-header-title">{type.name}</h4>
-                        {
-                            editNode.data.stats && (
-                                <div
-                                    className="step-header-stats"
-                                    role={editNode.data.stepId ? 'button' : undefined}
-                                    onClick={editNode.data.stepId
-                                        ? () => setViewUsersStep({ stepId: editNode.data.stepId, entrance: editNode.data.type === 'entrance' })
-                                        : undefined
-                                    }
-                                    style={{
-                                        cursor: editNode.data.stepId ? 'cursor' : undefined,
-                                    }}
-                                >
+                        <div
+                            className="step-header-stats"
+                            role={editNode.data.stepId ? 'button' : undefined}
+                            onClick={editNode.data.stepId
+                                ? () => setViewUsersStep({ stepId: editNode.data.stepId, entrance: editNode.data.type === 'entrance' })
+                                : undefined
+                            }
+                            style={{
+                                cursor: editNode.data.stepId ? 'cursor' : undefined,
+                            }}
+                        >
+                            <span className="stat">
+                                {stats.completed ?? 0}
+                                {statIcons.completed}
+                            </span>
+                            {
+                                (editNode.data.type === 'delay' || !!stats.delay) && (
                                     <span className="stat">
-                                        {editNode.data.stats.completed ?? 0}
-                                        {statIcons.completed}
+                                        {stats.delay ?? 0}
+                                        {statIcons.delay}
                                     </span>
-                                    {
-                                        !!editNode.data.stats.delay && (
-                                            <span className="stat">
-                                                {editNode.data.stats.delay ?? 0}
-                                                {statIcons.delay}
-                                            </span>
-                                        )
-                                    }
-                                </div>
-                            )
-                        }
+                                )
+                            }
+                            {
+                                (editNode.data.type === 'action' || !!stats.action) && (
+                                    <span className="stat">
+                                        {stats.action ?? 0}
+                                        {statIcons.action}
+                                    </span>
+                                )
+                            }
+                        </div>
                     </div>
                     <div className="journey-options-edit">
                         <TextInput

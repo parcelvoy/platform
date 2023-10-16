@@ -9,7 +9,7 @@ import * as stepTypes from './steps'
 import clsx from 'clsx'
 import { stepCategoryColors } from './JourneyEditor'
 
-const typeVariants: Record<string, TagProps['variant']> = {
+export const typeVariants: Record<string, TagProps['variant']> = {
     completed: 'success',
     error: 'error',
     action: 'info',

@@ -34,11 +34,15 @@ export const actionStep: JourneyStepType<ActionConfig> = {
             return (
                 <>
                     <div>{campaign.name}</div>
-                    <PreviewImage
-                        url={apiUrl(projectId, `campaigns/${campaign.id}/preview`)}
-                        width={200}
-                        height={200}
-                    />
+                    {
+                        campaign.channel !== 'webhook' && (
+                            <PreviewImage
+                                url={apiUrl(projectId, `campaigns/${campaign.id}/preview`)}
+                                width={200}
+                                height={200}
+                            />
+                        )
+                    }
                 </>
             )
         }
