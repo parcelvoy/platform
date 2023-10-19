@@ -186,13 +186,13 @@ function JourneyStepNode({
                     <h4 className="step-header-title">{name || type.name}</h4>
                     <div className="step-header-stats">
                         <span className="stat">
-                            {stats.completed ?? 0}
+                            {(stats.completed ?? 0).toLocaleString()}
                             {statIcons.completed}
                         </span>
                         {
                             (typeName === 'delay' || !!stats.delay) && (
                                 <span className="stat">
-                                    {stats.delay ?? 0}
+                                    {(stats.delay ?? 0).toLocaleString()}
                                     {statIcons.delay}
                                 </span>
                             )
@@ -200,7 +200,7 @@ function JourneyStepNode({
                         {
                             (typeName === 'action' || !!stats.action) && (
                                 <span className="stat">
-                                    {stats.action ?? 0}
+                                    {(stats.action ?? 0).toLocaleString()}
                                     {statIcons.action}
                                 </span>
                             )
