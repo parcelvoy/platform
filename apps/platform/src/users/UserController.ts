@@ -158,6 +158,16 @@ router.get('/:userId', async ctx => {
     ctx.body = ctx.state.user
 })
 
+router.delete('/:userId', projectRoleMiddleware('editor'), async ctx => {
+    await App.main.queue.enqueue(UserDeleteJob.from({
+        project_id: ctx.state.project.id,
+        external_id: ctx.state.user!.external_id,
+    }))
+
+    ctx.status = 204
+    ctx.body = ''
+})
+
 router.get('/:userId/lists', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
     ctx.body = await getUserLists(ctx.state.user!.id, params, ctx.state.project.id)

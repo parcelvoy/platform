@@ -40,7 +40,7 @@ export default function Journeys() {
                     },
                     {
                         key: 'usage',
-                        cell: ({ item }) => item.stats?.entrance,
+                        cell: ({ item }) => item.stats?.entrance.toLocaleString(),
                     },
                     {
                         key: 'created_at',
