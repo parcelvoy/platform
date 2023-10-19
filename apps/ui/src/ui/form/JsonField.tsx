@@ -26,7 +26,9 @@ export default function JsonField<X extends FieldValues, P extends FieldPath<X>>
             inputRef={ref}
             onChange={async (value) => {
                 setJsonValue(value)
-                await field.onChange?.(JSON.parse(value))
+                try {
+                    field.onChange(JSON.parse(value))
+                } catch {}
             }}
             required={required}
             error={fieldState.error?.message}

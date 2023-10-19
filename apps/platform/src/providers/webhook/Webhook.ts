@@ -2,7 +2,7 @@ export interface Webhook {
     method: 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT'
     endpoint: string
     headers: Record<string, string>
-    body: Record<string, any>
+    body?: Record<string, any>
 }
 
 export interface WebhookResponse {

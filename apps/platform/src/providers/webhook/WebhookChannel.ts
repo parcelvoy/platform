@@ -14,9 +14,11 @@ export default class WebhookChannel {
 
     async send(options: WebhookTemplate, variables: Variables) {
         const headers = this.compile(options.headers, variables)
-        const body = this.compile(options.body, variables)
         const endpoint = Render(options.endpoint, variables)
         const method = options.method
+        const body = method === 'POST' || method === 'PATCH' || method === 'PUT'
+            ? this.compile(options.body, variables)
+            : undefined
 
         return await this.provider.send({
             endpoint,

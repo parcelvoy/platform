@@ -25,7 +25,7 @@ export default class LocalWebhookProvider extends WebhookProvider {
                 Accept: 'application/json',
                 ...headers,
             },
-            body: JSON.stringify(body),
+            body: body ? JSON.stringify(body) : undefined,
         })
 
         let responseBody: any | undefined

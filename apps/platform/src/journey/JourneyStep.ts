@@ -12,6 +12,7 @@ import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
+import { CampaignSend } from '../campaigns/Campaign'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -241,6 +242,9 @@ export class JourneyAction extends JourneyStep {
 
         if (userStep.type === 'action') {
             const send = await getCampaignSend(campaign.id, state.user.id, userStep.id)
+            if (send?.state === 'failed') {
+                userStep.type = 'error'
+            }
             if (send?.state === 'sent') {
                 userStep.type = 'completed'
             }
@@ -250,11 +254,26 @@ export class JourneyAction extends JourneyStep {
         userStep.type = 'action'
 
         // defer job construction so that we have the journey_user_step.id value
-        state.job(() => sendCampaignJob({
-            campaign,
-            user: state.user,
-            user_step_id: userStep.id,
-        }))
+        state.job(async () => {
+            let send_id = await getCampaignSend(campaign.id, state.user.id, userStep.id).then(s => s?.id)
+
+            if (!send_id) {
+                send_id = await CampaignSend.insert({
+                    campaign_id: campaign.id,
+                    user_id: state.user.id,
+                    state: 'pending',
+                    send_at: new Date(),
+                    user_step_id: userStep.id,
+                })
+            }
+
+            return sendCampaignJob({
+                campaign,
+                user: state.user,
+                send_id,
+                user_step_id: userStep.id,
+            })
+        })
     }
 }
 
