@@ -1,6 +1,6 @@
 import Admin from '../auth/Admin'
 import Provider from '../providers/Provider'
-import { encodeHashid } from '../utilities'
+import { encodeHashid, uuid } from '../utilities'
 import Organization from './Organization'
 
 export const getOrganization = async (id: number) => {
@@ -27,10 +27,18 @@ export const getDefaultOrganization = async () => {
 }
 
 export const createOrganization = async (domain?: string): Promise<Organization> => {
-    const username = domain?.split('.').shift()
-    const org = await Organization.insertAndFetch({
-        username,
-    })
+    let username = domain?.split('.').shift()
+    let org: Organization | undefined
+    try {
+        org = await Organization.insertAndFetch({
+            username,
+        })
+    } catch {
+        username = undefined
+        org = await Organization.insertAndFetch({
+            username: uuid(),
+        })
+    }
 
     // If for some reason the domain format is odd, generate
     // a random username from the org id
