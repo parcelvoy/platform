@@ -5,9 +5,9 @@ import { localStorageGetJson, localStorageSetJson } from '../utils'
 const PREFERENCES = 'preferences'
 
 const initial: Preferences = {
+    mode: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
     ...localStorageGetJson<Preferences>(PREFERENCES) ?? {},
     lang: window.navigator.language,
-    mode: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 }
 
