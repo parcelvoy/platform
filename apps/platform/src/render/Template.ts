@@ -232,12 +232,12 @@ export class WebhookTemplate extends Template {
     }
 
     compile(variables: Variables): Webhook {
-        const headers = Object.keys(this.headers).reduce((headers, key) => {
+        const headers = Object.keys(this.headers ?? {}).reduce((headers, key) => {
             headers[key] = Render(this.headers[key], variables)
             return headers
         }, {} as Record<string, string>)
 
-        const body = Object.keys(this.body).reduce((body, key) => {
+        const body = Object.keys(this.body ?? {}).reduce((body, key) => {
             body[key] = Render(this.body[key], variables)
             return body
         }, {} as Record<string, any>)
