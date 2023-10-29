@@ -9,9 +9,11 @@ interface JsonPreviewParams {
 
 export default function JsonPreview({ value }: JsonPreviewParams) {
     const [preferences] = useContext(PreferencesContext)
-    return <JsonViewer
-        value={value}
-        rootName={false}
-        theme={preferences.mode}
-    />
+    return (
+        <JsonViewer
+            value={value}
+            rootName={false}
+            theme={preferences.mode}
+        />
+    )
 }
