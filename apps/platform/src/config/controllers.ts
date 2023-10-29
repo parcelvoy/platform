@@ -21,6 +21,7 @@ import ProjectApiKeyController from '../projects/ProjectApiKeyController'
 import ProjectLocaleController from '../projects/ProjectLocaleController'
 import AdminController from '../auth/AdminController'
 import OrganizationController from '../organizations/OrganizationController'
+import OpenAPIController from '../openapi/OpenAPIController'
 import App from '../app'
 import { organizationMiddleware } from '../organizations/OrganizationMiddleware'
 
@@ -143,5 +144,6 @@ export const publicRouter = () => {
         PublicSubscriptionController,
         PublicProviderController,
         LinkController,
+        OpenAPIController,
     )
 }

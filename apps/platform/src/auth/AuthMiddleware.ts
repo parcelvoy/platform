@@ -89,6 +89,10 @@ const verify = async (token: string) => {
 }
 
 const getBearerToken = (ctx: Context): string | undefined => {
+    const apiKeyHeader = String(ctx.request.headers['x-parcelvoy-api-key'] ?? '')
+    if (apiKeyHeader) {
+        return apiKeyHeader
+    }
     const authHeader = String(ctx.request.headers.authorization || '')
     if (authHeader.startsWith('Bearer ')) {
         return authHeader.substring(7, authHeader.length)

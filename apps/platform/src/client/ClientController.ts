@@ -17,7 +17,7 @@ router.use(projectMiddleware)
  * Used by client libraries to associate an anonymous user
  * to one as identified by their system
  */
-const aliasParams: JSONSchemaType<ClientIdentityKeys> = {
+export const aliasParams: JSONSchemaType<ClientIdentityKeys> = {
     $id: 'aliasParams',
     type: 'object',
     required: ['external_id', 'anonymous_id'],
@@ -45,7 +45,7 @@ router.post('/alias', async ctx => {
  * Used by client libraries to identify and populate a single user
  * using a provider external ID
  */
-const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
+export const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
     $id: 'identifyParams',
     type: 'object',
     required: [],
@@ -106,7 +106,7 @@ router.post('/identify', async ctx => {
  * Used by client libraries to register devices and their respective
  * tokens for push notifications.
  */
-const deviceParams: JSONSchemaType<DeviceParams> = {
+export const deviceParams: JSONSchemaType<DeviceParams> = {
     $id: 'deviceParams',
     type: 'object',
     required: ['device_id', 'os', 'model', 'app_build', 'app_version'],
@@ -167,7 +167,7 @@ router.post('/devices', async ctx => {
  * Used by client libraries to trigger an event that can be used
  * to execute a step in a journey or update a virtual list.
  */
-const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
+export const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
     $id: 'postEvents',
     type: 'array',
     items: {
