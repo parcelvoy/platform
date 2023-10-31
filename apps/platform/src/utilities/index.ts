@@ -217,7 +217,7 @@ export const chunk = async <T>(
     const chunker = new Chunker(callback, size)
     await query.stream(async function(stream) {
         for await (const result of stream) {
-            chunker.add(modifier(result))
+            await chunker.add(modifier(result))
         }
     })
     await chunker.flush()
