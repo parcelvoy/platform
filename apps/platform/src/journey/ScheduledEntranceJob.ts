@@ -12,6 +12,8 @@ interface ScheduledEntranceTrigger {
 
 export default class ScheduledEntranceJob extends Job {
 
+    static $name = 'scheduled_entrance_job'
+
     static from(params: ScheduledEntranceTrigger) {
         return new ScheduledEntranceJob(params)
     }

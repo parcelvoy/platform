@@ -5,6 +5,8 @@ import ScheduledEntranceJob from './ScheduledEntranceJob'
 
 export default class ScheduledEntranceOrchestratorJob extends Job {
 
+    static $name = 'scheduled_entrance_orchestration_job'
+
     static async handler() {
 
         // look up all scheduler entrances
@@ -19,7 +21,6 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
         if (!entrances.length) return
 
         const jobs: Job[] = []
-
         for (const entrance of entrances) {
 
             await JourneyStep.update(q => q.where('id', entrance.id), {
