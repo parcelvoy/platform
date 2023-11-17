@@ -1,3 +1,4 @@
+import { acquireLock, releaseLock } from '../config/scheduler'
 import { Job } from '../queue'
 import { CampaignJobParams, SentCampaign } from './Campaign'
 import CampaignSendJob from './CampaignSendJob'
@@ -11,6 +12,10 @@ export default class CampaignGenerateListJob extends Job {
     }
 
     static async handler({ id, project_id }: CampaignJobParams) {
+        const key = `campaign_generate_${id}`
+        const acquired = await acquireLock({ key, timeout: 300 })
+        if (!acquired) return
+
         const campaign = await getCampaign(id, project_id) as SentCampaign
         if (campaign.state === 'aborted' || campaign.state === 'draft') return
         await generateSendList(campaign)
@@ -19,5 +24,7 @@ export default class CampaignGenerateListJob extends Job {
             id: campaign.id,
             project_id: campaign.project_id,
         }).queue()
+
+        await releaseLock(key)
     }
 }
