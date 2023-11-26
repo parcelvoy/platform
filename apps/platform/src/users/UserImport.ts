@@ -4,6 +4,7 @@ import UserPatchJob from './UserPatchJob'
 import ListStatsJob from '../lists/ListStatsJob'
 import { RequestError } from '../core/errors'
 import App from '../app'
+import { Chunker } from '../utilities'
 
 export interface UserImport {
     project_id: number
@@ -20,12 +21,15 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
         bom: true,
     }
 
-    let chunks = []
+    const chunker = new Chunker<UserPatchJob>(
+        App.main.queue.enqueueBatch,
+        App.main.queue.batchSize,
+    )
     const parser = stream.file.pipe(parse(options))
     for await (const row of parser) {
         const { external_id, email, phone, timezone, ...data } = cleanRow(row)
         if (!external_id) throw new RequestError('Every upload must contain a column `external_id` which contains the identifier for that user.')
-        chunks.push(UserPatchJob.from({
+        await chunker.add(UserPatchJob.from({
             project_id,
             user: {
                 external_id: `${external_id}`,
@@ -38,15 +42,8 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
                 join_list_id: list_id,
             },
         }))
-        if (chunks.length > App.main.queue.batchSize) {
-            await App.main.queue.enqueueBatch(chunks)
-            chunks = []
-        }
     }
-
-    if (chunks.length > 0) {
-        await App.main.queue.enqueueBatch(chunks)
-    }
+    await chunker.flush()
 
     // Generate preliminary list count
     if (list_id) {
