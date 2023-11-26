@@ -10,7 +10,7 @@ export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${co
 
 export const random = <T>(array: T[]): T => array[Math.floor(Math.random() * array.length)]
 
-export const shuffle = <T>(array: T[]) => {
+export const shuffle = <T>(array: T[]): T[] => {
     let currentIndex = array.length
     let randomIndex: number
     while (currentIndex > 0) {
@@ -18,6 +18,7 @@ export const shuffle = <T>(array: T[]) => {
         currentIndex--;
         [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]
     }
+    return array
 }
 
 export const pick = <T extends object, K extends keyof T> (obj: T, keys: K[]): Pick<T, K> => {

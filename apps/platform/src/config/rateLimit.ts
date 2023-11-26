@@ -10,6 +10,7 @@ const slidingRateLimiterLuaScript = `
     local trim_time = tonumber(current_time[1]) - window
     redis.call('ZREMRANGEBYSCORE', key, 0, trim_time)
     local request_count = redis.call('ZCARD', key)
+    local exp = redis.call('TTL', key)
 
     -- If we haven't exceeded the limit, lets add value
     if request_count < limit then
@@ -24,13 +25,13 @@ const slidingRateLimiterLuaScript = `
         redis.call('EXPIRE', key, window)
         
         request_count = request_count + points
-        return {request_count, 0}
+        return {request_count, 0, window}
     end
-    return {request_count, 1}
+    return {request_count, 1, exp}
 `
 
 interface RateLimitRedis extends Redis {
-    slidingRateLimiter(key: string, window: number, points: number, limit: number): Promise<[consumed: number, exceeded: number]>
+    slidingRateLimiter(key: string, window: number, points: number, limit: number): Promise<[consumed: number, exceeded: number, exp: number]>
 }
 
 export interface RateLimitOptions {
@@ -43,6 +44,7 @@ export interface RateLimitResponse {
     exceeded: boolean
     pointsRemaining: number
     pointsUsed: number
+    expires: number
 }
 
 export default (config: RedisConfig) => {
@@ -61,12 +63,12 @@ export class RateLimiter {
 
     async consume(key: string, { limit = 10, points = 1, msDuration = 1000 }: RateLimitOptions): Promise<RateLimitResponse> {
         const window = Math.floor(msDuration / 1000)
-        const [consumed, exceeded] = await this.client.slidingRateLimiter(key, window, points, limit)
-
+        const [consumed, exceeded, expires] = await this.client.slidingRateLimiter(key, window, points, limit)
         return {
             exceeded: exceeded === 1,
             pointsRemaining: Math.max(0, limit - consumed),
             pointsUsed: consumed,
+            expires,
         }
     }
 
