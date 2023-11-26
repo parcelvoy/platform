@@ -19,7 +19,7 @@ export default class RedisQueueProvider implements QueueProvider {
     bull: BullQueue
     worker?: Worker
     concurrency: number
-    batchSize = 40 as const
+    batchSize = 60 as const
     queueName = 'parcelvoy' as const
 
     constructor({ concurrency, ...config }: RedisQueueConfig, queue: Queue) {
