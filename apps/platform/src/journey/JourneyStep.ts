@@ -518,9 +518,7 @@ export class JourneyEvent extends JourneyStep {
                 user: state.user.flatten(),
                 journey: state.stepData(),
             }))
-            if (typeof value === 'object') {
-                value = jsonValue
-            }
+            value = typeof value === 'object' ? jsonValue : {}
         } catch {
             value = {}
         }
