@@ -13,7 +13,7 @@ export default class CampaignGenerateListJob extends Job {
 
     static async handler({ id, project_id }: CampaignJobParams) {
         const key = `campaign_generate_${id}`
-        const acquired = await acquireLock({ key, timeout: 300 })
+        const acquired = await acquireLock({ key, timeout: 900 })
         if (!acquired) return
 
         const campaign = await getCampaign(id, project_id) as SentCampaign

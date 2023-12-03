@@ -13,6 +13,7 @@ import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
 import { CampaignSend } from '../campaigns/Campaign'
+import { createEvent } from '../users/UserEventRepository'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -99,7 +100,7 @@ export class JourneyEntrance extends JourneyStep {
     trigger: 'none' | 'event' | 'schedule' = 'none'
 
     // event driven
-    eventName!: string
+    event_name!: string
     rule?: Rule
     multiple = false // multiple entries allowed
     concurrent = false
@@ -112,7 +113,7 @@ export class JourneyEntrance extends JourneyStep {
         super.parseJson(json)
         this.trigger = json?.data?.trigger ?? 'none'
 
-        this.eventName = json?.data?.eventName
+        this.event_name = json?.data?.event_name
         this.rule = json?.data?.rule
         this.multiple = json?.data?.multiple
         this.concurrent = json?.data?.concurrent
@@ -494,6 +495,44 @@ export class JourneyUpdate extends JourneyStep {
     }
 }
 
+export class JourneyEvent extends JourneyStep {
+    static type = 'event'
+
+    event_name!: string
+    template!: string
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.event_name = json.data?.event_name
+        this.template = json.data?.template
+    }
+
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
+
+        const template = this.template.trim()
+        if (!template) return
+
+        let value: any
+        try {
+            const jsonValue = JSON.parse(compileTemplate(this.template)({
+                user: state.user.flatten(),
+                journey: state.stepData(),
+            }))
+            if (typeof value === 'object') {
+                value = jsonValue
+            }
+        } catch {
+            value = {}
+        }
+
+        await createEvent(state.user, {
+            name: this.event_name,
+            data: value,
+        })
+        userStep.type = 'completed'
+    }
+}
+
 export const journeyStepTypes = [
     JourneyEntrance,
     JourneyDelay,
@@ -503,6 +542,7 @@ export const journeyStepTypes = [
     JourneyLink,
     JourneyUpdate,
     JourneyBalancer,
+    JourneyEvent,
 ].reduce<Record<string, typeof JourneyStep>>((a, c) => {
     a[c.type] = c
     return a
