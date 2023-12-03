@@ -35,8 +35,8 @@ export class JourneyUserStep extends Model {
     static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
         return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
             const step = steps.find(s => s.id === step_id)
-            if (data && step?.data_key && !a[step.data_key]) {
-                a[step.data_key] = data
+            if (data && step && !a[step.dataKey]) {
+                a[step.dataKey] = data
             }
             return a
         }, {})
@@ -79,6 +79,10 @@ export class JourneyStep extends Model {
     }
 
     static get type() { return snakeCase(this.name) }
+
+    get dataKey(): string {
+        return this.data_key ?? this.id.toString()
+    }
 
     async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
         userStep.type = 'completed'
@@ -292,11 +296,9 @@ export class JourneyGate extends JourneyStep {
         if (!this.rule) return
 
         const children = state.childrenOf(this.id)
-
         if (!children.length) return
 
         const [passed, failed] = children
-
         const events = await state.events()
 
         const params = {
@@ -320,7 +322,6 @@ export class JourneyExperiment extends JourneyStep {
     async next(state: JourneyState) {
 
         let children = state.childrenOf(this.id)
-
         if (!children.length) return undefined
 
         children = children.reduce<JourneyStepChild[]>((a, c) => {
@@ -338,7 +339,6 @@ export class JourneyExperiment extends JourneyStep {
 
         return random(children).child_id
     }
-
 }
 
 /**
@@ -400,6 +400,59 @@ export class JourneyLink extends JourneyStep {
     }
 }
 
+export class JourneyBalancer extends JourneyStep {
+    static type = 'balancer'
+
+    rate_limit!: number
+    rate_interval!: 'second' | 'minute' | 'hour' | 'day'
+
+    parseJson(json: any) {
+        super.parseJson(json)
+        this.rate_limit = json.data?.rate_limit
+        this.rate_interval = json.data?.rate_interval
+    }
+
+    async process(state: JourneyState, userStep: JourneyUserStep) {
+
+        const children = state.childrenOf(this.id)
+        if (!children.length) {
+            userStep.type = 'completed'
+            return
+        }
+
+        const child = random(children)
+        userStep.data = { ...userStep.data, id: child.child_id }
+
+        const limit = App.main.rateLimiter
+        const { exceeded, expires } = await limit.consume(`journey_balancer:${child.child_id}`, {
+            limit: this.rate_limit,
+            msDuration: this.interval(),
+        })
+        if (exceeded) {
+            userStep.type = 'delay'
+            userStep.delay_until = add(new Date(), { seconds: expires })
+            return
+        }
+        userStep.type = 'completed'
+    }
+
+    async next(state: JourneyState) {
+        const data: any = state.stepData()[this.id]
+        return data?.id as number
+    }
+
+    interval() {
+        const intervals = {
+            second: 1000,
+            minute: 60 * 1000,
+            hour: 60 * 60 * 1000,
+            day: 24 * 60 * 60 * 1000,
+        }
+        console.log(intervals[this.rate_interval], this.rate_interval)
+        return intervals[this.rate_interval]
+    }
+}
+
 export class JourneyUpdate extends JourneyStep {
     static type = 'update'
 
@@ -449,6 +502,7 @@ export const journeyStepTypes = [
     JourneyExperiment,
     JourneyLink,
     JourneyUpdate,
+    JourneyBalancer,
 ].reduce<Record<string, typeof JourneyStep>>((a, c) => {
     a[c.type] = c
     return a
