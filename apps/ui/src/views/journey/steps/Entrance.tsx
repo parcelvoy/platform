@@ -17,7 +17,7 @@ interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
 
     // event based
-    eventName?: string
+    event_name?: string
     rule?: Rule
     multiple?: boolean
     concurrent?: boolean
@@ -65,7 +65,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
         },
         value: {
             trigger,
-            eventName,
+            event_name,
             rule,
             list_id,
             schedule,
@@ -103,7 +103,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             return (
                 <div style={{ maxWidth: 300 }}>
                     {'Add anyone when '}
-                    <strong>{eventName ?? ''}</strong>
+                    <strong>{event_name ?? ''}</strong>
                     {' occurs'}
                     {
                         !!rule?.children?.length && (
@@ -141,18 +141,18 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     value.trigger === 'event' && (
                         <>
                             <TextInput
-                                name="eventName"
+                                name="event_name"
                                 label="Event Name"
                                 required
-                                value={value.eventName ?? ''}
-                                onChange={eventName => onChange({ ...value, eventName })}
+                                value={value.event_name ?? ''}
+                                onChange={event_name => onChange({ ...value, event_name })}
                             />
                             {
-                                value.eventName && (
+                                value.event_name && (
                                     <RuleBuilder
                                         rule={value.rule ?? wrapper}
                                         setRule={rule => onChange({ ...value, rule })}
-                                        eventName={value.eventName}
+                                        eventName={value.event_name}
                                         headerPrefix="Matching"
                                     />
                                 )
