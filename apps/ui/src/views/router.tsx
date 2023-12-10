@@ -35,7 +35,7 @@ import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
 import { CampaignsIcon, JourneysIcon, ListsIcon, PerformanceIcon, ProjectIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
-import { pushRecentProject } from '../utils'
+import { getRecentProjects, pushRecentProject } from '../utils'
 import Performance from './organization/Performance'
 import Settings from './settings/Settings'
 import ProjectSidebar from './project/ProjectSidebar'
@@ -86,6 +86,10 @@ export const createRouter = ({
         children: [
             {
                 index: true,
+                loader: async () => {
+                    const recents = getRecentProjects()
+                    return recents.length && redirect(`projects/${recents[0].id}`)
+                },
                 element: <Projects />,
             },
             {
