@@ -24,6 +24,12 @@ a:hover {
     padding: 0 40px 40px;
 }
 
+.page-content.fullscreen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .page-content .page-banner {
     padding-top: 20px;
 }

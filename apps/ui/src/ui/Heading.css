@@ -28,7 +28,8 @@
 }
 
 .heading.heading-h2 {
-    margin: 20px 0 15px;
+    margin: 0;
+    padding: 20px 0 15px;
 }
 
 .heading.heading-h3 {

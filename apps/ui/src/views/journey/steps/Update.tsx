@@ -1,7 +1,5 @@
 import { JourneyStepType } from '../../../types'
-import SourceEditor from '@monaco-editor/react'
-import { useContext } from 'react'
-import { PreferencesContext } from '../../../ui/PreferencesContext'
+import SourceEditor from '../../../ui/SourceEditor'
 import { UpdateStepIcon } from '../../../ui/icons'
 import { JsonPreview } from '../../../ui'
 
@@ -35,7 +33,7 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
         template: '{\n\n}\n',
     }),
     Edit: ({ onChange, value }) => {
-        const [{ mode }] = useContext(PreferencesContext)
+
         return (
             <>
                 <p style={{ maxWidth: 400 }}>
@@ -48,7 +46,6 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
                     value={value.template ?? ''}
                     height={500}
                     width="400px"
-                    theme={mode === 'dark' ? 'vs-dark' : undefined}
                     language="handlebars"
                 />
             </>

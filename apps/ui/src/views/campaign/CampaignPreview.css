@@ -7,6 +7,7 @@
     overflow: auto;
     padding: 10px 0;
     min-height: 400px;
+    flex-grow: 1;
 }
 
 .preview-source-editor section {

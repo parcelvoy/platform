@@ -140,7 +140,7 @@ export default function CampaignPreview() {
                     showAddState={showAddState} />
             } />
             <Columns>
-                <Column>
+                <Column fullscreen={true}>
                     <Heading title="Data" size="h4" actions={
                         <Button
                             size="small"
@@ -156,7 +156,7 @@ export default function CampaignPreview() {
                         />
                     </div>
                 </Column>
-                <Column>
+                <Column fullscreen={true}>
                     <Heading title="Preview" size="h4" actions={
                         template.type === 'webhook'
                             ? <Button

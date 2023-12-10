@@ -33,7 +33,6 @@ export default function SourceEditor({ onMount, ...props }: SourceEditorProps) {
             {...props}
             onMount={handleMount}
             options={{ wordWrap: 'on' }}
-            theme="vs-dark"
         />
     )
 }

@@ -1,7 +1,5 @@
 import { JourneyStepType } from '../../../types'
-import SourceEditor from '@monaco-editor/react'
-import { useContext } from 'react'
-import { PreferencesContext } from '../../../ui/PreferencesContext'
+import SourceEditor from '../../../ui/SourceEditor'
 import { EventStepIcon } from '../../../ui/icons'
 import { JsonPreview } from '../../../ui'
 import TextInput from '../../../ui/form/TextInput'
@@ -38,7 +36,6 @@ export const eventStep: JourneyStepType<EventConfig> = {
         event_name: 'Journey Triggered',
     }),
     Edit: ({ onChange, value }) => {
-        const [{ mode }] = useContext(PreferencesContext)
         return (
             <div style={{ maxWidth: 400 }}>
                 <TextInput
@@ -57,7 +54,6 @@ export const eventStep: JourneyStepType<EventConfig> = {
                     value={value.template ?? ''}
                     height={500}
                     width="400px"
-                    theme={mode === 'dark' ? 'vs-dark' : undefined}
                     language="handlebars"
                 />
             </div>

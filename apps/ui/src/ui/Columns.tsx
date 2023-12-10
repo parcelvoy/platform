@@ -1,11 +1,16 @@
 import { CSSProperties, PropsWithChildren } from 'react'
 import './Columns.css'
+import clsx from 'clsx'
 
-interface ColumnProps {
+interface ColumnsProps {
     children?: React.ReactNode
 }
 
-export function Columns(props: ColumnProps) {
+interface ColumnProps extends PropsWithChildren<{ style?: CSSProperties }> {
+    fullscreen?: boolean
+}
+
+export function Columns(props: ColumnsProps) {
     return (
         <div className="ui-columns">
             {props.children}
@@ -13,9 +18,9 @@ export function Columns(props: ColumnProps) {
     )
 }
 
-export function Column({ children, style }: PropsWithChildren<{ style?: CSSProperties }>) {
+export function Column({ children, style, fullscreen }: ColumnProps) {
     return (
-        <div className="ui-column" style={style}>
+        <div className={clsx('ui-column', { fullscreen })} style={style}>
             {children}
         </div>
     )

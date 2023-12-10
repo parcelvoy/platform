@@ -4,10 +4,22 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    flex-grow: 1;
     gap: var(--spacing);
 }
 
 .ui-columns > .ui-column {
     flex-basis: 0;
     flex-grow: 1;
+}
+
+.ui-column.fullscreen {
+    display: flex;
+    flex-direction: column;
+}
+
+@media only screen and (max-width: 600px) {
+    .ui-columns {
+        flex-direction: column;
+    }
 }
