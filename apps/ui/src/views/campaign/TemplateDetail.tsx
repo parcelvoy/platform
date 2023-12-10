@@ -13,6 +13,7 @@ import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import JsonField from '../../ui/form/JsonField'
+import { Alert } from '../../ui'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
     'From Email': data.from?.address,
@@ -47,12 +48,26 @@ const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
     const [project] = useContext(ProjectContext)
     const segmentLength = 160
     const optOutLength = project.text_opt_out_message?.length ?? 0
-    const length = (text?.length ?? 0) + optOutLength
-    const segments = Math.ceil(length / segmentLength)
-    return <InfoTable rows={{
-        Text: text,
-        Info: `${length}/${segmentLength} characters, ${segments} segment${segments > 1 ? 's' : ''}`,
-    }} />
+    const baseLength = (text?.length ?? 0)
+    const totalLength = baseLength + optOutLength
+    const isHandlebars = text?.includes('{{') ?? false
+
+    const lengthStr = (length: number) => {
+        const segments = Math.ceil(length / segmentLength)
+        return `${isHandlebars ? '~' : ''}${length}/${segmentLength} characters, ${segments} segment${segments > 1 ? 's' : ''}`
+    }
+
+    return <>
+        <InfoTable rows={{
+            Text: text,
+        }} />
+        <Heading title="Send Details" size="h4" />
+        {baseLength > segmentLength && <Alert variant="plain" title="Note" body={`Carriers calculate your send rate as segments per second not messages per second. This campaign will take approximately ${Math.ceil(baseLength / segmentLength)}x longer to send due to its length.`} />}
+        <InfoTable rows={{
+            'Existing User Length': lengthStr(baseLength),
+            'New User Length': lengthStr(totalLength),
+        }} />
+    </>
 }
 
 const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
