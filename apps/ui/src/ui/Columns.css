@@ -17,3 +17,9 @@
     display: flex;
     flex-direction: column;
 }
+
+@media only screen and (max-width: 600px) {
+    .ui-columns {
+        flex-direction: column;
+    }
+}
