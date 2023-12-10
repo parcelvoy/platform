@@ -1,13 +1,22 @@
 .ui-tabs {
+    position: relative;
+}
+
+.ui-tabs::before {
+    content: '';
+    width: 100%;
+    bottom: 0;
+    height: 1px;
+    left: 0;
+    position: absolute;
     border-bottom: 1px solid var(--color-grey);
-    margin: 10px 0;
+    z-index: 0;
 }
 
 .ui-tabs .tab {
     background: none;
     color: var(--color-primary-soft);
     font-size: 15px;
-    margin-bottom: -1px;
     margin-right: 20px;
     font-weight: 500;
     padding: 12px 5px;
@@ -16,6 +25,8 @@
     border-bottom: 3px solid transparent;
     cursor: pointer;
     text-decoration: none;
+    z-index: 10;
+    position: relative;
 }
 
 .ui-tabs .tab:hover {

@@ -164,6 +164,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                 </Column>
 
                 <Column>
+                <Column fullscreen={true}>
                     <Heading title="Design" size="h4" actions={
                         type === 'email' && campaign.state !== 'finished' && <LinkButton size="small" variant="secondary" to={`../editor?locale=${template.locale}`}>Edit Design</LinkButton>
                     } />
