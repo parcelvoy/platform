@@ -230,6 +230,7 @@ export const populateList = async (list: List) => {
     const eventRules: RuleTree[] = []
     const userRules: RuleTree[] = []
     visit(rule, r => r.children, r => {
+        if (r.id === rule.id) return
         if (r.type === 'wrapper' && r.group === 'event') {
             eventRules.push(r)
         } else if (r.group === 'user') {
@@ -255,7 +256,10 @@ export const populateList = async (list: List) => {
                     user_id: user.id,
                     result,
                 })
-                parts.push({ ...rule, result })
+                parts.push({
+                    ...rule,
+                    result,
+                })
             }
 
             const result = checkRules(user, rule, [...parts, ...userRules])
