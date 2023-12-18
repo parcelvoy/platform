@@ -22,7 +22,7 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
     }
 
     const chunker = new Chunker<UserPatchJob>(
-        App.main.queue.enqueueBatch,
+        items => App.main.queue.enqueueBatch(items),
         App.main.queue.batchSize,
     )
     const parser = stream.file.pipe(parse(options))
