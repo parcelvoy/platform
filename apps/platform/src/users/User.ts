@@ -77,7 +77,7 @@ export class User extends Model {
     }
 
     get lastName(): string {
-        return this.data.last_name ?? this.data.lastName
+        return this.data.last_name ?? this.data.lastName ?? this.data.surname
     }
 
     toJSON() {

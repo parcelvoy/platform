@@ -22,12 +22,12 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
     }
 
     const chunker = new Chunker<UserPatchJob>(
-        App.main.queue.enqueueBatch,
+        items => App.main.queue.enqueueBatch(items),
         App.main.queue.batchSize,
     )
     const parser = stream.file.pipe(parse(options))
     for await (const row of parser) {
-        const { external_id, email, phone, timezone, ...data } = cleanRow(row)
+        const { external_id, email, phone, timezone, locale, ...data } = cleanRow(row)
         if (!external_id) throw new RequestError('Every upload must contain a column `external_id` which contains the identifier for that user.')
         await chunker.add(UserPatchJob.from({
             project_id,
@@ -36,6 +36,7 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
                 email,
                 phone,
                 timezone,
+                locale,
                 data,
             },
             options: {
