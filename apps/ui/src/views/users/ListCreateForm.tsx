@@ -3,7 +3,7 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { List, ListCreateParams } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
 import RuleBuilder, { createWrapperRule } from './RuleBuilder'
@@ -45,7 +45,7 @@ export function ListCreateForm({ onCreated, isJourneyList = false }: ListCreateF
                         required
                     />
                     {!isJourneyList && <>
-                        <OptionField
+                        <RadioInput.Field
                             form={form}
                             name="type"
                             label="Type"

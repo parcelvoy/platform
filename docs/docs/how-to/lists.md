@@ -20,3 +20,4 @@ You can create lists that contain fixed data that can be uploaded via CSV. When 
 - `email`: The users email
 - `phone`: The users phone number with country code
 - `timezone`: The users timezone provided in IANA format (America/Chicago)
+- `locale`: The language 

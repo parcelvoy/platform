@@ -3,7 +3,7 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { ProjectApiKey, projectRoles } from '../../types'
 import Button from '../../ui/Button'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
@@ -125,7 +125,7 @@ export default function ProjectApiKeys() {
                                                 name="description"
                                                 label="Description"
                                             />
-                                            <OptionField
+                                            <RadioInput.Field
                                                 form={form}
                                                 name="scope"
                                                 label="Scope"

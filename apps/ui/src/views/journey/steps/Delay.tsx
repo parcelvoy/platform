@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { JourneyStepType } from '../../../types'
-import OptionField from '../../../ui/form/OptionField'
+import RadioInput from '../../../ui/form/RadioInput'
 import TextInput from '../../../ui/form/TextInput'
 import { DelayStepIcon } from '../../../ui/icons'
 import { formatDate, formatDuration, snakeToTitle } from '../../../utils'
@@ -73,7 +73,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
     }) {
         return (
             <>
-                <OptionField name="type" label="Type" options={[
+                <RadioInput label="Type" options={[
                     { key: 'duration', label: 'For a Duration' },
                     { key: 'time', label: 'Until Time' },
                     { key: 'date', label: 'Until Date' },

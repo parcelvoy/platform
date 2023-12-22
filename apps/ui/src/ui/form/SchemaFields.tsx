@@ -2,7 +2,7 @@ import { snakeToTitle } from '../../utils'
 import TextInput from './TextInput'
 import './SchemaFields.css'
 import SwitchField from './SwitchField'
-import OptionField from './OptionField'
+import RadioInput from './RadioInput'
 
 interface Schema {
     type: 'string' | 'number' | 'boolean' | 'object'
@@ -38,7 +38,7 @@ export default function SchemaFields({ title, description, parent, form, schema 
                 const required = schema.required?.includes(key)
                 const title = item.title ?? snakeToTitle(key)
                 if (item.enum) {
-                    return <OptionField
+                    return <RadioInput.Field
                         key={key}
                         form={form}
                         name={`${parent}.${key}`}

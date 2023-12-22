@@ -151,7 +151,7 @@ export default function CampaignPreview() {
                     <div className="preview-source-editor">
                         <SourceEditor
                             defaultLanguage="json"
-                            defaultValue={value}
+                            value={value}
                             onChange={setValue}
                         />
                     </div>

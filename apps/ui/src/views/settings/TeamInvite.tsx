@@ -8,7 +8,7 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import api from '../../api'
 import { AdminContext, ProjectContext } from '../../contexts'
 import { combine, snakeToTitle } from '../../utils'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 
 type EditMemberData = Pick<ProjectAdmin, 'admin_id' | 'role'> & { id?: number }
@@ -39,10 +39,9 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
             size="small"
             description={member.id ? 'Update the permissions for this team member.' : 'Add an existing team member to this project or invite someone new.'}
         >
-            <OptionField
+            <RadioInput
                 value={newOrExisting}
                 onChange={setNewOrExisting}
-                name="invite_type"
                 options={[
                     { key: 'existing', label: 'Existing Team Member' },
                     { key: 'new', label: 'New Team Member' },

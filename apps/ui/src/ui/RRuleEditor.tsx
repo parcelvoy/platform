@@ -2,7 +2,7 @@ import { ReactNode, useMemo } from 'react'
 import { ControlledProps } from '../types'
 import { Frequency, Options, RRule, Weekday } from 'rrule'
 import TextInput from './form/TextInput'
-import OptionField from './form/OptionField'
+import RadioInput from './form/RadioInput'
 import { format } from 'date-fns'
 import { FieldOption } from './form/Field'
 import { MultiOptionField } from './form/MultiOptionField'
@@ -67,8 +67,7 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
     return (
         <fieldset style={{ border: 0, padding: 0 }}>
             <legend>{label}</legend>
-            <OptionField
-                name="freq"
+            <RadioInput
                 label="Frequency"
                 required
                 value={options.freq}
