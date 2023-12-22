@@ -9,6 +9,7 @@
     background: var(--color-grey-soft);
     color: var(--color-primary);
     font-weight: 500;
+    overflow-wrap: break-word;
 }
 
 .ui-tag svg {

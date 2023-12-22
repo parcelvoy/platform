@@ -1,5 +1,5 @@
 import { JourneyStepType } from '../../../types'
-import OptionField from '../../../ui/form/OptionField'
+import RadioInput from '../../../ui/form/RadioInput'
 import TextInput from '../../../ui/form/TextInput'
 import { BalancerStepIcon } from '../../../ui/icons'
 
@@ -28,7 +28,7 @@ export const balancerStep: JourneyStepType<BalancerStepChildConfig> = {
         <div style={{ maxWidth: 300 }}>
             Randomly split users across paths. Configure an optional rate limit to limit the number of users that go down a path over a given time period.
 
-            <OptionField name="rate_interval" label="Period" options={[
+            <RadioInput label="Period" options={[
                 { key: 'second', label: 'Second' },
                 { key: 'minute', label: 'Minute' },
                 { key: 'hour', label: 'hour' },

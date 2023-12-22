@@ -2,7 +2,7 @@ import { Campaign, LocaleOption } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
 import { LocaleParams, createLocale, localeOption } from './CampaignDetail'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import { useContext, useEffect, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
@@ -58,7 +58,7 @@ export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreat
                             to={`/projects/${project.id}/settings/locales`}>Create Locale</LinkButton>
                     </div>
                     { campaign.channel === 'email' && (
-                        <OptionField
+                        <RadioInput.Field
                             form={form}
                             name="data.editor"
                             label="Editor Type"

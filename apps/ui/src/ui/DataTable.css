@@ -62,6 +62,10 @@
     padding-left: 15px;
 }
 
+.ui-table .table-cell:last-child, .ui-table .table-header-cell:last-child {
+    padding-right: 15px;
+}
+
 .ui-table .table-row:last-child .table-cell {
     border-bottom: 0px;
     padding-right: 15px;
@@ -79,6 +83,7 @@
 
 .ui-table .table-cell {
     vertical-align: middle;
+    overflow-wrap: anywhere;
 }
 
 .ui-table .table-cell .multi-cell {

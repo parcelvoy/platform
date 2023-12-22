@@ -3,7 +3,7 @@ import { useContext, useState } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
 import { CampaignLaunchParams } from '../../types'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import SwitchField from '../../ui/form/SwitchField'
 import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -116,7 +116,7 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
             submitLabel="Launch"
             onSubmit={handleLaunchCampaign}>
             {form => <>
-                <OptionField name="when"
+                <RadioInput
                     label="Launch Period"
                     options={[{ key: 'now', label: 'Now' }, { key: 'later', label: 'Schedule' }]}
                     value={launchType}

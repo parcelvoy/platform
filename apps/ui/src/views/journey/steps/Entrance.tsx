@@ -1,6 +1,6 @@
 import { JourneyStepType, Rule } from '../../../types'
 import { EntranceStepIcon } from '../../../ui/icons'
-import OptionField from '../../../ui/form/OptionField'
+import RadioInput from '../../../ui/form/RadioInput'
 import TextInput from '../../../ui/form/TextInput'
 import RuleBuilder, { ruleDescription } from '../../users/RuleBuilder'
 import { useCallback, useContext } from 'react'
@@ -129,8 +129,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
 
         return (
             <>
-                <OptionField
-                    name="trigger"
+                <RadioInput
                     label="Trigger"
                     value={value.trigger}
                     options={triggerOptions}

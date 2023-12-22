@@ -9,7 +9,7 @@ import Heading from '../../ui/Heading'
 import ListTable from '../users/ListTable'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
-import OptionField from '../../ui/form/OptionField'
+import RadioInput from '../../ui/form/RadioInput'
 import { SelectionProps } from '../../ui/form/Field'
 import { TagPicker } from '../settings/TagPicker'
 import { Column, Columns } from '../../ui/Columns'
@@ -44,6 +44,10 @@ const ListSelection = ({
     const search = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [project])
 
     const handlePickList = (list: List) => {
+        if (list.state !== 'ready') {
+            if (!confirm('This list is still generating. Sending before it has completed could result in this campaign not sending to all users who will enter the list. Are you sure you want to continue?')) return
+        }
+
         const newLists = [...lists.filter(item => item.id !== list.id), list]
         setLists(newLists)
         onChange(newLists.map(list => list.id))
@@ -127,7 +131,7 @@ const ChannelSelection = ({ subscriptions, form }: {
         label: snakeToTitle(item),
     }))
     return (
-        <OptionField
+        <RadioInput.Field
             form={form}
             name="channel"
             label="Medium"
@@ -198,12 +202,14 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
         const params: SearchParams = { limit: 9999, q: '' }
         api.subscriptions.search(project.id, params)
             .then(({ results }) => {
+                console.log('set subscriptions!')
                 setSubscriptions(results)
             })
             .catch(() => {})
 
         api.providers.all(project.id)
             .then((results) => {
+                console.log('set providers!')
                 setProviders(results)
             })
             .catch(() => {})

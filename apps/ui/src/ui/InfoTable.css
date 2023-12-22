@@ -34,8 +34,9 @@
 .ui-info-table.horizontal {
     display: flex;
     border: 0;
-    gap: 20px;
+    column-gap: 20px;
     margin-bottom: 0;
+    flex-wrap: wrap;
 }
 
 .ui-info-table.horizontal .info-row {
@@ -63,3 +64,4 @@
 .ui-info-table.horizontal .info-row .info-value {
     font-weight: 500;
 }
+

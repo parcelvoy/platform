@@ -30,7 +30,8 @@ export default function UserDetail() {
             }
             actions={
                 <Button icon={<TrashIcon />}
-                    onClick={deleteUser}>Delete User</Button>
+                    onClick={deleteUser}
+                    variant="destructive">Delete User</Button>
             }
         >
             <NavigationTabs tabs={[
