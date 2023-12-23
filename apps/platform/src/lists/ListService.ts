@@ -309,7 +309,7 @@ export const updateUsersLists = async (user: User, results: RuleResults, event?:
     }
 }
 
-const listsForRule = async (ruleUuids: string[], projectId: number): Promise<DynamicList[]> => {
+export const listsForRule = async (ruleUuids: string[], projectId: number): Promise<DynamicList[]> => {
     return await List.all(
         qb => qb.leftJoin('rules', 'rules.id', 'lists.rule_id')
             .where('lists.project_id', projectId)

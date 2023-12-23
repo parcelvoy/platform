@@ -4,20 +4,18 @@ import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { random, randomInt, uuid } from '../../utilities'
 import { UserList } from '../List'
-import { createList, populateList } from '../ListService'
+import { createList, listsForRule, populateList, updateList } from '../ListService'
 
 describe('ListService', () => {
 
-    test('populate dynamic list', async () => {
-
+    const makeRule = async () => {
         const project = await Project.insertAndFetch({
             name: 'Dynamic List Project',
         })
 
-        const eventNames = ['purchased', 'completed', 'viewed', 'launched']
-
         const ruleUuid = uuid()
         const eventUuid = uuid()
+
         const rule: RuleTree = {
             uuid: ruleUuid,
             group: 'parent',
@@ -59,6 +57,14 @@ describe('ListService', () => {
                 },
             ],
         }
+
+        return { rule, project }
+    }
+
+    test('populate dynamic list', async () => {
+
+        const eventNames = ['purchased', 'completed', 'viewed', 'launched']
+        const { rule, project } = await makeRule()
 
         const list = await createList(project.id, {
             name: 'Dynamic List',
@@ -118,4 +124,37 @@ describe('ListService', () => {
 
     })
 
+    describe('listsForRule', () => {
+
+        test('should not contain draft list', async () => {
+
+            const { rule, project } = await makeRule()
+            await createList(project.id, {
+                name: 'Dynamic List',
+                type: 'dynamic',
+                is_visible: true,
+                rule,
+            })
+
+            const lists = await listsForRule([rule.uuid], project.id)
+            expect(lists.length).toEqual(0)
+        })
+
+        test('should contain published list', async () => {
+
+            const { rule, project } = await makeRule()
+            const list = await createList(project.id, {
+                name: 'Dynamic List',
+                type: 'dynamic',
+                is_visible: true,
+                rule,
+            })
+
+            await updateList(list, { name: list.name, published: true })
+
+            const lists = await listsForRule([rule.uuid], project.id)
+            expect(lists.length).toEqual(1)
+            expect(lists[0]?.id).toEqual(list.id)
+        })
+    })
 })
