@@ -16,7 +16,7 @@ import { snakeToTitle } from '../../utils'
 import UploadField from '../../ui/form/UploadField'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
-import { EditIcon, UploadIcon } from '../../ui/icons'
+import { EditIcon, SendIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 
 const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: Rule) => void }) => {
@@ -39,8 +39,8 @@ export default function ListDetail() {
     const state = useSearchTableState(useCallback(async params => await api.lists.users(project.id, list.id, params), [list, project]))
     const route = useRoute()
 
-    const saveList = async ({ name, rule }: ListUpdateParams) => {
-        const value = await api.lists.update(project.id, list.id, { name, rule })
+    const saveList = async ({ name, rule, published }: ListUpdateParams) => {
+        const value = await api.lists.update(project.id, list.id, { name, rule, published })
         setIsEditListOpen(false)
         setIsDialogOpen(true)
         setList(value)
@@ -64,6 +64,9 @@ export default function ListDetail() {
             }
             actions={
                 <>
+                    {list.state === 'draft' && <Button
+                        icon={<SendIcon />}
+                        onClick={async () => await saveList({ name: list.name, published: true })}>Publish</Button>}
                     {list.type === 'static' && <Button
                         variant="secondary"
                         icon={<UploadIcon />}
@@ -102,7 +105,7 @@ export default function ListDetail() {
                 onClose={() => setIsEditListOpen(false)}
                 title="Edit List">
                 <FormWrapper<Omit<ListUpdateParams, 'rule'>>
-                    onSubmit={async ({ name }) => await saveList({ name })}
+                    onSubmit={async ({ name, published }) => await saveList({ name, published })}
                     submitLabel="Save"
                     defaultValues={{ name: list.name }}
                 >

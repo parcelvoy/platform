@@ -6,14 +6,13 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
-import RuleBuilder, { createWrapperRule } from './RuleBuilder'
+import { createWrapperRule } from './RuleBuilder'
 
 interface ListCreateFormProps {
     onCreated?: (list: List) => void
-    isJourneyList?: boolean
 }
 
-export function ListCreateForm({ onCreated, isJourneyList = false }: ListCreateFormProps) {
+export function ListCreateForm({ onCreated }: ListCreateFormProps) {
     const [project] = useContext(ProjectContext)
     const defaults: Partial<ListCreateParams> = {
         type: 'dynamic',
@@ -44,26 +43,19 @@ export function ListCreateForm({ onCreated, isJourneyList = false }: ListCreateF
                         label="List Name"
                         required
                     />
-                    {!isJourneyList && <>
-                        <RadioInput.Field
-                            form={form}
-                            name="type"
-                            label="Type"
-                            options={[
-                                { key: 'dynamic', label: 'Dynamic' },
-                                { key: 'static', label: 'Static' },
-                            ]}
-                        />
-                        <TagPicker.Field
-                            form={form}
-                            name="tags"
-                        />
-                    </>}
-                    {isJourneyList && <RuleBuilder.Field
+                    <RadioInput.Field
                         form={form}
-                        name="rule"
-                        required
-                    />}
+                        name="type"
+                        label="Type"
+                        options={[
+                            { key: 'dynamic', label: 'Dynamic' },
+                            { key: 'static', label: 'Static' },
+                        ]}
+                    />
+                    <TagPicker.Field
+                        form={form}
+                        name="tags"
+                    />
                 </>
             )}
         </FormWrapper>

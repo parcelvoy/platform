@@ -154,12 +154,16 @@ const listUpdateParams: JSONSchemaType<ListUpdateParams> = {
             },
             nullable: true,
         },
+        published: {
+            type: 'boolean',
+            nullable: true,
+        },
     },
     additionalProperties: false,
 }
 router.patch('/:listId', async ctx => {
     const payload = validate(listUpdateParams, ctx.request.body)
-    ctx.body = await updateList(ctx.state.list!.id, payload)
+    ctx.body = await updateList(ctx.state.list!, payload)
 })
 
 router.delete('/:listId', async ctx => {

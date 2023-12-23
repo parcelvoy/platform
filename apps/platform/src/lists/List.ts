@@ -1,7 +1,7 @@
 import Model from '../core/Model'
 import { RuleTree } from '../rules/Rule'
 
-export type ListState = 'ready' | 'loading'
+export type ListState = 'draft' | 'ready' | 'loading'
 type ListType = 'static' | 'dynamic'
 
 export default class List extends Model {
@@ -30,5 +30,5 @@ export class UserList extends Model {
     static tableName = 'user_list'
 }
 
-export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { rule?: RuleTree }
+export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { rule?: RuleTree, published?: boolean }
 export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'> & { rule?: RuleTree }
