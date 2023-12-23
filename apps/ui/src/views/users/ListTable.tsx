@@ -1,7 +1,7 @@
 import { Key } from 'react'
 import { List, ListState, SearchParams, SearchResult } from '../../types'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import Tag from '../../ui/Tag'
+import Tag, { TagVariant } from '../../ui/Tag'
 import { snakeToTitle } from '../../utils'
 import { useRoute } from '../router'
 import Menu, { MenuItem } from '../../ui/Menu'
@@ -17,8 +17,14 @@ interface ListTableParams {
 }
 
 export const ListTag = ({ state }: { state: ListState }) => {
+    const variant: Record<ListState, TagVariant> = {
+        draft: 'plain',
+        loading: 'info',
+        ready: 'success',
+    }
+
     return (
-        <Tag variant={state === 'ready' ? 'success' : 'info'}>
+        <Tag variant={variant[state]}>
             {snakeToTitle(state)}
         </Tag>
     )

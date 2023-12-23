@@ -84,7 +84,7 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
     const list = await List.insertAndFetch({
         name,
         type,
-        state: 'ready',
+        state: type === 'dynamic' ? 'draft' : 'ready',
         users_count: 0,
         project_id: projectId,
     })
@@ -118,8 +118,11 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
     return list
 }
 
-export const updateList = async (id: number, { tags, rule, ...params }: ListUpdateParams): Promise<List | undefined> => {
-    const list = await List.updateAndFetch(id, params)
+export const updateList = async (list: List, { tags, rule, published, ...params }: ListUpdateParams): Promise<List | undefined> => {
+    list = await List.updateAndFetch(list.id, {
+        ...params,
+        state: list.state === 'draft' ? published ? 'ready' : 'draft' : list.state,
+    })
 
     if (tags) {
         await setTags({
@@ -306,12 +309,13 @@ export const updateUsersLists = async (user: User, results: RuleResults, event?:
     }
 }
 
-const listsForRule = async (ruleUuids: string[], projectId: number): Promise<DynamicList[]> => {
+export const listsForRule = async (ruleUuids: string[], projectId: number): Promise<DynamicList[]> => {
     return await List.all(
         qb => qb.leftJoin('rules', 'rules.id', 'lists.rule_id')
             .where('lists.project_id', projectId)
             .where('rules.project_id', projectId)
             .where('lists.type', 'dynamic')
+            .whereNot('lists.state', 'draft')
             .whereNull('deleted_at')
             .whereIn('rules.uuid', ruleUuids),
     ) as DynamicList[]

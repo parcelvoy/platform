@@ -211,7 +211,7 @@ export interface UserEvent {
     created_at: string
 }
 
-export type ListState = 'ready' | 'loading'
+export type ListState = 'draft' | 'ready' | 'loading'
 type ListType = 'static' | 'dynamic'
 
 export type List = {
@@ -237,7 +237,7 @@ export type List = {
 export type DynamicList = List & { type: 'dynamic' }
 
 export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type' | 'tags' | 'is_visible'>
-export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'>
+export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'> & { published?: boolean }
 
 export interface Journey {
     id: number
