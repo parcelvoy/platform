@@ -15,10 +15,10 @@ export default class UserDeleteJob extends Job {
 
     static async handler({ project_id, external_id }: UserDeleteTrigger) {
 
-        await App.main.db.transaction(async trx => 
+        await App.main.db.transaction(async trx =>
             trx('users')
                 .where({ project_id, external_id })
-                .delete()
+                .delete(),
         )
     }
 }
