@@ -73,7 +73,7 @@ export function EntityIdPicker<T extends { id: number }>({
                 {subtitle && <span className="label-subtitle">{subtitle}</span>}
             </Combobox.Label>
             <div className="ui-button-group">
-                <span className={clsx('ui-text-input', size ?? 'regular')} style={{ flexGrow: 1 }}>
+                <span className={clsx('ui-text-input', size ?? 'regular', { disabled })} style={{ flexGrow: 1 }}>
                     <Combobox.Input
                         displayValue={(value: T) => value && displayValue(value)}
                         onChange={e => setQuery(e.target.value)}
