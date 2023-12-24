@@ -144,16 +144,12 @@ export const updateList = async (list: List, { tags, rule, published, ...params 
 }
 
 export const archiveList = async (id: number, projectId: number) => {
-    await List.update(qb =>
-        qb.where('id', id)
-            .where('project_id', projectId),
-    { deleted_at: new Date() },
-    )
+    await List.archive(id, qb => qb.where('project_id', projectId))
     return getList(id, projectId)
 }
 
 export const deleteList = async (id: number, projectId: number) => {
-    return await List.delete(qb => qb.where('id', id).where('project_id', projectId))
+    return await List.deleteById(id, qb => qb.where('project_id', projectId))
 }
 
 export const addUserToList = async (user: User | number, list: List, event?: UserEvent) => {

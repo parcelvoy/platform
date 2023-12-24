@@ -112,7 +112,7 @@ export const updateProjectApiKey = async (id: number, params: ProjectApiKeyParam
 }
 
 export const revokeProjectApiKey = async (id: number) => {
-    return await ProjectApiKey.updateAndFetch(id, { deleted_at: new Date() })
+    return await ProjectApiKey.archive(id)
 }
 
 export const generateApiKey = (scope: 'public' | 'secret') => {
@@ -147,5 +147,5 @@ export const createLocale = async (projectId: number, params: LocaleParams) => {
 }
 
 export const deleteLocale = async (projectId: number, id: number) => {
-    return await Locale.delete(qb => qb.where('project_id', projectId).where('id', id))
+    return await Locale.deleteById(id, qb => qb.where('project_id', projectId))
 }

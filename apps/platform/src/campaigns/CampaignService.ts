@@ -155,16 +155,12 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
 }
 
 export const archiveCampaign = async (id: number, projectId: number) => {
-    await Campaign.update(qb =>
-        qb.where('id', id)
-            .where('project_id', projectId),
-    { deleted_at: new Date() },
-    )
+    await Campaign.archive(id, qb => qb.where('project_id', projectId))
     return getCampaign(id, projectId)
 }
 
 export const deleteCampaign = async (id: number, projectId: number) => {
-    return await Campaign.delete(qb => qb.where('id', id).where('project_id', projectId))
+    return await Campaign.deleteById(id, qb => qb.where('project_id', projectId))
 }
 
 export const getCampaignUsers = async (id: number, params: PageParams, projectId: number) => {

@@ -169,10 +169,11 @@ router.patch('/:listId', async ctx => {
 router.delete('/:listId', async ctx => {
     const { id, project_id, deleted_at } = ctx.state.list!
     if (deleted_at) {
-        ctx.body = await deleteList(id, project_id)
+        await deleteList(id, project_id)
     } else {
-        ctx.body = await archiveList(id, project_id)
+        await archiveList(id, project_id)
     }
+    ctx.body = true
 })
 
 router.get('/:listId/users', async ctx => {
