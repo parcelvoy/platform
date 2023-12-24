@@ -156,10 +156,11 @@ router.get('/:campaignId/users', async ctx => {
 router.delete('/:campaignId', async ctx => {
     const { id, project_id, deleted_at } = ctx.state.campaign!
     if (deleted_at) {
-        ctx.body = await deleteCampaign(id, project_id)
+        await deleteCampaign(id, project_id)
     } else {
-        ctx.body = await archiveCampaign(id, project_id)
+        await archiveCampaign(id, project_id)
     }
+    ctx.body = true
 })
 
 router.post('/:campaignId/duplicate', async ctx => {

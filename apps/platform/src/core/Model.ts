@@ -264,17 +264,19 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         const id = await this.insert(data, db)
-        return await this.find(id, b => b, db) as InstanceType<T>
+        const model = await this.find(id, b => b, db) as InstanceType<T>
+        this.emit('insert', model)
+        return model
     }
 
     static async update<T extends typeof Model>(
         this: T,
-        where: (builder: Database.QueryBuilder<any>) => Database.QueryBuilder<any>,
+        query: Query,
         data: Partial<InstanceType<T>> = {},
         db: Database = App.main.db,
     ): Promise<number> {
         const formattedData = this.formatJson(data)
-        return await where(this.table(db)).update(formattedData)
+        return await query(this.table(db)).update(formattedData)
     }
 
     static async updateAndFetch<T extends typeof Model>(
@@ -285,7 +287,23 @@ export default class Model {
     ): Promise<InstanceType<T>> {
         const formattedData = this.formatJson(data)
         await this.table(db).where('id', id).update(formattedData)
-        return await this.find(id, b => b, db) as InstanceType<T>
+        const model = await this.find(id, b => b, db) as InstanceType<T>
+        this.emit('update', model)
+        return model
+    }
+
+    static async archive<T extends typeof Model>(
+        this: T,
+        id: number,
+        query: Query = qb => qb,
+        db: Database = App.main.db,
+    ): Promise<InstanceType<T>> {
+        await query(this.table(db))
+            .where('id', id)
+            .update({ deleted_at: new Date() })
+        const model = await this.find(id, b => b, db) as InstanceType<T>
+        this.emit('archive', id)
+        return model
     }
 
     static async delete<T extends typeof Model>(
@@ -294,6 +312,19 @@ export default class Model {
         db: Database = App.main.db,
     ): Promise<number> {
         return await query(this.table(db)).delete()
+    }
+
+    static async deleteById<T extends typeof Model>(
+        this: T,
+        id: number,
+        query: Query = qb => qb,
+        db: Database = App.main.db,
+    ): Promise<number> {
+        const count = await query(this.table(db))
+            .where('id', id)
+            .delete()
+        this.emit('delete', id)
+        return count
     }
 
     static scroll = async function * <T extends typeof Model>(
@@ -340,6 +371,10 @@ export default class Model {
             builder.select(`${this.tableName}.*`)
         }
         return builder
+    }
+
+    static emit(event: string, payload: any) {
+        App.main.events.emit(`model:${this.tableName}:${event}`, payload)
     }
 }
 

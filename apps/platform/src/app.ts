@@ -12,6 +12,7 @@ import Api from './api'
 import Worker from './worker'
 import ErrorHandler from './error/ErrorHandler'
 import { DefaultRedis, Redis } from './config/redis'
+import EventEmitter from 'eventemitter2'
 
 export default class App {
     private static $main: App
@@ -60,6 +61,7 @@ export default class App {
     rateLimiter: RateLimiter
     redis: Redis
     stats: Stats
+    events = new EventEmitter({ wildcard: true, delimiter: ':' })
     #registered: { [key: string | number]: unknown }
 
     constructor(

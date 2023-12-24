@@ -57,7 +57,7 @@ export const updateTemplate = async (templateId: number, params: TemplateUpdateP
 }
 
 export const deleteTemplate = async (id: number, projectId: number) => {
-    return await Template.delete(qb => qb.where('id', id).where('project_id', projectId))
+    return await Template.deleteById(id, qb => qb.where('project_id', projectId))
 }
 
 export const duplicateTemplate = async (template: Template, campaignId: number) => {

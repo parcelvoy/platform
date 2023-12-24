@@ -75,8 +75,12 @@ export const updateJourney = async (id: number, { tags, ...params }: UpdateJourn
     })
 }
 
-export const deleteJourney = async (id: number): Promise<void> => {
-    await Journey.updateAndFetch(id, { deleted_at: new Date() })
+export const deleteJourney = async (id: number, projectId: number): Promise<void> => {
+    await Journey.deleteById(id, qb => qb.where('project_id', projectId))
+}
+
+export const archiveJourney = async (id: number, projectId: number): Promise<void> => {
+    await Journey.archive(id, qb => qb.where('project_id', projectId))
 }
 
 export const getJourneySteps = async (journeyId: number, db?: Database): Promise<JourneyStep[]> => {

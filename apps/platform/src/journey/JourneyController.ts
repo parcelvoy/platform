@@ -5,7 +5,7 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
-import { createJourney, deleteJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep } from './JourneyRepository'
+import { createJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep, archiveJourney, deleteJourney } from './JourneyRepository'
 import { JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 import { User } from '../users/User'
 
@@ -89,7 +89,13 @@ router.patch('/:journeyId', async ctx => {
 })
 
 router.delete('/:journeyId', async ctx => {
-    await deleteJourney(ctx.state.journey!.id)
+    const { id, project_id, deleted_at } = ctx.state.journey!
+    if (deleted_at) {
+        await deleteJourney(id, project_id)
+    } else {
+        await archiveJourney(id, project_id)
+    }
+
     ctx.body = true
 })
 
