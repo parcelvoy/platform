@@ -38,7 +38,7 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
 
     return (
         <Modal title="Translations"
-            description="Manage the translations your email supports and will send to."
+            description="Manage the translations your campaign supports and will send to."
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
