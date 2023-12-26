@@ -265,7 +265,7 @@ export default class Model {
     ): Promise<InstanceType<T>> {
         const id = await this.insert(data, db)
         const model = await this.find(id, b => b, db) as InstanceType<T>
-        this.emit('insert', model)
+        this.emit('created', model)
         return model
     }
 
@@ -288,7 +288,7 @@ export default class Model {
         const formattedData = this.formatJson(data)
         await this.table(db).where('id', id).update(formattedData)
         const model = await this.find(id, b => b, db) as InstanceType<T>
-        this.emit('update', model)
+        this.emit('updated', model)
         return model
     }
 
@@ -302,7 +302,7 @@ export default class Model {
             .where('id', id)
             .update({ deleted_at: new Date() })
         const model = await this.find(id, b => b, db) as InstanceType<T>
-        this.emit('archive', id)
+        this.emit('archived', id)
         return model
     }
 
@@ -323,7 +323,7 @@ export default class Model {
         const count = await query(this.table(db))
             .where('id', id)
             .delete()
-        this.emit('delete', id)
+        this.emit('deleted', id)
         return count
     }
 
