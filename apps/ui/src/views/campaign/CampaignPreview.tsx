@@ -122,10 +122,19 @@ export default function CampaignPreview() {
     }), [template])
 
     const handleSendProof = async (recipient: string) => {
-        await api.templates.proof(project.id, template.id, {
-            variables: JSON.parse(value ?? '{}'),
-            recipient,
-        })
+        try {
+            await api.templates.proof(project.id, template.id, {
+                variables: JSON.parse(value ?? '{}'),
+                recipient,
+            })
+        } catch (error: any) {
+            if (error.response.data.error) {
+                toast.error(error.response.data.error)
+                return
+            }
+            toast.error(error.message)
+            return
+        }
         setIsSendProofOpen(false)
         template.type === 'webhook'
             ? toast.success('Webhook test has been successfully sent!')

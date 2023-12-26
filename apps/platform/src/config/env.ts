@@ -1,10 +1,12 @@
 import * as dotenv from 'dotenv'
+import { logger } from './logger'
 import type { StorageConfig } from '../storage/Storage'
 import type { QueueConfig } from '../queue/Queue'
 import type { DatabaseConfig } from './database'
 import type { AuthConfig, AuthProviderName } from '../auth/Auth'
 import type { ErrorConfig } from '../error/ErrorHandler'
 import { RedisConfig } from './redis'
+import { isValidUrl } from '../utilities'
 
 export type Runner = 'api' | 'worker'
 export interface Env {
@@ -46,6 +48,11 @@ export default (type?: EnvType): Env => {
     const port = parseInt(process.env.PORT ?? '3000')
     const baseUrl = process.env.BASE_URL ?? `http://localhost:${port}`
     const apiBaseUrl = process.env.API_BASE_URL ?? `${baseUrl}/api`
+
+    // Validate required env vars
+    if (!isValidUrl(baseUrl)) {
+        logger.error(`parcelvoy:env Please ensure BASE_URL is a valid non relative URL. Current value is "${baseUrl}"`)
+    }
 
     return {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],

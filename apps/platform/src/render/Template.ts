@@ -251,4 +251,19 @@ export class WebhookTemplate extends Template {
             body,
         }
     }
+
+    validate() {
+        return isValid({
+            type: 'object',
+            required: ['method', 'endpoint'],
+            properties: {
+                method: { type: 'string' },
+                endpoint: { type: 'string', nullable: true },
+            },
+            additionalProperties: true,
+            errorMessage: {
+                required: this.requiredErrors('method', 'endpoint'),
+            },
+        }, this.data)
+    }
 }
