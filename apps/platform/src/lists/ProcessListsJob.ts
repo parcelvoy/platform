@@ -7,7 +7,7 @@ export default class ProcessListsJob extends Job {
 
     static async handler() {
 
-        const lists = await List.all()
+        const lists = await List.all(qb => qb.whereNot('state', 'loading'))
         for (const list of lists) {
             await ListStatsJob.from(list.id, list.project_id).queue()
         }

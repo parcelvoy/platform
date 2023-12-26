@@ -59,7 +59,9 @@ export default function ListDetail() {
                 <InfoTable rows={{
                     state: <ListTag state={list.state} />,
                     type: snakeToTitle(list.type),
-                    users_count: list.users_count?.toLocaleString(),
+                    users_count: list.state === 'loading'
+                        ? <>&#8211;</>
+                        : list.users_count?.toLocaleString(),
                 }} direction="horizontal" />
             }
             actions={
