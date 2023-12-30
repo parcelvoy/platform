@@ -31,8 +31,8 @@ export const balancerStep: JourneyStepType<BalancerStepChildConfig> = {
             <RadioInput label="Period" options={[
                 { key: 'second', label: 'Second' },
                 { key: 'minute', label: 'Minute' },
-                { key: 'hour', label: 'hour' },
-                { key: 'day', label: 'day' },
+                { key: 'hour', label: 'Hour' },
+                { key: 'day', label: 'Day' },
             ]}
             value={value.rate_interval}
             onChange={rate_interval => onChange({ ...value, rate_interval }) } />

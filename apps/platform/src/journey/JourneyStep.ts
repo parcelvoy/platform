@@ -177,8 +177,7 @@ export class JourneyDelay extends JourneyStep {
 
         // if no delay has been set yet, calculate one
         if (!userStep.delay_until) {
-            const timezone = await state.timezone()
-            userStep.delay_until = this.offset(new Date(), timezone)
+            userStep.delay_until = await this.offset(state)
             userStep.type = 'delay'
             return
         }
@@ -189,8 +188,10 @@ export class JourneyDelay extends JourneyStep {
         }
     }
 
-    private offset(baseDate: Date, timezone: string): Date {
+    private async offset(state: JourneyState): Promise<Date> {
 
+        const timezone = await state.timezone()
+        const baseDate = new Date()
         const time = this.time?.trim()
         const date = this.date?.trim()
 
@@ -217,7 +218,11 @@ export class JourneyDelay extends JourneyStep {
             }
             return nextDate
         } else if (this.format === 'date' && date) {
-            const localDate = crossTimezoneCopy(new Date(date), 'UTC', timezone)
+            const compiledDate = compileTemplate(date)({
+                user: state.user.flatten(),
+                journey: state.stepData(),
+            })
+            const localDate = crossTimezoneCopy(new Date(compiledDate), 'UTC', timezone)
             if (localDate < baseDate) return baseDate
             return localDate
         }

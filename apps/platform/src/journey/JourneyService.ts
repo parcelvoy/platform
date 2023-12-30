@@ -171,7 +171,7 @@ export class JourneyState {
     // Batch enqueue jobs after processing
     private _jobs: JobOrJobFunc[] = []
 
-    private constructor(
+    constructor(
         public readonly entrance: JourneyUserStep,
         public readonly steps: JourneyStep[],
         public readonly children: JourneyStepChild[],

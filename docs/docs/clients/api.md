@@ -1,4 +1,12 @@
-# API
+---
+title: API
+---
+
+# Client API
+
+:::info
+This is the documentation for our `client` API which can be used for data ingestion and is used by our client SDKs. Documentation on our `admin` API is coming soon.
+:::
 
 ## Authentication
 Authentication to client endpoints is handled via public bearer API keys. These API keys allow for ingestion only of data and only on select endpoints. You can generate a new public key at any time in the portal and we recommend using a separate key per platform.
