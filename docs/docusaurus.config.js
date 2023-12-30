@@ -63,6 +63,7 @@ const config = {
           alt: 'Parcelvoy',
           src: 'img/parcelvoy.svg',
           srcDark: 'img/parcelvoy-light.svg',
+          href: 'https://parcelvoy.com'
         },
         items: [
           {
