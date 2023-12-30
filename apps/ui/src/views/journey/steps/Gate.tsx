@@ -12,7 +12,7 @@ export const gateStep: JourneyStepType<GateConfig> = {
     name: 'Gate',
     icon: <GateStepIcon />,
     category: 'flow',
-    description: 'Proceed on different paths depending on condition results.',
+    description: 'Split a user between paths depending on the result of a condition.',
     Describe({
         value,
     }) {
@@ -20,8 +20,8 @@ export const gateStep: JourneyStepType<GateConfig> = {
         if (value.rule) {
             return (
                 <div style={{ maxWidth: 300 }}>
-                    {'Does '}
-                    {ruleDescription(preferences, value.rule)}
+                    {'Has done '}
+                    {ruleDescription(preferences, value.rule, [], value.rule.operator)}
                     {'?'}
                 </div>
             )

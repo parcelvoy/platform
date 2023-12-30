@@ -32,7 +32,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                             days: value.days ?? 0,
                             hours: value.hours ?? 0,
                             minutes: value.minutes ?? 0,
-                        }) || '--'}
+                        }) || <>&#8211;</>}
                     </strong>
                 </>
             )
@@ -54,7 +54,11 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                 <>
                     {'Wait until '}
                     <strong>
-                        {isNaN(parsed.getTime()) ? '--' : formatDate(preferences, parsed, 'PP')}
+                        {isNaN(parsed.getTime())
+                            ? value.date?.includes('{{')
+                                ? <><br />{value.date}</>
+                                : <>&#8211;</>
+                            : formatDate(preferences, parsed, 'PP')}
                     </strong>
                 </>
             )
@@ -87,7 +91,6 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                             name={name}
                             label={snakeToTitle(name)}
                             type="number"
-                            size="small"
                             min={0}
                             value={value[name as keyof DelayStepConfig] ?? 0}
                             onChange={n => onChange({ ...value, [name]: n })}
@@ -100,7 +103,6 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                         label="Time"
                         type="time"
                         subtitle="Delay until the specified time in the users timezone."
-                        size="small"
                         value={value.time ?? ''}
                         onChange={time => onChange({ ...value, time })}
                     />
@@ -111,7 +113,6 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                         label="Date"
                         type="text"
                         subtitle="Delay until the specified date in the users timezone."
-                        size="small"
                         placeholder="YYYY-MM-DD"
                         value={value.date ?? ''}
                         onChange={date => onChange({ ...value, date })}

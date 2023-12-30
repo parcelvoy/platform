@@ -113,6 +113,13 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
                         {rule.value ?? ''}
                     </strong>,
                 )
+            } else {
+                nodes.push(
+                    'event ',
+                    <strong key={nodes.length}>
+                        {rule.value ?? ''}
+                    </strong>,
+                )
             }
             if (rule.children?.length) {
                 nodes.push(' where ')
@@ -148,6 +155,13 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
             })
         }
     } else {
+        if (rule.group === 'event' && (rule.path === '$.name' || rule.path === 'name')) {
+            nodes.push('event ')
+        }
+        if (rule.group === 'user') {
+            nodes.push('user property ')
+        }
+
         nodes.push(
             <code key={nodes.length}>
                 {trimPathDisplay(rule.path)}

@@ -12,10 +12,10 @@ interface ActionConfig {
 }
 
 export const actionStep: JourneyStepType<ActionConfig> = {
-    name: 'Action',
+    name: 'Send',
     icon: <ActionStepIcon />,
     category: 'action',
-    description: 'Trigger a message (email, sms, push notification, webhook) to be sent.',
+    description: 'Trigger a send (email, sms, push notification, webhook) to a user.',
     Describe({
         project: { id: projectId },
         value: {
@@ -33,7 +33,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
         if (campaign) {
             return (
                 <>
-                    <div>{campaign.name}</div>
+                    <div className="journey-step-body-name">{campaign.name}</div>
                     {
                         campaign.channel !== 'webhook' && (
                             <PreviewImage

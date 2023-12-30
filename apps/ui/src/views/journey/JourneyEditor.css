@@ -282,6 +282,11 @@
     padding: 20px;
 }
 
+.journey-step-body-name {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
 .journey-step-edge {
     background-color: var(--color-background);
     padding: 10px;

@@ -5,6 +5,7 @@ import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { LinkStepIcon } from '../../../ui/icons'
 import { JourneyForm } from '../JourneyForm'
 import { useResolver } from '../../../hooks'
+import RadioInput from '../../../ui/form/RadioInput'
 
 interface JourneyLinkConfig {
     target_id: number
@@ -42,7 +43,7 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
                 </>
             )
         }
-        return null
+        return <>Send users to &#8211;</>
     },
     newData: async () => ({
         target_id: 0,
@@ -53,7 +54,7 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
         onChange,
         project,
     }) {
-        return (
+        return <>
             <EntityIdPicker
                 label="Target Journey"
                 subtitle="Send users to this journey when they reach this step."
@@ -67,6 +68,14 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
                 )}
                 onEditLink={journey => window.open(`/projects/${project.id}/journeys/${journey.id}`)}
             />
-        )
+            <RadioInput label="Delay" options={[
+                { key: '1 minute', label: '1 Minute' },
+                { key: '15 minutes', label: '15 Minutes' },
+                { key: '1 hour', label: '1 Hour' },
+                { key: '1 day', label: '1 Day' },
+            ]}
+            value={value.delay}
+            onChange={delay => onChange({ ...value, delay }) } />
+        </>
     },
 }
