@@ -7,11 +7,11 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Parcelvoy',
-  tagline: 'Dinosaurs are cool',
+  tagline: 'Open source multi-channel marketing automation platform. Send data-driven emails, sms, push notifications and more!',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://docs.parcelvoy.com',
+  url: 'https://parcelvoy.com/docs',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
