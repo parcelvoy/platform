@@ -1,4 +1,4 @@
-import { add, differenceInMonths, differenceInYears, differenceInDays, differenceInHours, differenceInMinutes, sub, nextDay, Day, differenceInSeconds, set } from 'date-fns'
+import { add, differenceInMonths, differenceInYears, differenceInDays, differenceInHours, differenceInMinutes, sub, nextDay, Day, differenceInSeconds, set, formatISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 
 const baseDate = (date: Date | string): Date => {
@@ -28,9 +28,12 @@ const isUnit = (value: DateUnit): boolean => ['years', 'months', 'weeks', 'days'
  *
  * i.e. {{setDate "1974-01-23" "months" 1 }}
  */
-export const setDate = function(date: Date | string, unit: DateUnit, value: number): Date {
-    if (!isUnit(unit)) return baseDate(date)
-    return set(baseDate(date), { [unit]: value })
+export const setDate = function(date: Date | string, unit: DateUnit, value: number): string {
+    return formatISO(
+        isUnit(unit)
+            ? set(baseDate(date), { [unit]: value })
+            : baseDate(date),
+    )
 }
 
 /**
@@ -38,9 +41,12 @@ export const setDate = function(date: Date | string, unit: DateUnit, value: numb
  *
  * i.e. {{addDate "1974-01-23" 1 "months" }}
  */
-export const addDate = function(date: Date | string, amount: number, unit: DateUnit): Date {
-    if (!isUnit(unit)) return baseDate(date)
-    return add(baseDate(date), { [unit]: amount })
+export const addDate = function(date: Date | string, amount: number, unit: DateUnit): string {
+    return formatISO(
+        isUnit(unit)
+            ? add(baseDate(date), { [unit]: amount })
+            : baseDate(date),
+    )
 }
 
 /**
@@ -48,10 +54,12 @@ export const addDate = function(date: Date | string, amount: number, unit: DateU
  *
  * i.e. {{subDate "1974-01-23" 1 "months" }}
  */
-export const subtractDate = function(date: Date | string, amount: number, unit: DateUnit): Date {
-    if (!isUnit(unit)) return baseDate(date)
-
-    return sub(baseDate(date), { [unit]: amount })
+export const subtractDate = function(date: Date | string, amount: number, unit: DateUnit): string {
+    return formatISO(
+        isUnit(unit)
+            ? sub(baseDate(date), { [unit]: amount })
+            : baseDate(date),
+    )
 }
 export const subDate = subtractDate
 
@@ -60,10 +68,10 @@ export const subDate = subtractDate
  *
  * i.e. {{nextDate "1974-01-23" "fr" }}
  */
-export const nextDate = function(date: Date | string, day: 'mo' | 'tu' | 'we' | 'th' | 'fr' | 'sa' | 'su'): Date {
+export const nextDate = function(date: Date | string, day: 'mo' | 'tu' | 'we' | 'th' | 'fr' | 'sa' | 'su'): string {
     const dates: Record<string, Day> = { mo: 0, tu: 1, we: 2, th: 3, fr: 4, sa: 5, su: 6 }
     const base = baseDate(date)
-    return nextDay(base, dates[day])
+    return formatISO(nextDay(base, dates[day]))
 }
 
 /**

@@ -1,12 +1,11 @@
 import { addDays } from 'date-fns'
-import Organization from '../../organizations/Organization'
-import Project from '../../projects/Project'
 import { RuleTree } from '../../rules/Rule'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
+import { setupProject, setupTestJourney } from './helpers'
 import { JourneyState, enterJourneysFromEvent } from '../JourneyService'
-import { JourneyStep, JourneyStepMap, JourneyUserStep } from '../JourneyStep'
+import { JourneyStep, JourneyUserStep } from '../JourneyStep'
 import { make } from '../../rules/RuleEngine'
 import { uuid } from '../../utilities'
 
@@ -16,15 +15,6 @@ describe('JourneyService', () => {
         x: 0,
         y: 0,
         data: {},
-    }
-
-    const setup = async () => {
-        const org = (await Organization.find(1))!
-        const project = await Project.insertAndFetch({
-            organization_id: org.id,
-            name: `Project ${Date.now()}`,
-        })
-        return { org, project }
     }
 
     const entrance = (list_id: number, childId: string) => {
@@ -97,39 +87,6 @@ describe('JourneyService', () => {
         ],
     })
 
-    interface SetupJourneyParams {
-        data: Record<string, unknown>
-        events?: Array<{
-            name: string
-            data: Record<string, unknown>
-        }>
-        stepMap: JourneyStepMap
-    }
-
-    const setupJourney = async ({ data, events, stepMap }: SetupJourneyParams) => {
-
-        const { project } = await setup()
-
-        const { journey, steps } = await Journey.create(project.id, 'Test Journey', stepMap)
-
-        const user = await User.insertAndFetch({
-            project_id: project.id,
-            external_id: Date.now().toString(),
-            data,
-        })
-
-        if (events?.length) {
-            await UserEvent.insert(events.map(({ name, data }) => ({
-                project_id: project.id,
-                user_id: user.id,
-                name,
-                data,
-            })))
-        }
-
-        return { journey, project, steps, user }
-    }
-
     const expectStepPath = (state: JourneyState, expectedPath: string[]) => {
         const resultPath = state.userSteps.map(us => state.steps.find(s => us.step_id === s.id)?.external_id ?? '??').join('->')
         expect(resultPath).toEqual(expectedPath.join('->'))
@@ -148,7 +105,7 @@ describe('JourneyService', () => {
 
     test('Steps - Entrance - Event-Based', async () => {
 
-        const { steps, user } = await setupJourney({
+        const { steps, user } = await setupTestJourney({
             data: {},
             stepMap: {
                 e: {
@@ -181,7 +138,7 @@ describe('JourneyService', () => {
 
     test('Steps - Delay', async () => {
 
-        const { steps, user } = await setupJourney({
+        const { steps, user } = await setupTestJourney({
             data: {},
             stepMap: {
                 e: entrance(0, 'd1'),
@@ -214,7 +171,7 @@ describe('JourneyService', () => {
 
         const parentId = uuid()
 
-        const { steps, user } = await setupJourney({
+        const { steps, user } = await setupTestJourney({
             data: {
                 state: 'AL',
             },
@@ -267,7 +224,7 @@ describe('JourneyService', () => {
 
     test('Steps - Update', async () => {
 
-        const { steps, user } = await setupJourney({
+        const { steps, user } = await setupTestJourney({
             data: {
                 field1: 1,
             },
@@ -298,7 +255,7 @@ describe('JourneyService', () => {
 
     test('Steps - Entrance', async () => {
 
-        const { project } = await setup()
+        const { project } = await setupProject()
 
         const journey2 = await Journey.create(project.id, 'Second', {
             e: entrance(0, 'd'),
@@ -338,7 +295,7 @@ describe('JourneyService', () => {
 
     test('JourneyState - prevent infinite loop', async () => {
 
-        const { project } = await setup()
+        const { project } = await setupProject()
 
         const rule = make({
             type: 'boolean',
