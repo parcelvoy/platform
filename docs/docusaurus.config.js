@@ -14,7 +14,7 @@ const config = {
   url: 'https://parcelvoy.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/docs/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -43,7 +43,9 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/parcelvoy/platform/blob/main/docs/',
+          routeBasePath: '/'
         },
+        blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
