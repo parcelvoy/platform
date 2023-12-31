@@ -29,8 +29,8 @@ Dive deeper into the documentation for how to create, manage and launch campaign
 ## Tutorials
 
 <Cards>
-    <Card title="Create" href="/docs/how-to/campaigns/create">Start here to get up and running and get aquainted at a high level with sending messages with Parcelvoy.</Card>
-    <Card title="Design" href="/docs/how-to/campaigns/design">Design, preview and proof campaigns to make sure they are perfect!</Card>
-    <Card title="Launch" href="/docs/how-to/campaigns/launch">Schedule, launch and evaluate how your campaigns are performing.</Card>
-    <Card title="Customize" href="/docs/how-to/campaigns/templates">Templates are the backbone of campaigns and allow you to create dynamic messages.</Card>
+    <Card title="Create" href="/how-to/campaigns/create">Start here to get up and running and get aquainted at a high level with sending messages with Parcelvoy.</Card>
+    <Card title="Design" href="/how-to/campaigns/design">Design, preview and proof campaigns to make sure they are perfect!</Card>
+    <Card title="Launch" href="/how-to/campaigns/launch">Schedule, launch and evaluate how your campaigns are performing.</Card>
+    <Card title="Customize" href="/how-to/campaigns/templates">Templates are the backbone of campaigns and allow you to create dynamic messages.</Card>
 </Cards>

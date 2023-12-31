@@ -7,14 +7,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Parcelvoy',
-  tagline: 'Open source multi-channel marketing automation platform. Send data-driven emails, sms, push notifications and more!',
+  tagline: 'Dinosaurs are cool',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://parcelvoy.com',
+  url: 'https://docs.parcelvoy.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/docs/',
+  baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -43,9 +43,8 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/parcelvoy/platform/blob/main/docs/',
-          routeBasePath: '/'
+          routeBasePath: '/',
         },
-        blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -65,7 +64,6 @@ const config = {
           alt: 'Parcelvoy',
           src: 'img/parcelvoy.svg',
           srcDark: 'img/parcelvoy-light.svg',
-          href: 'https://parcelvoy.com'
         },
         items: [
           {
