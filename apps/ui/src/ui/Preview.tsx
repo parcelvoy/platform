@@ -71,6 +71,10 @@ export default function Preview({ template, response, size = 'large' }: PreviewP
                 </div>}
             </div>
         )
+    } else if (type === 'in_app') {
+        preview = (
+            <Iframe content={data.html ?? ''} />
+        )
     }
 
     return (

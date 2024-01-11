@@ -8,6 +8,8 @@ import { DeviceParams } from '../users/Device'
 import UserPatchJob from '../users/UserPatchJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 import UserAliasJob from '../users/UserAliasJob'
+import { getNotifications, readNotification } from '../notifications/NotificationService'
+import { getUserFromClientId } from '../users/UserRepository'
 import App from '../app'
 
 const router = new Router<ProjectState>()
@@ -245,6 +247,32 @@ router.post('/events', async ctx => {
 
     ctx.status = 204
     ctx.body = ''
+})
+
+router.get('/notifications', async ctx => {
+    const cursor = ctx.request.query.cursor as string | undefined
+    const projectId = ctx.state.project.id
+    const user = await getUserFromClientId(projectId, ctx.request.body)
+    if (!user) {
+        ctx.status = 404
+        return
+    }
+    ctx.body = await getNotifications(
+        user,
+        cursor,
+    )
+})
+
+router.put('/notifications/:id', async ctx => {
+    const projectId = ctx.state.project.id
+    const user = await getUserFromClientId(projectId, ctx.request.body)
+    if (user) {
+        await readNotification(
+            user,
+            parseInt(ctx.params.id),
+        )
+    }
+    ctx.status = 204
 })
 
 export default router

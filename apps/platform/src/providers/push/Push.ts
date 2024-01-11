@@ -1,8 +1,12 @@
-export interface Push {
+import { BaseNotification } from '../../notifications/Notification'
+
+export interface BasePush extends BaseNotification {
+    topic: string
+    silent: boolean
+}
+
+export interface Push extends BasePush {
     tokens: string | string[]
-    title: string
-    body: string
-    custom: Record<string, string | number>
 }
 
 export interface PushResponse {
