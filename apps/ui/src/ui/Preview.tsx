@@ -60,6 +60,10 @@ export default function Preview({ template }: PreviewProps) {
                 <JsonPreview value={data} />
             </div>
         )
+    } else if (type === 'in_app') {
+        preview = (
+            <Iframe content={data.html ?? ''} />
+        )
     }
 
     return (

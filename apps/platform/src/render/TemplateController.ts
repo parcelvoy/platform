@@ -8,6 +8,7 @@ import { createTemplate, deleteTemplate, getTemplate, pagedTemplates, sendProof,
 import { Variables } from '.'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
+import { ChannelType } from '../config/channels'
 
 const router = new Router<
     ProjectState & { template?: Template }
@@ -115,80 +116,61 @@ const templateDataWebhookParams = {
     nullable: true,
 }
 
+const templateDataInAppParams = {
+    type: 'object',
+    required: ['html'],
+    properties: {
+        html: { type: 'string' },
+        custom: {
+            type: 'object',
+            nullable: true,
+            additionalProperties: true,
+        },
+    },
+    nullable: true,
+}
+
+const baseCreateType = (type: ChannelType, data: any) => ({
+    type: 'object',
+    required: ['type', 'campaign_id', 'locale'],
+    properties: {
+        type: {
+            type: 'string',
+            enum: [type],
+        },
+        campaign_id: {
+            type: 'integer',
+        },
+        locale: {
+            type: 'string',
+        },
+        data,
+    },
+    additionalProperties: false,
+}) as any
+
+const baseUpdateType = (type: ChannelType, data: any) => ({
+    type: 'object',
+    required: ['type', 'data'],
+    properties: {
+        type: {
+            type: 'string',
+            enum: [type],
+        },
+        data,
+    },
+    additionalProperties: false,
+}) as any
+
 const templateCreateParams: JSONSchemaType<TemplateParams> = {
     $id: 'templateCreateParams',
-    oneOf: [{
-        type: 'object',
-        required: ['type', 'campaign_id', 'locale'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['email'],
-            },
-            campaign_id: {
-                type: 'integer',
-            },
-            locale: {
-                type: 'string',
-            },
-            data: templateDataEmailParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'campaign_id', 'locale'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['text'],
-            },
-            campaign_id: {
-                type: 'integer',
-            },
-            locale: {
-                type: 'string',
-            },
-            data: templateDataTextParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'campaign_id', 'locale'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['push'],
-            },
-            campaign_id: {
-                type: 'integer',
-            },
-            locale: {
-                type: 'string',
-            },
-            data: templateDataPushParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'campaign_id', 'locale'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['webhook'],
-            },
-            campaign_id: {
-                type: 'integer',
-            },
-            locale: {
-                type: 'string',
-            },
-            data: templateDataWebhookParams as any,
-        },
-        additionalProperties: false,
-    }],
+    oneOf: [
+        baseCreateType('email', templateDataEmailParams),
+        baseCreateType('text', templateDataTextParams),
+        baseCreateType('push', templateDataPushParams),
+        baseCreateType('webhook', templateDataWebhookParams),
+        baseCreateType('in_app', templateDataInAppParams),
+    ],
 }
 router.post('/', async ctx => {
     const payload = validate(templateCreateParams, ctx.request.body)
@@ -210,54 +192,13 @@ router.get('/:templateId', async ctx => {
 
 const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
     $id: 'templateUpdateParams',
-    oneOf: [{
-        type: 'object',
-        required: ['type', 'data'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['email'],
-            },
-            data: templateDataEmailParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'data'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['text'],
-            },
-            data: templateDataTextParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'data'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['push'],
-            },
-            data: templateDataPushParams as any,
-        },
-        additionalProperties: false,
-    },
-    {
-        type: 'object',
-        required: ['type', 'data'],
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['webhook'],
-            },
-            data: templateDataWebhookParams as any,
-        },
-        additionalProperties: false,
-    }],
+    oneOf: [
+        baseUpdateType('email', templateDataEmailParams),
+        baseUpdateType('text', templateDataTextParams),
+        baseUpdateType('push', templateDataPushParams),
+        baseUpdateType('webhook', templateDataWebhookParams),
+        baseUpdateType('in_app', templateDataInAppParams),
+    ],
 }
 router.patch('/:templateId', async ctx => {
     const payload = validate(templateUpdateParams, ctx.request.body)

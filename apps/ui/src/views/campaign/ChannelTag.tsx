@@ -13,7 +13,7 @@ export function ChannelIcon({ channel }: Pick<ChannelTagParams, 'channel'>) {
         ? EmailIcon
         : channel === 'text'
             ? TextIcon
-            : channel === 'push'
+            : channel === 'push' || channel === 'in_app'
                 ? PushIcon
                 : WebhookIcon
     return <Icon />

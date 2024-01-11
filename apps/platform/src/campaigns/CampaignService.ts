@@ -2,6 +2,7 @@ import PushJob from '../providers/push/PushJob'
 import WebhookJob from '../providers/webhook/WebhookJob'
 import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
+import InAppJob from '../providers/inapp/InAppJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, SentCampaign } from './Campaign'
@@ -237,6 +238,7 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type
         text: TextJob.from(body),
         push: PushJob.from(body),
         webhook: WebhookJob.from(body),
+        in_app: InAppJob.from(body),
     }
     const job = channels[campaign.channel]
     if (send_id) {
