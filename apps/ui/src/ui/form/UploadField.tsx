@@ -7,6 +7,7 @@ interface UploadFieldProps<X extends FieldValues, P extends FieldPath<X>> extend
     value?: FileList | null
     onChange?: (value: FileList) => void
     isUploading?: boolean
+    accept?: string
 }
 
 export default function UploadField<X extends FieldValues, P extends FieldPath<X>>(props: UploadFieldProps<X, P>) {
@@ -18,6 +19,7 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
         name,
         required,
         isUploading = false,
+        accept = 'text/csv',
     } = props
     let { value, onChange } = props
     if (form) {
@@ -65,7 +67,7 @@ export default function UploadField<X extends FieldValues, P extends FieldPath<X
                 type="file"
                 id={id}
                 name={name}
-                accept="text/csv"
+                accept={accept}
                 required={required}
                 disabled={disabled ?? isUploading}
                 onChange={(event) => event.target.files && onChange?.(event.target.files)} />
