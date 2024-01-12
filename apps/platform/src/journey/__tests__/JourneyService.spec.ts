@@ -113,7 +113,7 @@ describe('JourneyService', () => {
                     type: 'entrance',
                     data: {
                         trigger: 'event',
-                        eventName: 'purchased gourd',
+                        event_name: 'purchased gourd',
                     },
                 },
             },
