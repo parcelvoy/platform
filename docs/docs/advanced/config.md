@@ -32,7 +32,9 @@ Find below a list of all environment variables that can be set at launch to conf
 |--|--|--|
 | STORAGE_BASE_URL | string | true |
 | STORAGE_DRIVER | 's3' or 'local' | true |
-| AWS_S3_BUCKET | string | If driver is S3 |
+| STORAGE_S3_BUCKET | string | If driver is S3 |
+| STORAGE_S3_ENDPOINT | string | false |
+| STORAGE_S3_FORCE_PATH_STYLE | boolean | false |
 | AWS_REGION | string | If driver is S3 |
 | AWS_ACCESS_KEY_ID | string | If driver is S3 |
 | AWS_SECRET_ACCESS_KEY | string | If driver is S3 |

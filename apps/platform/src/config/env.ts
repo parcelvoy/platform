@@ -92,8 +92,10 @@ export default (type?: EnvType): Env => {
         storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
             s3: () => ({
                 baseUrl: process.env.STORAGE_BASE_URL,
-                bucket: process.env.AWS_S3_BUCKET!,
-                region: process.env.AWS_REGION!,
+                bucket: process.env.STORAGE_S3_BUCKET ?? process.env.AWS_S3_BUCKET!,
+                region: process.env.AWS_REGION ?? 'us-east-1',
+                endpoint: process.env.STORAGE_S3_ENDPOINT,
+                forcePathStyle: process.env.STORAGE_S3_FORCE_PATH_STYLE !== 'false',
                 credentials: {
                     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
                     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,

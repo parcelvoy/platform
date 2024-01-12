@@ -64,6 +64,11 @@ export default class Storage {
             return combineURLs([App.main.env.storage.baseUrl, path])
         }
 
+        // If we are using S3, provide a path based on endpoint if needed
+        if (App.main.env.storage.driver === 's3') {
+            return S3StorageProvider.url(path)
+        }
+
         // Otherwise default back to local path
         return `/uploads/${path}`
     }

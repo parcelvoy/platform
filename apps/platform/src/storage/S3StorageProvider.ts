@@ -4,10 +4,14 @@ import { PassThrough } from 'stream'
 import { AWSConfig } from '../core/aws'
 import { StorageTypeConfig } from './Storage'
 import { ImageUploadTask, StorageProvider } from './StorageProvider'
+import App from '../app'
+import { combineURLs } from '../utilities'
 
 export interface S3Config extends StorageTypeConfig, AWSConfig {
     driver: 's3'
     bucket: string
+    endpoint: string
+    forcePathStyle: boolean
 }
 
 export class S3StorageProvider implements StorageProvider {
@@ -46,5 +50,12 @@ export class S3StorageProvider implements StorageProvider {
             Bucket: this.config.bucket,
             Key: filename,
         })
+    }
+
+    static url(path: string) {
+        const config = App.main.env.storage as S3Config
+        return config.endpoint && config.forcePathStyle
+            ? combineURLs([config.endpoint, config.bucket, path])
+            : combineURLs([`https://${config.bucket}.s3.amazonaws.com`, path])
     }
 }

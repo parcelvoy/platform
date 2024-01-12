@@ -37,6 +37,7 @@ export default function ImageGalleryModal({ open, onClose, onInsert }: ImageGall
                     name="file"
                     label="File"
                     isUploading={upload !== undefined}
+                    accept={'image/*'}
                     required />
 
                 {results && <div className="images">

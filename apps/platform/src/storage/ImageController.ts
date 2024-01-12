@@ -26,7 +26,7 @@ const uploadMetadata: JSONSchemaType<FileMetadata> = {
         },
         mimeType: {
             type: 'string',
-            enum: ['image/jpeg', 'image/gif', 'image/png', 'image/jpg'],
+            enum: ['image/jpeg', 'image/gif', 'image/png', 'image/jpg', 'image/webp'],
         },
         size: {
             type: 'number',
