@@ -2,7 +2,7 @@ import { ErrorType } from '../core/errors'
 
 export const ProjectError = {
     ProjectDoesNotExist: {
-        message: 'The requested campaign does not exist.',
+        message: 'The requested project does not exist.',
         code: 6000,
         statusCode: 404,
     },
