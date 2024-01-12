@@ -21,7 +21,7 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
         .where('journeys.published', true)
         .where('journey_steps.type', JourneyEntrance.type)
         .whereJsonPath('journey_steps.data', '$.trigger', '=', 'event')
-        .whereJsonPath('journey_steps.data', '$.eventName', '=', event.name),
+        .whereJsonPath('journey_steps.data', '$.event_name', '=', event.name),
     )
 
     if (!entrances.length) return
