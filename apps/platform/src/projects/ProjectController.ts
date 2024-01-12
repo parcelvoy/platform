@@ -17,6 +17,10 @@ import { hasProvider } from '../providers/ProviderService'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
+    if (ctx.state.scope !== 'admin' && !ctx.state.key) {
+        throw new RequestError(ProjectError.ProjectDoesNotExist)
+    }
+
     const project = await getProject(
         ctx.state.scope === 'admin'
             ? ctx.params.project
