@@ -10,15 +10,17 @@ export interface BaseNotification {
 
 type BannerNotification = BaseNotification & { type: 'banner' }
 
-interface AlertNotification extends BaseNotification {
+interface StyledNotification extends BaseNotification {
+    html: string
+}
+
+interface AlertNotification extends StyledNotification {
     type: 'alert'
     image?: string
 }
 
-interface HtmlNotification extends BaseNotification {
+interface HtmlNotification extends StyledNotification {
     type: 'html'
-    html: string
-    custom: Record<string, string | number>
 }
 
 export type NotificationContent = BannerNotification | AlertNotification | HtmlNotification
@@ -30,4 +32,6 @@ export default class Notification extends Model {
     content!: NotificationContent
     read_at?: Date
     expires_at?: Date
+
+    static jsonAttributes = ['content']
 }
