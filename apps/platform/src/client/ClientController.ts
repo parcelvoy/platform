@@ -248,7 +248,11 @@ router.post('/events', async ctx => {
 router.get('/notifications', async ctx => {
     const cursor = ctx.request.query.cursor as string | undefined
     const projectId = ctx.state.project.id
-    const user = await getUserFromClientId(projectId, ctx.request.body)
+    const identity = {
+        external_id: ctx.request.headers['x-external-id'] as string,
+        anonymous_id: ctx.request.headers['x-anonymous-id'] as string,
+    }
+    const user = await getUserFromClientId(projectId, identity)
     if (!user) {
         ctx.status = 404
         return

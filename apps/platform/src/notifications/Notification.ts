@@ -30,4 +30,6 @@ export default class Notification extends Model {
     content!: NotificationContent
     read_at?: Date
     expires_at?: Date
+
+    static jsonAttributes = ['content']
 }
