@@ -372,7 +372,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
     const nodes: Node[] = []
     const edges: Edge[] = []
 
-    for (const [id, { x, y, type, data, name, children, stats, stats_at, id: stepId }] of Object.entries(stepMap)) {
+    for (const [id, { x, y, type, data, name, data_key, children, stats, stats_at, id: stepId }] of Object.entries(stepMap)) {
         nodes.push({
             id,
             position: {
@@ -383,6 +383,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
             data: {
                 type,
                 name,
+                data_key,
                 data,
                 stats,
                 stats_at,
@@ -410,6 +411,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
         data: {
             type,
             name = '',
+            data_key,
             data = {},
         },
         position: {
@@ -421,6 +423,7 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
             type,
             data,
             name,
+            data_key,
             x,
             y,
             children: edges

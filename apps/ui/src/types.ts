@@ -271,6 +271,7 @@ export interface JourneyStepMap {
     [external_id: string]: {
         type: string
         name: string
+        data_key?: string
         data?: Record<string, unknown>
         x: number
         y: number
