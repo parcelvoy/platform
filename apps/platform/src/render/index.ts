@@ -21,6 +21,7 @@ export interface Variables {
     context: RenderContext
     user: User
     event?: Record<string, any>
+    journey?: Record<string, any>
     project: Project
 }
 
@@ -71,10 +72,11 @@ export const Wrap = ({ html, preheader, variables: { user, context, project } }:
     return html
 }
 
-export default (template: string, { user, event, context }: Variables) => {
+export const Render = (template: string, { user, event, journey, context }: Variables) => {
     return compileTemplate(template)({
         user: user.flatten(),
         event,
+        journey,
         context,
         unsubscribeEmailUrl: unsubscribeEmailLink({
             userId: user.id,
@@ -84,3 +86,5 @@ export default (template: string, { user, event, context }: Variables) => {
         preferencesUrl: preferencesLink(user.id),
     })
 }
+
+export default Render
