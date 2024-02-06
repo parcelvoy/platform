@@ -309,7 +309,7 @@ export class JourneyGate extends JourneyStep {
 
         const params = {
             user: state.user.flatten(),
-            events,
+            events: events.map(e => e.flatten()),
             journey: state.stepData(),
         }
 
