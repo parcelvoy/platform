@@ -18,7 +18,7 @@ RUN npm run build
 FROM node:18 AS build
 WORKDIR /usr/src/app
 COPY --from=backend_compile /usr/src/app/apps/platform/package*.json ./
-COPY --from=backend_compile /usr/src/app/apps/platform/build ./
+COPY --from=backend_compile /usr/src/app/apps/platform/build ./build
 COPY --from=backend_compile /usr/src/app/apps/platform/db ./db
 COPY --from=backend_compile /usr/src/app/apps/platform/scripts ./scripts
 COPY --from=backend_compile /usr/src/app/apps/platform/public ./public 
@@ -33,5 +33,5 @@ USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app ./
 EXPOSE 80
-CMD ["dumb-init", "node", "index.js"]
+CMD ["dumb-init", "node", "build/boot.js"]
 
