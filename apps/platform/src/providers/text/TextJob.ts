@@ -7,6 +7,7 @@ import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../Message
 import { loadTextChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
 import App from '../../app'
+import { UnsubscribeTextError } from './TextError'
 
 export default class TextJob extends Job {
     static $name = 'text'
@@ -52,7 +53,11 @@ export default class TextJob extends Job {
                 user_step_id: trigger.user_step_id,
                 state: 'failed',
             })
-            App.main.error.notify(error)
+
+            // Dont bubble up unsubscribes, only fail
+            if (!(error instanceof UnsubscribeTextError)) {
+                App.main.error.notify(error)
+            }
             return
         }
 

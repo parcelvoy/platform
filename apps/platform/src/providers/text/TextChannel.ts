@@ -32,7 +32,6 @@ export default class TextChannel {
             // force unsubscribe the user from this subscription type
             if (error instanceof UnsubscribeTextError) {
                 await unsubscribe(variables.user.id, variables.context.subscription_id)
-                return
             }
             throw error
         }
