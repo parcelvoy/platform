@@ -39,7 +39,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
 
     // If there is a send and it's in an aborted state or has already
     // sent, abort this job to prevent duplicate sends
-    if (send && (send.state === 'aborted' || send.state === 'sent')) return
+    if (send && send.hasCompleted) return
 
     // Fetch campaign and templates
     const campaign = await Campaign.find(campaign_id)

@@ -44,12 +44,16 @@ export default class TextJob extends Job {
         try {
             await channel.send(template, data)
         } catch (error: any) {
+
+            // On error, mark as failed and notify just in case
             await updateSendState({
                 campaign,
                 user,
                 user_step_id: trigger.user_step_id,
                 state: 'failed',
             })
+            App.main.error.notify(error)
+            return
         }
 
         // Update send record
