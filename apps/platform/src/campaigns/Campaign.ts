@@ -62,6 +62,10 @@ export class CampaignSend extends Model {
     opened_at!: string | Date
     clicks!: number
     user_step_id?: number
+
+    get hasCompleted() {
+        return ['aborted', 'sent', 'failed', 'bounced'].includes(this.state)
+    }
 }
 
 export type CampaignSendParams = Pick<CampaignSend, 'campaign_id' | 'user_id' | 'state' | 'send_at'>
