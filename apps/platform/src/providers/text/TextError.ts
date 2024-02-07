@@ -1,8 +1,11 @@
-export default class TextError extends Error {
+import { ContextError } from '../../error/ErrorHandler'
+
+export default class TextError extends ContextError {
     phone: string
     constructor(type: string, phone: string, message: string) {
-        super(`Text Error: ${type}: ${message}`)
+        super(`Text Error: ${message}`)
         this.phone = phone
+        this.context = { phone, type }
         Error.captureStackTrace(this, TextError)
     }
 }
