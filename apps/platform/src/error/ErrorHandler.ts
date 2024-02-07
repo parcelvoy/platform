@@ -10,6 +10,10 @@ export interface ErrorHandlerTypeConfig extends DriverConfig {
     driver: ErrorHandlerProviderName
 }
 
+export class ContextError extends Error {
+    context?: Record<string, any>
+}
+
 export default class ErrorHandler {
     provider?: ErrorHandlerProvider
     constructor(config: ErrorConfig) {
@@ -25,6 +29,11 @@ export default class ErrorHandler {
     }
 
     notify(error: Error, context?: Record<string, any>) {
-        this.provider?.notify(error, context)
+        this.provider?.notify(
+            error,
+            error instanceof ContextError
+                ? { ...context, ...error.context }
+                : context,
+        )
     }
 }
