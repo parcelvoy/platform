@@ -1,5 +1,6 @@
 import { loadProvider } from '../ProviderRepository'
 import { loadControllers } from '../ProviderService'
+import HttpSMSTextProvider from './HttpSMSProvider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
@@ -11,6 +12,7 @@ const typeMap = {
     nexmo: NexmoTextProvider,
     plivo: PlivoTextProvider,
     twilio: TwilioTextProvider,
+    httpsms: HttpSMSTextProvider,
     logger: LoggerTextProvider,
 }
 
