@@ -36,10 +36,7 @@ services:
           name: mysql
           envVarKey: MYSQL_PASSWORD
       - key: DB_PORT
-        fromService:
-          type: pserv
-          name: mysql
-          property: port
+        value: 3306
       - key: DB_DATABASE
         fromService:
           type: pserv
