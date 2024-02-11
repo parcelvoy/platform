@@ -73,15 +73,14 @@ export default class Api extends Koa {
 
     register(...routers: SubRouter[]) {
         const apiRouter = new Router({ prefix: '/api' })
-        for (const router of routers) {
-            router.global
-                ? register(this.router, router)
-                : register(apiRouter, router)
+        for (const router of routers.filter(r => !r.global)) {
+            register(apiRouter, router)
         }
         register(this.router, apiRouter)
+        for (const router of routers.filter(r => r.global)) {
+            register(this.router, router)
+        }
         this.use(this.router.routes())
             .use(this.router.allowedMethods())
-
-        console.log(this.router)
     }
 }
