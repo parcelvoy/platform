@@ -31,9 +31,11 @@ export const register = (parent: Router, ...routers: Router[]) => {
     return parent
 }
 
+export type SubRouter = Router & { global?: boolean }
+
 export default (app: App) => {
 
-    const routers: Record<string, Router> = {
+    const routers: Record<string, SubRouter> = {
         admin: adminRouter(),
         client: clientRouter(),
         public: publicRouter(),
@@ -50,6 +52,7 @@ export default (app: App) => {
             }
         })
         routers.ui = ui
+        routers.ui.global = true
     }
 
     return routers

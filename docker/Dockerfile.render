@@ -20,8 +20,8 @@ WORKDIR /usr/src/app
 COPY --from=backend_compile /usr/src/app/apps/platform/package*.json ./
 COPY --from=backend_compile /usr/src/app/apps/platform/build ./build
 COPY --from=backend_compile /usr/src/app/apps/platform/db ./db
-COPY --from=backend_compile /usr/src/app/apps/platform/public ./build/public 
-COPY --from=frontend_compile /usr/src/app/apps/ui/build ./build/public
+COPY --from=backend_compile /usr/src/app/apps/platform/public ./public 
+COPY --from=frontend_compile /usr/src/app/apps/ui/build ./public
 RUN npm ci --only=production
 
 # --------------> The production image
