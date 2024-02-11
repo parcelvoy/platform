@@ -14,6 +14,8 @@ services:
         sync: false
       - key: MONO
         value: true
+      - key: PORT
+        value: 80
       - key: APP_SECRET
         generateValue: true
       - key: DB_CLIENT

@@ -12,7 +12,6 @@ WORKDIR /usr/src/app
 COPY --from=compile /usr/src/app/apps/platform/package*.json ./
 COPY --from=compile /usr/src/app/apps/platform/build ./build
 COPY --from=compile /usr/src/app/apps/platform/db ./db
-COPY --from=compile /usr/src/app/apps/platform/scripts ./scripts
 COPY --from=compile /usr/src/app/apps/platform/public ./public 
 RUN npm ci --only=production
 
