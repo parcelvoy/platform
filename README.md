@@ -32,7 +32,7 @@ You can run Parcelvoy locally or in the cloud easily using Docker.
 You can do a one-click deploy on Render using the button below:
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/parcelvoy/platform)
-
+(Make sure to the BASE_URL to the URL of the web server)
 
 ### Docker Compose
 
