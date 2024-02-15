@@ -5,8 +5,8 @@ import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
-import { UserList } from '../lists/List'
-import Subscription from '../subscriptions/Subscription'
+import List, { UserList } from '../lists/List'
+import Subscription, { UserSubscription } from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
@@ -294,47 +294,39 @@ export const checkStalledSends = (campaignId: number) => {
 }
 
 export const recipientQuery = (campaign: Campaign) => {
-    return UserList.query()
-        .select(UserList.raw('DISTINCT user_list.user_id'), 'users.timezone')
 
-        // Join user subscriptions to filter out unsubscribes
-        .leftJoin('user_subscription', qb => {
-            qb.on('user_list.user_id', 'user_subscription.user_id')
-                .andOn('user_subscription.subscription_id', '=', UserList.raw(campaign.subscription_id))
-        })
+    // Only include users who are in matching lists
+    const inListQuery = UserList.query()
+        .select('user_id')
+        .whereIn('list_id', campaign.list_ids ?? [])
 
-        // Join in the exclusion list
-        .leftJoin('user_list as ul2', qb => {
-            qb.on('ul2.user_id', 'user_list.user_id')
-                .onIn('ul2.list_id', campaign.exclusion_list_ids ?? [])
-        })
+    // Filter out anyone in the exlusion list
+    const notInListQuery = UserList.query()
+        .select('user_id')
+        .whereIn('list_id', campaign.exclusion_list_ids ?? [])
 
-        // Join users to get the timezone field
-        .leftJoin('users', 'users.id', 'user_list.user_id')
+    // Filter out anyone who has already been sent to (but allow for
+    // regenerating for aborts & reschedules)
+    const hasSendQuery = CampaignSend.query()
+        .select('user_id')
+        .where('campaign_id', campaign.id)
+        .where('state', 'sent')
 
-        // Join previous campaign successful sends
-        .leftJoin('campaign_sends', qb => {
-            qb.on('campaign_sends.user_id', 'user_list.user_id')
-                .andOn('campaign_sends.campaign_id', '=', UserList.raw(campaign.id))
-                .andOn('campaign_sends.state', '=', UserList.raw('"sent"'))
-        })
+    // Filter out anyone who has unsubscribed
+    const unsubscribesQuery = UserSubscription.query()
+        .select('user_id')
+        .where('subscription_id', campaign.subscription_id)
+        .where('state', '>', 0)
 
-        // Allow users with no preference or explicit preference
-        .where(qb => {
-            qb.whereNull('user_subscription.id')
-                .orWhere('user_subscription.state', '>', 0)
-        })
-
-        // Find all users in provided lists, removing ones in exclusion list
-        .whereIn('user_list.list_id', campaign.list_ids ?? [])
-        .whereNull('ul2.list_id')
+    return User.query()
+        .select('users.id', 'users.timezone')
+        .whereIn('users.id', inListQuery)
+        .whereIn('users.id', notInListQuery)
+        .whereIn('users.id', hasSendQuery)
+        .whereIn('users.id', unsubscribesQuery)
         .where('users.project_id', campaign.project_id)
 
-        // Filter out existing sends (handle aborts & reschedules)
-        .whereNull('campaign_sends.id')
-
-        // Based on campaign type, filter out based on missing user
-        // criteria
+        // Reduce to only users with appropriate send parameters
         .where(qb => {
             if (campaign.channel === 'email') {
                 qb.whereNotNull('users.email')
@@ -426,4 +418,9 @@ export const campaignPreview = async (project: Project, campaign: Campaign) => {
     const template = templateInUserLocale(templates, project)
     const mapped = template.map()
     return screenshotHtml(mapped)
+}
+
+export const estimatedSendSize = async (campaign: Campaign) => {
+    const lists: List[] = await List.query().whereIn('id', campaign.lists ?? [])
+    return lists.reduce((acc, list) => (list.users_count ?? 0) + acc, 0)
 }
