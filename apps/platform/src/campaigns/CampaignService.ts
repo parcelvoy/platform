@@ -6,7 +6,7 @@ import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
 import List, { UserList } from '../lists/List'
-import Subscription, { UserSubscription } from '../subscriptions/Subscription'
+import Subscription, { SubscriptionState, UserSubscription } from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
@@ -316,14 +316,14 @@ export const recipientQuery = (campaign: Campaign) => {
     const unsubscribesQuery = UserSubscription.query()
         .select('user_id')
         .where('subscription_id', campaign.subscription_id)
-        .where('state', '>', 0)
+        .where('state', SubscriptionState.unsubscribed)
 
     return User.query()
-        .select('users.id', 'users.timezone')
+        .select('users.id AS user_id', 'users.timezone')
         .whereIn('users.id', inListQuery)
-        .whereIn('users.id', notInListQuery)
-        .whereIn('users.id', hasSendQuery)
-        .whereIn('users.id', unsubscribesQuery)
+        .whereNotIn('users.id', notInListQuery)
+        .whereNotIn('users.id', hasSendQuery)
+        .whereNotIn('users.id', unsubscribesQuery)
         .where('users.project_id', campaign.project_id)
 
         // Reduce to only users with appropriate send parameters
