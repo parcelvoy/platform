@@ -10,10 +10,10 @@ import { User } from '../users/User'
 export const pagedJourneys = async (params: PageParams, projectId: number) => {
     const result = await Journey.search(
         { ...params, fields: ['name'] },
-        b => {
-            b = b.where({ project_id: projectId })
-            params.tag?.length && b.whereIn('id', createTagSubquery(Journey, projectId, params.tag))
-            return b
+        qb => {
+            qb.where({ project_id: projectId }).whereNull('deleted_at')
+            if (params.tag?.length) qb.whereIn('id', createTagSubquery(Journey, projectId, params.tag))
+            return qb
         },
     )
     if (result.results?.length) {
@@ -80,7 +80,7 @@ export const deleteJourney = async (id: number, projectId: number): Promise<void
 }
 
 export const archiveJourney = async (id: number, projectId: number): Promise<void> => {
-    await Journey.archive(id, qb => qb.where('project_id', projectId))
+    await Journey.archive(id, qb => qb.where('project_id', projectId), { published: false })
 }
 
 export const getJourneySteps = async (journeyId: number, db?: Database): Promise<JourneyStep[]> => {

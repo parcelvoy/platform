@@ -13,6 +13,7 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
         const entrances = await JourneyEntrance.all(q => q
             .join('journeys', 'journey_steps.journey_id', '=', 'journeys.id')
             .where('journeys.published', true)
+            .whereNull('journeys.deleted_at')
             .where('journey_steps.type', JourneyEntrance.type)
             .whereJsonPath('journey_steps.data', '$.trigger', '=', 'schedule')
             .where('journey_steps.next_scheduled_at', '<=', new Date()),
