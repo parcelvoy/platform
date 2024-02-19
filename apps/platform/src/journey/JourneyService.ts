@@ -19,6 +19,7 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
         .join('journeys', 'journey_steps.journey_id', '=', 'journeys.id')
         .where('journeys.project_id', event.project_id)
         .where('journeys.published', true)
+        .whereNull('journeys.deleted_at')
         .where('journey_steps.type', JourneyEntrance.type)
         .whereJsonPath('journey_steps.data', '$.trigger', '=', 'event')
         .whereJsonPath('journey_steps.data', '$.event_name', '=', event.name),

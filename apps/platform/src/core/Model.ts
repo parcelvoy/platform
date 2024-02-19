@@ -296,11 +296,12 @@ export default class Model {
         this: T,
         id: number,
         query: Query = qb => qb,
+        fields: Partial<InstanceType<T>> = {},
         db: Database = App.main.db,
     ): Promise<InstanceType<T>> {
         await query(this.table(db))
             .where('id', id)
-            .update({ deleted_at: new Date() })
+            .update({ ...fields, deleted_at: new Date() })
         const model = await this.find(id, b => b, db) as InstanceType<T>
         this.emit('archived', id)
         return model

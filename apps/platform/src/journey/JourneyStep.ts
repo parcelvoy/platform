@@ -382,6 +382,7 @@ export class JourneyLink extends JourneyStep {
                 .where('journeys.id', this.target_id)
                 .where('journeys.project_id', state.user.project_id)
                 .where('journeys.published', true)
+                .whereNull('journeys.deleted_at')
                 .where('type', 'entrance'),
             )
         }

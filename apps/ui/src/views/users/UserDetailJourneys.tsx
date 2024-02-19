@@ -20,6 +20,7 @@ export default function UserDetailJourneys() {
     return (
         <SearchTable
             {...state}
+            title="Journeys"
             columns={[
                 {
                     key: 'Journey',
