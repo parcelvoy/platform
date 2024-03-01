@@ -421,6 +421,6 @@ export const campaignPreview = async (project: Project, campaign: Campaign) => {
 }
 
 export const estimatedSendSize = async (campaign: Campaign) => {
-    const lists: List[] = await List.query().whereIn('id', campaign.lists ?? [])
+    const lists: List[] = await List.query().whereIn('id', campaign.list_ids ?? [])
     return lists.reduce((acc, list) => (list.users_count ?? 0) + acc, 0)
 }
