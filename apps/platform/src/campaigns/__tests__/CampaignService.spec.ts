@@ -6,9 +6,10 @@ import { createSubscription, subscribe } from '../../subscriptions/SubscriptionS
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendCampaign, generateSendList } from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, sendCampaign, generateSendList, estimatedSendSize } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
 import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
+import ListStatsJob from '../../lists/ListStatsJob'
 
 afterEach(() => {
     jest.clearAllMocks()
@@ -235,6 +236,41 @@ describe('CampaignService', () => {
 
             expect(sends.length).toEqual(20)
             expect(updatedCampaign?.state).toEqual('scheduled')
+        })
+    })
+
+    describe('estimatedSendSize', () => {
+
+        test('send size is equal to combination of all lists', async () => {
+            const params = await createCampaignDependencies()
+            const list1 = await createList(params.project_id, {
+                name: uuid(),
+                type: 'static',
+                is_visible: true,
+            })
+            const list2 = await createList(params.project_id, {
+                name: uuid(),
+                type: 'static',
+                is_visible: true,
+            })
+
+            const campaign = await createTestCampaign(params, {
+                list_ids: [list1.id, list2.id],
+                send_at: new Date(),
+            }) as SentCampaign
+
+            for (let i = 0; i < 20; i++) {
+                const user = await createUser(params.project_id)
+                await addUserToList(user, list1)
+                await addUserToList(user, list2)
+                await subscribe(user.id, params.subscription_id)
+            }
+
+            await ListStatsJob.handler({ listId: list1.id, projectId: params.project_id })
+            await ListStatsJob.handler({ listId: list2.id, projectId: params.project_id })
+
+            const sendSize = await estimatedSendSize(campaign)
+            expect(sendSize).toEqual(40)
         })
     })
 })
