@@ -50,11 +50,13 @@ const router = new Router<AuthState>({ prefix: '/projects' })
 
 router.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
-    ctx.body = await pagedProjects(params, ctx.state.admin!.id)
+    const { id, organization_id } = ctx.state.admin!
+    ctx.body = await pagedProjects(params, id, organization_id)
 })
 
 router.get('/all', async ctx => {
-    ctx.body = await allProjects(ctx.state.admin!.id)
+    const { id, organization_id } = ctx.state.admin!
+    ctx.body = await allProjects(id, organization_id)
 })
 
 const projectCreateParams: JSONSchemaType<ProjectParams> = {
@@ -83,7 +85,8 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
 
 router.post('/', async ctx => {
     const payload = validate(projectCreateParams, ctx.request.body)
-    const admin = await getAdmin(ctx.state.admin!.id)
+    const { id, organization_id } = ctx.state.admin!
+    const admin = await getAdmin(id, organization_id)
     ctx.body = await createProject(admin!, payload)
 })
 

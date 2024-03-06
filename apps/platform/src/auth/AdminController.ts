@@ -2,18 +2,21 @@ import Router from '@koa/router'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { getAdmin, pagedAdmins } from './AdminRepository'
+import { AuthState } from './AuthMiddleware'
 
-const router = new Router({
+const router = new Router<AuthState>({
     prefix: '/admins',
 })
 
 router.get('/', async ctx => {
+    const organizationId = ctx.state.admin!.organization_id
     const params = extractQueryParams(ctx.query, searchParamsSchema)
-    ctx.body = await pagedAdmins(params)
+    ctx.body = await pagedAdmins(organizationId, params)
 })
 
 router.get('/:adminId', async ctx => {
-    ctx.body = await getAdmin(parseInt(ctx.params.adminId, 10))
+    const organizationId = ctx.state.admin!.organization_id
+    ctx.body = await getAdmin(organizationId, parseInt(ctx.params.adminId, 10))
 })
 
 export default router
