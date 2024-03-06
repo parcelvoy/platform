@@ -1,14 +1,15 @@
 import { PageParams } from '../core/searchParams'
 import Admin, { AdminParams } from './Admin'
 
-export const pagedAdmins = async (params: PageParams) => {
+export const pagedAdmins = async (organizationId: number, params: PageParams) => {
     return await Admin.search(
         { ...params, fields: ['first_name', 'last_name', 'email'] },
+        qb => qb.where('organization_id', organizationId),
     )
 }
 
-export const getAdmin = async (id: number): Promise<Admin | undefined> => {
-    return await Admin.find(id)
+export const getAdmin = async (organizationId: number, id: number): Promise<Admin | undefined> => {
+    return await Admin.find(id, qb => qb.where('organization_id', organizationId))
 }
 
 export const getAdminByEmail = async (email: string): Promise<Admin | undefined> => {

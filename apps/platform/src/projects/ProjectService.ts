@@ -16,8 +16,8 @@ export const adminProjectIds = async (adminId: number) => {
     return records.map(item => item.project_id)
 }
 
-export const pagedProjects = async (params: PageParams, adminId: number) => {
-    const admin = await getAdmin(adminId)
+export const pagedProjects = async (params: PageParams, adminId: number, organizationId: number) => {
+    const admin = await getAdmin(adminId, organizationId)
     const projectIds = await adminProjectIds(adminId)
     return await Project.search({ ...params, fields: ['name'] }, qb =>
         qb.where(qb =>
@@ -27,8 +27,8 @@ export const pagedProjects = async (params: PageParams, adminId: number) => {
     )
 }
 
-export const allProjects = async (adminId: number) => {
-    const admin = await getAdmin(adminId)
+export const allProjects = async (adminId: number, organizationId: number) => {
+    const admin = await getAdmin(adminId, organizationId)
     const projectIds = await adminProjectIds(adminId)
     return await Project.all(qb =>
         qb.where(qb =>
