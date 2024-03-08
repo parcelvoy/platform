@@ -16,6 +16,7 @@ export default class SentryProvider implements ErrorHandlingProvider {
     attach(api: Koa) {
         api.on('error', (err, ctx) => {
             Sentry.withScope((scope) => {
+                if (ctx.state.admin) scope.setUser({ id: ctx.state.admin.id.toString() })
                 scope.addEventProcessor((event) => {
                     return Sentry.addRequestDataToEvent(event, ctx.request)
                 })
