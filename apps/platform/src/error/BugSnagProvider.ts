@@ -23,7 +23,10 @@ export default class BugSnagProvider implements ErrorHandlingProvider {
         const middleware = Bugsnag.getPlugin('koa')
         if (middleware) {
             api.use(middleware.requestHandler)
-            api.on('error', middleware.errorHandler)
+            api.on('error', (err, ctx) => {
+                if (ctx.state.admin) ctx.bugsnag.setUser(ctx.state.admin.id.toString())
+                middleware.errorHandler(err, ctx)
+            })
         }
     }
 
