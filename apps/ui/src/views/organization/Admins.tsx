@@ -8,7 +8,8 @@ import { OrganizationContext } from '../../contexts'
 export default function Admins() {
     const state = useSearchTableQueryState(useCallback(async params => await api.admins.search(params), []))
     const [organization] = useContext(OrganizationContext)
-    const url = `${window.location.protocol}//${organization.username}.${window.location.hostname}:${window.location.port}`
+    const host = window.location.host.replace('app.', '')
+    const url = `${window.location.protocol}//${organization.username}.${host}`
     return (
         <>
             <PageContent title="Admins">

@@ -7,9 +7,17 @@ import { Organization } from '../../types'
 import Heading from '../../ui/Heading'
 import api from '../../api'
 import { toast } from 'react-hot-toast/headless'
+import { Button } from '../../ui'
 
 export default function Settings() {
     const [organization] = useContext(OrganizationContext)
+    const deleteOrganization = async () => {
+        if (confirm('Are you sure you want to delete this organization?')) {
+            await api.organizations.delete()
+            await api.auth.logout()
+            window.location.href = '/'
+        }
+    }
     return (
         <>
             <PageContent title="Settings">
@@ -37,6 +45,11 @@ export default function Settings() {
                             subtitle="The URL to clone universal link settings from." />
                     </>}
                 </FormWrapper>
+
+                <br /><br />
+                <Heading size="h3" title="Danger Zone" />
+                <p>Deleting your organization will completely remove it from the system along with all associated accounts, projects and data.</p>
+                <Button variant="destructive" onClick={async () => await deleteOrganization()}>Delete Organization</Button>
             </PageContent>
         </>
     )

@@ -16,7 +16,7 @@ router.get('/', async ctx => {
 
 router.get('/:adminId', async ctx => {
     const organizationId = ctx.state.admin!.organization_id
-    ctx.body = await getAdmin(organizationId, parseInt(ctx.params.adminId, 10))
+    ctx.body = await getAdmin(parseInt(ctx.params.adminId, 10), organizationId)
 })
 
 export default router
