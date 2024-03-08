@@ -320,12 +320,13 @@ export default class Model {
         id: number,
         query: Query = qb => qb,
         db: Database = App.main.db,
-    ): Promise<number> {
+    ): Promise<boolean> {
+        const model = await this.find(id, query, db) as InstanceType<T>
         const count = await query(this.table(db))
             .where('id', id)
             .delete()
-        this.emit('deleted', id)
-        return count
+        this.emit('deleted', model)
+        return count > 0
     }
 
     static scroll = async function * <T extends typeof Model>(

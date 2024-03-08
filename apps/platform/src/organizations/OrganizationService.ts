@@ -60,3 +60,7 @@ export const organizationIntegrations = async (organization: Organization) => {
             .where('projects.organization_id', organization.id),
     )
 }
+
+export const deleteOrganization = async (organization: Organization) => {
+    await Organization.deleteById(organization.id)
+}

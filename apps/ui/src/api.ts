@@ -300,6 +300,9 @@ const api = {
         update: async (id: number | string, params: OrganizationUpdateParams) => await client
             .patch<Organization>(`/admin/organizations/${id}`, params)
             .then(r => r.data),
+        delete: async () => await client
+            .delete('/admin/organizations')
+            .then(r => r.data),
         metrics: async () => await client
             .get<QueueMetric>('/admin/organizations/performance/queue')
             .then(r => r.data),

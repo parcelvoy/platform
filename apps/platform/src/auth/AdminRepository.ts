@@ -8,7 +8,7 @@ export const pagedAdmins = async (organizationId: number, params: PageParams) =>
     )
 }
 
-export const getAdmin = async (organizationId: number, id: number): Promise<Admin | undefined> => {
+export const getAdmin = async (id: number, organizationId: number): Promise<Admin | undefined> => {
     return await Admin.find(id, qb => qb.where('organization_id', organizationId))
 }
 
