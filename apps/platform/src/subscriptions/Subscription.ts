@@ -24,3 +24,4 @@ export class UserSubscription extends Model {
 }
 
 export type SubscriptionParams = Omit<Subscription, ModelParams>
+export type SubscriptionUpdateParams = Pick<SubscriptionParams, 'name'>

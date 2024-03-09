@@ -478,6 +478,8 @@ export interface Subscription {
     created_at: string
     updated_at: string
 }
+export type SubscriptionCreateParams = Pick<Subscription, 'name' | 'channel'>
+export type SubscriptionUpdateParams = Pick<SubscriptionCreateParams, 'name'>
 
 export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook'
 export interface Provider {

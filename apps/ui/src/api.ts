@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionCreateParams, SubscriptionParams, SubscriptionUpdateParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -248,7 +248,7 @@ const api = {
             .then(r => r.data),
     },
 
-    subscriptions: createProjectEntityPath<Subscription>('subscriptions'),
+    subscriptions: createProjectEntityPath<Subscription, SubscriptionCreateParams, SubscriptionUpdateParams>('subscriptions'),
 
     providers: {
         all: async (projectId: number | string) => await client

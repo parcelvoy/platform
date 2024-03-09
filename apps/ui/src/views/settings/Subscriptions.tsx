@@ -1,5 +1,4 @@
 import { useCallback, useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -13,10 +12,9 @@ import { PlusIcon } from '../../ui/icons'
 import { snakeToTitle } from '../../utils'
 
 export default function Subscriptions() {
-    const navigate = useNavigate()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.subscriptions.search(project.id, params), [project]))
-    const [open, setOpen] = useState(false)
+    const [editing, setEditing] = useState<null | Partial<Subscription>>(null)
 
     return (
         <>
@@ -30,7 +28,7 @@ export default function Subscriptions() {
                     },
                 ]}
                 itemKey={({ item }) => item.id}
-                onSelectRow={(row) => navigate(`${row.id}`)}
+                onSelectRow={(row) => setEditing(row)}
                 title="Subscriptions"
                 actions={
                     <>
@@ -38,7 +36,7 @@ export default function Subscriptions() {
                             variant="primary"
                             icon={<PlusIcon />}
                             size="small"
-                            onClick={() => setOpen(true)}
+                            onClick={() => setEditing({ channel: 'email' })}
                         >
                             Create Subscription
                         </Button>
@@ -46,19 +44,21 @@ export default function Subscriptions() {
                 }
             />
             <Modal
-                title="Create Subscription"
-                open={open}
-                onClose={() => setOpen(false)}
+                title={editing ? 'Update Subscription' : 'Create Subscription' }
+                open={Boolean(editing)}
+                onClose={() => setEditing(null)}
             >
-                <FormWrapper<Pick<Subscription, 'name' | 'channel'>>
-                    onSubmit={async ({ name, channel }) => {
-                        await api.subscriptions.create(project.id, { name, channel })
+                {editing && <FormWrapper<Pick<Subscription, 'id' | 'name' | 'channel'>>
+                    onSubmit={async ({ id, name, channel }) => {
+                        if (id) {
+                            await api.subscriptions.update(project.id, id, { name })
+                        } else {
+                            await api.subscriptions.create(project.id, { name, channel })
+                        }
                         await state.reload()
-                        setOpen(false)
+                        setEditing(null)
                     }}
-                    defaultValues={{
-                        channel: 'email',
-                    }}
+                    defaultValues={editing}
                 >
                     {
                         form => (
@@ -69,17 +69,17 @@ export default function Subscriptions() {
                                     required
                                     label="Name"
                                 />
-                                <SingleSelect.Field
+                                {!editing.id && <SingleSelect.Field
                                     form={form}
                                     name="channel"
                                     label="Channel"
                                     options={['email', 'push', 'text', 'webhook'].map((channel) => ({ key: channel, label: snakeToTitle(channel) }))}
                                     toValue={x => x.key}
-                                />
+                                />}
                             </>
                         )
                     }
-                </FormWrapper>
+                </FormWrapper>}
             </Modal>
         </>
     )
