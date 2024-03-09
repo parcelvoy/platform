@@ -2,8 +2,8 @@ import Router from '@koa/router'
 import App from '../app'
 import { RequestError } from '../core/errors'
 import { JSONSchemaType, validate } from '../core/validate'
-import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
-import { createSubscription, getSubscription, pagedSubscriptions, toggleSubscription, unsubscribe } from './SubscriptionService'
+import Subscription, { SubscriptionParams, SubscriptionState, SubscriptionUpdateParams, UserSubscription } from './Subscription'
+import { createSubscription, getSubscription, pagedSubscriptions, toggleSubscription, unsubscribe, updateSubscription } from './SubscriptionService'
 import SubscriptionError from './SubscriptionError'
 import { encodedLinkToParts } from '../render/LinkService'
 import { ProjectState } from '../auth/AuthMiddleware'
@@ -267,7 +267,7 @@ router.post('/', projectRoleMiddleware('admin'), async ctx => {
 
 router.param('subscriptionId', async (value, ctx, next) => {
     ctx.state.subscription = await getSubscription(parseInt(value), ctx.state.project.id)
-    if (!ctx.state.campaign) {
+    if (!ctx.state.subscription) {
         ctx.throw(404)
         return
     }
@@ -276,6 +276,23 @@ router.param('subscriptionId', async (value, ctx, next) => {
 
 router.get('/:subscriptionId', async ctx => {
     ctx.body = ctx.state.subscription
+})
+
+export const subscriptionUpdateSchema: JSONSchemaType<SubscriptionUpdateParams> = {
+    $id: 'subscriptionUpdate',
+    type: 'object',
+    required: ['name'],
+    properties: {
+        name: {
+            type: 'string',
+        },
+    },
+    additionalProperties: false,
+}
+router.patch('/:subscriptionId', async ctx => {
+    console.log('got here?')
+    const payload = validate(subscriptionUpdateSchema, ctx.request.body)
+    ctx.body = await updateSubscription(ctx.state.subscription!.id, payload)
 })
 
 export default router

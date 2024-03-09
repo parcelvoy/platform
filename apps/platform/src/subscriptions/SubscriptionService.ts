@@ -56,6 +56,10 @@ export const createSubscription = async (projectId: number, params: Subscription
     })
 }
 
+export const updateSubscription = async (id: number, params: Partial<SubscriptionParams>): Promise<Subscription> => {
+    return await Subscription.updateAndFetch(id, params)
+}
+
 export const subscriptionForChannel = async (channel: ChannelType, projectId: number): Promise<Subscription | undefined> => {
     return await Subscription.first(qb => qb.where('channel', channel).where('project_id', projectId))
 }
