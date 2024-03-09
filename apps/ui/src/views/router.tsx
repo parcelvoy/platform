@@ -88,7 +88,10 @@ export const createRouter = ({
                 index: true,
                 loader: async () => {
                     const recents = getRecentProjects()
-                    return recents.length && redirect(`projects/${recents[0].id}`)
+                    if (recents.length) {
+                        return redirect(`projects/${recents[0].id}`)
+                    }
+                    return redirect('organization')
                 },
                 element: <Projects />,
             },
