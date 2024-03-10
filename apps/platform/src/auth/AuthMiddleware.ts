@@ -7,10 +7,12 @@ import { ProjectApiKey } from '../projects/ProjectApiKey'
 import { getProjectApiKey } from '../projects/ProjectService'
 import AuthError from './AuthError'
 import { getTokenCookies, isAccessTokenRevoked } from './TokenRepository'
+import { OrganizationRole } from '../organizations/Organization'
 
 export interface JwtAdmin {
     id: number
     organization_id: number
+    role: OrganizationRole
 }
 
 export interface State {

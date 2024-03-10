@@ -17,3 +17,5 @@ export default class Organization extends Model {
 }
 
 export type OrganizationParams = Omit<Organization, ModelParams | 'id' | 'auth' | 'notification_provider_id'>
+
+export type OrganizationRole = 'member' | 'admin' | 'owner'

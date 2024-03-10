@@ -3,7 +3,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import App from '../app'
 import { Context } from 'koa'
 import { JwtAdmin } from '../auth/AuthMiddleware'
-import { deleteOrganization, getOrganization, organizationIntegrations, updateOrganization } from './OrganizationService'
+import { deleteOrganization, getOrganization, organizationIntegrations, requireOrganizationRole, updateOrganization } from './OrganizationService'
 import Organization, { OrganizationParams } from './Organization'
 import { jobs } from '../config/queue'
 
@@ -57,11 +57,13 @@ const organizationUpdateParams: JSONSchemaType<OrganizationParams> = {
     additionalProperties: false,
 }
 router.patch('/:id', async ctx => {
+    requireOrganizationRole(ctx.state.admin!, 'owner')
     const payload = validate(organizationUpdateParams, ctx.request.body)
     ctx.body = await updateOrganization(ctx.state.organization, payload)
 })
 
 router.delete('/', async ctx => {
+    requireOrganizationRole(ctx.state.admin!, 'owner')
     await deleteOrganization(ctx.state.organization)
     ctx.body = true
 })

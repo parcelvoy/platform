@@ -7,6 +7,7 @@ import Button from '../Button'
 interface FormWrapperProps<T extends FieldValues> {
     children: (form: UseFormReturn<T>) => ReactNode
     defaultValues?: DefaultValues<T>
+    disabled?: boolean
     submitLabel?: string
     onSubmit: (data: T, navigate: NavigateFunction) => Promise<void>
     onError?: (error: Error) => void
@@ -15,6 +16,7 @@ interface FormWrapperProps<T extends FieldValues> {
 export default function FormWrapper<T extends FieldValues>({
     children,
     defaultValues,
+    disabled,
     submitLabel = 'Submit',
     onSubmit,
     onError,
@@ -26,6 +28,7 @@ export default function FormWrapper<T extends FieldValues>({
 
     const form = useForm<T>({
         defaultValues,
+        disabled,
     })
 
     const handleSubmit = form.handleSubmit(async data => {
@@ -87,7 +90,7 @@ export default function FormWrapper<T extends FieldValues>({
                     <Button
                         type="submit"
                         isLoading={isLoading}
-                        disabled={!isValid}>
+                        disabled={!isValid || disabled}>
                         {submitLabel}
                     </Button>
                 </label>

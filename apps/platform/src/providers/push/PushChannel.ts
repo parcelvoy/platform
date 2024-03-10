@@ -1,6 +1,7 @@
 import { PushTemplate } from '../../render/Template'
 import { Variables } from '../../render'
 import { PushProvider } from './PushProvider'
+import { PushResponse } from './Push'
 
 export default class PushChannel {
     readonly provider: PushProvider
@@ -13,7 +14,7 @@ export default class PushChannel {
         }
     }
 
-    async send(template: PushTemplate, variables: Variables) {
+    async send(template: PushTemplate, variables: Variables): Promise<PushResponse | unknown> {
 
         // Find tokens from active devices with push enabled
         const tokens = variables.user.pushEnabledDevices.map(device => device.token)
@@ -26,6 +27,6 @@ export default class PushChannel {
             ...template.compile(variables),
         }
 
-        await this.provider.send(push)
+        return await this.provider.send(push)
     }
 }

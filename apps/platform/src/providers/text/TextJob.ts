@@ -1,9 +1,8 @@
 import Job, { EncodedJob } from '../../queue/Job'
 import { TextTemplate } from '../../render/Template'
-import { createEvent } from '../../users/UserEventRepository'
 import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
+import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
 import App from '../../app'
@@ -21,7 +20,7 @@ export default class TextJob extends Job {
         const data = await loadSendJob<TextTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, context } = data
+        const { campaign, template, user, project } = data
 
         // Send and render text
         const channel = await loadTextChannel(campaign.provider_id, project.id)
@@ -43,41 +42,12 @@ export default class TextJob extends Job {
         if (!isReady) return
 
         try {
-            await channel.send(template, data)
+            const result = await channel.send(template, data)
+            await finalizeSend(data, result)
         } catch (error: any) {
-
-            // On error, mark as failed and notify just in case
-            await updateSendState({
-                campaign,
-                user,
-                user_step_id: trigger.user_step_id,
-                state: 'failed',
-            })
-
-            // Dont bubble up unsubscribes, only fail
-            if (!(error instanceof UnsubscribeTextError)) {
-                App.main.error.notify(error)
-            }
-            return
-        }
-
-        // Update send record
-        await updateSendState({
-            campaign,
-            user,
-            user_step_id: trigger.user_step_id,
-        })
-
-        // Create an event on the user about the text
-        await createEvent(user, {
-            name: campaign.eventName('sent'),
-            data: context,
-        })
-
-        await releaseLock(messageLock(campaign, user))
-
-        if (trigger.user_step_id) {
-            await notifyJourney(trigger.user_step_id)
+            await failSend(data, error, (error: any) => !(error instanceof UnsubscribeTextError))
+        } finally {
+            await releaseLock(messageLock(campaign, user))
         }
     }
 }
