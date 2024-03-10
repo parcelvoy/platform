@@ -29,13 +29,15 @@ export const pagedProjects = async (params: PageParams, adminId: number, organiz
 
 export const allProjects = async (adminId: number, organizationId: number) => {
     const admin = await getAdmin(adminId, organizationId)
+    if (!admin) return []
     const projectIds = await adminProjectIds(adminId)
-    return await Project.all(qb =>
-        qb.where(qb =>
-            qb.where('organization_id', admin!.organization_id)
-                .orWhereIn('projects.id', projectIds),
-        ),
-    )
+    return await Project.all(qb => {
+        qb.whereIn('projects.id', projectIds)
+        if (admin.role !== 'member') {
+            qb.orWhere('organization_id', admin.organization_id)
+        }
+        return qb
+    })
 }
 
 export const getProject = async (id: number, adminId?: number) => {

@@ -119,6 +119,7 @@ export interface Admin {
     last_name: string
     email: string
     image_url: string
+    role: 'member' | 'admin' | 'owner'
 }
 
 export interface Organization {
@@ -139,7 +140,7 @@ export const projectRoles = [
 
 export type ProjectRole = (typeof projectRoles)[number]
 
-export interface ProjectAdmin extends Omit<Admin, 'id'> {
+export interface ProjectAdmin extends Omit<Admin, 'id' | 'role'> {
     id: number
     created_at: string
     updated_at: string

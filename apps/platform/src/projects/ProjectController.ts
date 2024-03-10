@@ -14,6 +14,7 @@ import { getAdmin } from '../auth/AdminRepository'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import App from '../app'
 import { hasProvider } from '../providers/ProviderService'
+import { requireOrganizationRole } from '../organizations/OrganizationService'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -34,11 +35,16 @@ export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>,
     ctx.state.project = project
 
     if (ctx.state.scope === 'admin') {
-        const projectAdmin = await getProjectAdmin(project.id, ctx.state.admin!.id)
-        if (!projectAdmin) {
-            throw new RequestError(ProjectError.ProjectAccessDenied)
+        // admins and owners automatically get full access
+        if (project.organization_id === ctx.state.admin!.organization_id && ctx.state.admin?.role !== 'member') {
+            ctx.state.projectRole = 'admin'
+        } else {
+            const projectAdmin = await getProjectAdmin(project.id, ctx.state.admin!.id)
+            if (!projectAdmin) {
+                throw new RequestError(ProjectError.ProjectAccessDenied)
+            }
+            ctx.state.projectRole = projectAdmin.role ?? 'support'
         }
-        ctx.state.projectRole = projectAdmin.role ?? 'support'
     } else {
         ctx.state.projectRole = ctx.state.key!.role ?? 'support'
     }
@@ -84,6 +90,7 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
 }
 
 router.post('/', async ctx => {
+    requireOrganizationRole(ctx.state.admin!, 'admin')
     const payload = validate(projectCreateParams, ctx.request.body)
     const { id, organization_id } = ctx.state.admin!
     const admin = await getAdmin(id, organization_id)
