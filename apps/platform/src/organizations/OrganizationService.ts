@@ -70,6 +70,6 @@ export const deleteOrganization = async (organization: Organization) => {
 const roles: OrganizationRole[] = ['member', 'admin', 'owner']
 export const requireOrganizationRole = (admin: Admin | JwtAdmin, minRole: OrganizationRole) => {
     if (roles.indexOf(admin.role) < roles.indexOf(minRole)) {
-        throw new RequestError(`minimum organization role ${minRole} is required`, 403)
+        throw new RequestError(`Minimum organization role ${minRole} is required`, 403)
     }
 }
