@@ -34,7 +34,11 @@ export default class EmailChannel {
                 'X-Subscription-Id': encodeHashid(variables.context.subscription_id),
             },
         }
-        await this.provider.send(email)
+        const result = await this.provider.send(email)
+        return {
+            ...result,
+            message: compiled,
+        }
     }
 
     async verify(): Promise<boolean> {

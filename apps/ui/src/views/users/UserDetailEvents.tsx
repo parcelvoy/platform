@@ -5,9 +5,10 @@ import { useResolver } from '../../hooks'
 import { SearchParams, UserEvent } from '../../types'
 import Modal from '../../ui/Modal'
 import { SearchTable } from '../../ui/SearchTable'
-import { JsonPreview } from '../../ui'
+import { Column, Columns, JsonPreview } from '../../ui'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
+import Iframe from '../../ui/Iframe'
 
 export default function UserDetailEvents() {
     const [preferences] = useContext(PreferencesContext)
@@ -21,6 +22,7 @@ export default function UserDetailEvents() {
     const userId = user.id
     const [results] = useResolver(useCallback(async () => await api.users.events(projectId, userId, params), [projectId, userId, params]))
     const [event, setEvent] = useState<UserEvent>()
+    const hasPreview = !!event?.data?.result?.message?.html
 
     return <>
         <SearchTable
@@ -35,16 +37,36 @@ export default function UserDetailEvents() {
             ]}
             onSelectRow={setEvent}
         />
-        {event && (
-            <Modal
-                title={event.name}
-                description={formatDate(preferences, event.created_at)}
-                size="large"
-                open={event != null}
-                onClose={() => setEvent(undefined)}
-            >
-                <JsonPreview value={{ name: event.name, ...event.data, created_at: event.created_at }} />
-            </Modal>
+        {event && (hasPreview
+            ? (
+                <Modal
+                    title={event.name}
+                    size="fullscreen"
+                    open={event != null}
+                    onClose={() => setEvent(undefined)}
+                >
+                    <Columns>
+                        <Column style={{ padding: '20px' }}>
+                            {formatDate(preferences, event.created_at)}
+                            <JsonPreview value={{ name: event.name, ...event.data, created_at: event.created_at }} />
+                        </Column>
+                        <Column>
+                            {event.name === 'email_sent' && event.data?.result?.message?.html && <Iframe content={event.data.result.message.html ?? ''} fullHeight={true} /> }
+                        </Column>
+                    </Columns>
+                </Modal>
+            )
+            : (
+                <Modal
+                    title={event.name}
+                    description={formatDate(preferences, event.created_at)}
+                    size="large"
+                    open={event != null}
+                    onClose={() => setEvent(undefined)}
+                >
+                    <JsonPreview value={{ name: event.name, ...event.data, created_at: event.created_at }} />
+                </Modal>
+            )
         )}
     </>
 }
