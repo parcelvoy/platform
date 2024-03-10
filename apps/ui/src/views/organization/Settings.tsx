@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import PageContent from '../../ui/PageContent'
 import FormWrapper from '../../ui/form/FormWrapper'
-import { OrganizationContext } from '../../contexts'
+import { AdminContext, OrganizationContext } from '../../contexts'
 import TextInput from '../../ui/form/TextInput'
 import { Organization } from '../../types'
 import Heading from '../../ui/Heading'
@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast/headless'
 import { Button } from '../../ui'
 
 export default function Settings() {
+    const profile = useContext(AdminContext)
     const [organization] = useContext(OrganizationContext)
     const deleteOrganization = async () => {
         if (confirm('Are you sure you want to delete this organization?')) {
@@ -18,11 +19,15 @@ export default function Settings() {
             window.location.href = '/'
         }
     }
+
+    const owner = profile?.role === 'owner'
+
     return (
         <>
             <PageContent title="Settings">
                 <FormWrapper<Organization>
                     defaultValues={organization}
+                    disabled={!owner}
                     onSubmit={async ({ username, domain, tracking_deeplink_mirror_url }) => {
                         await api.organizations.update(organization.id, { username, domain, tracking_deeplink_mirror_url })
 
@@ -34,22 +39,42 @@ export default function Settings() {
                         <Heading size="h3" title="General" />
                         <TextInput.Field
                             form={form}
+                            disabled={!owner}
                             name="username"
-                            subtitle="The organization username. Used for the subdomain that the organization is hosted under." />
+                            subtitle="The organization username. Used for the subdomain that the organization is hosted under."
+                        />
                         <TextInput.Field
                             form={form}
                             name="domain"
-                            subtitle="If filled, users who log in with SSO and have this domain will be automatically joined to the organization." />
+                            disabled={!owner}
+                            subtitle="If filled, users who log in with SSO and have this domain will be automatically joined to the organization."
+                        />
                         <Heading size="h3" title="Tracking" />
-                        <TextInput.Field form={form} name="tracking_deeplink_mirror_url" label="Tracking Deeplink Mirror URL"
-                            subtitle="The URL to clone universal link settings from." />
+                        <TextInput.Field
+                            form={form}
+                            disabled={!owner}
+                            name="tracking_deeplink_mirror_url"
+                            label="Tracking Deeplink Mirror URL"
+                            subtitle="The URL to clone universal link settings from."
+                        />
                     </>}
                 </FormWrapper>
-
-                <br /><br />
-                <Heading size="h3" title="Danger Zone" />
-                <p>Deleting your organization will completely remove it from the system along with all associated accounts, projects and data.</p>
-                <Button variant="destructive" onClick={async () => await deleteOrganization()}>Delete Organization</Button>
+                {
+                    owner && (
+                        <>
+                            <br />
+                            <br />
+                            <Heading size="h3" title="Danger Zone" />
+                            <p>Deleting your organization will completely remove it from the system along with all associated accounts, projects and data.</p>
+                            <Button
+                                variant="destructive"
+                                onClick={async () => await deleteOrganization()}
+                            >
+                                Delete Organization
+                            </Button>
+                        </>
+                    )
+                }
             </PageContent>
         </>
     )

@@ -1,7 +1,9 @@
+import { RequestError } from '../core/errors'
 import Admin from '../auth/Admin'
 import Provider from '../providers/Provider'
 import { encodeHashid, uuid } from '../utilities'
-import Organization from './Organization'
+import Organization, { OrganizationRole } from './Organization'
+import { JwtAdmin } from '../auth/AuthMiddleware'
 
 export const getOrganization = async (id: number) => {
     return await Organization.find(id)
@@ -63,4 +65,11 @@ export const organizationIntegrations = async (organization: Organization) => {
 
 export const deleteOrganization = async (organization: Organization) => {
     await Organization.deleteById(organization.id)
+}
+
+const roles: OrganizationRole[] = ['member', 'admin', 'owner']
+export const requireOrganizationRole = (admin: Admin | JwtAdmin, minRole: OrganizationRole) => {
+    if (roles.indexOf(admin.role) < roles.indexOf(minRole)) {
+        throw new RequestError(`minimum organization role ${minRole} is required`, 403)
+    }
 }
