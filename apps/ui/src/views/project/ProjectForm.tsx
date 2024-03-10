@@ -56,7 +56,7 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                     : await api.projects.create(params)
                 onSave?.(project)
             }}
-            submitLabel={project ? 'Create Project' : 'Save Settings'}
+            submitLabel={project ? 'Save Settings' : 'Create Project'}
         >
             {
                 form => (
