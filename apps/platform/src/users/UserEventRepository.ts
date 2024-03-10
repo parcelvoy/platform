@@ -3,19 +3,25 @@ import { loadAnalytics } from '../providers/analytics'
 import { User } from '../users/User'
 import { UserEvent, UserEventParams } from './UserEvent'
 
-export const createEvent = async (user: User, event: UserEventParams, forward = true): Promise<number> => {
-    const data = {
+export const createEvent = async (
+    user: User,
+    { name, data }: UserEventParams,
+    forward = true,
+    filter = (data: Record<string, unknown>) => data,
+): Promise<number> => {
+    const id = await UserEvent.insert({
+        name,
+        data,
         project_id: user.project_id,
         user_id: user.id,
-        ...event,
-    }
-    const id = await UserEvent.insert(data)
+    })
 
     if (forward) {
         const analytics = await loadAnalytics(user.project_id)
         analytics.track({
             external_id: user.external_id,
-            ...event,
+            name,
+            data: filter(data),
         })
     }
     return id

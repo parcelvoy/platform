@@ -1,6 +1,7 @@
 import { WebhookTemplate } from '../../render/Template'
 import Render, { Variables } from '../../render'
 import { WebhookProvider } from './WebhookProvider'
+import { WebhookResponse } from './Webhook'
 
 export default class WebhookChannel {
     readonly provider: WebhookProvider
@@ -12,7 +13,7 @@ export default class WebhookChannel {
         }
     }
 
-    async send(options: WebhookTemplate, variables: Variables) {
+    async send(options: WebhookTemplate, variables: Variables): Promise<WebhookResponse> {
         const headers = this.compile(options.headers, variables)
         const endpoint = Render(options.endpoint, variables)
         const method = options.method
