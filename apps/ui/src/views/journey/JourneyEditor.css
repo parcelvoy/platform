@@ -43,6 +43,7 @@
 .journey-options .component {
     display: grid;
     grid-template-areas: "handle title" "handle desc";
+    grid-template-columns: auto 1fr;
     border-bottom: 1px solid var(--color-grey);
     padding: 20px;
     column-gap: 15px;
