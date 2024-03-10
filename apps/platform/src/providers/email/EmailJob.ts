@@ -40,8 +40,6 @@ export default class EmailJob extends Job {
 
         try {
             const result = await channel.send(template, data)
-            console.log(result)
-
             await finalizeSend(data, result)
         } catch (error: any) {
             await failSend(data, error)
