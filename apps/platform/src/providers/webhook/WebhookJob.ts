@@ -1,15 +1,11 @@
 import { EncodedJob, Job } from '../../queue'
 import { MessageTrigger } from '../MessageTrigger'
 import { WebhookTemplate } from '../../render/Template'
-import { createEvent } from '../../users/UserEventRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
+import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
 import { releaseLock } from '../../config/scheduler'
-import { WebhookResponse } from './Webhook'
-import App from '../../app'
 import { JourneyUserStep } from '../../journey/JourneyStep'
-import JourneyProcessJob from '../../journey/JourneyProcessJob'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'
@@ -22,7 +18,7 @@ export default class WebhookJob extends Job {
         const data = await loadSendJob<WebhookTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, context } = data
+        const { campaign, template, user, project } = data
 
         // Send and render webhook
         const channel = await loadWebhookChannel(campaign.provider_id, project.id)
@@ -40,55 +36,19 @@ export default class WebhookJob extends Job {
         const isReady = await prepareSend(channel, data, raw)
         if (!isReady) return
 
-        let sent: WebhookResponse | undefined
         try {
-            sent = await channel.send(template, data)
-        } catch (error: any) {
-            App.main.error.notify(error, {
-                send_id: trigger.send_id,
-            })
-        }
+            const result = await channel.send(template, data)
+            await finalizeSend(data, result)
 
-        if (sent?.success) {
-
-            // Update send record
-            await updateSendState({
-                campaign,
-                user,
-                user_step_id: trigger.user_step_id,
-            })
-
-            // Create an event on the user about the email
-            await createEvent(user, {
-                name: campaign.eventName('sent'),
-                data: context,
-            })
-
-            if (sent.response && trigger.user_step_id) {
+            if (result.response && trigger.user_step_id) {
                 await JourneyUserStep.update(q => q.where('id', trigger.user_step_id), {
-                    data: {
-                        response: sent.response,
-                    },
+                    data: { response: result.response },
                 })
             }
-
-        } else {
-
-            // mark as failed
-            await updateSendState({
-                campaign,
-                user,
-                user_step_id: trigger.user_step_id,
-                state: 'failed',
-            })
-        }
-
-        await releaseLock(messageLock(campaign, user))
-
-        if (trigger.user_step_id) {
-            await JourneyProcessJob.from({
-                entrance_id: trigger.user_step_id,
-            }).queue()
+        } catch (error: any) {
+            await failSend(data, error)
+        } finally {
+            await releaseLock(messageLock(campaign, user))
         }
     }
 }

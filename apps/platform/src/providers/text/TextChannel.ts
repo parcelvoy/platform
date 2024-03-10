@@ -1,7 +1,7 @@
 import { CompiledText, TextTemplate } from '../../render/Template'
 import { Variables } from '../../render'
 import { TextProvider } from './TextProvider'
-import { InboundTextMessage } from './TextMessage'
+import { InboundTextMessage, TextResponse } from './TextMessage'
 import { UserEvent } from '../../users/UserEvent'
 import { UnsubscribeTextError } from './TextError'
 import { unsubscribe } from '../../subscriptions/SubscriptionService'
@@ -18,11 +18,11 @@ export default class TextChannel {
         }
     }
 
-    async send(template: TextTemplate, variables: Variables) {
+    async send(template: TextTemplate, variables: Variables): Promise<TextResponse> {
         if (!variables.user.phone) throw new Error('Unable to send a text message to a user with no phone number.')
         const message = await this.build(template, variables)
         try {
-            await this.provider.send({
+            return await this.provider.send({
                 to: variables.user.phone,
                 ...message,
             })

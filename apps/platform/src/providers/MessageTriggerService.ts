@@ -16,6 +16,7 @@ import { randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
 import { getEntranceSubsequentSteps, getJourneySteps } from '../journey/JourneyRepository'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
+import { createEvent } from '../users/UserEventRepository'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -167,4 +168,35 @@ export const notifyJourney = async (user_step_id: number, response?: any) => {
 
     // trigger processing of this journey entrance
     await JourneyProcessJob.from({ entrance_id: user_step_id }).queue()
+}
+
+export const failSend = async ({ campaign, user, context }: MessageTriggerHydrated<TemplateType>, error: Error, shouldNotify = (_: any) => true) => {
+    await updateSendState({
+        campaign,
+        user,
+        user_step_id: context.user_step_id,
+        state: 'failed',
+    })
+    if (shouldNotify(error)) App.main.error.notify(error)
+}
+
+export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, result: any) => {
+    const { campaign, user, context } = data
+
+    // Update send record
+    await updateSendState({
+        campaign,
+        user,
+        user_step_id: context.user_step_id,
+    })
+
+    // Create an event on the user about the email
+    await createEvent(user, {
+        name: campaign.eventName('sent'),
+        data: { ...context, result },
+    }, true, ({ result, ...data }) => data)
+
+    if (context.user_step_id) {
+        await notifyJourney(context.user_step_id)
+    }
 }

@@ -5,7 +5,7 @@ import { MessageTrigger } from '../MessageTrigger'
 import PushError from './PushError'
 import { disableNotifications } from '../../users/UserRepository'
 import { updateSendState } from '../../campaigns/CampaignService'
-import { loadSendJob, messageLock, notifyJourney, prepareSend } from '../MessageTriggerService'
+import { finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
 import { releaseLock } from '../../config/scheduler'
@@ -41,24 +41,8 @@ export default class PushJob extends Job {
             if (!isReady) return
 
             // Send the push and update the send record
-            await channel.send(template, data)
-            await updateSendState({
-                campaign,
-                user,
-                user_step_id: trigger.user_step_id,
-            })
-
-            // Create an event on the user about the push
-            await createEvent(user, {
-                name: campaign.eventName('sent'),
-                data: context,
-            })
-
-            await releaseLock(messageLock(campaign, user))
-
-            if (trigger.user_step_id) {
-                await notifyJourney(trigger.user_step_id)
-            }
+            const result = await channel.send(template, data)
+            await finalizeSend(data, result)
 
         } catch (error: any) {
             if (error instanceof PushError) {
@@ -86,6 +70,8 @@ export default class PushJob extends Job {
             } else {
                 App.main.error.notify(error)
             }
+        } finally {
+            await releaseLock(messageLock(campaign, user))
         }
     }
 }
