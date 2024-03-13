@@ -1,11 +1,7 @@
 import { Analytics as Segment } from '@segment/analytics-node'
 import { ProviderControllers, ProviderParams, ProviderSchema } from '../Provider'
-import { AnalyticsProvider, AnalyticsUserEvent } from './AnalyticsProvider'
+import { AnalyticsProvider, AnalyticsUserEvent, Convention } from './AnalyticsProvider'
 import { createController } from '../ProviderService'
-import { snakeCase } from '../../utilities'
-import { camelcase, titleize } from '../../render/Helpers/String'
-
-type Convention = 'snake_case' | 'camel_case' | 'title_case'
 
 interface SegmentDataParams {
     write_key: string
@@ -52,14 +48,6 @@ export default class SegmentAnalyticsProvider extends AnalyticsProvider {
             event: this.tranformEventName(event.name, this.event_name_convention),
             properties: event.data,
         })
-    }
-
-    tranformEventName(event: string, convention: Convention) {
-        switch (convention) {
-        case 'camel_case': return camelcase(event)
-        case 'snake_case': return snakeCase(event)
-        case 'title_case': return titleize(event)
-        }
     }
 
     static controllers(): ProviderControllers {
