@@ -29,8 +29,13 @@ export default class EventPostJob extends Job {
         const { anonymous_id, external_id } = event
         const identity = { external_id, anonymous_id } as ClientIdentity
         let user = await getUserFromClientId(project_id, identity)
+
+        // If no user exists, create one if we have enough information
         if (!user) {
-            user = await UserPatchJob.from({ project_id, user: identity }).handle()
+            user = await UserPatchJob.from({
+                project_id,
+                user: { ...(event.user ?? {}), ...identity },
+            }).handle()
         }
 
         // Create event for given user
@@ -46,5 +51,7 @@ export default class EventPostJob extends Job {
 
         // Enter any journey entrances associated with this event
         await enterJourneysFromEvent(dbEvent, user)
+
+        return { user, event: dbEvent }
     }
 }

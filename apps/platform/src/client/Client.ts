@@ -17,7 +17,7 @@ export type ClientAliasParams = ClientIdentity & {
     previous_id?: string
 }
 
-export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' | 'data'>> & ClientIdentity
+export type ClientIdentifyParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' | 'locale' | 'data'>> & ClientIdentity
 
 export type ClientIdentifyUser = Pick<User, 'external_id'> & Partial<Pick<User, 'email' | 'phone' | 'data'>>
 
@@ -28,6 +28,7 @@ export type ClientDeleteUsersRequest = string[]
 export type ClientPostEvent = {
     name: string
     data?: Record<string, unknown>
+    user?: ClientIdentifyParams
     created_at?: Date
 } & ClientIdentity
 
