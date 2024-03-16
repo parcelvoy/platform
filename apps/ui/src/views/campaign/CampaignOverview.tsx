@@ -63,7 +63,7 @@ export default function CampaignOverview() {
             </>}
             {campaign.type === 'trigger' && <>
                 <Heading title="Delivery" size="h4">
-                    Delivery for trigger campaigns is activated via API. An example request is available below.
+                    Delivery for trigger campaigns is activated via API or journey action. An example request of how to trigger a send via API is available below.
                 </Heading>
                 <CampaignTriggerCodeExample campaign={campaign} />
             </>}
