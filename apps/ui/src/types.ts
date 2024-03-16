@@ -427,11 +427,22 @@ export interface WebhookTemplateData {
     headers: Record<string, string>
 }
 
-export interface InAppTemplateData {
-    html: string
-    style: 'fullscreen' | 'modal'
-    custom: Record<string, unknown>
-}
+type NotificationType = 'banner' | 'alert' | 'html'
+export type InAppTemplateData = {
+    title: string
+    body: string
+    custom: Record<string, string | number>
+    type: NotificationType
+} & (
+    | {
+        type: 'alert'
+        image?: string
+    }
+    | {
+        type: 'html'
+        html: string
+    }
+)
 
 export type Template = {
     id: number

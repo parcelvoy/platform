@@ -8,7 +8,7 @@ import Preview from '../../ui/Preview'
 import { InfoTable } from '../../ui/InfoTable'
 import Modal from '../../ui/Modal'
 import FormWrapper from '../../ui/form/FormWrapper'
-import { EmailTemplateData, PushTemplateData, Template, TemplateUpdateParams, TextTemplateData, WebhookTemplateData } from '../../types'
+import { EmailTemplateData, InAppTemplateData, PushTemplateData, Template, TemplateUpdateParams, TextTemplateData, WebhookTemplateData } from '../../types'
 import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
 import { SingleSelect } from '../../ui/form/SingleSelect'
@@ -170,6 +170,37 @@ const WebhookForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> 
     </>
 }
 
+const InAppTable = ({ data }: { data: InAppTemplateData }) => <InfoTable rows={{
+    Type: data.type,
+    Title: data.title,
+    Body: data.body,
+    Custom: JSON.stringify(data.custom),
+}} />
+
+const InAppForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
+    <SingleSelect.Field
+        form={form}
+        name="data.type"
+        label="Method"
+        options={['alert', 'html']}
+        required />
+    <TextInput.Field
+        form={form}
+        name="data.title"
+        label="Title"
+        required />
+    <TextInput.Field
+        form={form}
+        name="data.body"
+        label="Body"
+        textarea />
+    <JsonField
+        form={form}
+        name="data.custom"
+        label="Custom"
+        textarea />
+</>
+
 interface TemplateDetailProps {
     template: Template
 }
@@ -206,7 +237,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                             text: <TextTable data={data} />,
                             push: <PushTable data={data} />,
                             webhook: <WebhookTable data={data} />,
-                            in_app: <></>,
+                            in_app: <InAppTable data={data} />,
                         }[type]
                     }
                 </Column>
@@ -235,7 +266,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                                 text: <TextForm form={form} />,
                                 push: <PushForm form={form} />,
                                 webhook: <WebhookForm form={form} />,
-                                in_app: <></>,
+                                in_app: <InAppForm form={form} />,
                             }[type]
                         }
                     </>}

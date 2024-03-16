@@ -1,7 +1,6 @@
 import { WebhookTemplate } from '../../render/Template'
 import { Variables } from '../../render'
 import { WebhookProvider } from './WebhookProvider'
-import { WebhookResponse } from './Webhook'
 
 export default class WebhookChannel {
     readonly provider: WebhookProvider
