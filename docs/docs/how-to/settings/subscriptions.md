@@ -1,3 +1,2 @@
 # Subscription Group
 All communication between you and your users happens across providers, but what communications they receive is based on subscription states. You can setup as many different subscriptions as you want and what provider they go across. Users are then able to opt-in or opt-out of any given subscription to determine if they want to continue receiving that type of communication. As an example, you could setup separate subscription groups for deals vs for weekly inspiration and let the user decide to opt out of one but not the other.
-## Creating Subscription Groups

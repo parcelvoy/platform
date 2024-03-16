@@ -6,7 +6,7 @@ import { getCampaignSend, updateCampaignSend } from './CampaignService'
 interface CampaignIteraction {
     user_id: number
     campaign_id: number
-    user_step_id: number
+    reference_id: string
     subscription_id?: number
     type: 'clicked' | 'opened' | 'bounced' | 'complained' | 'failed'
     action?: 'unsubscribe'
@@ -19,8 +19,8 @@ export default class CampaignInteractJob extends Job {
         return new this(data)
     }
 
-    static async handler({ campaign_id, user_id, subscription_id, type, action, user_step_id }: CampaignIteraction) {
-        const send = await getCampaignSend(campaign_id, user_id, user_step_id)
+    static async handler({ campaign_id, user_id, subscription_id, type, action, reference_id }: CampaignIteraction) {
+        const send = await getCampaignSend(campaign_id, user_id, reference_id)
         if (!send) return
 
         if (type === 'opened' && !send.opened_at) {
