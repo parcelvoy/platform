@@ -31,7 +31,7 @@ export default function Integrations() {
                     { key: 'created_at' },
                 ]}
                 itemKey={({ item }) => item.id}
-                onSelectRow={(provider) => {
+                onSelectRow={(provider: Provider) => {
                     setProvider(provider)
                     setIsModalOpen(true)
                 }}
