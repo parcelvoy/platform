@@ -14,14 +14,14 @@ interface UserPatchTrigger {
     }
 }
 
-export default class UserPatchJob extends Job {
+export default class UserPatchJob extends Job<User> {
     static $name = 'user_patch'
 
     static from(data: UserPatchTrigger): UserPatchJob {
         return new this(data)
     }
 
-    static async handler(patch: UserPatchTrigger) {
+    static async handler(patch: UserPatchTrigger): Promise<User> {
         const upsert = async (patch: UserPatchTrigger, tries = 3): Promise<User> => {
             const { project_id, user: { external_id, anonymous_id, data, ...fields } } = patch
             const identity = { external_id, anonymous_id } as ClientIdentity
