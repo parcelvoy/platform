@@ -193,26 +193,28 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
             user: {
                 type: 'object',
                 nullable: true,
-                email: {
-                    type: 'string',
-                    nullable: true,
-                },
-                phone: {
-                    type: 'string',
-                    nullable: true,
-                },
-                timezone: {
-                    type: 'string',
-                    nullable: true,
-                },
-                locale: {
-                    type: 'string',
-                    nullable: true,
-                },
-                data: {
-                    type: 'object',
-                    nullable: true,
-                    additionalProperties: true,
+                properties: {
+                    email: {
+                        type: 'string',
+                        nullable: true,
+                    },
+                    phone: {
+                        type: 'string',
+                        nullable: true,
+                    },
+                    timezone: {
+                        type: 'string',
+                        nullable: true,
+                    },
+                    locale: {
+                        type: 'string',
+                        nullable: true,
+                    },
+                    data: {
+                        type: 'object',
+                        nullable: true,
+                        additionalProperties: true,
+                    },
                 },
             },
         },
