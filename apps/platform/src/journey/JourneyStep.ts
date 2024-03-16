@@ -251,7 +251,7 @@ export class JourneyAction extends JourneyStep {
         }
 
         if (userStep.type === 'action') {
-            const send = await getCampaignSend(campaign.id, state.user.id, userStep.id)
+            const send = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`)
             if (send?.state === 'failed') {
                 userStep.type = 'error'
             }
@@ -265,7 +265,7 @@ export class JourneyAction extends JourneyStep {
 
         // defer job construction so that we have the journey_user_step.id value
         state.job(async () => {
-            let send_id = await getCampaignSend(campaign.id, state.user.id, userStep.id).then(s => s?.id)
+            let send_id = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`).then(s => s?.id)
 
             if (!send_id) {
                 send_id = await CampaignSend.insert({
