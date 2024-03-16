@@ -192,7 +192,7 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
             },
             user: {
                 type: 'object',
-                nullbable: true,
+                nullable: true,
                 email: {
                     type: 'string',
                     nullable: true,
