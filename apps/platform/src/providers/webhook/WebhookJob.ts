@@ -26,7 +26,7 @@ export default class WebhookJob extends Job {
             await updateSendState({
                 campaign,
                 user,
-                user_step_id: trigger.user_step_id,
+                reference_id: trigger.reference_id,
                 state: 'aborted',
             })
             return
@@ -40,8 +40,11 @@ export default class WebhookJob extends Job {
             const result = await channel.send(template, data)
             await finalizeSend(data, result)
 
-            if (result.response && trigger.user_step_id) {
-                await JourneyUserStep.update(q => q.where('id', trigger.user_step_id), {
+            if (result.response
+                && trigger.reference_id
+                && trigger.reference_type === 'journey'
+            ) {
+                await JourneyUserStep.update(q => q.where('id', trigger.reference_id), {
                     data: { response: result.response },
                 })
             }

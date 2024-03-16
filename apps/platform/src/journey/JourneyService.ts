@@ -86,9 +86,9 @@ export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
     }
 }
 
-export const loadUserStepDataMap = async (userStepId: number) => {
-    let step = await JourneyUserStep.find(userStepId)
-    if (!step) return
+export const loadUserStepDataMap = async (referenceId: number | string) => {
+    let step = await JourneyUserStep.find(referenceId)
+    if (!step) return {}
     if (step.entrance_id) step = await JourneyUserStep.find(step.entrance_id)
     const [steps, userSteps] = await Promise.all([
         getJourneySteps(step!.journey_id),

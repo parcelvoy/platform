@@ -27,7 +27,7 @@ export default class EmailJob extends Job {
             await updateSendState({
                 campaign,
                 user,
-                user_step_id: trigger.user_step_id,
+                reference_id: trigger.reference_id,
                 state: 'aborted',
             })
             App.main.error.notify(new Error('Unabled to send when there is no channel available.'))

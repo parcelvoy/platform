@@ -14,9 +14,9 @@ import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import { randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
-import { getEntranceSubsequentSteps, getJourneySteps } from '../journey/JourneyRepository'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
 import { createEvent } from '../users/UserEventRepository'
+import { loadUserStepDataMap } from '../journey/JourneyService'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -28,7 +28,7 @@ interface MessageTriggerHydrated<T> {
     context: RenderContext
 }
 
-export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id, user_step_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
+export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id, reference_type, reference_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
 
     const user = await User.find(user_id)
     const event = await UserEvent.find(event_id)
@@ -59,7 +59,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         await updateSendState({
             campaign,
             user,
-            user_step_id,
+            reference_id,
             state: 'failed',
         })
         return
@@ -72,24 +72,14 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         template_id: template.id,
         channel: campaign.channel,
         subscription_id: campaign.subscription_id,
-        user_step_id,
+        reference_type,
+        reference_id,
     }
 
-    // provide data captured from linked journey steps
-    let journey: Record<string, unknown> = {}
-    if (user_step_id) {
-        let step = await JourneyUserStep.find(user_step_id)
-        if (step) {
-            if (step.entrance_id) {
-                step = (await JourneyUserStep.find(step.entrance_id))!
-            }
-            const [steps, userSteps] = await Promise.all([
-                getJourneySteps(step.journey_id),
-                getEntranceSubsequentSteps(step.id),
-            ])
-            journey = JourneyUserStep.getDataMap(steps, [step, ...userSteps])
-        }
-    }
+    // Provide data captured from linked journey steps
+    const journey: Record<string, unknown> = reference_id && reference_type === 'journey'
+        ? await loadUserStepDataMap(reference_id)
+        : {}
 
     return {
         campaign,
@@ -122,7 +112,7 @@ export const prepareSend = async <T>(
         await updateSendState({
             campaign,
             user,
-            user_step_id: message.context.user_step_id,
+            reference_id: message.context.reference_id,
             state: 'throttled',
         })
 
@@ -155,11 +145,12 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
     )
 }
 
-export const notifyJourney = async (user_step_id: number, response?: any) => {
+export const notifyJourney = async (reference_id: string, response?: any) => {
 
+    const referenceId = parseInt(reference_id, 10)
     // save response into user step
     if (response) {
-        await JourneyUserStep.update(q => q.where('id', user_step_id), {
+        await JourneyUserStep.update(q => q.where('id', referenceId), {
             data: {
                 response,
             },
@@ -167,14 +158,14 @@ export const notifyJourney = async (user_step_id: number, response?: any) => {
     }
 
     // trigger processing of this journey entrance
-    await JourneyProcessJob.from({ entrance_id: user_step_id }).queue()
+    await JourneyProcessJob.from({ entrance_id: referenceId }).queue()
 }
 
 export const failSend = async ({ campaign, user, context }: MessageTriggerHydrated<TemplateType>, error: Error, shouldNotify = (_: any) => true) => {
     await updateSendState({
         campaign,
         user,
-        user_step_id: context.user_step_id,
+        reference_id: context.reference_id,
         state: 'failed',
     })
     if (shouldNotify(error)) App.main.error.notify(error)
@@ -187,7 +178,7 @@ export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, r
     await updateSendState({
         campaign,
         user,
-        user_step_id: context.user_step_id,
+        reference_id: context.reference_id,
     })
 
     // Create an event on the user about the email
@@ -196,7 +187,7 @@ export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, r
         data: { ...context, result },
     }, true, ({ result, ...data }) => data)
 
-    if (context.user_step_id) {
-        await notifyJourney(context.user_step_id)
+    if (context.reference_id) {
+        await notifyJourney(context.reference_id)
     }
 }

@@ -273,7 +273,7 @@ export class JourneyAction extends JourneyStep {
                     user_id: state.user.id,
                     state: 'pending',
                     send_at: new Date(),
-                    user_step_id: userStep.id,
+                    reference_id: `${userStep.id}`,
                 })
             }
 
@@ -281,7 +281,7 @@ export class JourneyAction extends JourneyStep {
                 campaign,
                 user: state.user,
                 send_id,
-                user_step_id: userStep.id,
+                reference_id: `${userStep.id}`,
             })
         })
     }

@@ -11,6 +11,7 @@ import { formatDate } from '../../utils'
 import { CampaignForm } from './CampaignForm'
 import { CampaignTag, DeliveryRatio } from './Campaigns'
 import ChannelTag from './ChannelTag'
+import CampaignTriggerCodeExample from './CampaignTriggerCodeExample'
 
 export default function CampaignOverview() {
     const [project] = useContext(ProjectContext)
@@ -49,15 +50,23 @@ export default function CampaignOverview() {
                 subscription_group: campaign.subscription.name,
             }} />
 
-            <Heading title="Delivery" size="h4" />
-            <InfoTable rows={{
-                state: CampaignTag({ state: campaign.state }),
-                launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
-                in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
-                send_lists: DelimitedLists({ lists: campaign.lists }),
-                exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
-                delivery: DeliveryRatio({ delivery: campaign.delivery }),
-            }} />
+            {campaign.type === 'blast' && <>
+                <Heading title="Delivery" size="h4" />
+                <InfoTable rows={{
+                    state: CampaignTag({ state: campaign.state }),
+                    launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
+                    in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
+                    send_lists: DelimitedLists({ lists: campaign.lists }),
+                    exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
+                    delivery: DeliveryRatio({ delivery: campaign.delivery }),
+                }} />
+            </>}
+            {campaign.type === 'trigger' && <>
+                <Heading title="Delivery" size="h4">
+                    Delivery for trigger campaigns is activated via API. An example request is available below.
+                </Heading>
+                <CampaignTriggerCodeExample campaign={campaign} />
+            </>}
             <Modal
                 open={isEditOpen}
                 onClose={setIsEditOpen}

@@ -6,10 +6,22 @@ import { searchParamsSchema, SearchSchema } from '../core/searchParams'
 import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectRoleMiddleware } from '../projects/ProjectService'
+import { Context, Next } from 'koa'
+import { projectMiddleware } from '../projects/ProjectController'
+import CampaignTriggerSendJob, { CampaignTriggerSendParams } from './CampaignTriggerSendJob'
 
 const router = new Router<ProjectState & { campaign?: Campaign }>({
     prefix: '/campaigns',
 })
+
+const checkCampaignId = async (value: string, ctx: Context, next: Next) => {
+    ctx.state.campaign = await getCampaign(parseInt(value, 10), ctx.state.project.id)
+    if (!ctx.state.campaign) {
+        ctx.throw(404)
+        return
+    }
+    return await next()
+}
 
 router.use(projectRoleMiddleware('editor'))
 
@@ -79,14 +91,7 @@ router.post('/', async ctx => {
     ctx.body = await createCampaign(ctx.state.project.id, payload)
 })
 
-router.param('campaignId', async (value, ctx, next) => {
-    ctx.state.campaign = await getCampaign(parseInt(value, 10), ctx.state.project.id)
-    if (!ctx.state.campaign) {
-        ctx.throw(404)
-        return
-    }
-    return await next()
-})
+router.param('campaignId', checkCampaignId)
 
 router.get('/:campaignId', async ctx => {
     ctx.body = ctx.state.campaign!
@@ -172,3 +177,53 @@ router.get('/:campaignId/preview', async ctx => {
 })
 
 export default router
+
+const apiRouter = new Router<ProjectState & { campaign?: Campaign }>({
+    prefix: '/campaigns',
+})
+
+apiRouter.use(projectMiddleware)
+apiRouter.use(projectRoleMiddleware('editor'))
+apiRouter.param('campaignId', checkCampaignId)
+
+type CampaignTriggerSchema = Omit<CampaignTriggerSendParams, 'project_id' | 'campaign_id'>
+
+const campaignTriggerParams: JSONSchemaType<CampaignTriggerSchema> = {
+    $id: 'campaignTrigger',
+    type: 'object',
+    required: ['user', 'event'],
+    properties: {
+        user: {
+            type: 'object',
+            required: ['external_id'],
+            properties: {
+                external_id: { type: 'string' },
+                email: { type: 'string', nullable: true },
+                phone: { type: 'string', nullable: true },
+                device_token: { type: 'string', nullable: true },
+                timezone: { type: 'string', nullable: true },
+                locale: { type: 'string', nullable: true },
+            },
+            additionalProperties: true,
+        },
+        event: {
+            type: 'object',
+            additionalProperties: true,
+        },
+    },
+    additionalProperties: false,
+}
+apiRouter.post('/:campaignId/trigger', async ctx => {
+    const project = ctx.state.project
+    const payload = validate(campaignTriggerParams, ctx.request.body)
+
+    await CampaignTriggerSendJob.from({
+        ...payload,
+        project_id: project.id,
+        campaign_id: ctx.state.campaign!.id,
+    }).queue()
+
+    ctx.body = { success: true }
+})
+
+export { apiRouter }

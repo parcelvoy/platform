@@ -72,5 +72,7 @@ export default class UserPatchJob extends Job {
             const list = await getList(join_list_id, patch.project_id)
             if (list) await addUserToList(user, list)
         }
+
+        return user
     }
 }

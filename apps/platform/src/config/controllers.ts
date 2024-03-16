@@ -3,7 +3,7 @@ import send from 'koa-send'
 import ProjectController, { ProjectSubrouter, projectMiddleware } from '../projects/ProjectController'
 import ClientController from '../client/ClientController'
 import SegmentController from '../client/SegmentController'
-import CampaignController from '../campaigns/CampaignController'
+import CampaignController, { apiRouter as APICampaignController } from '../campaigns/CampaignController'
 import ListController from '../lists/ListController'
 import SubscriptionController, { publicRouter as PublicSubscriptionController } from '../subscriptions/SubscriptionController'
 import JourneyController from '../journey/JourneyController'
@@ -74,6 +74,7 @@ export const adminRouter = () => {
         ProfileController,
         AdminController,
         OrganizationController,
+        APICampaignController,
     )
 }
 

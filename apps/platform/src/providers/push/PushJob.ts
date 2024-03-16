@@ -30,7 +30,7 @@ export default class PushJob extends Job {
                 await updateSendState({
                     campaign,
                     user,
-                    user_step_id: trigger.user_step_id,
+                    reference_id: trigger.reference_id,
                     state: 'aborted',
                 })
                 return
@@ -55,7 +55,7 @@ export default class PushJob extends Job {
                 await updateSendState({
                     campaign,
                     user,
-                    user_step_id: trigger.user_step_id,
+                    reference_id: trigger.reference_id,
                     state: 'failed',
                 })
 
