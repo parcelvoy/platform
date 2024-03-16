@@ -126,6 +126,9 @@ const api = {
             await client.post('/auth/login/basic/callback', { email, password })
             window.location.href = redirect
         },
+        emailAuth: async (email: string, redirect: string = '/') => {
+            await client.post('/auth/login/email', { email, redirect })
+        },
         login() {
             window.location.href = `/login?r=${encodeURIComponent(window.location.href)}`
         },

@@ -3,7 +3,7 @@ import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../
 import { createController } from '../ProviderService'
 import EmailProvider from './EmailProvider'
 
-interface SMTPDataParams {
+export interface SMTPDataParams {
     host: string
     port: number
     secure: boolean

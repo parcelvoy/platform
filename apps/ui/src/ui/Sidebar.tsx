@@ -60,7 +60,13 @@ export default function Sidebar({ children, links, prepend, append }: PropsWithC
                             <div className="profile-image">
                                 <img src={profile.image_url} referrerPolicy="no-referrer" />
                             </div>
-                            <span className="profile-name">{`${profile.first_name} ${profile.last_name}`}</span>
+                            <span className="profile-name">
+                                {
+                                    profile.first_name
+                                        ? `${profile.first_name} ${profile.last_name}`
+                                        : 'User'
+                                }
+                            </span>
                             <div className="profile-role">{snakeToTitle(project.role ?? organization.username)}</div>
                             <div className="profile-caret">
                                 <ChevronDownIcon />

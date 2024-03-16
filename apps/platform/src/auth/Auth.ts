@@ -8,15 +8,17 @@ import BasicAuthProvider, { BasicAuthConfig } from './BasicAuthProvider'
 import Organization from '../organizations/Organization'
 import App from '../app'
 import MultiAuthProvider, { MultiAuthConfig } from './MultiAuthProvider'
+import EmailAuthProvider, { EmailAuthConfig } from './EmailAuthProvider'
 
-export type AuthProviderName = 'basic' | 'saml' | 'openid' | 'google' | 'multi'
+export type AuthProviderName = 'basic' | 'email' | 'saml' | 'openid' | 'google' | 'multi'
 
-export type AuthProviderConfig = BasicAuthConfig | SAMLConfig | OpenIDConfig | GoogleConfig | MultiAuthConfig
+export type AuthProviderConfig = BasicAuthConfig | EmailAuthConfig | SAMLConfig | OpenIDConfig | GoogleConfig | MultiAuthConfig
 
 export interface AuthConfig {
     driver: AuthProviderName[]
     tokenLife: number
     basic: BasicAuthConfig
+    email: EmailAuthConfig
     saml: SAMLConfig
     openid: OpenIDConfig
     google: GoogleConfig
@@ -38,6 +40,8 @@ interface AuthMethod {
 export const initProvider = (config?: AuthProviderConfig): AuthProvider => {
     if (config?.driver === 'basic') {
         return new BasicAuthProvider(config)
+    } else if (config?.driver === 'email') {
+        return new EmailAuthProvider(config)
     } else if (config?.driver === 'saml') {
         return new SAMLProvider(config)
     } else if (config?.driver === 'openid') {

@@ -82,7 +82,7 @@ export const scopeMiddleware = (scope: string | string[]) => {
     }
 }
 
-const verify = async (token: string) => {
+export const verify = async (token: string) => {
     return new Promise((resolve, reject) => {
         jwt.verify(token, App.main.env.secret, (error, decoded) => {
             error ? reject(error) : resolve(decoded)
