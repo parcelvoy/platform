@@ -16,7 +16,7 @@ export interface EncodedJob {
 export class JobError extends Error {}
 export class RetryError extends JobError {}
 
-export default class Job<T = any> implements EncodedJob {
+export default class Job implements EncodedJob {
     data: any
     options: JobOptions = {
         delay: 0,
@@ -46,7 +46,7 @@ export default class Job<T = any> implements EncodedJob {
         return App.main.queue.enqueue(this)
     }
 
-    async handle(): Promise<T> {
+    async handle<T>(): Promise<T> {
         return this.$static.handler(this.data, this)
     }
 

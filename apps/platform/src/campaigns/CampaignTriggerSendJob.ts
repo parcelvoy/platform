@@ -5,6 +5,7 @@ import EventPostJob from '../client/EventPostJob'
 import { uuid } from '../utilities'
 import { getCampaign, sendCampaignJob } from './CampaignService'
 import { User } from '../users/User'
+import { UserEvent } from '../users/UserEvent'
 
 export interface CampaignTriggerSendParams {
     project_id: number
@@ -31,7 +32,7 @@ export default class CampaignTriggerSendJob extends Job {
                 data: event,
                 user: { external_id, email, phone, data, locale, timezone },
             },
-        }).handle()
+        }).handle<{ user: User, event: UserEvent }>()
 
         if (device_token) {
             await UserDeviceJob.from({

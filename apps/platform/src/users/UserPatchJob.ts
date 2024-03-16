@@ -14,7 +14,7 @@ interface UserPatchTrigger {
     }
 }
 
-export default class UserPatchJob extends Job<User> {
+export default class UserPatchJob extends Job {
     static $name = 'user_patch'
 
     static from(data: UserPatchTrigger): UserPatchJob {

@@ -6,6 +6,7 @@ import { createAndFetchEvent } from '../users/UserEventRepository'
 import { matchingRulesForEvent } from '../rules/RuleService'
 import { enterJourneysFromEvent } from '../journey/JourneyService'
 import { UserPatchJob } from '../jobs'
+import { User } from '../users/User'
 
 interface EventPostTrigger {
     project_id: number
@@ -35,7 +36,7 @@ export default class EventPostJob extends Job {
             user = await UserPatchJob.from({
                 project_id,
                 user: { ...(event.user ?? {}), ...identity },
-            }).handle()
+            }).handle<User>()
         }
 
         // Create event for given user
