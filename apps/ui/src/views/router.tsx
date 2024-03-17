@@ -45,6 +45,7 @@ import Locales from './settings/Locales'
 import JourneyUserEntrances from './journey/JourneyUserEntrances'
 import UserDetailJourneys from './users/UserDetailJourneys'
 import EntranceDetails from './journey/EntranceDetails'
+import { Translation } from 'react-i18next'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -187,34 +188,34 @@ export const createRouter = ({
                                 {
                                     key: 'campaigns',
                                     to: 'campaigns',
-                                    children: 'Campaigns',
+                                    children: <Translation>{ t => t('campaigns') }</Translation>,
                                     icon: <CampaignsIcon />,
                                     minRole: 'editor',
                                 },
                                 {
                                     key: 'journeys',
                                     to: 'journeys',
-                                    children: 'Journeys',
+                                    children: <Translation>{ t => t('journeys') }</Translation>,
                                     icon: <JourneysIcon />,
                                     minRole: 'editor',
                                 },
                                 {
                                     key: 'users',
                                     to: 'users',
-                                    children: 'Users',
+                                    children: <Translation>{ t => t('users') }</Translation>,
                                     icon: <UsersIcon />,
                                 },
                                 {
                                     key: 'lists',
                                     to: 'lists',
-                                    children: 'Lists',
+                                    children: <Translation>{ t => t('lists') }</Translation>,
                                     icon: <ListsIcon />,
                                     minRole: 'editor',
                                 },
                                 {
                                     key: 'settings',
                                     to: 'settings',
-                                    children: 'Settings',
+                                    children: <Translation>{ t => t('settings') }</Translation>,
                                     icon: <SettingsIcon />,
                                     minRole: 'admin',
                                 },

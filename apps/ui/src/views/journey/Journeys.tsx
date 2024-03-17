@@ -9,9 +9,11 @@ import { ArchiveIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import { JourneyForm } from './JourneyForm'
 import { Menu, MenuItem, Tag } from '../../ui'
 import { ProjectContext } from '../../contexts'
+import { useTranslation } from 'react-i18next'
 
 export default function Journeys() {
     const [project] = useContext(ProjectContext)
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [open, setOpen] = useState<null | 'create'>(null)
     const state = useSearchTableQueryState(useCallback(async params => await api.journeys.search(project.id, params), [project.id]))
@@ -27,11 +29,9 @@ export default function Journeys() {
 
     return (
         <PageContent
-            title="Journeys"
+            title={t('journeys')}
             actions={
-                <Button icon={<PlusIcon />} onClick={() => setOpen('create')}>
-                    Create Journey
-                </Button>
+                <Button icon={<PlusIcon />} onClick={() => setOpen('create')}>{t('create_journey')}</Button>
             }
         >
             <SearchTable
@@ -79,7 +79,7 @@ export default function Journeys() {
             <Modal
                 onClose={() => setOpen(null)}
                 open={!!open}
-                title="Create Journey"
+                title={t('create_journey')}
             >
                 <JourneyForm
                     onSaved={journey => {

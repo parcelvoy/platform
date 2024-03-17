@@ -5,8 +5,10 @@ import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import LocaleSelector from './LocaleSelector'
 import TemplateDetail from './TemplateDetail'
+import { useTranslation } from 'react-i18next'
 
 export default function CampaignDesign() {
+    const { t } = useTranslation()
     const campaignState = useContext(CampaignContext)
     const { templates } = campaignState[0]
     const [{ currentLocale }] = useContext(LocaleContext)
@@ -14,7 +16,7 @@ export default function CampaignDesign() {
 
     return (
         <>
-            <Heading title="Design" size="h3" actions={
+            <Heading title={t('design')} size="h3" actions={
                 <LocaleSelector
                     campaignState={campaignState}
                     showAddState={showAddState} />
@@ -26,9 +28,9 @@ export default function CampaignDesign() {
             {!currentLocale
                 && <Alert
                     variant="plain"
-                    title="Add Template"
-                    body="There are no templates yet for this campaign. Add a locale above or use the button below to get started."
-                    actions={<Button onClick={() => showAddState[1](true)}>Create Template</Button>}
+                    title={t('add_template')}
+                    body={(t('no_template_alert_body'))}
+                    actions={<Button onClick={() => showAddState[1](true)}>{t('create_template')}</Button>}
                 />
             }
         </>

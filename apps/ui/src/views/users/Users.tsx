@@ -4,13 +4,15 @@ import api from '../../api'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
+import { useTranslation } from 'react-i18next'
 
 export default function UserTabs() {
     const { projectId = '' } = useParams()
+    const { t } = useTranslation()
     const route = useRoute()
     const state = useSearchTableQueryState(useCallback(async params => await api.users.search(projectId, params), [projectId]))
 
-    return <PageContent title="Users">
+    return <PageContent title={t('users')}>
         <SearchTable
             {...state}
             columns={[

@@ -10,6 +10,7 @@ import api from '../../api'
 import { CampaignTag } from './Campaigns'
 import LaunchCampaign from './LaunchCampaign'
 import { ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
+import { useTranslation } from 'react-i18next'
 
 export interface LocaleParams {
     locale: string
@@ -54,6 +55,7 @@ export const createLocale = async ({ locale, data }: LocaleParams, campaign: Cam
 
 export default function CampaignDetail() {
     const [project] = useContext(ProjectContext)
+    const { t } = useTranslation()
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { name, templates, state } = campaign
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
@@ -71,22 +73,22 @@ export default function CampaignDetail() {
         {
             key: 'details',
             to: '',
-            children: 'Details',
+            children: t('details'),
         },
         {
             key: 'design',
             to: 'design',
-            children: 'Design',
+            children: t('design'),
         },
         {
             key: 'preview',
             to: 'preview',
-            children: 'Preview',
+            children: t('preview'),
         },
         {
             key: 'delivery',
             to: 'delivery',
-            children: 'Delivery',
+            children: t('delivery'),
         },
     ]
 

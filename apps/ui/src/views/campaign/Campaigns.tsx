@@ -16,6 +16,7 @@ import PreviewImage from '../../ui/PreviewImage'
 import { Alert } from '../../ui'
 import { ProjectContext } from '../../contexts'
 import { PreferencesContext } from '../../ui/PreferencesContext'
+import { useTranslation } from 'react-i18next'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -40,6 +41,7 @@ export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
 
 export default function Campaigns() {
     const [project] = useContext(ProjectContext)
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [preferences] = useContext(PreferencesContext)
     const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(project.id, params), [project.id]))
@@ -66,23 +68,23 @@ export default function Campaigns() {
 
     return (
         <>
-            <PageContent title="Campaigns" actions={
-                <Button icon={<PlusIcon />} onClick={() => setIsCreateOpen(true)}>Create Campaign</Button>
+            <PageContent title={t('campaigns')} actions={
+                <Button icon={<PlusIcon />} onClick={() => setIsCreateOpen(true)}>{t('create_campaign')}</Button>
             } banner={project.has_provider === false && (
                 <Alert
                     variant="plain"
-                    title="Setup"
+                    title={t('setup')}
                     actions={
-                        <LinkButton to={`/projects/${project.id}/settings/integrations`}>Setup Integration</LinkButton>
+                        <LinkButton to={`/projects/${project.id}/settings/integrations`}>{t('setup_integration')}</LinkButton>
                     }
-                >Campaigns depend on message integrations to be able to send. Configure an integration to start sending messages!
-                </Alert>
+                >{t('setup_integration_description')}</Alert>
             )}>
                 <SearchTable
                     {...state}
                     columns={[
                         {
                             key: 'name',
+                            title: t('name'),
                             sortable: true,
                             cell: ({ item: { id, name, channel } }) => (
                                 <div className="multi-cell">
@@ -106,17 +108,19 @@ export default function Campaigns() {
                         },
                         {
                             key: 'state',
+                            title: t('state'),
                             sortable: true,
                             cell: ({ item: { state } }) => CampaignTag({ state }),
                         },
                         {
                             key: 'delivery',
+                            title: t('delivery'),
                             cell: ({ item: { delivery } }) => DeliveryRatio({ delivery }),
                         },
                         {
                             key: 'send_at',
                             sortable: true,
-                            title: 'Launched At',
+                            title: t('launched_at'),
                             cell: ({ item: { send_at, type } }) => {
                                 return send_at != null
                                     ? formatDate(preferences, send_at, 'Ppp')
@@ -131,13 +135,13 @@ export default function Campaigns() {
                             cell: ({ item: { id } }) => (
                                 <Menu size="small">
                                     <MenuItem onClick={() => handleEditCampaign(id)}>
-                                        <EditIcon />Edit
+                                        <EditIcon />{t('edit')}
                                     </MenuItem>
                                     <MenuItem onClick={async () => await handleDuplicateCampaign(id)}>
-                                        <DuplicateIcon />Duplicate
+                                        <DuplicateIcon />{t('duplicate')}
                                     </MenuItem>
                                     <MenuItem onClick={async () => await handleArchiveCampaign(id)}>
-                                        <ArchiveIcon />Archive
+                                        <ArchiveIcon />{t('archive')}
                                     </MenuItem>
                                 </Menu>
                             ),
@@ -151,7 +155,7 @@ export default function Campaigns() {
             <Modal
                 open={isCreateOpen}
                 onClose={setIsCreateOpen}
-                title="Create Campaign"
+                title={t('create_campaign')}
                 size="large"
             >
                 <CampaignForm onSave={handleCreateCampaign} />

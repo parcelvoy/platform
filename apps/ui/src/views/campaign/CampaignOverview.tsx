@@ -13,9 +13,11 @@ import { CampaignTag, DeliveryRatio } from './Campaigns'
 import ChannelTag from './ChannelTag'
 import CodeExample from '../../ui/CodeExample'
 import { env } from '../../config/env'
+import { useTranslation } from 'react-i18next'
 
 export default function CampaignOverview() {
     const [project] = useContext(ProjectContext)
+    const { t } = useTranslation()
     const [preferences] = useContext(PreferencesContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [isEditOpen, setIsEditOpen] = useState(false)
@@ -52,50 +54,48 @@ export default function CampaignOverview() {
     return (
         <>
             <Heading
-                title="Details"
+                title={t('details')}
                 size="h3"
                 actions={
                     <Button
                         size="small"
                         variant="secondary"
                         onClick={() => setIsEditOpen(true)}
-                    >
-                        Edit Details
-                    </Button>
+                    >{t('edit_details')}</Button>
                 }
             />
 
-            <Heading title="Channel" size="h4" />
+            <Heading title={t('channel')} size="h4" />
             <InfoTable rows={{
-                channel: ChannelTag({ channel: campaign.channel }),
-                provider: campaign.provider.name,
-                subscription_group: campaign.subscription.name,
+                [t('channel')]: ChannelTag({ channel: campaign.channel }),
+                [t('provider')]: campaign.provider.name,
+                [t('subscription_group')]: campaign.subscription.name,
             }} />
 
             {campaign.type === 'blast' && <>
-                <Heading title="Delivery" size="h4" />
+                <Heading title={t('delivery')} size="h4" />
                 <InfoTable rows={{
-                    state: CampaignTag({ state: campaign.state }),
-                    launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
-                    in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
-                    send_lists: DelimitedLists({ lists: campaign.lists }),
-                    exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
-                    delivery: DeliveryRatio({ delivery: campaign.delivery }),
+                    [t('state')]: CampaignTag({ state: campaign.state }),
+                    [t('launched_at')]: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
+                    [t('in_timezone')]: campaign.send_in_user_timezone ? 'Yes' : 'No',
+                    [t('send_lists')]: DelimitedLists({ lists: campaign.lists }),
+                    [t('exclusion_lists')]: DelimitedLists({ lists: campaign.exclusion_lists }),
+                    [t('delivery')]: DeliveryRatio({ delivery: campaign.delivery }),
                 }} />
             </>}
             {
                 campaign.type === 'trigger' && (
                     <CodeExample
                         code={code}
-                        title="Delivery"
-                        description="Delivery for trigger campaigns is activated via API or journey action. An example request of how to trigger a send via API is available below."
+                        title={t('delivery')}
+                        description={t('campaign_delivery_trigger_description')}
                     />
                 )
             }
             <Modal
                 open={isEditOpen}
                 onClose={setIsEditOpen}
-                title="Edit Campaign"
+                title={t('edit_campaign')}
                 size="large"
             >
                 <CampaignForm

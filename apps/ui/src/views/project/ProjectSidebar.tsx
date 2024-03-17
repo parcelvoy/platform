@@ -7,6 +7,7 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import { checkProjectRole, getRecentProjects } from '../../utils'
 import { ProjectRole } from '../../types'
 import Sidebar from '../../ui/Sidebar'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarProps {
     links?: Array<NavLinkProps & {
@@ -20,6 +21,7 @@ interface SidebarProps {
 
 export default function ProjectSidebar({ children, links }: PropsWithChildren<SidebarProps>) {
     const navigate = useNavigate()
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [recents] = useResolver(useCallback(async () => {
         const recentIds = getRecentProjects().filter(p => p.id !== project.id).map(p => p.id)
@@ -41,7 +43,7 @@ export default function ProjectSidebar({ children, links }: PropsWithChildren<Si
             ...recents,
             {
                 id: 0,
-                name: 'View All',
+                name: t('view_all'),
             },
         ]
     }, [project]))
@@ -67,7 +69,7 @@ export default function ProjectSidebar({ children, links }: PropsWithChildren<Si
                     options={recents ?? []}
                     getSelectedOptionDisplay={p => (
                         <>
-                            <div className="project-switcher-label">Project</div>
+                            <div className="project-switcher-label">{t('project')}</div>
                             <div className="project-switcher-value">{p.name}</div>
                         </>
                     )}
