@@ -1,11 +1,11 @@
 ---
-title: API
+title: Client API
 ---
 
 # Client API
 
 :::info
-This is the documentation for our `client` API which can be used for data ingestion and is used by our client SDKs. Documentation on our `admin` API is coming soon.
+This is the documentation for our ingestion API's which are used by our client SDKs. They can be used to create additional clients or ingest data without a secret key.
 :::
 
 ## Authentication
