@@ -45,16 +45,17 @@ export default class CampaignTriggerSendJob extends Job {
 
         const campaign = await getCampaign(campaign_id, project_id)
         if (!campaign) return
+        const reference_id = uuid()
         const send_id = await CampaignSend.insert({
             campaign_id,
             user_id: userId,
             state: 'pending',
             send_at: new Date(),
             reference_type: 'trigger',
-            reference_id: uuid(),
+            reference_id,
         })
 
-        await sendCampaignJob({ campaign, user: userId, send_id }).queue()
+        await sendCampaignJob({ campaign, user: userId, send_id, reference_id }).queue()
 
     }
 }
