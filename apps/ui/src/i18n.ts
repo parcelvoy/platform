@@ -11,7 +11,6 @@ i18n
         backend: {
             loadPath: '/locales/{{lng}}.json',
         },
-        saveMissing: true,
         interpolation: {
             escapeValue: false, // react already safes from xss
         },
