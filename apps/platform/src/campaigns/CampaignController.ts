@@ -7,7 +7,6 @@ import { extractQueryParams } from '../utilities'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { projectRoleMiddleware } from '../projects/ProjectService'
 import { Context, Next } from 'koa'
-import { projectMiddleware } from '../projects/ProjectController'
 import CampaignTriggerSendJob, { CampaignTriggerSendParams } from './CampaignTriggerSendJob'
 
 const router = new Router<ProjectState & { campaign?: Campaign }>({
@@ -176,16 +175,6 @@ router.get('/:campaignId/preview', async ctx => {
     ctx.body = await campaignPreview(ctx.state.project, ctx.state.campaign!)
 })
 
-export default router
-
-const apiRouter = new Router<ProjectState & { campaign?: Campaign }>({
-    prefix: '/campaigns',
-})
-
-apiRouter.use(projectMiddleware)
-apiRouter.use(projectRoleMiddleware('editor'))
-apiRouter.param('campaignId', checkCampaignId)
-
 type CampaignTriggerSchema = Omit<CampaignTriggerSendParams, 'project_id' | 'campaign_id'>
 
 const campaignTriggerParams: JSONSchemaType<CampaignTriggerSchema> = {
@@ -213,7 +202,8 @@ const campaignTriggerParams: JSONSchemaType<CampaignTriggerSchema> = {
     },
     additionalProperties: false,
 }
-apiRouter.post('/:campaignId/trigger', async ctx => {
+
+router.post('/:campaignId/trigger', async ctx => {
     const project = ctx.state.project
     const payload = validate(campaignTriggerParams, ctx.request.body)
 
@@ -226,4 +216,4 @@ apiRouter.post('/:campaignId/trigger', async ctx => {
     ctx.body = { success: true }
 })
 
-export { apiRouter }
+export default router

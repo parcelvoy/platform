@@ -12,6 +12,8 @@ import api from '../../../api'
 import { RRule } from 'rrule'
 import { useResolver } from '../../../hooks'
 import RRuleEditor from '../../../ui/RRuleEditor'
+import CodeExample from '../../../ui/CodeExample'
+import { env } from '../../../config/env'
 
 interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
@@ -50,6 +52,21 @@ const wrapper: Rule = {
     operator: 'and',
     children: [],
 }
+
+const codeExample = (journeyId: number, entranceId: number) => `curl --request POST \\
+--url '${env.api.baseURL}/client/journeys/${journeyId}/trigger' \\
+--header 'Authorization: Bearer API_KEY' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "entranceId": ${entranceId},
+    "user": {
+        "external_id": "example-user-id",
+        "extraUserProperty": true
+    },
+    "event": {
+        "purchaseAmount": 29.99
+    }
+}'`
 
 export const entranceStep: JourneyStepType<EntranceConfig> = {
     name: 'Entrance',
@@ -122,7 +139,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             </>
         )
     },
-    Edit({ onChange, project: { id: projectId }, value }) {
+    Edit({ onChange, project: { id: projectId }, journey: { id: journeyId }, stepId, value }) {
 
         const getList = useCallback(async (id: number) => await api.lists.get(projectId, id), [projectId])
         const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, limit: 50 }), [projectId])
@@ -195,6 +212,26 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                 onChange={schedule => onChange({ ...value, schedule })}
                             />
                         </>
+                    )
+                }
+                {
+                    !!stepId && (
+                        <div style={{ maxWidth: 600 }}>
+                            <CodeExample
+                                title="Trigger Entrance"
+                                description={
+                                    <>
+                                        This entrance can be triggered directly via API.
+                                        An example request is available below.
+                                        Data from the <code>event</code> field will
+                                        be available for use in the journey and campaign
+                                        templates under <code>journey.DATA_KEY_OF_THIS_STEP.*</code>
+                                        {'(for example, '}<code>journey.my_entrance.purchaseAmount</code>{')'}.
+                                    </>
+                                }
+                                code={codeExample(journeyId, stepId)}
+                            />
+                        </div>
                     )
                 }
             </>

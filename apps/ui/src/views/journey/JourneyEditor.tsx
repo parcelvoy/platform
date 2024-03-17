@@ -679,6 +679,7 @@ export default function JourneyEditor() {
                                 )),
                                 project,
                                 journey,
+                                stepId: editNode.data.stepId,
                             })
                         }
                     </div>

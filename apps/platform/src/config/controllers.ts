@@ -3,7 +3,7 @@ import send from 'koa-send'
 import ProjectController, { ProjectSubrouter, projectMiddleware } from '../projects/ProjectController'
 import ClientController from '../client/ClientController'
 import SegmentController from '../client/SegmentController'
-import CampaignController, { apiRouter as APICampaignController } from '../campaigns/CampaignController'
+import CampaignController from '../campaigns/CampaignController'
 import ListController from '../lists/ListController'
 import SubscriptionController, { publicRouter as PublicSubscriptionController } from '../subscriptions/SubscriptionController'
 import JourneyController from '../journey/JourneyController'
@@ -70,11 +70,10 @@ export const adminRouter = () => {
     admin.use(scopeMiddleware(['admin', 'secret']))
     return register(admin,
         ProjectController,
-        projectRouter(),
+        projectRouter('/projects/:project'),
         ProfileController,
         AdminController,
         OrganizationController,
-        APICampaignController,
     )
 }
 
@@ -84,7 +83,7 @@ export const adminRouter = () => {
  * inside of a project scope
  * @returns Router
  */
-export const projectRouter = (prefix = '/projects/:project') => {
+export const projectRouter = (prefix?: string) => {
     const router = new Router({ prefix })
     router.use(projectMiddleware)
     return register(router,
@@ -120,7 +119,7 @@ export const clientRouter = () => {
 
     // Secret client routes
     router.use(scopeMiddleware('secret'))
-    register(router, projectRouter(''))
+    register(router, projectRouter())
 
     return router
 }

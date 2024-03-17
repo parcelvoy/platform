@@ -286,6 +286,7 @@ export interface JourneyStepMap {
 export interface JourneyStepTypeEditProps<T> extends ControlledProps<T> {
     journey: Journey
     project: Project
+    stepId?: number // if already saved
 }
 
 export interface JourneyStepTypeEdgeProps<T, E> extends ControlledProps<E> {

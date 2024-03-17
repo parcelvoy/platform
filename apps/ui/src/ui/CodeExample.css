@@ -1,8 +1,8 @@
-.campaign-code-example {
+.code-example {
     position: relative;
 }
 
-.campaign-code-example pre {
+.code-example pre {
     border-radius: var(--border-radius);
     background-color: var(--color-grey-soft);
     word-break: keep-all;
@@ -12,11 +12,11 @@
     margin: 0;
 }
 
-.campaign-code-example pre code {
+.code-example pre code {
     background-color: transparent;
 }
 
-.campaign-code-example .copy-button {
+.code-example .copy-button {
     position: absolute;
     right: 10px;
     top: 10px;
