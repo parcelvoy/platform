@@ -251,7 +251,7 @@ router.post('/:journeyId/trigger', async ctx => {
             user: { external_id, email, phone, data, locale, timezone },
         },
     }).handle<{ user: User, event: UserEvent }>()
- 
+
     // create new entrance
     const entrance_id = await JourneyUserStep.insert({
         journey_id: journey.id,
