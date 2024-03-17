@@ -16,16 +16,16 @@ export default function UserTabs() {
         <SearchTable
             {...state}
             columns={[
-                { key: 'full_name', title: 'Name' },
-                { key: 'external_id', title: 'External ID' },
-                { key: 'email' },
-                { key: 'phone' },
-                { key: 'locale' },
-                { key: 'created_at', sortable: true },
+                { key: 'full_name', title: t('name') },
+                { key: 'external_id', title: t('external_id') },
+                { key: 'email', title: t('email') },
+                { key: 'phone', title: t('phone') },
+                { key: 'locale', title: t('locale') },
+                { key: 'created_at', title: t('created_at'), sortable: true },
             ]}
             onSelectRow={({ id }) => route(`users/${id}`)}
             enableSearch
-            searchPlaceholder="Search by ID, email or phone"
+            searchPlaceholder={t('search_users')}
         />
     </PageContent>
 }

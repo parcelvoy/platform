@@ -9,8 +9,10 @@ import { Column, Columns, JsonPreview } from '../../ui'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
 import Iframe from '../../ui/Iframe'
+import { useTranslation } from 'react-i18next'
 
 export default function UserDetailEvents() {
+    const { t } = useTranslation()
     const [preferences] = useContext(PreferencesContext)
     const [project] = useContext(ProjectContext)
     const [user] = useContext(UserContext)
@@ -29,11 +31,11 @@ export default function UserDetailEvents() {
             results={results}
             params={params}
             setParams={setParams}
-            title="Events"
+            title={t('events')}
             itemKey={({ item }) => item.id}
             columns={[
-                { key: 'name' },
-                { key: 'created_at' },
+                { key: 'name', title: t('name') },
+                { key: 'created_at', title: t('created_at') },
             ]}
             onSelectRow={setEvent}
         />

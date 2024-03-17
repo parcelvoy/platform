@@ -4,9 +4,11 @@ import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import api from '../../api'
 import { Tag } from '../../ui'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export default function UserDetailJourneys() {
 
+    const { t } = useTranslation()
     const navigate = useNavigate()
 
     const [project] = useContext(ProjectContext)
@@ -20,18 +22,21 @@ export default function UserDetailJourneys() {
     return (
         <SearchTable
             {...state}
-            title="Journeys"
+            title={t('journeys')}
             columns={[
                 {
-                    key: 'Journey',
+                    key: 'journey',
+                    title: t('journey'),
                     cell: ({ item }) => item.journey!.name,
                 },
                 {
                     key: 'created_at',
+                    title: t('created_at'),
                 },
                 {
                     key: 'ended_at',
-                    cell: ({ item }) => item.ended_at ?? <Tag variant="info">Running</Tag>,
+                    title: t('ended_at'),
+                    cell: ({ item }) => item.ended_at ?? <Tag variant="info">{t('running')}</Tag>,
                 },
             ]}
             onSelectRow={e => navigate(`../../entrances/${e.id}`)}
