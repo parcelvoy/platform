@@ -178,10 +178,11 @@ interface SendCampaign {
     user: User | number
     event?: UserEvent | number
     send_id?: number
-    user_step_id?: number
+    reference_type?: string
+    reference_id?: string
 }
 
-export const sendCampaignJob = ({ campaign, user, event, send_id, user_step_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
+export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
@@ -190,7 +191,8 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, user_step_id }
         user_id: user instanceof User ? user.id : user,
         event_id: event instanceof UserEvent ? event?.id : event,
         send_id,
-        user_step_id,
+        reference_type,
+        reference_id,
     }
 
     const channels = {
@@ -215,11 +217,11 @@ interface UpdateSendStateParams {
     campaign: Campaign | number
     user: User | number
     state?: CampaignSendState
-    user_step_id?: number
+    reference_id?: string
     response?: any
 }
 
-export const updateSendState = async ({ campaign, user, state = 'sent', user_step_id = 0 }: UpdateSendStateParams) => {
+export const updateSendState = async ({ campaign, user, state = 'sent', reference_id = '0' }: UpdateSendStateParams) => {
     const userId = user instanceof User ? user.id : user
     const campaignId = campaign instanceof Campaign ? campaign.id : campaign
 
@@ -227,7 +229,7 @@ export const updateSendState = async ({ campaign, user, state = 'sent', user_ste
     const records = await CampaignSend.update(
         qb => qb.where('user_id', userId)
             .where('campaign_id', campaignId)
-            .where('user_step_id', user_step_id),
+            .where('reference_id', reference_id),
         { state },
     )
 
@@ -237,10 +239,10 @@ export const updateSendState = async ({ campaign, user, state = 'sent', user_ste
             .insert({
                 user_id: userId,
                 campaign_id: campaignId,
-                user_step_id,
+                reference_id,
                 state,
             })
-            .onConflict(['campaign_id', 'user_id', 'user_step_id'])
+            .onConflict(['campaign_id', 'user_id', 'reference_id'])
             .merge(['state'])
         return Array.isArray(records) ? records[0] : records
     }
@@ -259,7 +261,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
     await chunk<CampaignSendParams>(query, 100, async (items) => {
         await CampaignSend.query()
             .insert(items)
-            .onConflict(['user_id', 'list_id', 'user_step_id'])
+            .onConflict(['user_id', 'list_id', 'reference_id'])
             .merge(['state', 'send_at'])
     }, ({ user_id, timezone }: { user_id: number, timezone: string }) => ({
         user_id,
@@ -394,11 +396,11 @@ export const updateCampaignProgress = async (campaign: Campaign): Promise<void> 
     await Campaign.update(qb => qb.where('id', campaign.id).where('project_id', campaign.project_id), { state, delivery })
 }
 
-export const getCampaignSend = async (campaignId: number, userId: number, userStepId: number) => {
+export const getCampaignSend = async (campaignId: number, userId: number, referenceId: string) => {
     return CampaignSend.first(qb => qb
         .where('campaign_id', campaignId)
         .where('user_id', userId)
-        .where('user_step_id', userStepId),
+        .where('reference_id', referenceId),
     )
 }
 
@@ -423,4 +425,11 @@ export const campaignPreview = async (project: Project, campaign: Campaign) => {
 export const estimatedSendSize = async (campaign: Campaign) => {
     const lists: List[] = await List.query().whereIn('id', campaign.list_ids ?? [])
     return lists.reduce((acc, list) => (list.users_count ?? 0) + acc, 0)
+}
+
+export const canSendCampaignToUser = async (campaign: Campaign, user: Pick<User, 'email' | 'phone' | 'devices'>) => {
+    if (campaign.channel === 'email' && !user.email) return false
+    if (campaign.channel === 'text' && !user.phone) return false
+    if (campaign.channel === 'push' && !user.devices) return false
+    return true
 }

@@ -1,7 +1,7 @@
 import { acquireLock, releaseLock } from '../config/scheduler'
 import { Job } from '../queue'
 import { CampaignJobParams, SentCampaign } from './Campaign'
-import CampaignSendJob from './CampaignSendJob'
+import CampaignSendJob from './CampaignEnqueueSendsJob'
 import { estimatedSendSize, generateSendList, getCampaign } from './CampaignService'
 
 export default class CampaignGenerateListJob extends Job {

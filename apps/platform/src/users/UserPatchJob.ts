@@ -21,7 +21,7 @@ export default class UserPatchJob extends Job {
         return new this(data)
     }
 
-    static async handler(patch: UserPatchTrigger) {
+    static async handler(patch: UserPatchTrigger): Promise<User> {
         const upsert = async (patch: UserPatchTrigger, tries = 3): Promise<User> => {
             const { project_id, user: { external_id, anonymous_id, data, ...fields } } = patch
             const identity = { external_id, anonymous_id } as ClientIdentity
@@ -72,5 +72,7 @@ export default class UserPatchJob extends Job {
             const list = await getList(join_list_id, patch.project_id)
             if (list) await addUserToList(user, list)
         }
+
+        return user
     }
 }

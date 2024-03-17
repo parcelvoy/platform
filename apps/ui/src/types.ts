@@ -286,6 +286,7 @@ export interface JourneyStepMap {
 export interface JourneyStepTypeEditProps<T> extends ControlledProps<T> {
     journey: Journey
     project: Project
+    stepId?: number // if already saved
 }
 
 export interface JourneyStepTypeEdgeProps<T, E> extends ControlledProps<E> {
@@ -358,7 +359,7 @@ export interface Campaign {
     list_ids?: number[]
     lists?: List[]
     exclusion_list_ids?: number[]
-    exclusion_lists: List[]
+    exclusion_lists?: List[]
     tags?: string[]
     send_in_user_timezone: boolean
     send_at: string

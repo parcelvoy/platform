@@ -1,10 +1,10 @@
 import { Job } from '../queue'
 import Campaign from './Campaign'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
-import CampaignSendJob from './CampaignSendJob'
+import CampaignEnqueueSendsJob from './CampaignEnqueueSendsJob'
 
-export default class CampaignTriggerJob extends Job {
-    static $name = 'campaign_trigger_job'
+export default class ProcessCampaignsJob extends Job {
+    static $name = 'process_campaigns_job'
 
     static async handler() {
 
@@ -20,7 +20,7 @@ export default class CampaignTriggerJob extends Job {
 
             // Otherwise lets look through messages that are ready to send
             } else {
-                await CampaignSendJob.from(campaign).queue()
+                await CampaignEnqueueSendsJob.from(campaign).queue()
             }
         }
     }

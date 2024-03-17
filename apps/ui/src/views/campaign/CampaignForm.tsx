@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
-import { Campaign, CampaignCreateParams, CampaignType, List, Project, Provider, SearchParams, Subscription } from '../../types'
+import { Campaign, CampaignCreateParams, CampaignType, List, Provider, SearchParams, Subscription } from '../../types'
 import { useController, UseFormReturn, useWatch } from 'react-hook-form'
 import TextInput from '../../ui/form/TextInput'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -25,20 +25,19 @@ interface CampaignEditParams {
 }
 
 interface ListSelectionProps extends SelectionProps<CampaignCreateParams> {
-    project: Project
     title: string
     value?: List[]
     required: boolean
 }
 
 const ListSelection = ({
-    project,
     control,
     name,
     title,
     value,
     required,
 }: ListSelectionProps) => {
+    const [project] = useContext(ProjectContext)
     const [isOpen, setIsOpen] = useState(false)
     const [lists, setLists] = useState<List[]>(value ?? [])
     const search = useCallback(async (params: SearchParams) => await api.lists.search(project.id, params), [project])
@@ -193,7 +192,48 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
     )
 }
 
-export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditParams) {
+const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormReturn<CampaignCreateParams> }) => {
+    const type = useWatch({
+        control: form.control,
+        name: 'type',
+    })
+
+    return <>
+        <RadioInput.Field
+            form={form}
+            name="type"
+            subtitle="Should a campaign be sent to as a blast to a list of users or triggered individually via API."
+            label="Type"
+            options={['blast', 'trigger'].map(item => ({ key: item, label: snakeToTitle(item) }))}
+            required
+        />
+        {
+            type !== 'trigger' && (
+                <>
+                    <Heading size="h3" title="Lists">
+                        Select what lists to send this campaign to and what user lists you want to exclude from getting the campaign.
+                    </Heading>
+                    <ListSelection
+                        title="Send Lists"
+                        name="list_ids"
+                        value={campaign?.lists}
+                        control={form.control}
+                        required={true}
+                    />
+                    <ListSelection
+                        title="Exclusion Lists"
+                        name="exclusion_list_ids"
+                        value={campaign?.exclusion_lists}
+                        control={form.control}
+                        required={false}
+                    />
+                </>
+            )
+        }
+    </>
+}
+
+export function CampaignForm({ campaign, onSave }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
     const [providers, setProviders] = useState<Provider[]>([])
@@ -217,6 +257,7 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
 
     async function handleSave({
         name,
+        type,
         list_ids,
         exclusion_list_ids,
         channel,
@@ -234,7 +275,7 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
     return (
         <FormWrapper<CampaignCreateParams>
             onSubmit={async (item) => await handleSave(item)}
-            defaultValues={campaign}
+            defaultValues={campaign ?? { type: 'blast' }}
             submitLabel="Save"
         >
             {form => (
@@ -248,31 +289,7 @@ export function CampaignForm({ campaign, type = 'blast', onSave }: CampaignEditP
                         form={form}
                         name="tags"
                     />
-                    {
-                        type !== 'trigger' && (
-                            <>
-                                <Heading size="h3" title="Lists">
-                                    Select what lists to send this campaign to and what user lists you want to exclude from getting the campaign.
-                                </Heading>
-                                <ListSelection
-                                    project={project}
-                                    title="Send Lists"
-                                    name="list_ids"
-                                    value={campaign?.lists}
-                                    control={form.control}
-                                    required={true}
-                                />
-                                <ListSelection
-                                    project={project}
-                                    title="Exclusion Lists"
-                                    name="exclusion_list_ids"
-                                    value={campaign?.exclusion_lists}
-                                    control={form.control}
-                                    required={false}
-                                />
-                            </>
-                        )
-                    }
+                    <TypeSelection campaign={campaign} form={form} />
                     {
                         campaign
                             ? (

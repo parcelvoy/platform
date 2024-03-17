@@ -2,10 +2,11 @@ import { getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
-import { logger } from '../config/logger'
 import { createAndFetchEvent } from '../users/UserEventRepository'
 import { matchingRulesForEvent } from '../rules/RuleService'
 import { enterJourneysFromEvent } from '../journey/JourneyService'
+import { UserPatchJob } from '../jobs'
+import { User } from '../users/User'
 
 interface EventPostTrigger {
     project_id: number
@@ -27,10 +28,15 @@ export default class EventPostJob extends Job {
 
     static async handler({ project_id, event, forward = false }: EventPostTrigger) {
         const { anonymous_id, external_id } = event
-        const user = await getUserFromClientId(project_id, { anonymous_id, external_id } as ClientIdentity)
+        const identity = { external_id, anonymous_id } as ClientIdentity
+        let user = await getUserFromClientId(project_id, identity)
+
+        // If no user exists, create one if we have enough information
         if (!user) {
-            logger.warn({ project_id, event }, 'job:event_post:unknown-user')
-            return
+            user = await UserPatchJob.from({
+                project_id,
+                user: { ...(event.user ?? {}), ...identity },
+            }).handle<User>()
         }
 
         // Create event for given user
@@ -46,5 +52,7 @@ export default class EventPostJob extends Job {
 
         // Enter any journey entrances associated with this event
         await enterJourneysFromEvent(dbEvent, user)
+
+        return { user, event: dbEvent }
     }
 }

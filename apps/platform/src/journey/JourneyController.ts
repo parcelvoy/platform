@@ -1,4 +1,4 @@
-import Router from '@koa/router'
+import Router, { ParamMiddleware } from '@koa/router'
 import { projectRoleMiddleware } from '../projects/ProjectService'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
@@ -6,8 +6,13 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyParams } from './Journey'
 import { createJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep, archiveJourney, deleteJourney } from './JourneyRepository'
-import { JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { JourneyEntrance, JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 import { User } from '../users/User'
+import { RequestError } from '../core/errors'
+import JourneyError from './JourneyError'
+import { EventPostJob } from '../jobs'
+import { UserEvent } from '../users/UserEvent'
+import JourneyProcessJob from './JourneyProcessJob'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -71,14 +76,15 @@ router.get('/entrances/:entranceId', async ctx => {
     ctx.body = { journey, user, userSteps }
 })
 
-router.param('journeyId', async (value, ctx, next) => {
+const checkJourneyId: ParamMiddleware = async (value, ctx, next) => {
     ctx.state.journey = await getJourney(parseInt(value), ctx.state.project.id)
     if (!ctx.state.journey) {
-        ctx.throw(404)
-        return
+        throw new RequestError(JourneyError.JourneyDoesNotExist)
     }
     return await next()
-})
+}
+
+router.param('journeyId', checkJourneyId)
 
 router.get('/:journeyId', async ctx => {
     ctx.body = ctx.state.journey
@@ -178,6 +184,89 @@ router.get('/:journeyId/steps/:stepId/users', async ctx => {
         return
     }
     ctx.body = await pagedUsersByStep(step.id, params)
+})
+
+interface JourneyEntranceTriggerParams {
+    entranceId: number
+    user: Pick<User, 'email' | 'phone' | 'timezone' | 'locale'> & { external_id: string, device_token?: string }
+    event?: Record<string, unknown>
+}
+
+const journeyTriggerParams: JSONSchemaType<JourneyEntranceTriggerParams> = {
+    $id: 'journeyEntranceTriggerParams',
+    type: 'object',
+    required: ['entranceId', 'user'],
+    properties: {
+        entranceId: {
+            type: 'number',
+            minimum: 1,
+        },
+        user: {
+            type: 'object',
+            required: ['external_id'],
+            properties: {
+                external_id: { type: 'string' },
+                email: { type: 'string', nullable: true },
+                phone: { type: 'string', nullable: true },
+                device_token: { type: 'string', nullable: true },
+                timezone: { type: 'string', nullable: true },
+                locale: { type: 'string', nullable: true },
+            },
+            additionalProperties: true,
+        },
+        event: {
+            type: 'object',
+            additionalProperties: true,
+            nullable: true,
+        },
+    },
+    additionalProperties: false,
+}
+
+// manually trigger a journey entrance
+router.post('/:journeyId/trigger', async ctx => {
+    const journey = ctx.state.journey!
+    const payload = validate(journeyTriggerParams, ctx.request.body)
+
+    // look up target entrance step
+    const step = await JourneyStep.first(qb => qb
+        .where('journey_id', journey.id)
+        .where('id', payload.entranceId))
+
+    // make sure target step is actually an entrance
+    if (!step || step.type !== JourneyEntrance.type) {
+        throw new RequestError(JourneyError.JourneyStepDoesNotExist)
+    }
+
+    // extract top-level vs custom properties user fields
+    const { external_id, email, phone, device_token, locale, timezone, ...data } = payload.user
+
+    // create the user synchronously if new
+    const { user, event } = await EventPostJob.from({
+        project_id: journey.project_id,
+        event: {
+            name: 'trigger',
+            external_id: payload.user.external_id,
+            data: payload.event,
+            user: { external_id, email, phone, data, locale, timezone },
+        },
+    }).handle<{ user: User, event: UserEvent }>()
+
+    // create new entrance
+    const entrance_id = await JourneyUserStep.insert({
+        journey_id: journey.id,
+        user_id: user.id,
+        step_id: step.id,
+        type: 'completed',
+        data: {
+            event: event?.flatten(),
+        },
+    })
+
+    // trigger async processing
+    await JourneyProcessJob.from({ entrance_id }).queue()
+
+    ctx.body = { success: true }
 })
 
 export default router

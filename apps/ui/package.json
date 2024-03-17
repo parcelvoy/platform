@@ -35,10 +35,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "docker:build": "docker buildx build -f ./Dockerfile -t ghcr.io/parcelvoy/ui:latest -t ghcr.io/parcelvoy/ui:$npm_config_tag ../../",
     "docker:build:push": "npm run docker:build -- --push",
@@ -77,6 +77,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.31.11",
     "http-proxy-middleware": "^2.0.6",
+    "react-app-rewired": "^2.2.1",
     "react-scripts": "5.0.1",
     "rimraf": "5.0.1",
     "source-map-explorer": "2.5.3",

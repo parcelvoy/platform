@@ -1,0 +1,23 @@
+.code-example {
+    position: relative;
+}
+
+.code-example pre {
+    border-radius: var(--border-radius);
+    background-color: var(--color-grey-soft);
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    padding: 20px;
+    margin: 0;
+}
+
+.code-example pre code {
+    background-color: transparent;
+}
+
+.code-example .copy-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}

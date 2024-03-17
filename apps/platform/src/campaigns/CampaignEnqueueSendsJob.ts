@@ -5,10 +5,10 @@ import { chunk } from '../utilities'
 import App from '../app'
 import { acquireLock, releaseLock } from '../config/scheduler'
 
-export default class CampaignSendJob extends Job {
-    static $name = 'campaign_send_job'
+export default class CampaignEnqueueSendsJob extends Job {
+    static $name = 'campaign_enqueue_sends_job'
 
-    static from(data: CampaignJobParams): CampaignSendJob {
+    static from(data: CampaignJobParams): CampaignEnqueueSendsJob {
         return new this(data)
     }
 

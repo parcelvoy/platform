@@ -70,7 +70,7 @@ export const adminRouter = () => {
     admin.use(scopeMiddleware(['admin', 'secret']))
     return register(admin,
         ProjectController,
-        projectRouter(),
+        projectRouter('/projects/:project'),
         ProfileController,
         AdminController,
         OrganizationController,
@@ -83,7 +83,7 @@ export const adminRouter = () => {
  * inside of a project scope
  * @returns Router
  */
-export const projectRouter = (prefix = '/projects/:project') => {
+export const projectRouter = (prefix?: string) => {
     const router = new Router({ prefix })
     router.use(projectMiddleware)
     return register(router,
@@ -119,7 +119,7 @@ export const clientRouter = () => {
 
     // Secret client routes
     router.use(scopeMiddleware('secret'))
-    register(router, projectRouter(''))
+    register(router, projectRouter())
 
     return router
 }

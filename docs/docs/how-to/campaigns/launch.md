@@ -3,7 +3,9 @@ title: Launch
 ---
 
 # Launch a Campaign
-Once your campaign is designed and ready, you can send it to your targetted list. To send a campaign, hit the `Launch Campaign` button on the top right hand side. 
+
+## Blast Campaign
+Once your blast campaign is designed and ready, you can send it to your targetted list. To send a campaign, hit the `Launch Campaign` button on the top right hand side. 
 
 ![Launch Campaign](/img/campaigns_launch.png "Campaigns Launch")
 
@@ -33,4 +35,131 @@ You can abort a campaign at any time, however messages may have already been sen
 #### Restarting
 If you wish to resume a campaign that has been aborted it will not resend to any users who have already received a previous message. Only users who have not received the campaign will receive a restarted campaigns message.
 
-### Delivery
+## Trigger Campaign
+Trigger campaigns do not need to be launched and are ready to send via API as soon as you have completed setup. To begin sending a trigger campaign, you'll first need to generate an API Key with at least the `Editor` role.
+
+### Sending Email
+Trigger an email to be sent to a given user via API.
+
+#### Endpoint
+`POST /admin/campaigns/:campaignId/trigger`
+
+#### Body
+- **user** object
+    - **external_id** string
+    - **email** string
+    - **timezone** string (optional)
+    - **locale** string (optional)
+- **event** object (optional)
+
+
+#### Responses
+- **204** - Success
+- **422** - Validation error
+
+#### Example
+```json
+Endpoint: POST /admin/campaigns/44/trigger
+
+Headers: {
+    "Authorization": "Bearer sk_token_here"
+}
+
+Body: {
+    "user": {
+        "external_id": "EXTERNAL_ID",
+        "email": "test@test.com",
+        "timezone": "America/Chicago",
+        "locale": "en",
+    },
+    "event": {
+        "random_field": "value"
+    }
+}
+```
+
+<br />
+
+### Sending Text Message
+Trigger an SMS text message to be sent to a given user via API.
+
+#### Endpoint
+`POST /admin/campaigns/:campaignId/trigger`
+
+#### Body
+- **user** object
+    - **external_id** string
+    - **phone** string
+    - **timezone** string (optional)
+    - **locale** string (optional)
+- **event** object (optional)
+
+
+#### Responses
+- **204** - Success
+- **422** - Validation error
+
+#### Example
+```json
+Endpoint: POST /admin/campaigns/44/trigger
+
+Headers: {
+    "Authorization": "Bearer sk_token_here"
+}
+
+Body: {
+    "user": {
+        "external_id": "EXTERNAL_ID",
+        "phone": "+12345678900",
+        "timezone": "America/Chicago",
+        "locale": "en",
+    },
+    "event": {
+        "random_field": "value"
+    }
+}
+```
+
+<br />
+
+### Sending Push Notification
+Trigger an push notification to be sent to a given user via API.
+
+#### Endpoint
+`POST /admin/campaigns/:campaignId/trigger`
+
+#### Body
+- **user** object
+    - **external_id** string
+    - **device_token** string
+    - **timezone** string (optional)
+    - **locale** string (optional)
+- **event** object (optional)
+
+
+#### Responses
+- **204** - Success
+- **422** - Validation error
+
+#### Example
+```json
+Endpoint: POST /admin/campaigns/44/trigger
+
+Headers: {
+    "Authorization": "Bearer sk_token_here"
+}
+
+Body: {
+    "user": {
+        "external_id": "EXTERNAL_ID",
+        "device_token": "DEVICE_TOKEN",
+        "timezone": "America/Chicago",
+        "locale": "en",
+    },
+    "event": {
+        "random_field": "value"
+    }
+}
+```
+
+<br />

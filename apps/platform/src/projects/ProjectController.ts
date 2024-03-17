@@ -22,6 +22,10 @@ export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>,
         throw new RequestError(ProjectError.ProjectDoesNotExist)
     }
 
+    if (ctx.state.scope === 'admin' && !ctx.params.project) {
+        throw new RequestError(ProjectError.ProjectDoesNotExist)
+    }
+
     const project = await getProject(
         ctx.state.scope === 'admin'
             ? ctx.params.project

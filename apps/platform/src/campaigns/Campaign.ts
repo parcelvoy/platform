@@ -54,6 +54,7 @@ export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel' | 'type'>
 
 export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted'
+export type CampaignSendReferenceType = 'journey' | 'trigger'
 export class CampaignSend extends Model {
     campaign_id!: number
     user_id!: number
@@ -61,7 +62,8 @@ export class CampaignSend extends Model {
     send_at!: string | Date
     opened_at!: string | Date
     clicks!: number
-    user_step_id?: number
+    reference_type?: CampaignSendReferenceType
+    reference_id?: string
 
     get hasCompleted() {
         return ['aborted', 'sent', 'failed', 'bounced'].includes(this.state)

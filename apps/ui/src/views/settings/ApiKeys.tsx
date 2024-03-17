@@ -33,7 +33,6 @@ export default function ProjectApiKeys() {
         await navigator.clipboard.writeText(value)
         event.stopPropagation()
         toast.success('Copied API Key')
-
     }
 
     return (

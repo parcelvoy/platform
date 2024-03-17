@@ -46,6 +46,10 @@ export default class Job implements EncodedJob {
         return App.main.queue.enqueue(this)
     }
 
+    async handle<T>(): Promise<T> {
+        return this.$static.handler(this.data, this)
+    }
+
     constructor(data: any) {
         this.data = data
     }

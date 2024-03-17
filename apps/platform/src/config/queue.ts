@@ -8,14 +8,15 @@ import WebhookJob from '../providers/webhook/WebhookJob'
 import { QueueConfig } from '../queue/Queue'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
-import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
 import ListPopulateJob from '../lists/ListPopulateJob'
 import ListStatsJob from '../lists/ListStatsJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
-import CampaignSendJob from '../campaigns/CampaignSendJob'
+import ProcessCampaignsJob from '../campaigns/ProcessCampaignsJob'
+import CampaignEnqueueSendJob from '../campaigns/CampaignEnqueueSendsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 import CampaignGenerateListJob from '../campaigns/CampaignGenerateListJob'
 import CampaignInteractJob from '../campaigns/CampaignInteractJob'
+import CampaignTriggerSendJob from '../campaigns/CampaignTriggerSendJob'
 import PushJob from '../providers/push/PushJob'
 import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
@@ -27,10 +28,10 @@ import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrches
 
 export const jobs = [
     CampaignGenerateListJob,
+    CampaignEnqueueSendJob,
     CampaignInteractJob,
-    CampaignSendJob,
     CampaignStateJob,
-    CampaignTriggerJob,
+    CampaignTriggerSendJob,
     EmailJob,
     EventPostJob,
     JourneyDelayJob,
@@ -39,6 +40,7 @@ export const jobs = [
     ListPopulateJob,
     ListStatsJob,
     ProcessListsJob,
+    ProcessCampaignsJob,
     PushJob,
     ScheduledEntranceJob,
     ScheduledEntranceOrchestratorJob,

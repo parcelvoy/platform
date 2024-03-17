@@ -9,12 +9,13 @@ import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import Tag, { TagVariant } from '../../ui/Tag'
-import { snakeToTitle } from '../../utils'
+import { formatDate, snakeToTitle } from '../../utils'
 import { CampaignForm } from './CampaignForm'
 import { ChannelIcon } from './ChannelTag'
 import PreviewImage from '../../ui/PreviewImage'
 import { Alert } from '../../ui'
 import { ProjectContext } from '../../contexts'
+import { PreferencesContext } from '../../ui/PreferencesContext'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -40,6 +41,7 @@ export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
 export default function Campaigns() {
     const [project] = useContext(ProjectContext)
     const navigate = useNavigate()
+    const [preferences] = useContext(PreferencesContext)
     const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(project.id, params), [project.id]))
     const [isCreateOpen, setIsCreateOpen] = useState(false)
 
@@ -115,6 +117,13 @@ export default function Campaigns() {
                             key: 'send_at',
                             sortable: true,
                             title: 'Launched At',
+                            cell: ({ item: { send_at, type } }) => {
+                                return send_at != null
+                                    ? formatDate(preferences, send_at, 'Ppp')
+                                    : type === 'trigger'
+                                        ? 'API Triggered'
+                                        : <>&#8211;</>
+                            },
                         },
                         { key: 'updated_at', sortable: true },
                         {

@@ -2,7 +2,7 @@ import { cleanupExpiredRevokedTokens } from '../auth/TokenRepository'
 import { subDays, subHours } from 'date-fns'
 import nodeScheduler from 'node-schedule'
 import App from '../app'
-import CampaignTriggerJob from '../campaigns/CampaignTriggerJob'
+import ProcessCampaignsJob from '../campaigns/ProcessCampaignsJob'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
@@ -17,7 +17,7 @@ export default (app: App) => {
         rule: '* * * * *',
         callback: () => {
             JourneyDelayJob.enqueueActive(app)
-            app.queue.enqueue(CampaignTriggerJob.from())
+            app.queue.enqueue(ProcessCampaignsJob.from())
             app.queue.enqueue(CampaignStateJob.from())
         },
         lockLength: 120,

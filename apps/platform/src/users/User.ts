@@ -18,11 +18,11 @@ export interface UserAttribute {
 export interface Device {
     device_id: string
     token?: string
-    os: string
+    os?: string
     os_version?: string
-    model: string
-    app_build: string
-    app_version: string
+    model?: string
+    app_build?: string
+    app_version?: string
 }
 
 export type DeviceParams = Omit<Device, ModelParams> & ClientIdentity
@@ -39,8 +39,8 @@ export class User extends Model {
     phone?: string
     devices?: Device[]
     data!: Record<string, any> // first_name, last_name live in data
-    timezone!: string
-    locale!: string
+    timezone?: string
+    locale?: string
 
     static jsonAttributes = ['data', 'devices']
     static virtualAttributes = ['firstName', 'lastName', 'fullName']

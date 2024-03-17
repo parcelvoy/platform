@@ -11,6 +11,8 @@ import { formatDate } from '../../utils'
 import { CampaignForm } from './CampaignForm'
 import { CampaignTag, DeliveryRatio } from './Campaigns'
 import ChannelTag from './ChannelTag'
+import CodeExample from '../../ui/CodeExample'
+import { env } from '../../config/env'
 
 export default function CampaignOverview() {
     const [project] = useContext(ProjectContext)
@@ -25,6 +27,27 @@ export default function CampaignOverview() {
             ),
         )?.reduce((prev, curr) => prev ? [prev, ', ', curr] : curr, '') ?? '&#8211;'
     }
+
+    const extra = campaign.channel === 'text'
+        ? '"phone": "+12345678900",'
+        : campaign.channel === 'push'
+            ? '"device_token": "DEVICE_TOKEN",'
+            : '"email": "email@testing.com",'
+
+    const code = `curl --request POST \\
+    --url '${env.api.baseURL}/client/campaigns/${campaign.id}/trigger' \\
+    --header 'Authorization: Bearer API_KEY' \\
+    --header 'Content-Type: application/json' \\
+    --data '{
+    "user": {
+        "external_id": "2391992",
+        ${extra}
+        "extraUserProperty": true
+    },
+    "event": {
+        "purchaseAmount": 29.99
+    }
+}'`
 
     return (
         <>
@@ -49,15 +72,26 @@ export default function CampaignOverview() {
                 subscription_group: campaign.subscription.name,
             }} />
 
-            <Heading title="Delivery" size="h4" />
-            <InfoTable rows={{
-                state: CampaignTag({ state: campaign.state }),
-                launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
-                in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
-                send_lists: DelimitedLists({ lists: campaign.lists }),
-                exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
-                delivery: DeliveryRatio({ delivery: campaign.delivery }),
-            }} />
+            {campaign.type === 'blast' && <>
+                <Heading title="Delivery" size="h4" />
+                <InfoTable rows={{
+                    state: CampaignTag({ state: campaign.state }),
+                    launched_at: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
+                    in_timezone: campaign.send_in_user_timezone ? 'Yes' : 'No',
+                    send_lists: DelimitedLists({ lists: campaign.lists }),
+                    exclusion_lists: DelimitedLists({ lists: campaign.exclusion_lists }),
+                    delivery: DeliveryRatio({ delivery: campaign.delivery }),
+                }} />
+            </>}
+            {
+                campaign.type === 'trigger' && (
+                    <CodeExample
+                        code={code}
+                        title="Delivery"
+                        description="Delivery for trigger campaigns is activated via API or journey action. An example request of how to trigger a send via API is available below."
+                    />
+                )
+            }
             <Modal
                 open={isEditOpen}
                 onClose={setIsEditOpen}

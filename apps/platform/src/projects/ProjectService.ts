@@ -125,7 +125,7 @@ export const generateApiKey = (scope: 'public' | 'secret') => {
 
 export const requireProjectRole = (ctx: ParameterizedContext<ProjectState>, minRole: ProjectRole) => {
     if (projectRoles.indexOf(minRole) > projectRoles.indexOf(ctx.state.projectRole)) {
-        throw new RequestError(`minimum project role ${minRole} is required`, 403)
+        throw new RequestError(`Minimum project role ${minRole} is required`, 403)
     }
 }
 

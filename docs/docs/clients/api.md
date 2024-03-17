@@ -9,7 +9,7 @@ This is the documentation for our `client` API which can be used for data ingest
 :::
 
 ## Authentication
-Authentication to client endpoints is handled via public bearer API keys. These API keys allow for ingestion only of data and only on select endpoints. You can generate a new public key at any time in the portal and we recommend using a separate key per platform.
+Authentication to client endpoints is handled via public bearer API keys. These API keys allow for ingestion only of data and only on select endpoints. You can [generate a new public key](/how-to/settings/apikeys) at any time in the portal and we recommend using a separate key per platform.
 
 To authenticate requests, set the `Authorization` header to be `Bearer YOUR_KEY` where `YOUR_KEY` is the API key you generated.
 
