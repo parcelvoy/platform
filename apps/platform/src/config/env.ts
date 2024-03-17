@@ -118,6 +118,17 @@ export default (type?: EnvType): Env => {
                 email: process.env.AUTH_BASIC_EMAIL!,
                 password: process.env.AUTH_BASIC_PASSWORD!,
             },
+            email: {
+                driver: 'email',
+                from: process.env.AUTH_EMAIL_FROM!,
+                host: process.env.AUTH_EMAIL_SMTP_HOST!,
+                port: parseInt(process.env.AUTH_EMAIL_SMTP_PORT!),
+                secure: process.env.AUTH_EMAIL_SMTP_SECURE === 'true',
+                auth: {
+                    user: process.env.AUTH_EMAIL_SMTP_USERNAME!,
+                    pass: process.env.AUTH_EMAIL_SMTP_PASSWORD!,
+                },
+            },
             saml: {
                 driver: 'saml',
                 name: process.env.AUTH_SAML_NAME!,
