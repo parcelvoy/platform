@@ -7,6 +7,7 @@ import api from '../../api'
 import { LocaleContext } from '../../contexts'
 import { localeOption } from './CampaignDetail'
 import { languageName } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 interface EditLocalesParams {
     open: boolean
@@ -17,11 +18,11 @@ interface EditLocalesParams {
 }
 
 export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, setAddOpen }: EditLocalesParams) {
-
+    const { t } = useTranslation()
     const [{ allLocales }, setLocale] = useContext(LocaleContext)
 
     async function handleRemoveLocale(locale: string) {
-        if (!confirm('Are you sure you want to delete this locale? The template cannot be recovered.')) return
+        if (!confirm(t('remove_locale_warning'))) return
         const { id } = campaign.templates.find(template => template.locale === locale)!
         await api.templates.delete(campaign.project_id, id)
 
@@ -37,8 +38,8 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
     }
 
     return (
-        <Modal title="Translations"
-            description="Manage the translations your campaign supports and will send to."
+        <Modal title={t('translations')}
+            description={t('translations_description')}
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
@@ -47,24 +48,25 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
                 columns={[
                     {
                         key: 'label',
-                        title: 'Language',
+                        title: t('language'),
                         cell: ({ item }) => languageName(item.key),
                     },
-                    { key: 'key', title: 'Locale' },
+                    { key: 'key', title: t('locale') },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item }) => (
                             <Button
                                 size="small"
                                 variant="destructive"
                                 onClick={async () => await handleRemoveLocale(item.key)}>
-                                Delete
+                                {t('delete')}
                             </Button>
                         ),
                     },
                 ]} />
             <div className="modal-footer">
-                <Button size="small" onClick={() => setAddOpen(true)}>Add Locale</Button>
+                <Button size="small" onClick={() => setAddOpen(true)}>{t('add_locale')}</Button>
             </div>
         </Modal>
     )

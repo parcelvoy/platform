@@ -8,6 +8,7 @@ import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { LinkButton } from '../../ui'
+import { useTranslation } from 'react-i18next'
 
 interface CreateTemplateParams {
     open: boolean
@@ -18,6 +19,7 @@ interface CreateTemplateParams {
 
 export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreate }: CreateTemplateParams) {
 
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [locales, setLocales] = useState<LocaleOption[]>([])
     useEffect(() => {
@@ -35,19 +37,19 @@ export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreat
     }
 
     return (
-        <Modal title="Create Template"
+        <Modal title={t('create_template')}
             open={open}
             onClose={() => setIsOpen(false)}
             zIndex={1000}>
             <FormWrapper<LocaleParams>
                 onSubmit={async (params) => { await handleCreateTemplate(params) }}
-                submitLabel="Create">
+                submitLabel={t('create')}>
                 {form => <>
-                    <p>Each campaign can have one template per locale. Pick a locale to create a template for it.</p>
+                    <p>{t('create_template_description')}</p>
                     <SingleSelect.Field
                         form={form}
                         name="locale"
-                        label="Locale"
+                        label={t('locale')}
                         options={locales}
                         toValue={option => option.key}
                         required />
@@ -55,16 +57,16 @@ export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreat
                         <LinkButton
                             size="small"
                             variant="secondary"
-                            to={`/projects/${project.id}/settings/locales`}>Create Locale</LinkButton>
+                            to={`/projects/${project.id}/settings/locales`}>{t('create_locale')}</LinkButton>
                     </div>
                     { campaign.channel === 'email' && (
                         <RadioInput.Field
                             form={form}
                             name="data.editor"
-                            label="Editor Type"
+                            label={t('editor_type')}
                             options={[
-                                { key: 'visual', label: 'Visual' },
-                                { key: 'code', label: 'Code' },
+                                { key: 'visual', label: t('visual') },
+                                { key: 'code', label: t('code') },
                             ]}
                         />
                     )}

@@ -32,7 +32,7 @@ export default function Lists() {
             </PageContent>
 
             <Modal
-                title="Create List"
+                title={t('create_list')}
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >

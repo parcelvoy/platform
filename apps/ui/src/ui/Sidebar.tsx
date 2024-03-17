@@ -11,6 +11,9 @@ import { AdminContext, OrganizationContext, ProjectContext } from '../contexts'
 import { PreferencesContext } from './PreferencesContext'
 import api from '../api'
 import { snakeToTitle } from '../utils'
+import Modal from './Modal'
+import RadioInput from './form/RadioInput'
+import { useTranslation } from 'react-i18next'
 
 export interface SidebarLink extends NavLinkProps {
     key: string
@@ -24,12 +27,14 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ children, links, prepend, append }: PropsWithChildren<SidebarProps>) {
+    const { t, i18n } = useTranslation()
     const profile = useContext(AdminContext)
     const [project] = useContext(ProjectContext)
     const [organization] = useContext(OrganizationContext)
     const navigate = useNavigate()
     const [preferences, setPreferences] = useContext(PreferencesContext)
     const [isOpen, setIsOpen] = useState(false)
+    const [isLanguageOpen, setIsLanguageOpen] = useState(false)
 
     return (
         <>
@@ -73,15 +78,22 @@ export default function Sidebar({ children, links, prepend, append }: PropsWithC
                             </div>
                         </div>
                     }>
-                        <MenuItem onClick={() => navigate('/organization')}>Settings</MenuItem>
-                        <MenuItem onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}>Use {preferences.mode === 'dark' ? 'Light' : 'Dark'} Theme</MenuItem>
-                        <MenuItem onClick={async () => await api.auth.logout()}>Sign Out</MenuItem>
+                        <MenuItem onClick={() => navigate('/organization')}>{t('settings')}</MenuItem>
+                        <MenuItem onClick={() => setIsLanguageOpen(true)}>{t('language')}</MenuItem>
+                        <MenuItem onClick={() => setPreferences({ ...preferences, mode: preferences.mode === 'dark' ? 'light' : 'dark' })}>{preferences.mode === 'dark' ? t('light_mode') : t('dark_mode')}</MenuItem>
+                        <MenuItem onClick={async () => await api.auth.logout()}>{t('sign_out')}</MenuItem>
                     </Menu>
                 </div>}
             </section>
             <main className={clsx({ 'is-open': isOpen })}>
                 {children}
             </main>
+
+            <Modal open={isLanguageOpen} onClose={() => setIsLanguageOpen(false)} title={'Language'}>
+                <RadioInput label={t('language')} options={[{ label: 'English', key: 'en' }, { label: 'Espańol', key: 'es' }]} value={i18n.language} onChange={async (value) => {
+                    await i18n.changeLanguage(value)
+                }} />
+            </Modal>
         </>
     )
 }

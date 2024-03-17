@@ -39,9 +39,11 @@ export default function Journeys() {
                 columns={[
                     {
                         key: 'name',
+                        title: t('name'),
                     },
                     {
                         key: 'status',
+                        title: t('status'),
                         cell: ({ item }) => (
                             <Tag variant={item.published ? 'success' : 'plain'}>
                                 {item.published ? 'Published' : 'Draft'}
@@ -50,23 +52,27 @@ export default function Journeys() {
                     },
                     {
                         key: 'usage',
+                        title: t('usage'),
                         cell: ({ item }) => item.stats?.entrance.toLocaleString(),
                     },
                     {
                         key: 'created_at',
+                        title: t('created_at'),
                     },
                     {
                         key: 'updated_at',
+                        title: t('updated_at'),
                     },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item: { id } }) => (
                             <Menu size="small">
                                 <MenuItem onClick={() => handleEditJourney(id)}>
-                                    <EditIcon />Edit
+                                    <EditIcon />{t('edit')}
                                 </MenuItem>
                                 <MenuItem onClick={async () => await handleArchiveJourney(id)}>
-                                    <ArchiveIcon />Archive
+                                    <ArchiveIcon />{t('archive')}
                                 </MenuItem>
                             </Menu>
                         ),
