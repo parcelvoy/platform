@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, PropsWithChildren, ReactNode, useRef } from 'react'
+import { Fragment, PropsWithChildren, ReactNode } from 'react'
 import Button from './Button'
 import { CloseIcon } from './icons'
 import './Modal.css'
@@ -27,14 +27,14 @@ export default function Modal({
     size,
     zIndex = 999,
 }: PropsWithChildren<ModalProps>) {
-    const ref = useRef<HTMLDivElement>(null)
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div"
+            <Dialog
+                as="div"
                 className={`modal ${size ?? 'small'}`}
                 onClose={onClose}
                 style={{ zIndex }}
-                initialFocus={ref}>
+            >
                 <Transition.Child
                     as={Fragment}
                     enter="transition-enter"
@@ -85,7 +85,7 @@ export default function Modal({
                                     </Dialog.Description>
                                 )
                             }
-                            <div className="modal-content" ref={ref}>
+                            <div className="modal-content">
                                 {children}
                             </div>
                             {
@@ -96,12 +96,15 @@ export default function Modal({
                                 )
                             }
                             {
-                                size !== 'fullscreen' && <Button
-                                    className="modal-close"
-                                    size="tiny"
-                                    variant="plain"
-                                    icon={<CloseIcon />}
-                                    onClick={() => onClose(false)} />
+                                size !== 'fullscreen' && (
+                                    <Button
+                                        className="modal-close"
+                                        size="tiny"
+                                        variant="plain"
+                                        icon={<CloseIcon />}
+                                        onClick={() => onClose(false)}
+                                    />
+                                )
                             }
                         </Dialog.Panel>
                     </Transition.Child>
