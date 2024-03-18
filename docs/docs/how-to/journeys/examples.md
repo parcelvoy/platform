@@ -1,8 +1,9 @@
 ---
-title: Advanced
+title: Examples
+sidebar_position: 2
 ---
 
-# Advanced Journey Usage
+# Example Journey Usage
 
 ## Passing Data
 Some journey steps such as `Send` and `Entrance` steps can have data associated with them that can be used in other steps. For example you might want to reference the data from the event that triggered the `Entrance` or what is returned from a webhook. To do so, you can use Handlebars to get data by referencing the `Data Key` of a given step.

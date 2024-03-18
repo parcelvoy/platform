@@ -43,7 +43,7 @@ import Alert from '../../ui/Alert'
 import Modal from '../../ui/Modal'
 import { toast } from 'react-hot-toast/headless'
 import { JourneyForm } from './JourneyForm'
-import { ActionStepIcon, CheckCircleIcon, CloseIcon, CopyIcon, DelayStepIcon, EntranceStepIcon, ForbiddenIcon } from '../../ui/icons'
+import { ActionStepIcon, CheckCircleIcon, CloseIcon, CopyIcon, DelayStepIcon, EntranceStepIcon, ForbiddenIcon, KeyIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
 import TextInput from '../../ui/form/TextInput'
 import { SearchTable } from '../../ui'
@@ -134,6 +134,7 @@ function JourneyStepNode({
         type: typeName,
         name,
         data,
+        data_key,
         stats,
         editing,
     } = {},
@@ -207,20 +208,24 @@ function JourneyStepNode({
                         }
                     </div>
                 </div>
-                {
-                    type.Describe && (
-                        <div className="journey-step-body">
-                            {
-                                createElement(type.Describe, {
-                                    project,
-                                    journey,
-                                    value: data,
-                                    onChange: () => {},
-                                })
-                            }
-                        </div>
-                    )
-                }
+                <div className="journey-step-body">
+                    {
+                        type.Describe && createElement(type.Describe, {
+                            project,
+                            journey,
+                            value: data,
+                            onChange: () => {},
+                        })
+                    }
+                    {
+                        !!data_key && (
+                            <div className="data-key" style={{ marginTop: type.Describe ? 10 : undefined }}>
+                                <KeyIcon />
+                                {data_key}
+                            </div>
+                        )
+                    }
+                </div>
             </div>
             {
                 (
