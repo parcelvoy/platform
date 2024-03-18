@@ -125,6 +125,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     {
                         !!rule?.children?.length && (
                             <>
+                                {' '}
                                 {ruleDescription(preferences, rule)}
                             </>
                         )
