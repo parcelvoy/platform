@@ -31,5 +31,5 @@ Dive deeper into the documentation for information about different components of
 
 <Cards>
     <Card title="Step Types" href="/how-to/journeys/types">Learn about the different types of journey steps and what each do.</Card>
-    <Card title="Advanced" href="/how-to/journeys/advanced">Dive deep into complex examples utilizing data passing.</Card>
+    <Card title="Accessing Data" href="/how-to/journeys/data">See what data can be made available for journey processing.</Card>
 </Cards>

@@ -21,7 +21,7 @@ Sends are the main action you can perform inside of a journey. A send encapsulat
 
 #### Parameters
 - **Name**: What you would like to call the step
-- **Data Key**: A unique key you can set to reference the result of the action ([more on that here](/how-to/journeys/advanced))
+- **Data Key**: A unique key you can set to reference the result of the action ([more on that here](/how-to/journeys/data))
 - **Campaign**: The associated campaign. You can use an existing one or hit the plus icon to create a new one.
 
 ## Balancer
