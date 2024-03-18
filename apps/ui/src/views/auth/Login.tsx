@@ -9,6 +9,7 @@ import { AuthMethod } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import TextInput from '../../ui/form/TextInput'
 import { Alert } from '../../ui'
+import { useTranslation } from 'react-i18next'
 
 interface LoginParams {
     email: string
@@ -16,6 +17,7 @@ interface LoginParams {
 }
 
 export default function Login() {
+    const { t } = useTranslation()
     const [searchParams] = useSearchParams()
     const [methods, setMethods] = useState<AuthMethod[]>()
     const [method, setMethod] = useState<AuthMethod>()
@@ -39,7 +41,7 @@ export default function Login() {
                 await api.auth.basicAuth(email, password, searchParams.get('r') ?? '/')
             } else if (method === 'email') {
                 await api.auth.emailAuth(email, searchParams.get('r') ?? '/')
-                setMessage('An email has been sent to the address you indicated with a link to continue.')
+                setMessage(t('login_email_confirmation'))
             } else {
                 await checkEmail(method, email)
                 handleRedirect(method, email)
@@ -49,7 +51,7 @@ export default function Login() {
 
     const checkEmail = async (method: string, email: string) => {
         const isAllowed = await api.auth.check(method, email)
-        if (!isAllowed) throw new Error('This login method is not available for this email address or an account with this email address does not exist.')
+        if (!isAllowed) throw new Error(t('login_method_not_available'))
         return isAllowed
     }
 
@@ -66,8 +68,8 @@ export default function Login() {
             </div>
             {!method && (
                 <div className="auth-step">
-                    <h2>Welcome!</h2>
-                    <p>Select an authentication method below to continue.</p>
+                    <h2>{t('welcome')}</h2>
+                    <p>{t('login_select_method')}</p>
                     <div className="auth-methods">
                         {methods?.map((method) => (
                             <Button key={method.driver} onClick={() => handleMethod(method)}>{method.name}</Button>
@@ -77,8 +79,8 @@ export default function Login() {
             )}
             {method && method.driver === 'basic' && (
                 <div className="auth-step">
-                    <h2>Welcome!</h2>
-                    <p>Enter your email and password to continue.</p>
+                    <h2>{t('welcome')}</h2>
+                    <p>{t('login_basic_instructions')}</p>
                     <FormWrapper<LoginParams>
                         onSubmit={handleLogin(method.driver)}>
                         {form => <>
@@ -86,34 +88,34 @@ export default function Login() {
                             <TextInput.Field form={form} name="password" type="password" />
                         </>}
                     </FormWrapper>
-                    <Button variant="plain" onClick={() => setMethod(undefined)}>Back</Button>
+                    <Button variant="plain" onClick={() => setMethod(undefined)}>{t('back')}</Button>
                 </div>
             )}
             {method && method.driver === 'email' && (
                 <div className="auth-step">
-                    <h2>Welcome!</h2>
+                    <h2>{t('welcome')}</h2>
                     {message
                         ? <>
                             <Alert variant="info" title="Success">{message}</Alert>
-                            <Button variant="plain" onClick={() => setMethod(undefined)}>Cancel</Button>
+                            <Button variant="plain" onClick={() => setMethod(undefined)}>{t('cancel')}</Button>
                         </>
                         : <>
-                            <p>Next, please enter your email to receive an authentication link.</p>
+                            <p>{t('login_email_instructions')}</p>
                             <FormWrapper<LoginParams>
                                 onSubmit={handleLogin(method.driver)}>
                                 {form => <>
                                     <TextInput.Field form={form} name="email" />
                                 </>}
                             </FormWrapper>
-                            <Button variant="plain" onClick={() => setMethod(undefined)}>Back</Button>
+                            <Button variant="plain" onClick={() => setMethod(undefined)}>{t('next')}</Button>
                         </>
                     }
                 </div>
             )}
             {method && !['basic', 'email'].includes(method.driver) && (
                 <div className="auth-step">
-                    <h2>Auth</h2>
-                    <p>What is your email address?</p>
+                    <h2>{t('welcome')}</h2>
+                    <p>{t('login_email_available_methods')}</p>
                     <FormWrapper<LoginParams>
                         onSubmit={handleLogin(method.driver)}
                         submitLabel={method.name}>
@@ -121,7 +123,7 @@ export default function Login() {
                             <TextInput.Field form={form} name="email" />
                         </>}
                     </FormWrapper>
-                    <Button variant="secondary" onClick={() => setMethod(undefined)}>Back</Button>
+                    <Button variant="secondary" onClick={() => setMethod(undefined)}>{t('back')}</Button>
                 </div>
             )}
         </div>

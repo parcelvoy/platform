@@ -17,6 +17,7 @@ import Modal from '../../ui/Modal'
 import Button, { LinkButton } from '../../ui/Button'
 import { DataTable } from '../../ui/DataTable'
 import { Alert } from '../../ui'
+import { useTranslation } from 'react-i18next'
 
 interface CampaignEditParams {
     campaign?: Campaign
@@ -37,6 +38,7 @@ const ListSelection = ({
     value,
     required,
 }: ListSelectionProps) => {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [isOpen, setIsOpen] = useState(false)
     const [lists, setLists] = useState<List[]>(value ?? [])
@@ -44,7 +46,7 @@ const ListSelection = ({
 
     const handlePickList = (list: List) => {
         if (list.state !== 'ready') {
-            if (!confirm('This list is still generating. Sending before it has completed could result in this campaign not sending to all users who will enter the list. Are you sure you want to continue?')) return
+            if (!confirm(t('campaign_list_generating'))) return
         }
 
         const newLists = [...lists.filter(item => item.id !== list.id), list]
@@ -77,35 +79,38 @@ const ListSelection = ({
             } actions={
                 <Button
                     size="small"
-                    onClick={() => setIsOpen(true)}>Add List</Button>
+                    onClick={() => setIsOpen(true)}>{t('add_list')}</Button>
             } />
             <DataTable
                 items={lists}
                 itemKey={({ item }) => item.id}
                 columns={[
-                    { key: 'name' },
+                    { key: 'name', title: t('title') },
                     {
                         key: 'type',
+                        title: t('type'),
                         cell: ({ item: { type } }) => snakeToTitle(type),
                     },
                     {
                         key: 'users_count',
+                        title: t('users_count'),
                         cell: ({ item }) => item.users_count?.toLocaleString(),
                     },
-                    { key: 'updated_at' },
+                    { key: 'updated_at', title: t('updated_at') },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item }) => (
                             <Button
                                 size="small"
                                 variant="destructive"
                                 onClick={() => handleRemoveList(item)}>
-                                Remove
+                                {t('remove')}
                             </Button>
                         ),
                     },
                 ]}
-                emptyMessage="Select one or more lists using the button above."
+                emptyMessage={t('campaign_form_select_list')}
             />
             <Modal
                 open={isOpen}
@@ -125,6 +130,7 @@ const ChannelSelection = ({ subscriptions, form }: {
     subscriptions: Subscription[]
     form: UseFormReturn<CampaignCreateParams>
 }) => {
+    const { t } = useTranslation()
     const channels = [...new Set(subscriptions.map(item => item.channel))].map(item => ({
         key: item,
         label: snakeToTitle(item),
@@ -133,7 +139,7 @@ const ChannelSelection = ({ subscriptions, form }: {
         <RadioInput.Field
             form={form}
             name="channel"
-            label="Medium"
+            label={t('medium')}
             options={channels}
             required
         />
@@ -141,6 +147,7 @@ const ChannelSelection = ({ subscriptions, form }: {
 }
 
 const SubscriptionSelection = ({ subscriptions, form }: { subscriptions: Subscription[], form: UseFormReturn<CampaignCreateParams> }) => {
+    const { t } = useTranslation()
     const channel = useWatch({
         control: form.control,
         name: 'channel',
@@ -158,7 +165,7 @@ const SubscriptionSelection = ({ subscriptions, form }: { subscriptions: Subscri
         <SingleSelect.Field
             form={form}
             name="subscription_id"
-            label="Subscription Group"
+            label={t('subscription_group')}
             options={subscriptions}
             required
             toValue={x => x.id}
@@ -167,6 +174,7 @@ const SubscriptionSelection = ({ subscriptions, form }: { subscriptions: Subscri
 }
 
 const ProviderSelection = ({ providers, form }: { providers: Provider[], form: UseFormReturn<CampaignCreateParams> }) => {
+    const { t } = useTranslation()
     const channel = useWatch({
         control: form.control,
         name: 'channel',
@@ -184,7 +192,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
         <SingleSelect.Field
             form={form}
             name="provider_id"
-            label="Provider"
+            label={t('provider')}
             options={providers}
             required
             toValue={x => x.id}
@@ -193,35 +201,41 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
 }
 
 const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormReturn<CampaignCreateParams> }) => {
+    const { t } = useTranslation()
     const type = useWatch({
         control: form.control,
         name: 'type',
     })
+    const options = [{
+        key: 'blast',
+        label: t('blast'),
+    }, {
+        key: 'trigger',
+        label: t('trigger'),
+    }]
 
     return <>
         <RadioInput.Field
             form={form}
             name="type"
-            subtitle="Should a campaign be sent to as a blast to a list of users or triggered individually via API."
-            label="Type"
-            options={['blast', 'trigger'].map(item => ({ key: item, label: snakeToTitle(item) }))}
+            subtitle={t('campaign_form_type')}
+            label={t('type')}
+            options={options}
             required
         />
         {
             type !== 'trigger' && (
                 <>
-                    <Heading size="h3" title="Lists">
-                        Select what lists to send this campaign to and what user lists you want to exclude from getting the campaign.
-                    </Heading>
+                    <Heading size="h3" title={t('lists')}>{t('campaign_form_lists')}</Heading>
                     <ListSelection
-                        title="Send Lists"
+                        title={t('send_lists')}
                         name="list_ids"
                         value={campaign?.lists}
                         control={form.control}
                         required={true}
                     />
                     <ListSelection
-                        title="Exclusion Lists"
+                        title={t('exclusion_lists')}
                         name="exclusion_list_ids"
                         value={campaign?.exclusion_lists}
                         control={form.control}
@@ -234,6 +248,7 @@ const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormR
 }
 
 export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
 
     const [providers, setProviders] = useState<Provider[]>([])
@@ -242,14 +257,12 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
         const params: SearchParams = { limit: 9999, q: '' }
         api.subscriptions.search(project.id, params)
             .then(({ results }) => {
-                console.log('set subscriptions!')
                 setSubscriptions(results)
             })
             .catch(() => {})
 
         api.providers.all(project.id)
             .then((results) => {
-                console.log('set providers!')
                 setProviders(results)
             })
             .catch(() => {})
@@ -276,18 +289,19 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
         <FormWrapper<CampaignCreateParams>
             onSubmit={async (item) => await handleSave(item)}
             defaultValues={campaign ?? { type: type ?? 'blast' }}
-            submitLabel="Save"
+            submitLabel={t('save')}
         >
             {form => (
                 <>
                     <TextInput.Field form={form}
                         name="name"
-                        label="Campaign Name"
+                        label={t('campaign_name')}
                         required
                     />
                     <TagPicker.Field
                         form={form}
                         name="tags"
+                        label={t('tags')}
                     />
                     {
                         !type && <TypeSelection campaign={campaign} form={form} />
@@ -296,9 +310,7 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
                         campaign
                             ? (
                                 <>
-                                    <Heading size="h3" title="Channel">
-                                        This campaign is being sent over the <strong>{campaign.channel}</strong> channel. Set the subscription group this message will be associated to.
-                                    </Heading>
+                                    <Heading size="h3" title={t('channel')}>{t('campaign_form_channel_description', { channel: campaign.channel })}</Heading>
                                     <SubscriptionSelection
                                         subscriptions={subscriptions}
                                         form={form}
@@ -307,9 +319,7 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
                             )
                             : (
                                 <>
-                                    <Heading size="h3" title="Channel">
-                                        Setup the channel this campaign will go out on. The medium is the type of message, provider the sender that will process the message and subscription group the unsubscribe group associated to the campaign.
-                                    </Heading>
+                                    <Heading size="h3" title={t('channel')}>{t('campaign_form_channel_instruction')} </Heading>
                                     <ChannelSelection
                                         subscriptions={subscriptions}
                                         form={form}
@@ -331,10 +341,10 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
                                         </Columns>
                                         : <Alert
                                             variant="plain"
-                                            title="No Providers"
+                                            title={t('no_providers')}
                                             actions={
-                                                <LinkButton to={`/projects/${project.id}/settings/integrations`}>Setup Integration</LinkButton>
-                                            }>There are no providers configured for this channel. Please add a provider to continue.</Alert>
+                                                <LinkButton to={`/projects/${project.id}/settings/integrations`}>{t('setup_integration')}</LinkButton>
+                                            }>{t('setup_integration_no_providers')}</Alert>
                                     }
                                 </>
                             )
