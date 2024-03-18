@@ -11,11 +11,13 @@ import HtmlEditor from './HtmlEditor'
 import LocaleSelector from '../LocaleSelector'
 import { toast } from 'react-hot-toast/headless'
 import { QuestionIcon } from '../../../ui/icons'
+import { useTranslation } from 'react-i18next'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
 export default function EmailEditor() {
     const navigate = useNavigate()
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { templates } = campaign
@@ -33,7 +35,7 @@ export default function EmailEditor() {
             const newCampaign = { ...campaign }
             newCampaign.templates = templates.map(obj => obj.id === id ? value : obj)
             setCampaign(newCampaign)
-            toast.success('Template saved!')
+            toast.success(t('template_saved'))
         } finally {
             setIsSaving(false)
         }
@@ -65,7 +67,7 @@ export default function EmailEditor() {
                                     size="small"
                                     isLoading={isSaving}
                                     onClick={async () => await handleTemplateSave(template)}
-                                >Save Template</Button>
+                                >{t('template_save')}</Button>
                             )}
                         </>
                     }
