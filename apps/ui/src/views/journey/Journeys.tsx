@@ -9,9 +9,11 @@ import { ArchiveIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import { JourneyForm } from './JourneyForm'
 import { Menu, MenuItem, Tag } from '../../ui'
 import { ProjectContext } from '../../contexts'
+import { useTranslation } from 'react-i18next'
 
 export default function Journeys() {
     const [project] = useContext(ProjectContext)
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [open, setOpen] = useState<null | 'create'>(null)
     const state = useSearchTableQueryState(useCallback(async params => await api.journeys.search(project.id, params), [project.id]))
@@ -27,11 +29,9 @@ export default function Journeys() {
 
     return (
         <PageContent
-            title="Journeys"
+            title={t('journeys')}
             actions={
-                <Button icon={<PlusIcon />} onClick={() => setOpen('create')}>
-                    Create Journey
-                </Button>
+                <Button icon={<PlusIcon />} onClick={() => setOpen('create')}>{t('create_journey')}</Button>
             }
         >
             <SearchTable
@@ -39,9 +39,11 @@ export default function Journeys() {
                 columns={[
                     {
                         key: 'name',
+                        title: t('name'),
                     },
                     {
                         key: 'status',
+                        title: t('status'),
                         cell: ({ item }) => (
                             <Tag variant={item.published ? 'success' : 'plain'}>
                                 {item.published ? 'Published' : 'Draft'}
@@ -50,23 +52,27 @@ export default function Journeys() {
                     },
                     {
                         key: 'usage',
+                        title: t('usage'),
                         cell: ({ item }) => item.stats?.entrance.toLocaleString(),
                     },
                     {
                         key: 'created_at',
+                        title: t('created_at'),
                     },
                     {
                         key: 'updated_at',
+                        title: t('updated_at'),
                     },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item: { id } }) => (
                             <Menu size="small">
                                 <MenuItem onClick={() => handleEditJourney(id)}>
-                                    <EditIcon />Edit
+                                    <EditIcon />{t('edit')}
                                 </MenuItem>
                                 <MenuItem onClick={async () => await handleArchiveJourney(id)}>
-                                    <ArchiveIcon />Archive
+                                    <ArchiveIcon />{t('archive')}
                                 </MenuItem>
                             </Menu>
                         ),
@@ -79,7 +85,7 @@ export default function Journeys() {
             <Modal
                 onClose={() => setOpen(null)}
                 open={!!open}
-                title="Create Journey"
+                title={t('create_journey')}
             >
                 <JourneyForm
                     onSaved={journey => {

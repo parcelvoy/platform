@@ -8,9 +8,11 @@ import PageContent from '../../ui/PageContent'
 import ListTable from './ListTable'
 import { PlusIcon } from '../../ui/icons'
 import { ListCreateForm } from './ListCreateForm'
+import { useTranslation } from 'react-i18next'
 
 export default function Lists() {
     const { projectId = '' } = useParams()
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const search = useCallback(async (params: SearchParams) => await api.lists.search(projectId, params), [api.lists, projectId])
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -18,21 +20,19 @@ export default function Lists() {
     return (
         <>
             <PageContent
-                title="Lists"
+                title={t('lists')}
                 actions={
                     <Button
                         icon={<PlusIcon />}
                         onClick={() => setIsModalOpen(true) }
-                    >
-                        Create List
-                    </Button>
+                    >{t('create_list')}</Button>
                 }
             >
                 <ListTable search={search} />
             </PageContent>
 
             <Modal
-                title="Create List"
+                title={t('create_list')}
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >

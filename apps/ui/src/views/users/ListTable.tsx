@@ -8,6 +8,7 @@ import Menu, { MenuItem } from '../../ui/Menu'
 import { ArchiveIcon, EditIcon } from '../../ui/icons'
 import api from '../../api'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 interface ListTableParams {
     search: (params: SearchParams) => Promise<SearchResult<List>>
@@ -32,6 +33,7 @@ export const ListTag = ({ state }: { state: ListState }) => {
 
 export default function ListTable({ search, selectedRow, onSelectRow, title }: ListTableParams) {
     const route = useRoute()
+    const { t } = useTranslation()
     const { projectId = '' } = useParams()
 
     function handleOnSelectRow(list: List) {
@@ -51,32 +53,48 @@ export default function ListTable({ search, selectedRow, onSelectRow, title }: L
             title={title}
             itemKey={({ item }) => item.id}
             columns={[
-                { key: 'name', sortable: true },
+                {
+                    key: 'name',
+                    title: t('name'),
+                    sortable: true,
+                },
                 {
                     key: 'type',
+                    title: t('type'),
                     cell: ({ item: { type } }) => snakeToTitle(type),
                     sortable: true,
                 },
                 {
                     key: 'state',
+                    title: t('state'),
                     cell: ({ item: { state } }) => ListTag({ state }),
                     sortable: true,
                 },
                 {
                     key: 'users_count',
+                    title: t('users_count'),
                     cell: ({ item }) => item.users_count?.toLocaleString(),
                 },
-                { key: 'created_at', sortable: true },
-                { key: 'updated_at', sortable: true },
+                {
+                    key: 'created_at',
+                    title: t('created_at'),
+                    sortable: true,
+                },
+                {
+                    key: 'updated_at',
+                    title: t('updated_at'),
+                    sortable: true,
+                },
                 {
                     key: 'options',
+                    title: t('options'),
                     cell: ({ item }) => (
                         <Menu size="small">
                             <MenuItem onClick={() => handleOnSelectRow(item)}>
-                                <EditIcon />Edit
+                                <EditIcon />{t('edit')}
                             </MenuItem>
                             <MenuItem onClick={async () => await handleArchiveList(item.id)}>
-                                <ArchiveIcon />Archive
+                                <ArchiveIcon />{t('archive')}
                             </MenuItem>
                         </Menu>
                     ),

@@ -14,35 +14,42 @@ import api from '../../api'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import JsonField from '../../ui/form/JsonField'
 import { Alert } from '../../ui'
+import { useTranslation } from 'react-i18next'
 
-const EmailTable = ({ data }: { data: EmailTemplateData }) => <InfoTable rows={{
-    'From Email': data.from?.address,
-    'From Name': data.from?.name,
-    'Reply To': data.reply_to,
-    CC: data.cc,
-    BCC: data.bcc,
-    Subject: data.subject,
-    Preheader: data.preheader,
-}} />
+const EmailTable = ({ data }: { data: EmailTemplateData }) => {
+    const { t } = useTranslation()
+    return <InfoTable rows={{
+        [t('from_email')]: data.from?.address,
+        [t('from_name')]: data.from?.name,
+        [t('reply_to')]: data.reply_to,
+        [t('cc')]: data.cc,
+        [t('bcc')]: data.bcc,
+        [t('subject')]: data.subject,
+        [t('preheader')]: data.preheader,
+    }} />
+}
 
-const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextInput.Field form={form} name="data.from.name" label="From Name" required />
-    <TextInput.Field form={form} name="data.from.address" label="From Email" required />
-    <TextInput.Field
-        form={form}
-        name="data.subject"
-        label="Subject"
-        textarea
-        required />
-    <TextInput.Field
-        form={form}
-        name="data.preheader"
-        label="Preheader"
-        textarea />
-    <TextInput.Field form={form} name="data.reply_to" label="Reply To" />
-    <TextInput.Field form={form} name="data.cc" label="CC" />
-    <TextInput.Field form={form} name="data.bcc" label="BCC" />
-</>
+const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => {
+    const { t } = useTranslation()
+    return <>
+        <TextInput.Field form={form} name="data.from.name" label={t('from_name')} required />
+        <TextInput.Field form={form} name="data.from.address" label={t('from_email')} required />
+        <TextInput.Field
+            form={form}
+            name="data.subject"
+            label={t('subject')}
+            textarea
+            required />
+        <TextInput.Field
+            form={form}
+            name="data.preheader"
+            label={t('preheader')}
+            textarea />
+        <TextInput.Field form={form} name="data.reply_to" label={t('reply_to')} />
+        <TextInput.Field form={form} name="data.cc" label={t('cc')} />
+        <TextInput.Field form={form} name="data.bcc" label={t('bcc')} />
+    </>
+}
 
 const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
     const [project] = useContext(ProjectContext)
@@ -70,75 +77,88 @@ const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
     </>
 }
 
-const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextInput.Field
+const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => {
+    const { t } = useTranslation()
+    return <TextInput.Field
         form={form}
         name="data.text"
-        label="Message"
+        label={t('message')}
         textarea
         required />
-</>
+}
 
-const PushTable = ({ data }: { data: PushTemplateData }) => <InfoTable rows={{
-    Title: data.title,
-    Body: data.body,
-    Deeplink: data.url,
-    'Raw JSON': JSON.stringify(data.custom),
-}} />
+const PushTable = ({ data }: { data: PushTemplateData }) => {
+    const { t } = useTranslation()
+    return <InfoTable rows={{
+        [t('title')]: data.title,
+        [t('body')]: data.body,
+        [t('deeplink')]: data.url,
+        [t('raw_json')]: JSON.stringify(data.custom),
+    }} />
+}
 
-const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <TextInput.Field
-        form={form}
-        name="data.title"
-        label="Title"
-        required />
-    <TextInput.Field
-        form={form}
-        name="data.body"
-        label="Body"
-        textarea
-        required />
-    <TextInput.Field
-        form={form}
-        name="data.url"
-        label="Deeplink" />
-    <JsonField
-        form={form}
-        name="data.custom"
-        label="Raw JSON"
-        textarea />
-</>
+const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => {
+    const { t } = useTranslation()
+    return <>
+        <TextInput.Field
+            form={form}
+            name="data.title"
+            label={t('title')}
+            required />
+        <TextInput.Field
+            form={form}
+            name="data.body"
+            label={t('body')}
+            textarea
+            required />
+        <TextInput.Field
+            form={form}
+            name="data.url"
+            label={t('deeplink')} />
+        <JsonField
+            form={form}
+            name="data.custom"
+            label={t('raw_json')}
+            textarea />
+    </>
+}
 
-const WebhookTable = ({ data }: { data: WebhookTemplateData }) => <InfoTable rows={{
-    Method: data.method,
-    Endpoint: data.endpoint,
-    Headers: JSON.stringify(data.headers),
-    Body: JSON.stringify(data.body),
-}} />
+const WebhookTable = ({ data }: { data: WebhookTemplateData }) => {
+    const { t } = useTranslation()
+    return <InfoTable rows={{
+        [t('method')]: data.method,
+        [t('endpoint')]: data.endpoint,
+        [t('headers')]: JSON.stringify(data.headers),
+        [t('body')]: JSON.stringify(data.body),
+    }} />
+}
 
-const WebhookForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => <>
-    <SingleSelect.Field
-        form={form}
-        name="data.method"
-        label="Method"
-        options={['DELETE', 'GET', 'PATCH', 'POST', 'PUT']}
-        required />
-    <TextInput.Field
-        form={form}
-        name="data.endpoint"
-        label="Endpoint"
-        required />
-    <JsonField
-        form={form}
-        name="data.headers"
-        label="Headers"
-        textarea />
-    <JsonField
-        form={form}
-        name="data.body"
-        label="Body"
-        textarea />
-</>
+const WebhookForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => {
+    const { t } = useTranslation()
+    return <>
+        <SingleSelect.Field
+            form={form}
+            name="data.method"
+            label={t('method')}
+            options={['DELETE', 'GET', 'PATCH', 'POST', 'PUT']}
+            required />
+        <TextInput.Field
+            form={form}
+            name="data.endpoint"
+            label={t('endpoint')}
+            required />
+        <JsonField
+            form={form}
+            name="data.headers"
+            label={t('headers')}
+            textarea />
+        <JsonField
+            form={form}
+            name="data.body"
+            label={t('body')}
+            textarea />
+    </>
+}
 
 interface TemplateDetailProps {
     template: Template
@@ -146,6 +166,7 @@ interface TemplateDetailProps {
 
 export default function TemplateDetail({ template }: TemplateDetailProps) {
 
+    const { t } = useTranslation()
     const [{ id, type, data }, setTemplate] = useState(template)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [project] = useContext(ProjectContext)
@@ -165,8 +186,8 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
         <>
             <Columns>
                 <Column>
-                    <Heading title="Details" size="h4" actions={
-                        campaign.state !== 'finished' && <Button size="small" variant="secondary" onClick={() => { setIsEditOpen(true) }}>Edit Details</Button>
+                    <Heading title={t('details')} size="h4" actions={
+                        campaign.state !== 'finished' && <Button size="small" variant="secondary" onClick={() => { setIsEditOpen(true) }}>{t('edit_details')}</Button>
                     } />
                     {
                         {
@@ -179,14 +200,14 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
                 </Column>
 
                 <Column fullscreen={true}>
-                    <Heading title="Design" size="h4" actions={
-                        type === 'email' && campaign.state !== 'finished' && <LinkButton size="small" variant="secondary" to={`../editor?locale=${template.locale}`}>Edit Design</LinkButton>
+                    <Heading title={t('design')} size="h4" actions={
+                        type === 'email' && campaign.state !== 'finished' && <LinkButton size="small" variant="secondary" to={`../editor?locale=${template.locale}`}>{t('edit_design')}</LinkButton>
                     } />
                     <Preview template={{ type, data }} />
                 </Column>
             </Columns>
 
-            <Modal title="Edit Template Details"
+            <Modal title={t('edit_template_details')}
                 open={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
             >

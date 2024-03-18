@@ -8,15 +8,17 @@ import { Button } from '../../ui'
 import { TrashIcon } from '../../ui/icons'
 import api from '../../api'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export default function UserDetail() {
 
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [project] = useContext(ProjectContext)
     const [{ id, external_id, email, phone, timezone, full_name }] = useContext(UserContext)
 
     const deleteUser = async () => {
-        if (confirm('Are you sure you want to delete this user? All existing data will be removed.\n\nNote: If new data is sent for this user, they will be re-created with whatever data is sent.')) {
+        if (confirm(t('delete_user_confirmation'))) {
             await api.users.delete(project.id, id)
             navigate(`/projects/${project.id}/users`)
         }
@@ -31,7 +33,7 @@ export default function UserDetail() {
             actions={
                 <Button icon={<TrashIcon />}
                     onClick={deleteUser}
-                    variant="destructive">Delete User</Button>
+                    variant="destructive">{t('delete_user')}</Button>
             }
         >
             <NavigationTabs tabs={[
@@ -39,27 +41,27 @@ export default function UserDetail() {
                     key: 'details',
                     to: '',
                     end: true,
-                    children: 'Details',
+                    children: t('details'),
                 },
                 {
                     key: 'events',
                     to: 'events',
-                    children: 'Events',
+                    children: t('events'),
                 },
                 {
                     key: 'lists',
                     to: 'lists',
-                    children: 'Lists',
+                    children: t('lists'),
                 },
                 {
                     key: 'subscriptions',
                     to: 'subscriptions',
-                    children: 'Subscriptions',
+                    children: t('subscriptions'),
                 },
                 {
                     key: 'journeys',
                     to: 'journeys',
-                    children: 'Journeys',
+                    children: t('journeys'),
                 },
             ]} />
             <Outlet />

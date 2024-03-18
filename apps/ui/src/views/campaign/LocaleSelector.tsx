@@ -7,6 +7,7 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import LocaleEditModal from './LocaleEditModal'
 import { useNavigate } from 'react-router-dom'
 import TemplateCreateModal from './TemplateCreateModal'
+import { useTranslation } from 'react-i18next'
 
 interface LocaleSelectorParams {
     campaignState: UseStateContext<Campaign>
@@ -17,6 +18,7 @@ export default function LocaleSelector({
     campaignState,
     showAddState,
 }: LocaleSelectorParams) {
+    const { t } = useTranslation()
     const [editOpen, setEditOpen] = useState(false)
     const [addOpen, setAddOpen] = showAddState ?? useState(false)
     const [campaign, setCampaign] = campaignState
@@ -55,12 +57,12 @@ export default function LocaleSelector({
                             size="small"
                             variant="secondary"
                             onClick={() => setEditOpen(true)}
-                        >Translations</Button>
+                        >{t('translations')}</Button>
                         : <Button
                             size="small"
                             variant="secondary"
                             onClick={() => setAddOpen(true)}
-                        >Add Translation</Button>
+                        >{t('add_translation')}</Button>
                 )
             }
         </ButtonGroup>

@@ -10,6 +10,7 @@ import Heading from './Heading'
 import { SearchIcon } from './icons'
 import Pagination from './Pagination'
 import Stack from './Stack'
+import { useTranslation } from 'react-i18next'
 
 export interface SearchTableProps<T extends Record<string, any>> extends Omit<DataTableProps<T>, 'items'> {
     title?: ReactNode
@@ -121,13 +122,13 @@ export function SearchTable<T extends Record<string, any>>({
     enableSearch,
     params,
     results,
-    searchPlaceholder = 'Search...',
+    searchPlaceholder,
     setParams,
     tagEntity,
     title,
     ...rest
 }: SearchTableProps<T>) {
-
+    const { t } = useTranslation()
     const [search, setSearch] = useDebounceControl(params.q ?? '', q => setParams({ ...params, q }))
     const columnSort = params.sort
         ? { sort: params.sort, direction: params.direction ?? 'asc' }
@@ -140,7 +141,7 @@ export function SearchTable<T extends Record<string, any>>({
                 key="search"
                 name="search"
                 value={search}
-                placeholder={searchPlaceholder}
+                placeholder={searchPlaceholder ?? t('search')}
                 onChange={setSearch}
                 hideLabel={true}
                 icon={<SearchIcon />}
