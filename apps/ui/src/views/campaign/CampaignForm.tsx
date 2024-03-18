@@ -233,7 +233,7 @@ const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormR
     </>
 }
 
-export function CampaignForm({ campaign, onSave }: CampaignEditParams) {
+export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
     const [project] = useContext(ProjectContext)
 
     const [providers, setProviders] = useState<Provider[]>([])
@@ -275,7 +275,7 @@ export function CampaignForm({ campaign, onSave }: CampaignEditParams) {
     return (
         <FormWrapper<CampaignCreateParams>
             onSubmit={async (item) => await handleSave(item)}
-            defaultValues={campaign ?? { type: 'blast' }}
+            defaultValues={campaign ?? { type: type ?? 'blast' }}
             submitLabel="Save"
         >
             {form => (
@@ -289,7 +289,9 @@ export function CampaignForm({ campaign, onSave }: CampaignEditParams) {
                         form={form}
                         name="tags"
                     />
-                    <TypeSelection campaign={campaign} form={form} />
+                    {
+                        !type && <TypeSelection campaign={campaign} form={form} />
+                    }
                     {
                         campaign
                             ? (
