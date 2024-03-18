@@ -115,7 +115,6 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
                 )
             } else {
                 nodes.push(
-                    'event ',
                     <strong key={nodes.length}>
                         {rule.value ?? ''}
                     </strong>,

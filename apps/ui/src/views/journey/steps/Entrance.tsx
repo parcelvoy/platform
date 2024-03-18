@@ -58,13 +58,13 @@ const codeExample = (journeyId: number, entranceId: number) => `curl --request P
 --header 'Authorization: Bearer API_KEY' \\
 --header 'Content-Type: application/json' \\
 --data '{
-    "entranceId": ${entranceId},
+    "entrance_id": ${entranceId},
     "user": {
         "external_id": "example-user-id",
-        "extraUserProperty": true
+        "extra_user_property": true
     },
     "event": {
-        "purchaseAmount": 29.99
+        "purchase_amount": 29.99
     }
 }'`
 
@@ -125,6 +125,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     {
                         !!rule?.children?.length && (
                             <>
+                                {' '}
                                 {ruleDescription(preferences, rule)}
                             </>
                         )

@@ -44,10 +44,10 @@ export default function CampaignOverview() {
     "user": {
         "external_id": "2391992",
         ${extra}
-        "extraUserProperty": true
+        "extra_user_property": true
     },
     "event": {
-        "purchaseAmount": 29.99
+        "purchase_amount": 29.99
     }
 }'`
 

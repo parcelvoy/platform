@@ -1,5 +1,6 @@
 ---
 title: Step Types
+sidebar_position: 1
 ---
 
 ## Overview

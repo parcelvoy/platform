@@ -187,7 +187,7 @@ router.get('/:journeyId/steps/:stepId/users', async ctx => {
 })
 
 interface JourneyEntranceTriggerParams {
-    entranceId: number
+    entrance_id: number
     user: Pick<User, 'email' | 'phone' | 'timezone' | 'locale'> & { external_id: string, device_token?: string }
     event?: Record<string, unknown>
 }
@@ -195,9 +195,9 @@ interface JourneyEntranceTriggerParams {
 const journeyTriggerParams: JSONSchemaType<JourneyEntranceTriggerParams> = {
     $id: 'journeyEntranceTriggerParams',
     type: 'object',
-    required: ['entranceId', 'user'],
+    required: ['entrance_id', 'user'],
     properties: {
-        entranceId: {
+        entrance_id: {
             type: 'number',
             minimum: 1,
         },
@@ -231,7 +231,7 @@ router.post('/:journeyId/trigger', async ctx => {
     // look up target entrance step
     const step = await JourneyStep.first(qb => qb
         .where('journey_id', journey.id)
-        .where('id', payload.entranceId))
+        .where('id', payload.entrance_id))
 
     // make sure target step is actually an entrance
     if (!step || step.type !== JourneyEntrance.type) {

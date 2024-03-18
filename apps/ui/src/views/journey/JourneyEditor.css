@@ -198,6 +198,21 @@
     border-color: var(--color-yellow-hard);
 }
 
+.journey-step .data-key {
+    background-color: var(--color-background-soft);
+    padding: 5px;
+    border-radius: var(--border-radius-inner);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: var(--color-primary-soft);
+}
+
+.journey-step .data-key svg {
+    height: 16px;
+    margin-right: 5px;
+}
+
 .journey-step .connectors {
     position: absolute;
     display: flex;
