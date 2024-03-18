@@ -25,7 +25,6 @@ Expose the event data to subsequent steps under the key `assignments`.
 
 ![Journey Reminder Example](/img/journeys_example_reminder.png)
 
-
 Next, notify the instructor that the assignment is ready to grade with an email `Send` step.
 
 Add a `Delay`, then check the status with a webhook `Send` to see if the instructor has completed the grading. Expose the response data from this step with a data key called `status`.
