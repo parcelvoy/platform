@@ -7,6 +7,7 @@ import { Device, DeviceParams, User, UserParams } from '../users/User'
 import { uuid } from '../utilities'
 import { getRuleEventNames } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
+import { createEvent } from './UserEventRepository'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -110,6 +111,12 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
 
     // Subscribe the user to all channels the user has available
     await subscribeAll(user)
+
+    // Create an event for the user creation
+    await createEvent(user, {
+        name: 'user_created',
+        data: { ...fields, data, external_id, anonymous_id },
+    })
 
     return user
 }
