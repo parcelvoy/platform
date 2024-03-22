@@ -8,9 +8,11 @@ import TextInput from '../../ui/form/TextInput'
 import { PlusIcon } from '../../ui/icons'
 import Modal from '../../ui/Modal'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
+import { useTranslation } from 'react-i18next'
 
 export default function Tags() {
 
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const search = useSearchTableState(useCallback(async params => await api.tags.search(project.id, params), [project]))
     const [editing, setEditing] = useState<Tag>()
@@ -20,10 +22,10 @@ export default function Tags() {
             <SearchTable
                 {...search}
                 columns={[
-                    { key: 'name' },
+                    { key: 'name', title: t('name') },
                 ]}
-                title="Tags"
-                description="Use tags to organize and report on your campaigns, journeys, lists, and users."
+                title={t('tags')}
+                description={t('tags_description')}
                 actions={
                     <>
                         <Button
@@ -31,9 +33,7 @@ export default function Tags() {
                             variant="primary"
                             onClick={() => setEditing({ id: 0, name: 'New Tag' })}
                             icon={<PlusIcon />}
-                        >
-                            {'Create Tag'}
-                        </Button>
+                        >{t('create_tag')}</Button>
                     </>
                 }
                 onSelectRow={setEditing}
@@ -41,7 +41,7 @@ export default function Tags() {
             <Modal
                 open={!!editing}
                 onClose={() => setEditing(undefined)}
-                title={editing?.id ? 'Update Tag' : 'Create Tag'}
+                title={editing?.id ? t('update_tag') : t('create_tag')}
             >
                 {
                     editing && (
@@ -56,7 +56,11 @@ export default function Tags() {
                             defaultValues={editing}
                         >
                             {form => (
-                                <TextInput.Field form={form} name="name" required />
+                                <TextInput.Field
+                                    form={form}
+                                    name="name"
+                                    label={t('name')}
+                                    required />
                             )}
                         </FormWrapper>
                     )

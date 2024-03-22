@@ -18,18 +18,21 @@ import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
 import { EditIcon, SendIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
+import { useTranslation } from 'react-i18next'
 
 const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: Rule) => void }) => {
+    const { t } = useTranslation()
     const [rule, setRule] = useState<Rule>(list.rule)
     return <>
-        <Heading size="h3" title="Rules" actions={
-            <Button size="small" onClick={() => onRuleSave(rule) }>Save Rules</Button>
+        <Heading size="h3" title={t('rules')} actions={
+            <Button size="small" onClick={() => onRuleSave(rule) }>{t('rules_save')}</Button>
         } />
         <RuleBuilder rule={rule} setRule={setRule} />
     </>
 }
 
 export default function ListDetail() {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [list, setList] = useContext(ListContext)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -57,9 +60,9 @@ export default function ListDetail() {
             title={list.name}
             desc={
                 <InfoTable rows={{
-                    state: <ListTag state={list.state} />,
-                    type: snakeToTitle(list.type),
-                    users_count: list.state === 'loading'
+                    [t('state')]: <ListTag state={list.state} />,
+                    [t('type')]: snakeToTitle(list.type),
+                    [t('users_count')]: list.state === 'loading'
                         ? <>&#8211;</>
                         : list.users_count?.toLocaleString(),
                 }} direction="horizontal" />
@@ -68,13 +71,13 @@ export default function ListDetail() {
                 <>
                     {list.state === 'draft' && <Button
                         icon={<SendIcon />}
-                        onClick={async () => await saveList({ name: list.name, published: true })}>Publish</Button>}
+                        onClick={async () => await saveList({ name: list.name, published: true })}>{t('publish')}</Button>}
                     {list.type === 'static' && <Button
                         variant="secondary"
                         icon={<UploadIcon />}
                         onClick={() => setIsUploadOpen(true)}
-                    >Upload List</Button>}
-                    <Button icon={<EditIcon />} onClick={() => setIsEditListOpen(true)}>Edit List</Button>
+                    >{t('upload_list')}</Button>}
+                    <Button icon={<EditIcon />} onClick={() => setIsEditListOpen(true)}>{t('edit_list')}</Button>
                 </>
             }>
 
@@ -83,12 +86,12 @@ export default function ListDetail() {
             <SearchTable title="Users"
                 {...state}
                 columns={[
-                    { key: 'full_name', title: 'Name' },
-                    { key: 'email', sortable: true },
-                    { key: 'phone' },
+                    { key: 'full_name', title: t('name') },
+                    { key: 'email', title: t('email'), sortable: true },
+                    { key: 'phone', title: t('phone') },
                     {
                         key: 'created_at',
-                        title: 'Joined List At',
+                        title: t('joined_list_at'),
                         sortable: true,
                         sortKey: 'user_list.created_at',
                     },
@@ -99,16 +102,16 @@ export default function ListDetail() {
                 open={isDialogOpen}
                 onClose={setIsDialogOpen}
                 title="Success">
-                List generation will happen in the background. Please reload the page to see the latest status.
+                {t('list_generation_dialog_description')}
             </Dialog>
 
             <Modal
                 open={isEditListOpen}
                 onClose={() => setIsEditListOpen(false)}
-                title="Edit List">
+                title={t('edit_list')}>
                 <FormWrapper<Omit<ListUpdateParams, 'rule'>>
                     onSubmit={async ({ name, published }) => await saveList({ name, published })}
-                    submitLabel="Save"
+                    submitLabel={t('save')}
                     defaultValues={{ name: list.name }}
                 >
                     {form => (
@@ -116,12 +119,13 @@ export default function ListDetail() {
                             <TextInput.Field
                                 form={form}
                                 name="name"
-                                label="List Name"
+                                label={t('list_name')}
                                 required
                             />
                             <TagPicker.Field
                                 form={form}
                                 name="tags"
+                                label={t('tags')}
                             />
                         </>
                     )}
@@ -131,14 +135,14 @@ export default function ListDetail() {
             <Modal
                 open={isUploadOpen}
                 onClose={() => setIsUploadOpen(false)}
-                title="Import Users">
+                title={t('import_users')}>
                 <FormWrapper<{ file: FileList }>
                     onSubmit={async (form) => await uploadUsers(form.file)}
-                    submitLabel="Upload"
+                    submitLabel={t('upload')}
                 >
                     {form => <>
-                        <p>Please select a CSV of users to upload. The provided file must have the external ID you wish to use for each user.</p>
-                        <UploadField form={form} name="file" label="File" required />
+                        <p>{t('upload_instructions')}</p>
+                        <UploadField form={form} name="file" label={t('file')} required />
                     </>}
                 </FormWrapper>
             </Modal>

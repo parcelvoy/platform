@@ -8,8 +8,10 @@ import SwitchField from '../../ui/form/SwitchField'
 import Heading from '../../ui/Heading'
 import { SearchTable, useTableSearchParams } from '../../ui/SearchTable'
 import { snakeToTitle } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 export default function UserDetailSubscriptions() {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [user] = useContext(UserContext)
     const [params, setParams] = useTableSearchParams()
@@ -17,12 +19,12 @@ export default function UserDetailSubscriptions() {
     const [search, _, reload] = useResolver(useCallback(async () => await api.users.subscriptions(project.id, user.id, params), [api.users, project, params]))
 
     const updateSubscription = async (subscription_id: number, state: SubscriptionState) => {
-        if (!confirm('Are you sure you want to change the status of this subscription?')) return
+        if (!confirm(t('user_change_subscription_status'))) return
         await updateSubscriptions([{ subscription_id, state }])
     }
 
     const unsubscribeAll = async () => {
-        if (!confirm('Are you sure you want to unsubscribe from all?')) return
+        if (!confirm(t('users_unsubscribe_all'))) return
         const subscriptions = search?.results.map(item => ({
             subscription_id: item.subscription_id,
             state: 0,
@@ -38,14 +40,12 @@ export default function UserDetailSubscriptions() {
     return <>
         <Heading
             size="h3"
-            title="Subscriptions"
+            title={t('subscriptions')}
             actions={
                 <Button
                     size="small"
                     onClick={async () => await unsubscribeAll()}
-                >
-                    Unsubscribe From All
-                </Button>
+                >{t('unsubscribe_all')}</Button>
             }
         />
         <SearchTable
@@ -56,13 +56,14 @@ export default function UserDetailSubscriptions() {
             columns={[
                 {
                     key: 'channel',
+                    title: t('channel'),
                     cell: ({ item: { channel } }) => snakeToTitle(channel),
                 },
-                { key: 'name' },
-                { key: 'updated_at', title: 'Last Modified At' },
+                { key: 'name', title: t('name') },
+                { key: 'updated_at', title: t('updated_at') },
                 {
                     key: 'state',
-                    title: 'Subscribed',
+                    title: t('subscribed'),
                     cell: ({ item: { subscription_id, state } }) => {
                         return (
                             <SwitchField

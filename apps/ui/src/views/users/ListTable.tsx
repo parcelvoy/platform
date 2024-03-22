@@ -18,17 +18,20 @@ interface ListTableParams {
 }
 
 export const ListTag = ({ state }: { state: ListState }) => {
+    const { t } = useTranslation()
     const variant: Record<ListState, TagVariant> = {
         draft: 'plain',
         loading: 'info',
         ready: 'success',
     }
 
-    return (
-        <Tag variant={variant[state]}>
-            {snakeToTitle(state)}
-        </Tag>
-    )
+    const title: Record<ListState, string> = {
+        draft: t('draft'),
+        loading: t('loading'),
+        ready: t('ready'),
+    }
+
+    return <Tag variant={variant[state]}>{title[state]}</Tag>
 }
 
 export default function ListTable({ search, selectedRow, onSelectRow, title }: ListTableParams) {

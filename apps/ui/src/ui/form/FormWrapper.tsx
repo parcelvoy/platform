@@ -3,6 +3,7 @@ import { DeepRequired, DefaultValues, FieldErrorsImpl, FieldValues, useForm, Use
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 import Alert from '../Alert'
 import Button from '../Button'
+import { useTranslation } from 'react-i18next'
 
 interface FormWrapperProps<T extends FieldValues> {
     children: (form: UseFormReturn<T>) => ReactNode
@@ -17,14 +18,16 @@ export default function FormWrapper<T extends FieldValues>({
     children,
     defaultValues,
     disabled,
-    submitLabel = 'Submit',
+    submitLabel,
     onSubmit,
     onError,
 }: FormWrapperProps<T>) {
 
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
     const [submitError, setSubmitError] = useState<Error | any | undefined>()
+    submitLabel = submitLabel ?? t('submit')
 
     const form = useForm<T>({
         defaultValues,

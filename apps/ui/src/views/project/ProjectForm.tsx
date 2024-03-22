@@ -6,6 +6,7 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import SwitchField from '../../ui/form/SwitchField'
 import Heading from '../../ui/Heading'
 import { LocaleTextField } from '../settings/Locales'
+import { useTranslation } from 'react-i18next'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace Intl {
@@ -38,6 +39,7 @@ interface ProjectFormProps {
 }
 
 export default function ProjectForm({ project, onSave }: ProjectFormProps) {
+    const { t } = useTranslation()
     const timeZones = Intl.supportedValuesOf('timeZone')
     const locale = navigator.languages[0]?.split('-')[0] ?? 'en'
     const defaults = project ?? {
@@ -56,34 +58,38 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                     : await api.projects.create(params)
                 onSave?.(project)
             }}
-            submitLabel={project ? 'Save Settings' : 'Create Project'}
+            submitLabel={project ? t('save_settings') : t('create_project')}
         >
             {
                 form => (
                     <>
-                        <TextInput.Field form={form} name="name" required />
-                        <TextInput.Field form={form} name="description" textarea />
-                        <Heading size="h4" title="Defaults" />
+                        <TextInput.Field form={form} name="name" label={t('name')} required />
+                        <TextInput.Field form={form} name="description" label={t('description')} textarea />
+                        <Heading size="h4" title={t('defaults')} />
                         <LocaleTextField
                             form={form}
                             name="locale"
-                            label="Default Locale"
-                            subtitle="This locale will be used as the default when creating campaigns and when a users locale does not match any available ones."
+                            label={t('default_locale')}
+                            subtitle={t('default_locale_description')}
                             required />
                         <SingleSelect.Field
                             form={form}
                             options={timeZones}
                             name="timezone"
-                            label="Timezone"
+                            label={t('timezone')}
                             required
                         />
-                        <Heading size="h4" title="Message Settings" />
+                        <Heading size="h4" title={t('message_settings')} />
                         <TextInput.Field
                             form={form}
                             name="text_opt_out_message"
-                            label="SMS Opt Out Message"
-                            subtitle="Instructions on how to opt out of SMS that will be appended to every text." />
-                        <SwitchField form={form} name="link_wrap" label="Link Wrapping" subtitle="Enable link wrapping for all links in messages." />
+                            label={t('sms_opt_out_message')}
+                            subtitle={t('sms_opt_out_message_subtitle')} />
+                        <SwitchField
+                            form={form}
+                            name="link_wrap"
+                            label={t('link_wrapping')}
+                            subtitle={t('link_wrapping_subtitle')} />
                     </>
                 )
             }

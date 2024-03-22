@@ -7,12 +7,14 @@ import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
 import { createWrapperRule } from './RuleBuilder'
+import { useTranslation } from 'react-i18next'
 
 interface ListCreateFormProps {
     onCreated?: (list: List) => void
 }
 
 export function ListCreateForm({ onCreated }: ListCreateFormProps) {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const defaults: Partial<ListCreateParams> = {
         type: 'dynamic',
@@ -33,28 +35,29 @@ export function ListCreateForm({ onCreated }: ListCreateFormProps) {
                 }
             }
             defaultValues={defaults}
-            submitLabel="Save"
+            submitLabel={t('save')}
         >
             {form => (
                 <>
                     <TextInput.Field
                         form={form}
                         name="name"
-                        label="List Name"
+                        label={t('list_save')}
                         required
                     />
                     <RadioInput.Field
                         form={form}
                         name="type"
-                        label="Type"
+                        label={t('type')}
                         options={[
-                            { key: 'dynamic', label: 'Dynamic' },
-                            { key: 'static', label: 'Static' },
+                            { key: 'dynamic', label: t('dynamic') },
+                            { key: 'static', label: t('static') },
                         ]}
                     />
                     <TagPicker.Field
                         form={form}
                         name="tags"
+                        label={t('tags')}
                     />
                 </>
             )}

@@ -28,7 +28,12 @@ export default function UserDetail() {
         <PageContent
             title={full_name ?? (email ?? 'No email')}
             desc={
-                <InfoTable rows={{ ID: external_id, email, phone, timezone }} direction="horizontal" />
+                <InfoTable rows={{
+                    ID: external_id,
+                    [t('email')]: email,
+                    [t('phone')]: phone,
+                    [t('timezone')]: timezone,
+                }} direction="horizontal" />
             }
             actions={
                 <Button icon={<TrashIcon />}
