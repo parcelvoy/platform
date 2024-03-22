@@ -5,7 +5,7 @@ import LoggerPushProvider from './LoggerPushProvider'
 import PushChannel from './PushChannel'
 import { PushProvider, PushProviderName } from './PushProvider'
 
-const typeMap = {
+export const typeMap = {
     local: LocalPushProvider,
     logger: LoggerPushProvider,
 }
