@@ -10,8 +10,10 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import Button from '../../ui/Button'
 import { PlusIcon } from '../../ui/icons'
 import { snakeToTitle } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 export default function Subscriptions() {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.subscriptions.search(project.id, params), [project]))
     const [editing, setEditing] = useState<null | Partial<Subscription>>(null)
@@ -21,15 +23,16 @@ export default function Subscriptions() {
             <SearchTable
                 {...state}
                 columns={[
-                    { key: 'name' },
+                    { key: 'name', title: t('name') },
                     {
                         key: 'channel',
+                        title: t('channel'),
                         cell: ({ item }) => snakeToTitle(item.channel),
                     },
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={(row) => setEditing(row)}
-                title="Subscriptions"
+                title={t('subscriptions')}
                 actions={
                     <>
                         <Button
@@ -37,14 +40,12 @@ export default function Subscriptions() {
                             icon={<PlusIcon />}
                             size="small"
                             onClick={() => setEditing({ channel: 'email' })}
-                        >
-                            Create Subscription
-                        </Button>
+                        >{t('create_subscription')}</Button>
                     </>
                 }
             />
             <Modal
-                title={editing ? 'Update Subscription' : 'Create Subscription' }
+                title={editing ? t('update_subscription') : t('create_subscription') }
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
@@ -67,12 +68,12 @@ export default function Subscriptions() {
                                     form={form}
                                     name="name"
                                     required
-                                    label="Name"
+                                    label={t('name')}
                                 />
                                 {!editing.id && <SingleSelect.Field
                                     form={form}
                                     name="channel"
-                                    label="Channel"
+                                    label={t('channel')}
                                     options={['email', 'push', 'text', 'webhook'].map((channel) => ({ key: channel, label: snakeToTitle(channel) }))}
                                     toValue={x => x.key}
                                 />}

@@ -10,6 +10,7 @@ import { FieldPath, FieldValues } from 'react-hook-form'
 import Button from '../../ui/Button'
 import { PlusIcon } from '../../ui/icons'
 import { languageName } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 export const LocaleTextField = <X extends FieldValues, P extends FieldPath<X>>(params: TextInputProps<P> & FieldProps<X, P>) => {
 
@@ -26,11 +27,12 @@ export const LocaleTextField = <X extends FieldValues, P extends FieldPath<X>>(p
 }
 
 export default function Locales() {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.locales.search(project.id, params), [project]))
     const [open, setOpen] = useState(false)
     const handleDeleteLocale = async (locale: Locale) => {
-        if (!confirm('Are you sure you want to delete this locale? No existing templates will be deleted, this language option will just not be present for future templates.')) return
+        if (!confirm(t('locale_delete_confirmation'))) return
         await api.locales.delete(project.id, locale.id)
         await state.reload()
     }
@@ -40,22 +42,23 @@ export default function Locales() {
             <SearchTable
                 {...state}
                 columns={[
-                    { key: 'key' },
-                    { key: 'label' },
+                    { key: 'key', title: t('key') },
+                    { key: 'label', title: t('label') },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item }) => (
                             <Button
                                 size="small"
                                 variant="destructive"
                                 onClick={async () => await handleDeleteLocale(item)}>
-                                Delete
+                                {t('delete')}
                             </Button>
                         ),
                     },
                 ]}
                 itemKey={({ item }) => item.key}
-                title="Locales"
+                title={t('locale')}
                 actions={
                     <>
                         <Button
@@ -63,14 +66,12 @@ export default function Locales() {
                             icon={<PlusIcon />}
                             size="small"
                             onClick={() => setOpen(true)}
-                        >
-                            Create Locale
-                        </Button>
+                        >{t('create_locale')}</Button>
                     </>
                 }
             />
             <Modal
-                title="Create Locale"
+                title={t('create_locale')}
                 open={open}
                 onClose={() => setOpen(false)}
             >
@@ -87,8 +88,8 @@ export default function Locales() {
                                 <LocaleTextField
                                     form={form}
                                     name="key"
-                                    label="Locale"
-                                    subtitle="The abbreviated language code i.e. en, es, fr"
+                                    label={t('locale')}
+                                    subtitle={t('locale_field_subtitle')}
                                     required />
                             </>
                         )

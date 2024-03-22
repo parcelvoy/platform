@@ -11,6 +11,13 @@ import { Menu, MenuItem, Tag } from '../../ui'
 import { ProjectContext } from '../../contexts'
 import { useTranslation } from 'react-i18next'
 
+export const JourneyTag = ({ published }: { published: boolean }) => {
+    const { t } = useTranslation()
+    const variant = published ? 'success' : 'plain'
+    const title = published ? t('published') : t('draft')
+    return <Tag variant={variant}>{title}</Tag>
+}
+
 export default function Journeys() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
@@ -44,11 +51,7 @@ export default function Journeys() {
                     {
                         key: 'status',
                         title: t('status'),
-                        cell: ({ item }) => (
-                            <Tag variant={item.published ? 'success' : 'plain'}>
-                                {item.published ? 'Published' : 'Draft'}
-                            </Tag>
-                        ),
+                        cell: ({ item }) => <JourneyTag published={item.published} />,
                     },
                     {
                         key: 'usage',

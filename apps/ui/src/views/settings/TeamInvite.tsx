@@ -10,6 +10,7 @@ import { AdminContext, ProjectContext } from '../../contexts'
 import { combine, snakeToTitle } from '../../utils'
 import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
+import { useTranslation } from 'react-i18next'
 
 type EditMemberData = Pick<ProjectAdmin, 'admin_id' | 'role'> & { id?: number }
 type InviteMemberData = ProjectAdminInviteParams
@@ -21,6 +22,7 @@ interface TeamInviteProps extends ModalStateProps {
 
 export default function TeamInvite({ member, onMember, ...props }: TeamInviteProps) {
 
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const admin = useContext(AdminContext)
     const searchAdmins = useCallback(async (q: string) => await api.admins.search({ q, limit: 100 }), [])
@@ -35,16 +37,16 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
     return <>
         {member && <Modal
             {...props}
-            title={member.id ? 'Update Permissions' : 'Add Team Member'}
+            title={member.id ? t('update_permissions') : t('add_team_member')}
             size="small"
-            description={member.id ? 'Update the permissions for this team member.' : 'Add an existing team member to this project or invite someone new.'}
+            description={member.id ? t('team_edit_description_update') : t('team_edit_description_add')}
         >
             <RadioInput
                 value={newOrExisting}
                 onChange={setNewOrExisting}
                 options={[
-                    { key: 'existing', label: 'Existing Team Member' },
-                    { key: 'new', label: 'New Team Member' },
+                    { key: 'existing', label: t('existing_team_member') },
+                    { key: 'new', label: t('new_team_member') },
                 ]}
             />
             { newOrExisting === 'new'
@@ -55,24 +57,22 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
                             setInvitedMember(newMember)
                         }}
                         defaultValues={member}
-                        submitLabel="Invite to Project"
+                        submitLabel={t('invite_to_project')}
                     >
                         {form => (
                             <>
                                 <TextInput.Field
                                     form={form}
                                     name="email"
-                                    label="Email"
+                                    label={t('email')}
                                     required
                                 />
                                 <SingleSelect.Field
                                     form={form}
                                     name="role"
-                                    label="Role"
+                                    label={t('role')}
                                     subtitle={admin?.id === member.admin_id && (
-                                        <span style={{ color: 'red' }}>
-                                            {'You cannot change your own roles.'}
-                                        </span>
+                                        <span style={{ color: 'red' }}>{t('role_cant_change')}</span>
                                     )}
                                     options={projectRoles}
                                     getOptionDisplay={snakeToTitle}
@@ -90,14 +90,14 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
                             onMember(member)
                         }}
                         defaultValues={member}
-                        submitLabel={member.id ? 'Update Permissions' : 'Add to Project'}
+                        submitLabel={member.id ? t('update_permissions') : t('invite_to_project')}
                     >
                         {form => (
                             <>
                                 <EntityIdPicker.Field
                                     form={form}
                                     name="admin_id"
-                                    label="Admin"
+                                    label={t('admin')}
                                     search={searchAdmins}
                                     get={api.admins.get}
                                     displayValue={({ first_name, last_name, email }) => first_name
@@ -110,11 +110,9 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
                                 <SingleSelect.Field
                                     form={form}
                                     name="role"
-                                    label="Role"
+                                    label={t('role')}
                                     subtitle={admin?.id === member.admin_id && (
-                                        <span style={{ color: 'red' }}>
-                                            {'You cannot change your own roles.'}
-                                        </span>
+                                        <span style={{ color: 'red' }}>{t('role_cant_change')}</span>
                                     )}
                                     options={projectRoles}
                                     getOptionDisplay={snakeToTitle}
@@ -129,12 +127,10 @@ export default function TeamInvite({ member, onMember, ...props }: TeamInvitePro
         </Modal>}
         {invitedMember && <Modal
             open={invitedMember !== undefined}
-            onClose={() => {
-                setInvitedMember(undefined)
-            }}
-            title="Member Added"
+            onClose={() => setInvitedMember(undefined)}
+            title={t('member_added')}
             size="small">
-            <p>You have successfully added a member to this project. They will have access to this project as soon as they log in for the first time. Would you like to send them an email about their new access?</p>
+            <p>{t('member_added_description')}</p>
             <LinkButton to={mailto(invitedMember.email)} onClick={() => {
                 onMember(invitedMember)
                 setInvitedMember(undefined)

@@ -97,13 +97,13 @@ export default function CampaignDetail() {
             <Button
                 icon={<SendIcon />}
                 onClick={() => setIsLaunchOpen(true)}
-            >Launch Campaign</Button>
+            >{t('launch_campaign')}</Button>
         ),
         aborted: (
             <Button
                 icon={<RestartIcon />}
                 onClick={() => setIsLaunchOpen(true)}
-            >Restart Campaign</Button>
+            >{t('restart_campaign')}</Button>
         ),
         pending: <></>,
         scheduled: (
@@ -111,18 +111,18 @@ export default function CampaignDetail() {
                 <Button
                     icon={<SendIcon />}
                     onClick={() => setIsLaunchOpen(true)}
-                >Change Schedule</Button>
+                >{t('change_schedule')}</Button>
                 <Button
                     icon={<ForbiddenIcon />}
                     onClick={async () => await handleAbort()}
-                >Abort Campaign</Button>
+                >{t('abort_campaign')}</Button>
             </>
         ),
         running: (
             <Button
                 icon={<ForbiddenIcon />}
                 onClick={async () => await handleAbort()}
-            >Abort Campaign</Button>
+            >{t('abort_campaign')}</Button>
         ),
         finished: <></>,
     }

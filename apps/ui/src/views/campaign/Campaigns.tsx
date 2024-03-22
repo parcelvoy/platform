@@ -133,7 +133,7 @@ export default function Campaigns() {
                                 return send_at != null
                                     ? formatDate(preferences, send_at, 'Ppp')
                                     : type === 'trigger'
-                                        ? 'API Triggered'
+                                        ? t('api_triggered')
                                         : <>&#8211;</>
                             },
                         },

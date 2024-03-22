@@ -14,6 +14,7 @@ import api from '../../api'
 import { highlightSearch, usePopperSelectDropdown } from '../../ui/utils'
 import clsx from 'clsx'
 import { createUuid, formatDate, snakeToTitle } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
 export const createWrapperRule = (): WrapperRule => ({
     uuid: createUuid(),
@@ -237,7 +238,7 @@ function RuleEdit({
     depth = 0,
     eventName = '',
     group,
-    headerPrefix = 'Include users matching ',
+    headerPrefix,
     root,
     rule,
     setRule,
@@ -250,9 +251,11 @@ function RuleEdit({
         styles,
     } = usePopperSelectDropdown()
 
+    const { t } = useTranslation()
     const { suggestions } = useContext(RuleEditContext)
     const { path } = rule
     const hasValue = rule?.operator && !['is set', 'is not set', 'empty'].includes(rule?.operator)
+    headerPrefix = headerPrefix ?? t('rule_include_users_matching')
 
     const pathSuggestions = useMemo<string[]>(() => {
 
@@ -291,7 +294,7 @@ function RuleEdit({
                         (rule.group === 'event' && !eventName)
                             ? (
                                 <>
-                                    Did
+                                    {t('rule_did')}
                                     <span className="ui-select">
                                         <Combobox onChange={(value: string) => setRule({ ...rule, value })}>
                                             <ButtonGroup>
@@ -336,7 +339,7 @@ function RuleEdit({
                                         </Combobox>
                                     </span>
                                     {
-                                        !!rule.children?.length && ' matching '
+                                        !!rule.children?.length && t('rule_matching')
                                     }
                                 </>
                             )
@@ -354,7 +357,7 @@ function RuleEdit({
                                     size="small"
                                     toValue={x => x.key}
                                 />
-                                of the following
+                                {t('rule_of_the_following')}
                             </>
                         )
                     }
@@ -411,8 +414,8 @@ function RuleEdit({
                     >
                         {
                             rule.group === 'event'
-                                ? 'Add Condition'
-                                : 'Add User Condition'
+                                ? t('rule_add_condition')
+                                : t('rule_add_user_condition')
                         }
                     </Button>
                     {
@@ -436,7 +439,7 @@ function RuleEdit({
                                     }],
                                 })}
                             >
-                                Add Event Condition
+                                {t('rule_add_event_condition')}
                             </Button>
                         )
                     }

@@ -8,10 +8,12 @@ import Menu, { MenuItem } from '../../ui/Menu'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { snakeToTitle } from '../../utils'
 import TeamInvite from './TeamInvite'
+import { useTranslation } from 'react-i18next'
 
 type EditFormData = Pick<ProjectAdmin, 'admin_id' | 'role'> & { id?: number }
 
 export default function Teams() {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.projectAdmins.search(project.id, params), [project]))
     const [editing, setEditing] = useState<Partial<EditFormData>>()
@@ -20,7 +22,7 @@ export default function Teams() {
         <>
             <SearchTable
                 {...state}
-                title="Team"
+                title={t('team')}
                 actions={
                     <Button
                         icon={<PlusIcon />}
@@ -29,20 +31,20 @@ export default function Teams() {
                             admin_id: undefined,
                             role: 'support',
                         })}
-                    >
-                        Add Team Member
-                    </Button>
+                    >{t('add_team_member')}</Button>
                 }
                 columns={[
-                    { key: 'first_name' },
-                    { key: 'last_name' },
-                    { key: 'email' },
+                    { key: 'first_name', title: t('first_name') },
+                    { key: 'last_name', title: t('last_name') },
+                    { key: 'email', title: t('email') },
                     {
                         key: 'role',
+                        title: t('role'),
                         cell: ({ item }) => snakeToTitle(item.role),
                     },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item }) => (
                             <Menu size="small">
                                 <MenuItem
@@ -51,10 +53,10 @@ export default function Teams() {
                                         await state.reload()
                                     }}
                                 >
-                                    <ArchiveIcon /> Remove
+                                    <ArchiveIcon /> {t('remove')}
                                 </MenuItem>
                                 <MenuItem onClick={() => setEditing(item)}>
-                                    <EditIcon /> Edit
+                                    <EditIcon /> {t('edit')}
                                 </MenuItem>
                             </Menu>
                         ),
