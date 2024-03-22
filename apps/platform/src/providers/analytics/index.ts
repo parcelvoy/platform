@@ -6,7 +6,8 @@ import MixpanelAnalyticsProvider from './MixpanelProvider'
 import PostHogAnalyticsProvider from './PosthogProvider'
 import SegmentAnalyticsProvider from './SegmentProvider'
 
-const typeMap = {
+type AnalyticsProviderDerived = { new (): AnalyticsProvider } & typeof AnalyticsProvider
+export const typeMap: Record<string, AnalyticsProviderDerived> = {
     segment: SegmentAnalyticsProvider,
     posthog: PostHogAnalyticsProvider,
     mixpanel: MixpanelAnalyticsProvider,

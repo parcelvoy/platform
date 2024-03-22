@@ -5,7 +5,8 @@ import LoggerWebhookProvider from './LoggerWebhookProvider'
 import WebhookChannel from './WebhookChannel'
 import { WebhookProvider, WebhookProviderName } from './WebhookProvider'
 
-export const typeMap = {
+type WebhookProviderDerived = { new (): WebhookProvider } & typeof WebhookProvider
+export const typeMap: Record<string, WebhookProviderDerived> = {
     local: LocalWebhookProvider,
     logger: LoggerWebhookProvider,
 }
