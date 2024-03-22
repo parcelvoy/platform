@@ -119,7 +119,7 @@ export const createRouter = ({
                             links={orgSidebarLinks([
                                 {
                                     key: 'projects',
-                                    to: './projects',
+                                    to: 'projects',
                                     children: 'Projects',
                                     icon: <ProjectIcon />,
                                 },

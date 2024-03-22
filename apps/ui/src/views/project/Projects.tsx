@@ -38,7 +38,7 @@ export function Projects() {
 
     useEffect(() => {
         if (projects && !projects.length) {
-            navigate('onboarding')
+            navigate('/onboarding')
         }
     }, [projects, navigate])
 
