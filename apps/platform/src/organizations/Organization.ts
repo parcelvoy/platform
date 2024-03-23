@@ -6,6 +6,14 @@ export interface TrackingOptions {
     deeplinkMirrorUrl: string | undefined,
 }
 
+export const organizationRoles = [
+    'member',
+    'admin',
+    'owner',
+] as const
+
+export type OrganizationRole = (typeof organizationRoles)[number]
+
 export default class Organization extends Model {
     username!: string
     domain?: string
@@ -17,5 +25,3 @@ export default class Organization extends Model {
 }
 
 export type OrganizationParams = Omit<Organization, ModelParams | 'id' | 'auth' | 'notification_provider_id'>
-
-export type OrganizationRole = 'member' | 'admin' | 'owner'

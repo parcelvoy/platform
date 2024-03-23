@@ -2,9 +2,9 @@ import { createBrowserRouter, Outlet, redirect, RouteObject, useNavigate, usePar
 import api from '../api'
 
 import ErrorPage from './ErrorPage'
-import Sidebar, { SidebarLink } from '../ui/Sidebar'
+import { SidebarLink } from '../ui/Sidebar'
 import { LoaderContextProvider, StatefulLoaderContextProvider } from './LoaderContextProvider'
-import { AdminContext, CampaignContext, JourneyContext, ListContext, OrganizationContext, ProjectContext, UserContext } from '../contexts'
+import { AdminContext, CampaignContext, JourneyContext, ListContext, ProjectContext, UserContext } from '../contexts'
 import ApiKeys from './settings/ApiKeys'
 import EmailEditor from './campaign/editor/EmailEditor'
 import Lists from './users/Lists'
@@ -33,7 +33,7 @@ import Login from './auth/Login'
 import OnboardingStart from './auth/OnboardingStart'
 import Onboarding from './auth/Onboarding'
 import OnboardingProject from './auth/OnboardingProject'
-import { CampaignsIcon, JourneysIcon, ListsIcon, PerformanceIcon, ProjectIcon, SettingsIcon, UsersIcon } from '../ui/icons'
+import { CampaignsIcon, JourneysIcon, ListsIcon, SettingsIcon, UsersIcon } from '../ui/icons'
 import { Projects } from './project/Projects'
 import { getRecentProjects, pushRecentProject } from '../utils'
 import Performance from './organization/Performance'
@@ -46,6 +46,7 @@ import JourneyUserEntrances from './journey/JourneyUserEntrances'
 import UserDetailJourneys from './users/UserDetailJourneys'
 import EntranceDetails from './journey/EntranceDetails'
 import { Translation } from 'react-i18next'
+import Organization from './organization/Organization'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -113,40 +114,7 @@ export const createRouter = ({
             {
                 path: 'organization',
                 loader: async () => await api.organizations.get(),
-                element: (
-                    <StatefulLoaderContextProvider context={OrganizationContext}>
-                        <Sidebar
-                            links={orgSidebarLinks([
-                                {
-                                    key: 'projects',
-                                    to: 'projects',
-                                    children: 'Projects',
-                                    icon: <ProjectIcon />,
-                                },
-                                {
-                                    key: 'admins',
-                                    to: 'admins',
-                                    children: 'Admins',
-                                    icon: <UsersIcon />,
-                                },
-                                {
-                                    key: 'performance',
-                                    to: 'performance',
-                                    children: 'Performance',
-                                    icon: <PerformanceIcon />,
-                                },
-                                {
-                                    key: 'settings',
-                                    to: 'settings',
-                                    children: 'Settings',
-                                    icon: <SettingsIcon />,
-                                },
-                            ])}
-                        >
-                            <Outlet />
-                        </Sidebar>
-                    </StatefulLoaderContextProvider>
-                ),
+                element: <Organization filter={orgSidebarLinks} />,
                 children: [
                     {
                         index: true,

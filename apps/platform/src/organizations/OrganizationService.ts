@@ -2,8 +2,9 @@ import { RequestError } from '../core/errors'
 import Admin from '../auth/Admin'
 import Provider from '../providers/Provider'
 import { encodeHashid, uuid } from '../utilities'
-import Organization, { OrganizationRole } from './Organization'
+import Organization, { OrganizationRole, organizationRoles } from './Organization'
 import { JwtAdmin } from '../auth/AuthMiddleware'
+import { Next, ParameterizedContext } from 'koa'
 
 export const getOrganization = async (id: number) => {
     return await Organization.find(id)
@@ -67,9 +68,13 @@ export const deleteOrganization = async (organization: Organization) => {
     await Organization.deleteById(organization.id)
 }
 
-const roles: OrganizationRole[] = ['member', 'admin', 'owner']
 export const requireOrganizationRole = (admin: Admin | JwtAdmin, minRole: OrganizationRole) => {
-    if (roles.indexOf(admin.role) < roles.indexOf(minRole)) {
+    if (organizationRoles.indexOf(admin.role) < organizationRoles.indexOf(minRole)) {
         throw new RequestError(`Minimum organization role ${minRole} is required`, 403)
     }
+}
+
+export const organizationRoleMiddleware = (minRole: OrganizationRole) => async (ctx: ParameterizedContext<{ admin?: Admin | JwtAdmin }>, next: Next) => {
+    requireOrganizationRole(ctx.state.admin!, minRole)
+    return next()
 }

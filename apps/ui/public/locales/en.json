@@ -222,5 +222,11 @@
     "view_all": "View All",
     "visual": "Visual",
     "webhook": "Webhook",
-    "welcome": "Welcome!"
+    "welcome": "Welcome!",
+    "add_admin": "Add Admin",
+    "edit_admin": "Edit Admin",
+    "add_admin_description": "Add a new member to this organization. Admins have full access to all projects and settings, members can only access projects they are a part of.",
+    "edit_admin_description": "Update the details of this admin.",
+    "admins": "Admins",
+    "delete_admin_confirmation": "Are you sure you want to delete this admin?"
 }
