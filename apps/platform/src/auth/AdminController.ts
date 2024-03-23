@@ -88,4 +88,12 @@ router.patch('/:adminId', async ctx => {
     })
 })
 
+router.delete('/:adminId', async ctx => {
+
+    requireOrganizationRole(ctx.state.admin!, ctx.state.modelAdmin!.role)
+    await Admin.deleteById(ctx.state.modelAdmin!.id)
+
+    ctx.body = true
+})
+
 export default router

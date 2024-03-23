@@ -2,7 +2,7 @@ import { useCallback, useContext, useState } from 'react'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
 import api from '../../api'
-import { Button, Modal } from '../../ui'
+import { Button, Menu, MenuItem, Modal } from '../../ui'
 import { AdminContext } from '../../contexts'
 import { useTranslation } from 'react-i18next'
 import FormWrapper from '../../ui/form/FormWrapper'
@@ -10,12 +10,20 @@ import { Admin, organizationRoles } from '../../types'
 import TextInput from '../../ui/form/TextInput'
 import { checkOrganizationRole, snakeToTitle } from '../../utils'
 import { SingleSelect } from '../../ui/form/SingleSelect'
+import { ArchiveIcon, EditIcon } from '../../ui/icons'
 
 export default function Admins() {
     const { t } = useTranslation()
     const state = useSearchTableQueryState(useCallback(async params => await api.admins.search(params), []))
     const admin = useContext(AdminContext)
     const [editing, setEditing] = useState<Partial<Admin>>()
+
+    const handleDelete = async (id: number) => {
+        if (confirm(t('delete_admin_confirmation'))) {
+            await api.admins.delete(id)
+            await state.reload()
+        }
+    }
 
     return (
         <>
@@ -32,6 +40,22 @@ export default function Admins() {
                             key: 'role',
                             title: t('role'),
                             cell: ({ item }) => snakeToTitle(item.role),
+                        },
+                        {
+                            key: 'options',
+                            title: t('options'),
+                            cell: ({ item }) => (
+                                <Menu size="small">
+                                    <MenuItem
+                                        onClick={async () => await handleDelete(item.id)}
+                                    >
+                                        <ArchiveIcon /> {t('delete')}
+                                    </MenuItem>
+                                    <MenuItem onClick={() => setEditing(item)}>
+                                        <EditIcon /> {t('edit')}
+                                    </MenuItem>
+                                </Menu>
+                            ),
                         },
                     ]}
                     onSelectRow={setEditing} />
