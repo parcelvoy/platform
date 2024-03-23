@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import FormWrapper from '../../ui/form/FormWrapper'
 import { Admin, organizationRoles } from '../../types'
 import TextInput from '../../ui/form/TextInput'
-import { snakeToTitle } from '../../utils'
+import { checkOrganizationRole, snakeToTitle } from '../../utils'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 
 export default function Admins() {
@@ -33,19 +33,22 @@ export default function Admins() {
                             title: t('role'),
                             cell: ({ item }) => snakeToTitle(item.role),
                         },
-                    ]} />
+                    ]}
+                    onSelectRow={setEditing} />
             </PageContent>
 
             <Modal
                 open={Boolean(editing)}
                 onClose={() => setEditing(undefined)}
-                title={t('add_admin')}
+                title={editing?.id ? t('edit_admin') : t('add_admin')}
                 size="small"
-                description={t('admin_description')}
+                description={editing?.id ? t('edit_admin_description') : t('add_admin_description')}
             >
-                <FormWrapper<Admin>
+                {editing && <FormWrapper<Admin>
                     onSubmit={async (member) => {
-                        await api.admins.create(member)
+                        member.id != null
+                            ? await api.admins.update(member.id, member)
+                            : await api.admins.create(member)
                         setEditing(undefined)
                         await state.reload()
                     }}
@@ -73,16 +76,14 @@ export default function Admins() {
                                 form={form}
                                 name="role"
                                 label={t('role')}
-                                subtitle={admin?.id === editing?.id && (
-                                    <span style={{ color: 'red' }}>{t('role_cant_change')}</span>
-                                )}
+                                disabled={checkOrganizationRole(admin!.role, editing.role)}
                                 options={organizationRoles}
                                 getOptionDisplay={snakeToTitle}
                                 required
                             />
                         </>
                     )}
-                </FormWrapper>
+                </FormWrapper>}
             </Modal>
         </>
     )

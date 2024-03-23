@@ -224,6 +224,8 @@
     "webhook": "Webhook",
     "welcome": "Welcome!",
     "add_admin": "Add Admin",
-    "admin_description": "Add a new member to this organization. Admins have full access to all projects and settings, members can only access projects they are a part of.",
+    "edit_admin": "Edit Admin",
+    "add_admin_description": "Add a new member to this organization. Admins have full access to all projects and settings, members can only access projects they are a part of.",
+    "edit_admin_description": "Update the details of this admin.",
     "admins": "Admins"
 }
