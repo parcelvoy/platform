@@ -49,6 +49,7 @@ import TextInput from '../../ui/form/TextInput'
 import { SearchTable } from '../../ui'
 import { useSearchTableState } from '../../ui/SearchTable'
 import { typeVariants } from './EntranceDetails'
+import { useTranslation } from 'react-i18next'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -75,6 +76,7 @@ interface StepUsersProps {
 
 function StepUsers({ entrance, stepId }: StepUsersProps) {
 
+    const { t } = useTranslation()
     const [{ id: projectId }] = useContext(ProjectContext)
     const [{ id: journeyId }] = useContext(JourneyContext)
 
@@ -89,22 +91,27 @@ function StepUsers({ entrance, stepId }: StepUsersProps) {
                 columns={[
                     {
                         key: 'name',
+                        title: t('name'),
                         cell: ({ item }) => item.user!.full_name ?? '-',
                     },
                     {
                         key: 'external_id',
+                        title: t('external_id'),
                         cell: ({ item }) => item.user?.external_id ?? '-',
                     },
                     {
                         key: 'email',
+                        title: t('email'),
                         cell: ({ item }) => item.user?.email ?? '-',
                     },
                     {
                         key: 'phone',
+                        title: t('phone'),
                         cell: ({ item }) => item.user?.phone ?? '-',
                     },
                     {
                         key: 'type',
+                        title: t('type'),
                         cell: ({ item }) => (
                             <Tag variant={typeVariants[item.type]}>
                                 {camelToTitle(item.type)}
@@ -113,12 +120,12 @@ function StepUsers({ entrance, stepId }: StepUsersProps) {
                     },
                     {
                         key: 'created_at',
-                        title: 'Step Date',
+                        title: t('step_date'),
                         cell: ({ item }) => item.created_at,
                     },
                     {
                         key: 'delay_until',
-                        title: 'Delay Until',
+                        title: t('delay_until'),
                         cell: ({ item }) => item.delay_until,
                     },
                 ]}
@@ -471,6 +478,7 @@ function cloneNodes(edges: Edge[], targets: Node[]) {
 
 export default function JourneyEditor() {
     const navigate = useNavigate()
+    const { t } = useTranslation()
     const [flowInstance, setFlowInstance] = useState<null | ReactFlowInstance>(null)
     const wrapper = useRef<HTMLDivElement>(null)
 
@@ -510,7 +518,7 @@ export default function JourneyEditor() {
             setNodes(refreshed.nodes)
             setEdges(refreshed.edges)
 
-            toast.success('Saved!')
+            toast.success(t('journey_saved'))
         } catch (error: any) {
             toast.error(`Unable to save: ${error}`)
         } finally {
@@ -645,7 +653,7 @@ export default function JourneyEditor() {
                     </div>
                     <div className="journey-options-edit">
                         <TextInput
-                            label="Name"
+                            label={t('name')}
                             name="name"
                             value={editNode.data.name ?? ''}
                             onChange={name => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, name } } : n))}
@@ -653,8 +661,8 @@ export default function JourneyEditor() {
                         {
                             type.hasDataKey && (
                                 <TextInput
-                                    label="Data Key"
-                                    subtitle="Makes data stored at this step available in user update and campaign templates."
+                                    label={t('data_key')}
+                                    subtitle={t('data_key_description')}
                                     name="data_key"
                                     value={editNode.data.data_key}
                                     onChange={data_key => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, data_key } } : n))}
@@ -696,20 +704,20 @@ export default function JourneyEditor() {
                     <Tag
                         variant={journey.published ? 'success' : 'plain'}
                         size="large">
-                        {journey.published ? 'Published' : 'Draft'}
+                        {journey.published ? t('published') : t('draft')}
                     </Tag>
                     <Button
                         variant="secondary"
                         onClick={() => setEditOpen(true)}
                     >
-                        {'Edit Details'}
+                        {t('edit_details')}
                     </Button>
                     <Button
                         onClick={saveSteps}
                         isLoading={saving}
                         variant="primary"
                     >
-                        {'Save'}
+                        {t('save')}
                     </Button>
                 </>
             }
@@ -800,8 +808,8 @@ export default function JourneyEditor() {
                                             <span className={clsx('component-handle', type.category)}>
                                                 {type.icon}
                                             </span>
-                                            <div className="component-title">{type.name}</div>
-                                            <div className="component-desc">{type.description}</div>
+                                            <div className="component-title">{t(type.name)}</div>
+                                            <div className="component-desc">{t(type.description)}</div>
                                         </div>
                                     ))
                                 }
@@ -813,7 +821,7 @@ export default function JourneyEditor() {
             <Modal
                 open={editOpen}
                 onClose={setEditOpen}
-                title="Edit Journey Details"
+                title={t('edit_journey_details')}
             >
                 <JourneyForm
                     journey={journey}
@@ -826,7 +834,7 @@ export default function JourneyEditor() {
             <Modal
                 open={!!viewUsersStep}
                 onClose={() => setViewUsersStep(null)}
-                title="Users"
+                title={t('users')}
                 size="large"
             >
                 {

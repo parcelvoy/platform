@@ -6,6 +6,7 @@ import { DelayStepIcon } from '../../../ui/icons'
 import { formatDate, formatDuration, snakeToTitle } from '../../../utils'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import { parse, parseISO } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 interface DelayStepConfig {
     format: 'duration' | 'time' | 'date'
@@ -17,16 +18,17 @@ interface DelayStepConfig {
 }
 
 export const delayStep: JourneyStepType<DelayStepConfig> = {
-    name: 'Delay',
+    name: 'delay',
     icon: <DelayStepIcon />,
     category: 'delay',
-    description: 'Add a delay between the previous and next step.',
+    description: 'delay_desc',
     Describe({ value }) {
+        const { t } = useTranslation()
         const [preferences] = useContext(PreferencesContext)
         if (value.format === 'duration') {
             return (
                 <>
-                    {'Wait '}
+                    {t('wait') + ' '}
                     <strong>
                         {formatDuration(preferences, {
                             days: value.days ?? 0,
@@ -41,7 +43,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
             const parsed = parse(value.time ?? '', 'HH:mm', new Date())
             return (
                 <>
-                    {'Wait until '}
+                    {t('wait_until') + ' '}
                     <strong>
                         {isNaN(parsed.getTime()) ? '--:--' : formatDate(preferences, parsed, 'p')}
                     </strong>
@@ -52,7 +54,7 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
             const parsed = parseISO(value.date ?? '')
             return (
                 <>
-                    {'Wait until '}
+                    {t('wait_until') + ' '}
                     <strong>
                         {isNaN(parsed.getTime())
                             ? value.date?.includes('{{')
@@ -75,12 +77,13 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
         onChange,
         value,
     }) {
+        const { t } = useTranslation()
         return (
             <>
-                <RadioInput label="Type" options={[
-                    { key: 'duration', label: 'For a Duration' },
-                    { key: 'time', label: 'Until Time' },
-                    { key: 'date', label: 'Until Date' },
+                <RadioInput label={t('type')} options={[
+                    { key: 'duration', label: t('for_duration') },
+                    { key: 'time', label: t('until_time') },
+                    { key: 'date', label: t('until_date') },
                 ]}
                 value={value.format}
                 onChange={format => onChange({ ...value, format }) } />
@@ -100,9 +103,9 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                 { value.format === 'time'
                     && <TextInput
                         name="time"
-                        label="Time"
+                        label={t('time')}
                         type="time"
-                        subtitle="Delay until the specified time in the users timezone."
+                        subtitle={t('delay_time_desc')}
                         value={value.time ?? ''}
                         onChange={time => onChange({ ...value, time })}
                     />
@@ -110,9 +113,9 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                 { value.format === 'date'
                     && <TextInput
                         name="date"
-                        label="Date"
+                        label={t('date')}
                         type="text"
-                        subtitle="Delay until the specified date in the users timezone."
+                        subtitle={t('delay_date_desc')}
                         placeholder="YYYY-MM-DD"
                         value={value.date ?? ''}
                         onChange={date => onChange({ ...value, date })}

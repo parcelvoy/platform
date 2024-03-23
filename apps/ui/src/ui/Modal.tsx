@@ -2,6 +2,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, PropsWithChildren, ReactNode } from 'react'
 import Button from './Button'
 import { CloseIcon } from './icons'
+import { useTranslation } from 'react-i18next'
 import './Modal.css'
 
 export interface ModalStateProps {
@@ -27,6 +28,7 @@ export default function Modal({
     size,
     zIndex = 999,
 }: PropsWithChildren<ModalProps>) {
+    const { t } = useTranslation()
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog
@@ -65,7 +67,7 @@ export default function Modal({
                                             onClick={() => onClose(false)}
                                             icon={<CloseIcon />}
                                         >
-                                            {'Exit'}
+                                            {t('exit')}
                                         </Button>
                                     )
                                 }
