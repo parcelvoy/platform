@@ -8,7 +8,8 @@ import TextChannel from './TextChannel'
 import { TextProvider, TextProviderName } from './TextProvider'
 import TwilioTextProvider from './TwilioTextProvider'
 
-const typeMap = {
+type TextProviderDerived = { new (): TextProvider } & typeof TextProvider
+export const typeMap: Record<string, TextProviderDerived> = {
     nexmo: NexmoTextProvider,
     plivo: PlivoTextProvider,
     twilio: TwilioTextProvider,

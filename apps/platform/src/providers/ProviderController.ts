@@ -54,4 +54,4 @@ adminRouter.get('/meta', async ctx => {
     ctx.body = providers
 })
 
-export { adminRouter, publicRouter }
+export { adminRouter, publicRouter, providers }

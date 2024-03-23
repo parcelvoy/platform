@@ -8,7 +8,8 @@ import SESEmailProvider from './SESEmailProvider'
 import SMTPEmailProvider from './SMPTEmailProvider'
 import SendGridEmailProvider from './SendGridEmailProvider'
 
-const typeMap = {
+type EmailProviderDerived = { new (): EmailProvider } & typeof EmailProvider
+export const typeMap: Record<string, EmailProviderDerived> = {
     mailgun: MailgunEmailProvider,
     sendgrid: SendGridEmailProvider,
     ses: SESEmailProvider,

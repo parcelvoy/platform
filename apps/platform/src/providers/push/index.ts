@@ -5,7 +5,8 @@ import LoggerPushProvider from './LoggerPushProvider'
 import PushChannel from './PushChannel'
 import { PushProvider, PushProviderName } from './PushProvider'
 
-const typeMap = {
+type PushProviderDerived = { new (): PushProvider } & typeof PushProvider
+export const typeMap: Record<string, PushProviderDerived> = {
     local: LocalPushProvider,
     logger: LoggerPushProvider,
 }
