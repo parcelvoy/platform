@@ -3,6 +3,7 @@ import SourceEditor from '../../../ui/SourceEditor'
 import { EventStepIcon } from '../../../ui/icons'
 import { JsonPreview } from '../../../ui'
 import TextInput from '../../../ui/form/TextInput'
+import { useTranslation } from 'react-i18next'
 
 interface EventConfig {
     event_name: string
@@ -10,11 +11,12 @@ interface EventConfig {
 }
 
 export const eventStep: JourneyStepType<EventConfig> = {
-    name: 'Trigger Event',
+    name: 'trigger_event',
     icon: <EventStepIcon />,
     category: 'action',
-    description: 'Trigger an analytic event for the user.',
+    description: 'trigger_event_desc',
     Describe({ value }) {
+        const { t } = useTranslation()
         if (value?.template) {
             try {
                 const parsed = JSON.parse(value.template)
@@ -22,11 +24,7 @@ export const eventStep: JourneyStepType<EventConfig> = {
                     <JsonPreview value={parsed} />
                 )
             } catch {
-                return (
-                    <>
-                        {'(click to see event fields)'}
-                    </>
-                )
+                return <>{t('trigger_event_empty')}</>
             }
         }
         return null
@@ -36,18 +34,19 @@ export const eventStep: JourneyStepType<EventConfig> = {
         event_name: 'Journey Triggered',
     }),
     Edit: ({ onChange, value }) => {
+        const { t } = useTranslation()
         return (
             <div style={{ maxWidth: 400 }}>
                 <TextInput
                     name="event_name"
-                    label="Event Name"
+                    label={t('event_name')}
                     value={value.event_name}
                     onChange={event_name => onChange({ ...value, event_name })}
                 />
                 <p>
-                    {'Write a Handlebars template that renders JSON that will be sent as fields on the event.'}
-                    {' The user\'s current profile data is available in the '}<code>{'user'}</code>
-                    {' variable, and data collected at other steps are available in '}<code>{'journey[data_key]'}</code>{'.'}
+                    {t('trigger_event_desc1')}
+                    {t('trigger_event_desc2')}<code>{'user'}</code>
+                    {t('trigger_event_desc3')}<code>{'journey[data_key]'}</code>{'.'}
                 </p>
                 <SourceEditor
                     onChange={(template = '') => onChange({ ...value, template })}

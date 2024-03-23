@@ -90,8 +90,8 @@ export default function Sidebar({ children, links, prepend, append }: PropsWithC
             </main>
 
             <Modal open={isLanguageOpen} onClose={() => setIsLanguageOpen(false)} title={'Language'}>
-                <RadioInput label={t('language')} options={[{ label: 'English', key: 'en' }, { label: 'Espańol', key: 'es' }]} value={i18n.language} onChange={async (value) => {
-                    await i18n.changeLanguage(value)
+                <RadioInput label={t('language')} options={[{ label: 'English', key: 'en' }, { label: 'Espańol', key: 'es' }]} value={i18n.language} onChange={(value) => {
+                    setPreferences({ ...preferences, lang: value })
                 }} />
             </Modal>
         </>

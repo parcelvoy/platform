@@ -6,16 +6,17 @@ import { ActionStepIcon } from '../../../ui/icons'
 import { CampaignForm } from '../../campaign/CampaignForm'
 import { useResolver } from '../../../hooks'
 import PreviewImage from '../../../ui/PreviewImage'
+import { useTranslation } from 'react-i18next'
 
 interface ActionConfig {
     campaign_id: number
 }
 
 export const actionStep: JourneyStepType<ActionConfig> = {
-    name: 'Send',
+    name: 'send',
     icon: <ActionStepIcon />,
     category: 'action',
-    description: 'Trigger a send (email, sms, push notification, webhook) to a user.',
+    description: 'send_desc',
     Describe({
         project: { id: projectId },
         value: {
@@ -57,10 +58,11 @@ export const actionStep: JourneyStepType<ActionConfig> = {
         onChange,
         value,
     }) {
+        const { t } = useTranslation()
         return (
             <EntityIdPicker
-                label="Campaign"
-                subtitle="Send this campaign when users reach this step."
+                label={t('campaign')}
+                subtitle={t('send_campaign_desc')}
                 get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
                 search={useCallback(async q => await api.campaigns.search(projectId, { q, limit: 50 }), [projectId])}
                 value={value.campaign_id}

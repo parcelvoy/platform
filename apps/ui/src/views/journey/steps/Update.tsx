@@ -2,17 +2,19 @@ import { JourneyStepType } from '../../../types'
 import SourceEditor from '../../../ui/SourceEditor'
 import { UpdateStepIcon } from '../../../ui/icons'
 import { JsonPreview } from '../../../ui'
+import { useTranslation } from 'react-i18next'
 
 interface UpdateConfig {
     template: string // handlebars template for json object
 }
 
 export const updateStep: JourneyStepType<UpdateConfig> = {
-    name: 'User Update',
+    name: 'user_update',
     icon: <UpdateStepIcon />,
     category: 'action',
-    description: 'Make updates to a user\'s profile.',
+    description: 'user_update_desc',
     Describe({ value }) {
+        const { t } = useTranslation()
         if (value?.template) {
             try {
                 const parsed = JSON.parse(value.template)
@@ -20,11 +22,7 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
                     <JsonPreview value={parsed} />
                 )
             } catch {
-                return (
-                    <>
-                        {'(click to see updated fields)'}
-                    </>
-                )
+                return <>{t('user_update_empty')}</>
             }
         }
         return null
@@ -33,13 +31,13 @@ export const updateStep: JourneyStepType<UpdateConfig> = {
         template: '{\n\n}\n',
     }),
     Edit: ({ onChange, value }) => {
-
+        const { t } = useTranslation()
         return (
             <>
                 <p style={{ maxWidth: 400 }}>
-                    {'Write a Handlebars template that renders JSON that will be shallow merged into the user\'s profile data.'}
-                    {' The user\'s current profile data is available in the '}<code>{'user'}</code>
-                    {' variable, and data collected at other steps are available in '}<code>{'journey[data_key]'}</code>{'.'}
+                    {t('user_update_edit_desc1')}
+                    {t('user_update_edit_desc2')}<code>{'user'}</code>
+                    {t('user_update_edit_desc3')}<code>{'journey[data_key]'}</code>{'.'}
                 </p>
                 <SourceEditor
                     onChange={(template = '') => onChange({ ...value, template })}

@@ -1,13 +1,18 @@
 import { useMemo, useState, useEffect, Dispatch, PropsWithChildren, createContext, SetStateAction } from 'react'
 import { Preferences } from '../types'
 import { localStorageGetJson, localStorageSetJson } from '../utils'
+import { useTranslation } from 'react-i18next'
 
 const PREFERENCES = 'preferences'
 
+const language = () => {
+    return window.navigator.language.split('-')[0]
+}
+
 const initial: Preferences = {
     mode: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    lang: language(),
     ...localStorageGetJson<Preferences>(PREFERENCES) ?? {},
-    lang: window.navigator.language,
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 }
 
@@ -17,13 +22,14 @@ export const PreferencesContext = createContext<readonly [Preferences, Dispatch<
 ])
 
 export function PreferencesProvider({ children }: PropsWithChildren<{}>) {
+    const { i18n } = useTranslation()
     const [preferences, setPreferences] = useState(initial)
 
     useEffect(() => {
         const handler = () => {
             setPreferences(prev => {
-                if (prev.lang !== window.navigator.language) {
-                    return { ...prev, lang: window.navigator.language }
+                if (prev.lang !== language()) {
+                    return { ...prev, lang: language() }
                 }
                 return prev
             })
@@ -37,6 +43,7 @@ export function PreferencesProvider({ children }: PropsWithChildren<{}>) {
     useEffect(() => {
         document.body.setAttribute('data-theme', preferences.mode === 'dark' ? 'dark' : 'light')
         localStorageSetJson(PREFERENCES, preferences)
+        i18n.changeLanguage(preferences.lang).catch(() => {})
     }, [preferences])
 
     return (

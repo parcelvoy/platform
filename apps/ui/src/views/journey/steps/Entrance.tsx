@@ -14,6 +14,7 @@ import { useResolver } from '../../../hooks'
 import RRuleEditor from '../../../ui/RRuleEditor'
 import CodeExample from '../../../ui/CodeExample'
 import { env } from '../../../config/env'
+import { useTranslation, Trans } from 'react-i18next'
 
 interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
@@ -69,10 +70,10 @@ const codeExample = (journeyId: number, entranceId: number) => `curl --request P
 }'`
 
 export const entranceStep: JourneyStepType<EntranceConfig> = {
-    name: 'Entrance',
+    name: 'entrance',
     icon: <EntranceStepIcon />,
     category: 'entrance',
-    description: 'How users are added to this journey.',
+    description: 'entrance_desc',
     newData: async () => ({
         trigger: 'none',
     }),
@@ -88,6 +89,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             schedule,
         },
     }) {
+        const { t } = useTranslation()
         const [preferences] = useContext(PreferencesContext)
 
         const [list] = useResolver(useCallback(async () => {
@@ -106,7 +108,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             }
             return (
                 <div style={{ maxWidth: 300 }}>
-                    {'Add everyone from '}
+                    {t('entrance_add_everyone_from') + ' '}
                     <strong>
                         {list?.name ?? '--'}
                     </strong>
@@ -119,9 +121,9 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
         if (trigger === 'event') {
             return (
                 <div style={{ maxWidth: 300 }}>
-                    {'Add anyone when '}
+                    {t('entrance_add_everyone_when') + ' '}
                     <strong>{event_name ?? ''}</strong>
-                    {' occurs'}
+                    {t('entrance_occurs')}
                     {
                         !!rule?.children?.length && (
                             <>
@@ -134,21 +136,18 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             )
         }
 
-        return (
-            <>
-                {'No automated trigger'}
-            </>
-        )
+        return <>{t('entrance_empty')}</>
     },
     Edit({ onChange, project: { id: projectId }, journey: { id: journeyId }, stepId, value }) {
 
+        const { t } = useTranslation()
         const getList = useCallback(async (id: number) => await api.lists.get(projectId, id), [projectId])
         const searchLists = useCallback(async (q: string) => await api.lists.search(projectId, { q, limit: 50 }), [projectId])
 
         return (
             <>
                 <RadioInput
-                    label="Trigger"
+                    label={t('trigger')}
                     value={value.trigger}
                     options={triggerOptions}
                     onChange={trigger => onChange({ ...value, trigger })}
@@ -159,7 +158,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                         <>
                             <TextInput
                                 name="event_name"
-                                label="Event Name"
+                                label={t('event_name')}
                                 required
                                 value={value.event_name ?? ''}
                                 onChange={event_name => onChange({ ...value, event_name })}
@@ -170,14 +169,14 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                         rule={value.rule ?? wrapper}
                                         setRule={rule => onChange({ ...value, rule })}
                                         eventName={value.event_name}
-                                        headerPrefix="Matching"
+                                        headerPrefix={t('entrance_matching')}
                                     />
                                 )
                             }
                             <SwitchField
                                 name="multiple"
-                                label="Multiple Entries"
-                                subtitle="Should people enter this journey multiple times?"
+                                label={t('entrance_multiple_entries')}
+                                subtitle={t('entrance_multiple_entries_desc')}
                                 checked={Boolean(value.multiple)}
                                 onChange={multiple => onChange({ ...value, multiple })}
                             />
@@ -185,8 +184,8 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                 value.multiple && (
                                     <SwitchField
                                         name="concurrent"
-                                        label="Simultaneous Entries"
-                                        subtitle="If enabled, user could join this journey multiple times before finishing previous ones."
+                                        label={t('entrance_simultaneous_entries')}
+                                        subtitle={t('entrance_simultaneous_entries_desc')}
                                         checked={Boolean(value.concurrent)}
                                         onChange={concurrent => onChange({ ...value, concurrent })}
                                     />
@@ -203,12 +202,12 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                 search={searchLists}
                                 value={value.list_id ?? 0}
                                 onChange={list_id => onChange({ ...value, list_id })}
-                                label="List"
-                                subtitle="All users from this list will start this journey on the configured schedule."
+                                label={t('list')}
+                                subtitle={t('entrance_list_desc')}
                                 required
                             />
                             <RRuleEditor
-                                label="Schedule"
+                                label={t('schedule')}
                                 value={value.schedule ?? ''}
                                 onChange={schedule => onChange({ ...value, schedule })}
                             />
@@ -219,16 +218,11 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     !!stepId && (
                         <div style={{ maxWidth: 600 }}>
                             <CodeExample
-                                title="Trigger Entrance"
+                                title={t('entrance_trigger')}
                                 description={
-                                    <>
-                                        This entrance can be triggered directly via API.
-                                        An example request is available below.
-                                        Data from the <code>event</code> field will
-                                        be available for use in the journey and campaign
-                                        templates under <code>journey.DATA_KEY_OF_THIS_STEP.*</code>
-                                        {'(for example, '}<code>journey.my_entrance.purchaseAmount</code>{')'}.
-                                    </>
+                                    <Trans i18nKey="entrance_trigger_desc">
+                                        This entrance can be triggered directly via API. An example request is available below. Data from the <code>event</code> field will be available for use in the journey and campaign templates under <code>journey.DATA_KEY_OF_THIS_STEP.*</code> (for example, <code>journey.my_entrance.purchaseAmount</code>).
+                                    </Trans>
                                 }
                                 code={codeExample(journeyId, stepId)}
                             />
