@@ -10,6 +10,6 @@ export default class Admin extends Model {
     role!: OrganizationRole
 }
 
-export type AdminParams = Omit<Admin, ModelParams | 'role'> & { domain?: string }
+export type AdminParams = Omit<Admin, ModelParams> & { domain?: string }
 
 export type AuthAdminParams = Omit<AdminParams, 'organization_id' | 'role'> & { domain?: string }

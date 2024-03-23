@@ -112,6 +112,14 @@ export interface AuthMethod {
     name: string
 }
 
+export const organizationRoles = [
+    'member',
+    'admin',
+    'owner',
+] as const
+
+export type OrganizationRole = (typeof organizationRoles)[number]
+
 export interface Admin {
     id: number
     organization_id: number
@@ -119,7 +127,7 @@ export interface Admin {
     last_name: string
     email: string
     image_url: string
-    role: 'member' | 'admin' | 'owner'
+    role: OrganizationRole
 }
 
 export interface Organization {

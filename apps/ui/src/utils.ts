@@ -1,6 +1,6 @@
 import { parseISO, formatDuration as dateFnsFormatDuration } from 'date-fns'
 import { format, utcToZonedTime } from 'date-fns-tz'
-import { Preferences, ProjectRole, projectRoles } from './types'
+import { OrganizationRole, Preferences, ProjectRole, organizationRoles, projectRoles } from './types'
 import { v4 } from 'uuid'
 
 export function createUuid() {
@@ -172,4 +172,8 @@ export function pushRecentProject(id: number | string) {
  */
 export function checkProjectRole(minRole: ProjectRole, currentRole: ProjectRole = 'support') {
     return projectRoles.indexOf(minRole) <= projectRoles.indexOf(currentRole)
+}
+
+export function checkOrganizationRole(minRole: OrganizationRole, currentRole: OrganizationRole = 'member') {
+    return organizationRoles.indexOf(minRole) <= organizationRoles.indexOf(currentRole)
 }

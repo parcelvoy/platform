@@ -44,7 +44,11 @@ const projectCreateAdminParamsSchema: JSONSchemaType<ProjectAdminParams & { emai
 router.post('/', async ctx => {
     const organizationId = ctx.state.project.organization_id
     const { role, email } = validate(projectCreateAdminParamsSchema, ctx.request.body)
-    const admin = await createOrUpdateAdmin({ organization_id: organizationId, email })
+    const admin = await createOrUpdateAdmin({
+        organization_id: organizationId,
+        email,
+        role: 'member',
+    })
     if (ctx.state.admin!.id === admin.id) throw new RequestError('You cannot add yourself to a project')
     await addAdminToProject(ctx.state.project.id, admin.id, role)
     ctx.body = await getProjectAdmin(ctx.state.project.id, admin.id)

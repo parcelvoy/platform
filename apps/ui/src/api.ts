@@ -146,7 +146,7 @@ const api = {
         },
     },
 
-    admins: createEntityPath<Admin>('/admin/admins'),
+    admins: createEntityPath<Admin>('/admin/organizations/admins'),
 
     projects: {
         ...createEntityPath<Project>('/admin/projects'),
