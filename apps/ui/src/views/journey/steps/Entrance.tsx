@@ -220,7 +220,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                             <CodeExample
                                 title={t('entrance_trigger')}
                                 description={
-                                    <Trans i18nKey='entrance_trigger_desc'>
+                                    <Trans i18nKey="entrance_trigger_desc">
                                         This entrance can be triggered directly via API. An example request is available below. Data from the <code>event</code> field will be available for use in the journey and campaign templates under <code>journey.DATA_KEY_OF_THIS_STEP.*</code> (for example, <code>journey.my_entrance.purchaseAmount</code>).
                                     </Trans>
                                 }
