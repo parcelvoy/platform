@@ -151,7 +151,7 @@ function JourneyStepNode({
 
     const validateConnection = useCallback((conn: Connection) => {
         if (!type) return false
-        if (type.sources === 'multi') return true
+        if (type.multiChildSources) return true
         const sourceNode = conn.source && getNode(conn.source)
         if (!sourceNode) return true
         const existing = getConnectedEdges([sourceNode], getEdges())
@@ -232,25 +232,25 @@ function JourneyStepNode({
                     Array.isArray(type.sources)
                         ? type.sources
                         : ['']
-                ).map((label, index, arr) => {
+                ).map((key, index, arr) => {
                     const left = (((index + 1) / (arr.length + 1)) * 100) + '%'
                     return (
-                        <Fragment key={label}>
+                        <Fragment key={key}>
                             {
-                                label && (
+                                key && (
                                     <span
                                         className="step-handle-label"
                                         style={{
                                             left,
                                         }}
                                     >
-                                        {label}
+                                        {key}
                                     </span>
                                 )
                             }
                             <Handle
                                 type="source"
-                                position={Position.Bottom} id={index + '-s-' + id}
+                                position={Position.Bottom} id={key + '-s-' + id}
                                 isValidConnection={validateConnection}
                                 style={{
                                     left,
@@ -347,21 +347,19 @@ interface CreateEdgeParams {
     sourceId: string
     targetId: string
     data: any
-    index: number
-    stepType: JourneyStepType<any, any> | null
+    path?: string
 }
 
 function createEdge({
     data,
-    index,
     sourceId,
-    stepType,
     targetId,
+    path,
 }: CreateEdgeParams): Edge {
     return {
         id: 'e-' + sourceId + '__' + targetId,
         source: sourceId,
-        sourceHandle: (Array.isArray(stepType?.sources) ? index : 0) + '-s-' + sourceId,
+        sourceHandle: (path ?? '') + '-s-' + sourceId,
         target: targetId,
         targetHandle: 't-' + targetId,
         data,
@@ -395,20 +393,18 @@ function stepsToNodes(stepMap: JourneyStepMap) {
                 stepId,
             },
         })
-        const stepType = getStepType(type)
-        children?.forEach(({ external_id, data }, index) => edges.push(createEdge({
+        children?.forEach(({ external_id, path, data }) => edges.push(createEdge({
             sourceId: id,
             targetId: external_id,
-            index,
             data,
-            stepType,
+            path,
         })))
     }
 
     return { nodes, edges }
 }
 
-const getSourceIndex = (handleId: string) => parseInt(handleId.substring(0, handleId.indexOf('-s-')), 10)
+const getSourcePath = (handleId: string) => handleId.substring(0, handleId.indexOf('-s-'))
 
 function nodesToSteps(nodes: Node[], edges: Edge[]) {
     return nodes.reduce<JourneyStepMap>((a, {
@@ -433,9 +429,9 @@ function nodesToSteps(nodes: Node[], edges: Edge[]) {
             y,
             children: edges
                 .filter(e => e.source === id)
-                .sort((x, y) => getSourceIndex(x.sourceHandle!) - getSourceIndex(y.sourceHandle!))
-                .map(({ data = {}, target }) => ({
+                .map(({ data = {}, sourceHandle, target }) => ({
                     external_id: target,
+                    path: getSourcePath(sourceHandle!),
                     data,
                 })),
         }
@@ -464,15 +460,11 @@ function cloneNodes(edges: Edge[], targets: Node[]) {
     }
     const edgeCopies = getConnectedEdges(targets, edges)
         .filter(edge => edge.source in mapping && edge.target in mapping)
-        .map((edge, index) => createEdge({
+        .map((edge) => createEdge({
             sourceId: mapping[edge.source],
             targetId: mapping[edge.target],
-            index,
             data: edge.data ?? {},
-            stepType: targets
-                .filter(n => n.id === edge.source)
-                .map(n => getStepType(n.data.type))
-                .at(0)!,
+            path: getSourcePath(edge.sourceHandle!),
         }))
     return { nodeCopies, edgeCopies }
 }

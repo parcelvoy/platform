@@ -49,6 +49,7 @@ export class JourneyStepChild extends Model {
     step_id!: number
     child_id!: number
     data?: Record<string, unknown>
+    path?: string
     priority!: number
 
     static tableName = 'journey_step_child'
@@ -302,9 +303,11 @@ export class JourneyGate extends JourneyStep {
         if (!this.rule) return
 
         const children = state.childrenOf(this.id)
-        if (!children.length) return
+        const passed = children.find(c => c.path === 'yes')
+        const failed = children.find(c => c.path === 'no')
 
-        const [passed, failed] = children
+        if (!passed && !failed) return
+
         const events = await state.events()
 
         const params = {
@@ -561,6 +564,7 @@ interface JourneyStepMapItem {
     y: number
     children?: Array<{
         external_id: string
+        path?: string
         data?: Record<string, unknown>
     }>
 }
@@ -586,12 +590,13 @@ export async function toJourneyStepMap(steps: JourneyStep[], children: JourneySt
             data_key: step.data_key,
             x: step.x ?? 0,
             y: step.y ?? 0,
-            children: children.reduce<JourneyStepMap[string]['children']>((a, { step_id, child_id, data }) => {
+            children: children.reduce<JourneyStepMap[string]['children']>((a, { step_id, child_id, path, data }) => {
                 if (step_id === step.id) {
                     const child = steps.find(s => s.id === child_id)
                     if (child) {
                         a!.push({
                             external_id: child.external_id,
+                            path,
                             data,
                         })
                     }

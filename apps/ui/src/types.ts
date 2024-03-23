@@ -265,6 +265,7 @@ export type JourneyStepParams = Omit<JourneyStep, 'id'>
 
 interface JourneyStepMapChild<E = any> {
     external_id: string
+    path?: string
     data?: E
 }
 
@@ -306,10 +307,8 @@ export interface JourneyStepType<T = any, E = any> {
     newEdgeData?: () => Promise<E>
     Edit?: ComponentType<JourneyStepTypeEditProps<T>>
     EditEdge?: ComponentType<JourneyStepTypeEdgeProps<T, E>>
-    sources?:
-    | 'single' // single child (default)
-    | 'multi' // multiple children, one handle (unordered)
-    | string[] // enumerated handles (ordered)
+    sources?: string[]
+    multiChildSources?: boolean
     hasDataKey?: boolean
 }
 

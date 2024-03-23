@@ -146,6 +146,10 @@ const journeyStepsParamsSchema: JSONSchemaType<JourneyStepMapParams> = {
                         external_id: {
                             type: 'string',
                         },
+                        path: {
+                            type: 'string',
+                            nullable: true,
+                        },
                         data: {
                             type: 'object', // TODO: this is also specific to the parent node's type
                             nullable: true,

@@ -5,7 +5,7 @@ import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { setupProject, setupTestJourney } from './helpers'
 import { JourneyState, enterJourneysFromEvent } from '../JourneyService'
-import { JourneyStep, JourneyUserStep } from '../JourneyStep'
+import { JourneyStep, JourneyStepMapParams, JourneyUserStep } from '../JourneyStep'
 import { make } from '../../rules/RuleEngine'
 import { uuid } from '../../utilities'
 
@@ -33,14 +33,21 @@ describe('JourneyService', () => {
         }
     }
 
-    const gate = (rule: RuleTree, childIds: string[]) => {
+    const gate = (rule: RuleTree, yes?: string, no?: string) => {
+        const children: JourneyStepMapParams[string]['children'] = []
+        if (yes) {
+            children.push({ external_id: yes, path: 'yes' })
+        }
+        if (no) {
+            children.push({ external_id: no, path: 'no' })
+        }
         return {
             ...baseStep,
             type: 'gate',
             data: {
                 rule,
             },
-            children: childIds.map(external_id => ({ external_id })),
+            children,
         }
     }
 
@@ -186,7 +193,7 @@ describe('JourneyService', () => {
                     path: 'state',
                     operator: '=',
                     value: 'AL',
-                }, ['g2', 'd1']),
+                }, 'g2', 'd1'),
 
                 // match if users favorite guitar brand is Fender
                 g2: gate({
@@ -207,7 +214,7 @@ describe('JourneyService', () => {
                             value: 'Fender',
                         },
                     ],
-                }, ['d2', 'd3']),
+                }, 'd2', 'd3'),
 
                 d1: delay(0, ''),
                 d2: delay(0, ''),
@@ -307,9 +314,9 @@ describe('JourneyService', () => {
 
         const { steps } = await Journey.create(project.id, 'infinite loop journey', {
             e: entrance(0, 'g1'),
-            g1: gate(rule, ['g2', 'g3']),
-            g2: gate(rule, ['g1', 'g3']),
-            g3: gate(rule, []),
+            g1: gate(rule, 'g2', 'g3'),
+            g2: gate(rule, 'g1', 'g3'),
+            g3: gate(rule),
         })
 
         const user = await User.insertAndFetch({
