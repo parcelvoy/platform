@@ -47,5 +47,5 @@ export const balancerStep: JourneyStepType<BalancerStepChildConfig> = {
             />
         </div>
     ),
-    sources: 'multi',
+    multiChildSources: true,
 }

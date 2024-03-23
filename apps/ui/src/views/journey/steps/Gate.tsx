@@ -43,5 +43,5 @@ export const gateStep: JourneyStepType<GateConfig> = {
             />
         )
     },
-    sources: ['Yes', 'No'],
+    sources: ['yes', 'no'],
 }

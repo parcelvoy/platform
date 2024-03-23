@@ -41,5 +41,5 @@ export const experimentStep: JourneyStepType<{}, ExperimentStepChildConfig> = {
             />
         )
     },
-    sources: 'multi',
+    multiChildSources: true,
 }

@@ -163,7 +163,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             const childIds: number[] = []
 
             let ci = 0
-            for (const { external_id, data = {} } of list) {
+            for (const { external_id, path, data = {} } of list) {
                 const child = steps.find(s => s.external_id === external_id)
                 if (!child) continue
                 const idx = children.findIndex(sc => sc.step_id === step.id && sc.child_id === child.id)
@@ -173,12 +173,14 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                         step_id: step.id,
                         child_id: child.id,
                         data,
+                        path,
                         priority: ci,
                     }, trx))
                 } else {
                     stepChild = children[idx]
                     children[idx] = await JourneyStepChild.updateAndFetch(stepChild.id, {
                         data,
+                        path,
                         priority: ci,
                     }, trx)
                 }
