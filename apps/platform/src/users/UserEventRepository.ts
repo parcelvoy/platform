@@ -20,6 +20,7 @@ export const createEvent = async (
         const analytics = await loadAnalytics(user.project_id)
         analytics.track({
             external_id: user.external_id,
+            anonymous_id: user.anonymous_id,
             name,
             data: filter(data),
         })

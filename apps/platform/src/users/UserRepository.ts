@@ -116,7 +116,7 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
     await createEvent(user, {
         name: 'user_created',
         data: { ...fields, data, external_id, anonymous_id },
-    })
+    }, false)
 
     return user
 }

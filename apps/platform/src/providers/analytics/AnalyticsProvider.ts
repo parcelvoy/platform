@@ -5,7 +5,10 @@ import Provider, { ProviderGroup } from '../Provider'
 
 export type AnalyticsProviderName = 'segment' | 'mixpanel' | 'posthog'
 
-export type AnalyticsUserEvent = UserEventParams & { external_id: string }
+export type AnalyticsUserEvent = UserEventParams & {
+    external_id: string
+    anonymous_id?: string
+}
 
 export type Convention = 'snake_case' | 'camel_case' | 'title_case'
 
