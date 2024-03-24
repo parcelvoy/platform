@@ -2,6 +2,7 @@ import Router from '@koa/router'
 import Model, { ModelParams } from '../core/Model'
 import { JSONSchemaType } from '../core/validate'
 import type App from '../app'
+import { Context } from 'koa'
 
 export type ProviderGroup = 'email' | 'text' | 'push' | 'webhook' | 'analytics'
 export interface ProviderMeta {
@@ -10,8 +11,12 @@ export interface ProviderMeta {
     url?: string
     icon?: string
     type: string
-    group: string
+    group: string | ProviderGroup
     schema?: any
+}
+
+export interface ProviderOptions {
+    filter?: (ctx: Context) => boolean
 }
 
 export interface ProviderSetupMeta {
@@ -88,6 +93,16 @@ export default class Provider extends Model {
         nullable: true,
         additionalProperties: true,
     } as any)
+
+    static controllers(): Partial<ProviderControllers> {
+        return {}
+    }
+
+    static get group(): ProviderGroup {
+        throw new Error('Group not defined.')
+    }
+
+    static get options(): ProviderOptions { return {} }
 }
 
 export type ProviderMap<T extends Provider> = (record: any) => T

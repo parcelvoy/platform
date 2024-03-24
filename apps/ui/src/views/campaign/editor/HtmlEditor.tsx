@@ -7,9 +7,11 @@ import Preview from '../../../ui/Preview'
 import Tabs from '../../../ui/Tabs'
 import { ImageIcon } from '../../../ui/icons'
 import SourceEditor from '../../../ui/SourceEditor'
+import { useTranslation } from 'react-i18next'
 
 export default function HtmlEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
 
+    const { t } = useTranslation()
     const [monaco, setMonaco] = useState<Editor.IStandaloneCodeEditor | undefined>()
 
     const [selectedIndex, setSelectedIndex] = useState(0)
@@ -78,13 +80,13 @@ export default function HtmlEditor({ template, setTemplate }: { template: Templa
                                         variant="secondary"
                                         icon={<ImageIcon />}
                                         onClick={() => setShowImages(true)}
-                                    >Images</Button>
+                                    >{t('images')}</Button>
                                 </div>
                             </>,
                         },
                         {
                             key: 'text',
-                            label: 'Plain Text',
+                            label: t('plain_text'),
                             children: <SourceEditor
                                 height="100%"
                                 defaultLanguage="handlebars"

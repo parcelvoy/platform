@@ -26,27 +26,25 @@ export const pagedProviders = async (params: PageParams, projectId: number) => {
     )
 }
 
-export const loadControllers = <T extends Record<string, any>>(typeMap: T, group: string) => {
-    return async (routers: ProviderControllers, providers: ProviderMeta[]) => {
-        for (const type of Object.values(typeMap)) {
-            const { admin, public: publicRouter }: ProviderControllers = type.controllers()
-            routers.admin.use(
-                admin.routes(),
-                admin.allowedMethods(),
-            )
-            if (routers.public && publicRouter) {
-                routers.public.use(
-                    publicRouter.routes(),
-                    publicRouter.allowedMethods(),
-                )
-            }
-            providers.push({
-                ...type.meta,
-                type: type.namespace,
-                group,
-                schema: type.schema,
-            })
-        }
+export const loadController = (routers: ProviderControllers, provider: typeof Provider): ProviderMeta => {
+    const { admin: adminRouter, public: publicRouter } = provider.controllers()
+    if (routers.admin && adminRouter) {
+        routers.admin.use(
+            adminRouter.routes(),
+            adminRouter.allowedMethods(),
+        )
+    }
+    if (routers.public && publicRouter) {
+        routers.public.use(
+            publicRouter.routes(),
+            publicRouter.allowedMethods(),
+        )
+    }
+    return {
+        ...provider.meta,
+        group: provider.group,
+        type: provider.namespace,
+        schema: provider.schema,
     }
 }
 

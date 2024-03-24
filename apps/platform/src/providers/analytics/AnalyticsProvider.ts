@@ -1,7 +1,7 @@
 import { camelcase, titleize } from '../../render/Helpers/String'
 import { UserEventParams } from '../../users/UserEvent'
 import { snakeCase } from '../../utilities'
-import Provider from '../Provider'
+import Provider, { ProviderGroup } from '../Provider'
 
 export type AnalyticsProviderName = 'segment' | 'mixpanel' | 'posthog'
 
@@ -11,6 +11,8 @@ export type Convention = 'snake_case' | 'camel_case' | 'title_case'
 
 export abstract class AnalyticsProvider extends Provider {
     abstract track(event: AnalyticsUserEvent): Promise<void>
+
+    static group = 'analytics' as ProviderGroup
 
     tranformEventName(event: string, convention: Convention) {
         switch (convention) {

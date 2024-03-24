@@ -1,5 +1,4 @@
 import { loadProvider } from '../ProviderRepository'
-import { loadControllers } from '../ProviderService'
 import EmailChannel from './EmailChannel'
 import EmailProvider, { EmailProviderName } from './EmailProvider'
 import LoggerEmailProvider from './LoggerEmailProvider'
@@ -27,4 +26,4 @@ export const loadEmailChannel = async (providerId: number, projectId: number): P
     return new EmailChannel(provider)
 }
 
-export const loadEmailControllers = loadControllers(typeMap, 'email')
+export const emailProviders = Object.values(typeMap)
