@@ -45,6 +45,7 @@ export default class SegmentAnalyticsProvider extends AnalyticsProvider {
 
         this.segment.track({
             userId: event.external_id,
+            anonymousId: event.anonymous_id,
             event: this.tranformEventName(event.name, this.event_name_convention),
             properties: event.data,
         })
