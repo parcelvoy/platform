@@ -1,5 +1,4 @@
 import { loadProvider } from '../ProviderRepository'
-import { loadControllers } from '../ProviderService'
 import HttpSMSTextProvider from './HttpSMSProvider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
@@ -27,4 +26,4 @@ export const loadTextChannel = async (providerId: number, projectId?: number): P
     return new TextChannel(provider)
 }
 
-export const loadTextControllers = loadControllers(typeMap, 'text')
+export const textProviders = Object.values(typeMap)

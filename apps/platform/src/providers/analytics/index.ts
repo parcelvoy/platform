@@ -1,5 +1,4 @@
 import { loadDefaultProvider } from '../ProviderRepository'
-import { loadControllers } from '../ProviderService'
 import Analytics from './Analytics'
 import { AnalyticsProvider, AnalyticsProviderName } from './AnalyticsProvider'
 import MixpanelAnalyticsProvider from './MixpanelProvider'
@@ -22,4 +21,4 @@ export const loadAnalytics = async (projectId: number): Promise<Analytics> => {
     return new Analytics(provider)
 }
 
-export const loadAnalyticsControllers = loadControllers(typeMap, 'analytics')
+export const analyticsProviders = Object.values(typeMap)

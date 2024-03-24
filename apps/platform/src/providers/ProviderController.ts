@@ -2,14 +2,14 @@ import Router from '@koa/router'
 import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { decodeHashid, extractQueryParams } from '../utilities'
-import { loadAnalyticsControllers } from './analytics'
-import { loadEmailControllers } from './email'
-import { ProviderMeta } from './Provider'
+import { analyticsProviders } from './analytics'
+import { emailProviders } from './email'
+import Provider from './Provider'
 import { getProvider } from './ProviderRepository'
-import { allProviders, pagedProviders } from './ProviderService'
-import { loadPushControllers } from './push'
-import { loadTextControllers } from './text'
-import { loadWebhookControllers } from './webhook'
+import { allProviders, loadController, pagedProviders } from './ProviderService'
+import { pushProviders } from './push'
+import { textProviders } from './text'
+import { webhookProviders } from './webhook'
 
 const adminRouter = new Router<ProjectState>({
     prefix: '/providers',
@@ -33,13 +33,26 @@ publicRouter.param('hash', async (value, ctx, next) => {
     return await next()
 })
 
-const providers: ProviderMeta[] = []
+const providers: (typeof Provider)[] = [
+    ...textProviders,
+    ...emailProviders,
+    ...pushProviders,
+    ...webhookProviders,
+    ...analyticsProviders,
+]
+
 const routers = { admin: adminRouter, public: publicRouter }
-loadTextControllers(routers, providers)
-loadEmailControllers(routers, providers)
-loadWebhookControllers(routers, providers)
-loadPushControllers(routers, providers)
-loadAnalyticsControllers(routers, providers)
+for (const provider of providers) {
+    loadController(routers, provider)
+}
+
+export const addProvider = (typeMap: Record<string, any>, provider: typeof Provider) => {
+    if (!typeMap[provider.namespace]) {
+        typeMap[provider.namespace] = provider
+    }
+    providers.push(provider)
+    loadController(routers, provider)
+}
 
 adminRouter.get('/', async ctx => {
     const params = extractQueryParams(ctx.query, searchParamsSchema)
@@ -52,6 +65,13 @@ adminRouter.get('/all', async ctx => {
 
 adminRouter.get('/meta', async ctx => {
     ctx.body = providers
+        .filter(provider => provider.options.filter?.(ctx) ?? true)
+        .map(provider => ({
+            ...provider.meta,
+            group: provider.group,
+            type: provider.namespace,
+            schema: provider.schema,
+        }))
 })
 
 export { adminRouter, publicRouter, providers }

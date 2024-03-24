@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { loadTextChannel } from '.'
 import { unsubscribeSms } from '../../subscriptions/SubscriptionService'
-import Provider from '../Provider'
+import Provider, { ProviderGroup } from '../Provider'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 
 export type TextProviderName = 'nexmo' | 'plivo' | 'twilio' | 'logger'
@@ -9,6 +9,8 @@ export type TextProviderName = 'nexmo' | 'plivo' | 'twilio' | 'logger'
 export abstract class TextProvider extends Provider {
     abstract send(message: TextMessage): Promise<TextResponse>
     abstract parseInbound(inbound: any): InboundTextMessage
+
+    static get group() { return 'text' as ProviderGroup }
 
     static unsubscribe(namespace: string) {
         const router = new Router<{ provider: Provider }>()

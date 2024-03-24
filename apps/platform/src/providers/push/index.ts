@@ -1,5 +1,4 @@
 import { loadProvider } from '../ProviderRepository'
-import { loadControllers } from '../ProviderService'
 import LocalPushProvider from './LocalPushProvider'
 import LoggerPushProvider from './LoggerPushProvider'
 import PushChannel from './PushChannel'
@@ -21,4 +20,4 @@ export const loadPushChannel = async (providerId: number, projectId: number): Pr
     return new PushChannel(provider)
 }
 
-export const loadPushControllers = loadControllers(typeMap, 'push')
+export const pushProviders = Object.values(typeMap)

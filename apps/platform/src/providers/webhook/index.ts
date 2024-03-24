@@ -1,5 +1,4 @@
 import { loadProvider } from '../ProviderRepository'
-import { loadControllers } from '../ProviderService'
 import LocalWebhookProvider from './LocalWebhookProvider'
 import LoggerWebhookProvider from './LoggerWebhookProvider'
 import WebhookChannel from './WebhookChannel'
@@ -21,4 +20,4 @@ export const loadWebhookChannel = async (providerId: number, projectId: number):
     return new WebhookChannel(provider)
 }
 
-export const loadWebhookControllers = loadControllers(typeMap, 'webhook')
+export const webhookProviders = Object.values(typeMap)
