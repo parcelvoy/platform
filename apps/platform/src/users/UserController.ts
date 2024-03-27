@@ -7,7 +7,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { User, UserParams } from './User'
 import { extractQueryParams } from '../utilities'
 import { searchParamsSchema, SearchSchema } from '../core/searchParams'
-import { getUser, pagedUsers } from './UserRepository'
+import { getUser, getUserFromContext, pagedUsers } from './UserRepository'
 import { getUserLists } from '../lists/ListService'
 import { getUserSubscriptions, toggleSubscription } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
@@ -146,7 +146,7 @@ router.delete('/', projectRoleMiddleware('editor'), async ctx => {
 })
 
 router.param('userId', async (value, ctx, next) => {
-    ctx.state.user = await getUser(parseInt(value), ctx.state.project.id)
+    ctx.state.user = await getUserFromContext(ctx)
     if (!ctx.state.user) {
         ctx.throw(404)
         return

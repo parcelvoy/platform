@@ -150,6 +150,7 @@ function JourneyStepNode({
 
     if (!stats) stats = {}
 
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const [journey] = useContext(JourneyContext)
     const { getNode, getEdges } = useReactFlow()
@@ -191,7 +192,7 @@ function JourneyStepNode({
                     <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
                         {type.icon}
                     </span>
-                    <h4 className="step-header-title">{name || type.name}</h4>
+                    <h4 className="step-header-title">{name || t(type.name)}</h4>
                     <div className="step-header-stats">
                         <span className="stat">
                             {(stats.completed ?? 0).toLocaleString()}
