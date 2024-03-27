@@ -8,6 +8,7 @@ import { uuid } from '../utilities'
 import { getRuleEventNames } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
 import { createEvent } from './UserEventRepository'
+import { Context } from 'koa'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -16,6 +17,12 @@ export const getUser = async (id: number, projectId?: number): Promise<User | un
         }
         return qb
     })
+}
+
+export const getUserFromContext = async (ctx: Context): Promise<User | undefined> => {
+    return ctx.state.scope === 'secret'
+        ? await getUserFromClientId(ctx.state.project.id, { external_id: ctx.params.userId })
+        : await getUser(parseInt(ctx.params.userId), ctx.state.project.id)
 }
 
 export const getUsersFromIdentity = async (projectId: number, identity: ClientIdentity) => {

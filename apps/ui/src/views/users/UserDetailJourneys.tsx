@@ -5,6 +5,8 @@ import api from '../../api'
 import { Tag } from '../../ui'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PreferencesContext } from '../../ui/PreferencesContext'
+import { formatDate } from '../../utils'
 
 export default function UserDetailJourneys() {
 
@@ -17,6 +19,7 @@ export default function UserDetailJourneys() {
     const projectId = project.id
     const userId = user.id
 
+    const [preferences] = useContext(PreferencesContext)
     const state = useSearchTableQueryState(useCallback(async params => await api.users.journeys.search(projectId, userId, params), [projectId, userId]))
 
     return (
@@ -36,7 +39,9 @@ export default function UserDetailJourneys() {
                 {
                     key: 'ended_at',
                     title: t('ended_at'),
-                    cell: ({ item }) => item.ended_at ?? <Tag variant="info">{t('running')}</Tag>,
+                    cell: ({ item }) => item.ended_at
+                        ? formatDate(preferences, item.ended_at, 'Ppp')
+                        : <Tag variant="info">{t('running')}</Tag>,
                 },
             ]}
             onSelectRow={e => navigate(`../../entrances/${e.id}`)}

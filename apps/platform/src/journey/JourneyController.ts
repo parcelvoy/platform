@@ -13,6 +13,7 @@ import JourneyError from './JourneyError'
 import { EventPostJob } from '../jobs'
 import { UserEvent } from '../users/UserEvent'
 import JourneyProcessJob from './JourneyProcessJob'
+import { getUserFromContext } from '../users/UserRepository'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -183,11 +184,21 @@ router.get('/:journeyId/steps/:stepId/users', async ctx => {
         .where('journey_id', ctx.state.journey!.id)
         .where('id', parseInt(ctx.params.stepId)),
     )
-    if (!step) {
-        ctx.throw(404)
-        return
-    }
+    if (!step) return ctx.throw(404)
     ctx.body = await pagedUsersByStep(step.id, params)
+})
+
+router.delete('/:journeyId/users/:userId', async ctx => {
+    const user = await getUserFromContext(ctx)
+    if (!user) return ctx.throw(404)
+    const results = await JourneyUserStep.update(
+        q => q.where('user_id', user.id)
+            .whereNull('entrance_id')
+            .whereNull('ended_at')
+            .where('journey_id', ctx.state.journey!.id),
+        { ended_at: new Date() },
+    )
+    ctx.body = { exits: results }
 })
 
 interface JourneyEntranceTriggerParams {

@@ -8,6 +8,7 @@ import { PreferencesContext } from '../../ui/PreferencesContext'
 import * as stepTypes from './steps'
 import clsx from 'clsx'
 import { stepCategoryColors } from './JourneyEditor'
+import { useTranslation } from 'react-i18next'
 
 export const typeVariants: Record<string, TagProps['variant']> = {
     completed: 'success',
@@ -19,6 +20,7 @@ export const typeVariants: Record<string, TagProps['variant']> = {
 
 export default function EntranceDetails() {
 
+    const { t } = useTranslation()
     const [preferences] = useContext(PreferencesContext)
 
     const { journey, user, userSteps } = useLoaderData() as JourneyEntranceDetail
@@ -59,7 +61,7 @@ export default function EntranceDetails() {
                                     </div>
                                     <div className="text">
                                         <div className="title">{item.step!.name || 'Untitled'}</div>
-                                        <div className="subtitle">{item.step!.type}</div>
+                                        <div className="subtitle">{t(item.step!.type)}</div>
                                     </div>
                                 </div>
                             )
@@ -67,14 +69,15 @@ export default function EntranceDetails() {
                     },
                     {
                         key: 'type',
+                        title: 'Type',
                         cell: ({ item }) => (
                             <Tag variant={typeVariants[item.type]}>
                                 {camelToTitle(item.type)}
                             </Tag>
                         ),
                     },
-                    { key: 'created_at' },
-                    { key: 'delay_until' },
+                    { key: 'created_at', title: t('created_at') },
+                    { key: 'delay_until', title: t('delay_until') },
                 ]}
             />
         </PageContent>
