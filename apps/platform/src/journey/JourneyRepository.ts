@@ -246,6 +246,7 @@ export const pagedEntrancesByUser = async (userId: number, params: PageParams) =
             ...r,
             results: r.results.map(s => ({
                 id: s.id,
+                entrance_id: s.id,
                 journey: journeys.get(s.journey_id),
                 created_at: s.created_at,
                 updated_at: s.updated_at,

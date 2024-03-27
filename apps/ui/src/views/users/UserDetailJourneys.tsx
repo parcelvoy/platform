@@ -44,7 +44,7 @@ export default function UserDetailJourneys() {
                         : <Tag variant="info">{t('running')}</Tag>,
                 },
             ]}
-            onSelectRow={e => navigate(`../../entrances/${e.id}`)}
+            onSelectRow={e => navigate(`../../entrances/${e.entrance_id}`)}
         />
     )
 }

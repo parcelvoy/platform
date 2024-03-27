@@ -322,6 +322,7 @@ export interface JourneyStepType<T = any, E = any> {
 
 export interface JourneyUserStep {
     id: number
+    entrance_id: number
     type: string
     delay_until?: string
     created_at: string
