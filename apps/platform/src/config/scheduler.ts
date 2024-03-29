@@ -7,9 +7,9 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
-import { uuid } from '../utilities'
 import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
+import { acquireLock } from '../core/Lock'
 
 export default (app: App) => {
     const scheduler = new Scheduler(app)
@@ -72,46 +72,4 @@ export class Scheduler {
     async close() {
         return await nodeScheduler.gracefulShutdown()
     }
-}
-
-interface LockParams {
-    key: string
-    owner?: string
-    timeout?: number
-}
-
-export const acquireLock = async ({
-    key,
-    owner,
-    timeout = 60,
-}: LockParams) => {
-    try {
-        const result = await App.main.redis.set(
-            `lock:${key}`,
-            owner ?? uuid(),
-            'EX',
-            timeout,
-            'NX',
-        )
-
-        // Because of the NX condition, value will only be set
-        // if it hasn't been set already (original owner)
-        if (result === null) {
-
-            // Since we know there already is a lock, lets see if
-            // it is this instance that owns it
-            if (owner) {
-                const value = await App.main.redis.get(`lock:${key}`)
-                return value === owner
-            }
-            return false
-        }
-        return true
-    } catch {
-        return false
-    }
-}
-
-export const releaseLock = async (key: string) => {
-    await App.main.redis.del(`lock:${key}`)
 }

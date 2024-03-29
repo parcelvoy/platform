@@ -8,7 +8,7 @@ import { Job } from '../queue'
 import { getProject } from '../projects/ProjectService'
 import { getUserEventsForRules } from '../users/UserRepository'
 import Rule, { RuleTree } from '../rules/Rule'
-import { acquireLock, releaseLock } from '../config/scheduler'
+import { acquireLock, releaseLock } from '../core/Lock'
 import { check } from '../rules/RuleEngine'
 import JourneyProcessJob from './JourneyProcessJob'
 
@@ -141,7 +141,7 @@ export class JourneyState {
             return
         }
 
-        const key = `parcelvoy:journey:entrance:${entrance.id}`
+        const key = `journey:entrance:${entrance.id}`
 
         const acquired = await acquireLock({ key })
         if (!acquired) {
