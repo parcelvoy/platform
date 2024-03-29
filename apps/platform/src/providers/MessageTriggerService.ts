@@ -170,7 +170,7 @@ export const failSend = async ({ campaign, user, context }: MessageTriggerHydrat
     })
     await createEvent(user, {
         name: campaign.eventName('failed'),
-        data: { ...context },
+        data: { ...context, error },
     }, true, ({ result, ...data }) => data)
     if (shouldNotify(error)) App.main.error.notify(error)
 }

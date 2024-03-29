@@ -315,6 +315,9 @@ const api = {
         jobPerformance: async (job: string) => await client
             .get<Metric[]>(`/admin/organizations/performance/jobs/${job}`)
             .then(r => r.data),
+        failed: async () => await client
+            .get<any>('/admin/organizations/performance/failed')
+            .then(r => r.data),
     },
 
     locales: createProjectEntityPath<Locale>('locales'),

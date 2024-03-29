@@ -95,4 +95,8 @@ export default class Queue {
     async metrics(period = MetricPeriod.FOUR_HOURS): Promise<QueueMetric | undefined> {
         return await this.provider.metrics?.(period)
     }
+
+    async failed(): Promise<QueueMetric | undefined> {
+        return await this.provider.failed?.()
+    }
 }
