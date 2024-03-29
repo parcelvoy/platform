@@ -136,4 +136,8 @@ export default class RedisQueueProvider implements QueueProvider {
             waiting,
         }
     }
+
+    async failed() {
+        return this.bull.getFailed()
+    }
 }

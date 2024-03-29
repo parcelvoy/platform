@@ -30,4 +30,5 @@ export default interface QueueProvider {
     start(): void
     close(): void
     metrics?(period: MetricPeriod): Promise<QueueMetric>
+    failed?(): Promise<any>
 }

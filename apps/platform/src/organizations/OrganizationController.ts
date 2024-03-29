@@ -37,6 +37,10 @@ router.get('/performance/jobs/:job', async ctx => {
     ctx.body = await App.main.stats.list(ctx.params.job)
 })
 
+router.get('/performance/failed', async ctx => {
+    ctx.body = await App.main.queue.failed()
+})
+
 router.get('/integrations', async ctx => {
     ctx.body = await organizationIntegrations(ctx.state.organization)
 })

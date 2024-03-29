@@ -7,6 +7,7 @@ import { PreferencesContext } from '../../ui/PreferencesContext'
 import Tile, { TileGrid } from '../../ui/Tile'
 import PageContent from '../../ui/PageContent'
 import { SingleSelect } from '../../ui/form/SingleSelect'
+import { DataTable, JsonPreview, Modal } from '../../ui'
 
 interface Series {
     label: string
@@ -23,6 +24,9 @@ export default function Performance() {
     const [jobs, setJobs] = useState<string[]>([])
     const [currentJob, setCurrentJob] = useState<string | undefined>()
     const [jobMetrics, setJobMetrics] = useState<Series[] | undefined>()
+
+    const [failed, setFailed] = useState<Array<Record<string, any>>>([])
+    const [selectedFailed, setSelectedFailed] = useState<Record<string, any> | undefined>()
 
     useEffect(() => {
         api.organizations.metrics()
@@ -44,6 +48,12 @@ export default function Performance() {
             .then((jobs) => {
                 setJobs(jobs)
                 setCurrentJob(jobs[0])
+            })
+            .catch(() => {})
+
+        api.organizations.failed()
+            .then((failed) => {
+                setFailed(failed)
             })
             .catch(() => {})
     }, [])
@@ -124,6 +134,27 @@ export default function Performance() {
                     }}
                 />
             </div>}
+
+            {failed.length && <>
+                <Heading size="h4" title="Failed" />
+                <div className="failed">
+                    <DataTable items={failed} columns={[
+                        { key: 'id', title: 'ID' },
+                        { key: 'name', title: 'Name' },
+                        { key: 'attemptsMade', title: 'Attempts Made' },
+                        { key: 'failedReason', title: 'Reason' },
+                        { key: 'timestamp', title: 'Timestamp' },
+                    ]} onSelectRow={row => setSelectedFailed(row) }/>
+                </div>
+            </>}
+
+            <Modal
+                title="Failed Job"
+                size="large"
+                open={!!selectedFailed}
+                onClose={() => setSelectedFailed(undefined)}>
+                {selectedFailed && <JsonPreview value={selectedFailed} />}
+            </Modal>
         </PageContent>
     )
 }
