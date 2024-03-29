@@ -200,7 +200,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
     )
 }
 
-const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormReturn<CampaignCreateParams> }) => {
+const TypeSelection = ({ campaign, showType, form }: { campaign?: Campaign, showType: boolean, form: UseFormReturn<CampaignCreateParams> }) => {
     const { t } = useTranslation()
     const type = useWatch({
         control: form.control,
@@ -215,14 +215,14 @@ const TypeSelection = ({ campaign, form }: { campaign?: Campaign, form: UseFormR
     }]
 
     return <>
-        <RadioInput.Field
+        {showType && <RadioInput.Field
             form={form}
             name="type"
             subtitle={t('campaign_form_type')}
             label={t('type')}
             options={options}
             required
-        />
+        />}
         {
             type !== 'trigger' && (
                 <>
@@ -303,9 +303,10 @@ export function CampaignForm({ campaign, onSave, type }: CampaignEditParams) {
                         name="tags"
                         label={t('tags')}
                     />
-                    {
-                        !type && <TypeSelection campaign={campaign} form={form} />
-                    }
+                    <TypeSelection
+                        campaign={campaign}
+                        form={form}
+                        showType={!type} />
                     {
                         campaign
                             ? (

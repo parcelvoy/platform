@@ -11,6 +11,7 @@ export default class ProcessCampaignsJob extends Job {
         const campaigns = await Campaign.query()
             .whereIn('state', ['pending', 'scheduled', 'running'])
             .whereNotNull('send_at')
+            .whereNull('deleted_at')
             .where('type', 'blast')
         for (const campaign of campaigns) {
 

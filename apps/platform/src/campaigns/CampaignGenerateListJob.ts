@@ -15,6 +15,7 @@ export default class CampaignGenerateListJob extends Job {
         const key = `campaign_generate_${id}`
 
         const campaign = await getCampaign(id, project_id) as SentCampaign
+        if (!campaign) return
         if (campaign.state === 'aborted' || campaign.state === 'draft') return
 
         // Increase lock duration based on estimated send size
