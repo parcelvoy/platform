@@ -34,6 +34,7 @@
     "campaign_list_generating": "Esta lista aún se está generando. Enviar antes de que se haya completado podría provocar que esta campaña no se envíe a todos los usuarios que entrarán en la lista. ¿Está seguro de que desea continuar?",
     "campaign_name": "Nombre de la campaña",
     "campaigns": "Campañas",
+    "campaign": "Campaña",
     "cancel": "Cancelar",
     "cc": "CC",
     "change_schedule": "Cambiar horario",

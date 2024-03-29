@@ -34,6 +34,7 @@
     "campaign_list_generating": "This list is still generating. Sending before it has completed could result in this campaign not sending to all users who will enter the list. Are you sure you want to continue?",
     "campaign_name": "Campaign Name",
     "campaigns": "Campaigns",
+    "campaign": "Campaign",
     "cancel": "Cancel",
     "cc": "CC",
     "change_schedule": "Change Schedule",

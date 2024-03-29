@@ -618,7 +618,7 @@ export default function JourneyEditor() {
                         <span className={clsx('step-header-icon', stepCategoryColors[type.category])}>
                             {type.icon}
                         </span>
-                        <h4 className="step-header-title">{type.name}</h4>
+                        <h4 className="step-header-title">{t(type.name)}</h4>
                         <div
                             className="step-header-stats"
                             role={editNode.data.stepId ? 'button' : undefined}
