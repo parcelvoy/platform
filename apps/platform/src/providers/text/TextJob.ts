@@ -4,9 +4,9 @@ import { MessageTrigger } from '../MessageTrigger'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
-import { releaseLock } from '../../config/scheduler'
 import App from '../../app'
 import { UnsubscribeTextError } from './TextError'
+import { releaseLock } from '../../core/Lock'
 
 export default class TextJob extends Job {
     static $name = 'text'
