@@ -3,7 +3,7 @@ import { campaignSendReadyQuery, checkStalledSends, getCampaign, sendCampaignJob
 import { CampaignJobParams } from './Campaign'
 import { chunk } from '../utilities'
 import App from '../app'
-import { acquireLock, releaseLock } from '../config/scheduler'
+import { acquireLock, releaseLock } from '../core/Lock'
 
 export default class CampaignEnqueueSendsJob extends Job {
     static $name = 'campaign_enqueue_sends_job'

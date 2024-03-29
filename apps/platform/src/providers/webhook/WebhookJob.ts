@@ -4,8 +4,8 @@ import { WebhookTemplate } from '../../render/Template'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
-import { releaseLock } from '../../config/scheduler'
 import { JourneyUserStep } from '../../journey/JourneyStep'
+import { releaseLock } from '../../core/Lock'
 
 export default class WebhookJob extends Job {
     static $name = 'webhook'

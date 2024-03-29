@@ -8,7 +8,7 @@ import { updateSendState } from '../../campaigns/CampaignService'
 import { finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
 import App from '../../app'
-import { releaseLock } from '../../config/scheduler'
+import { releaseLock } from '../../core/Lock'
 
 export default class PushJob extends Job {
     static $name = 'push'

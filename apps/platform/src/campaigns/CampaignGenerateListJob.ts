@@ -1,5 +1,5 @@
 import { logger } from '../config/logger'
-import { acquireLock, releaseLock } from '../config/scheduler'
+import { acquireLock, releaseLock } from '../core/Lock'
 import { Job } from '../queue'
 import { CampaignJobParams, SentCampaign } from './Campaign'
 import CampaignEnqueueSendsJob from './CampaignEnqueueSendsJob'
@@ -15,24 +15,24 @@ export default class CampaignGenerateListJob extends Job {
     static async handler({ id, project_id }: CampaignJobParams) {
         const key = `campaign_generate_${id}`
 
-        logger.info('campaign:generate:loading', { id })
+        logger.info({ id }, 'campaign:generate:loading')
         const campaign = await getCampaign(id, project_id) as SentCampaign
         if (!campaign) return
         if (campaign.state === 'aborted' || campaign.state === 'draft') return
 
         // Increase lock duration based on estimated send size
         const estimatedSize = await estimatedSendSize(campaign)
-        const lockTime = Math.max(estimatedSize / 1000, 900)
-        logger.info('campaign:generate:estimated_size', { id, estimatedSize, lockTime })
+        const lockTime = Math.ceil(Math.max(estimatedSize / 1000, 900))
+        logger.info({ id, estimatedSize, lockTime }, 'campaign:generate:estimated_size')
 
         const acquired = await acquireLock({ key, timeout: lockTime })
-        logger.info('campaign:generate:lock', { id, acquired })
+        logger.info({ id, acquired }, 'campaign:generate:lock')
         if (!acquired) return
 
-        logger.info('campaign:generate:querying', { id })
+        logger.info({ id }, 'campaign:generate:querying')
         await generateSendList(campaign)
 
-        logger.info('campaign:generate:sending', { id })
+        logger.info({ id }, 'campaign:generate:sending')
         await CampaignEnqueueSendsJob.from({
             id: campaign.id,
             project_id: campaign.project_id,

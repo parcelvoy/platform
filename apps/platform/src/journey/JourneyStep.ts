@@ -494,7 +494,7 @@ export class JourneyUpdate extends JourneyStep {
             } catch (err: any) {
                 logger.warn({
                     error: err.message,
-                }, 'Error while updating user')
+                }, 'journey:user:error')
                 userStep.type = 'error'
                 return
             }

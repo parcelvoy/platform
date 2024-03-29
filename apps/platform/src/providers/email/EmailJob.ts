@@ -6,7 +6,7 @@ import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '.
 import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
-import { releaseLock } from '../../config/scheduler'
+import { releaseLock } from '../../core/Lock'
 
 export default class EmailJob extends Job {
     static $name = 'email'
