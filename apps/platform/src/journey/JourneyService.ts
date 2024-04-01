@@ -117,7 +117,14 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
         event: {
             name: 'journey_trigger',
             external_id: payload.user.external_id,
-            data: payload.event,
+            data: {
+                ...payload.event,
+                journey: {
+                    id: journey.id,
+                    name: journey.name,
+                    entrance_id: payload.entrance_id,
+                },
+            },
             user: { external_id, email, phone, data, locale, timezone },
         },
     }).handle<{ user: User, event: UserEvent }>()

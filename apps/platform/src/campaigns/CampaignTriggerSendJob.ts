@@ -24,12 +24,19 @@ export default class CampaignTriggerSendJob extends Job {
     static async handler({ project_id, campaign_id, user, event }: CampaignTriggerSendParams) {
 
         const { external_id, email, phone, device_token, locale, timezone, ...data } = user
+
+        const campaign = await getCampaign(campaign_id, project_id)
+        if (!campaign) return
+
         const { user: { id: userId }, event: { id: eventId } } = await EventPostJob.from({
             project_id,
             event: {
                 name: 'campaign_trigger',
                 external_id: user.external_id,
-                data: event,
+                data: {
+                    ...event,
+                    campaign: { id: campaign_id, name: campaign.name },
+                },
                 user: { external_id, email, phone, data, locale, timezone },
             },
         }).handle<{ user: User, event: UserEvent }>()
@@ -43,8 +50,6 @@ export default class CampaignTriggerSendJob extends Job {
             }).handle()
         }
 
-        const campaign = await getCampaign(campaign_id, project_id)
-        if (!campaign) return
         const reference_id = uuid()
         const send_id = await CampaignSend.insert({
             campaign_id,
