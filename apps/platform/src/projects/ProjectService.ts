@@ -93,7 +93,7 @@ export const updateProject = async (id: number, adminId: number, params: Partial
 export const pagedApiKeys = async (params: PageParams, projectId: number) => {
     return await ProjectApiKey.search(
         { ...params, fields: ['name', 'description'] },
-        qb => qb.where('project_id', projectId),
+        qb => qb.where('project_id', projectId).whereNull('deleted_at'),
     )
 }
 
