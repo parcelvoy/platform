@@ -203,6 +203,7 @@ export interface User {
     locale?: string
     data: Record<string, any>
     devices?: Device[]
+    created_at?: Date
 }
 
 export interface Device {
