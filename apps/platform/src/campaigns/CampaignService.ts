@@ -28,6 +28,9 @@ export const pagedCampaigns = async (params: PageParams, projectId: number) => {
         b => {
             b.where('project_id', projectId)
                 .whereNull('deleted_at')
+            if (params.filter?.type) {
+                b.where('type', params.filter.type)
+            }
             params.tag?.length && b.whereIn('id', createTagSubquery(Campaign, projectId, params.tag))
             return b
         },
@@ -350,7 +353,7 @@ export const abortCampaign = async (campaign: Campaign) => {
 export const duplicateCampaign = async (campaign: Campaign) => {
     const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name', 'type'])
     params.name = `Copy of ${params.name}`
-    params.state = 'draft'
+    params.state = campaign.type === 'blast' ? 'draft' : 'running'
     const cloneId = await Campaign.insert(params)
     for (const template of campaign.templates) {
         await duplicateTemplate(template, cloneId)

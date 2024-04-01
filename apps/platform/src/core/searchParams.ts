@@ -8,6 +8,7 @@ export interface PageParams {
     cursor?: string
     page?: 'prev' | 'next'
     q?: string
+    filter?: Record<string, any>
     tag?: string[]
     id?: number[]
 }
@@ -40,6 +41,10 @@ export const SearchSchema = (id: string, defaults?: Partial<PageParams>): JSONSc
             q: {
                 type: 'string',
                 nullable: true,
+            },
+            filter: {
+                nullable: true,
+                type: 'object',
             },
             sort: {
                 type: 'string',

@@ -93,6 +93,7 @@ export interface SearchParams {
     limit: number
     sort?: string
     direction?: string
+    filter?: Record<string, any>
     q?: string
     tag?: string[]
     id?: Array<number | string>
