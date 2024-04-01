@@ -8,7 +8,7 @@ import Menu, { MenuItem } from '../../ui/Menu'
 import { ArchiveIcon, EditIcon } from '../../ui/icons'
 import api from '../../api'
 import { useParams } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Translation, useTranslation } from 'react-i18next'
 
 interface ListTableParams {
     search: (params: SearchParams) => Promise<SearchResult<List>>
@@ -18,20 +18,15 @@ interface ListTableParams {
 }
 
 export const ListTag = ({ state }: { state: ListState }) => {
-    const { t } = useTranslation()
     const variant: Record<ListState, TagVariant> = {
         draft: 'plain',
         loading: 'info',
         ready: 'success',
     }
 
-    const title: Record<ListState, string> = {
-        draft: t('draft'),
-        loading: t('loading'),
-        ready: t('ready'),
-    }
-
-    return <Tag variant={variant[state]}>{title[state]}</Tag>
+    return <Tag variant={variant[state]}>
+        <Translation>{ (t) => t(state) }</Translation>
+    </Tag>
 }
 
 export default function ListTable({ search, selectedRow, onSelectRow, title }: ListTableParams) {
