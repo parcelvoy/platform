@@ -4,16 +4,14 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
-import Journey, { JourneyParams } from './Journey'
+import Journey, { JourneyEntranceTriggerParams, JourneyParams } from './Journey'
 import { createJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep, archiveJourney, deleteJourney } from './JourneyRepository'
-import { JourneyEntrance, JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
 import { User } from '../users/User'
 import { RequestError } from '../core/errors'
 import JourneyError from './JourneyError'
-import { EventPostJob } from '../jobs'
-import { UserEvent } from '../users/UserEvent'
-import JourneyProcessJob from './JourneyProcessJob'
 import { getUserFromContext } from '../users/UserRepository'
+import { triggerEntrance } from './JourneyService'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -214,12 +212,6 @@ router.delete('/:journeyId/users/:userId', async ctx => {
     ctx.body = { exits: results }
 })
 
-interface JourneyEntranceTriggerParams {
-    entrance_id: number
-    user: Pick<User, 'email' | 'phone' | 'timezone' | 'locale'> & { external_id: string, device_token?: string }
-    event?: Record<string, unknown>
-}
-
 const journeyTriggerParams: JSONSchemaType<JourneyEntranceTriggerParams> = {
     $id: 'journeyEntranceTriggerParams',
     type: 'object',
@@ -251,49 +243,12 @@ const journeyTriggerParams: JSONSchemaType<JourneyEntranceTriggerParams> = {
     additionalProperties: false,
 }
 
-// manually trigger a journey entrance
+// Manually trigger a journey entrance
 router.post('/:journeyId/trigger', async ctx => {
     const journey = ctx.state.journey!
     const payload = validate(journeyTriggerParams, ctx.request.body)
 
-    // look up target entrance step
-    const step = await JourneyStep.first(qb => qb
-        .where('journey_id', journey.id)
-        .where('id', payload.entrance_id))
-
-    // make sure target step is actually an entrance
-    if (!step || step.type !== JourneyEntrance.type) {
-        throw new RequestError(JourneyError.JourneyStepDoesNotExist)
-    }
-
-    // extract top-level vs custom properties user fields
-    const { external_id, email, phone, device_token, locale, timezone, ...data } = payload.user
-
-    // create the user synchronously if new
-    const { user, event } = await EventPostJob.from({
-        project_id: journey.project_id,
-        event: {
-            name: 'trigger',
-            external_id: payload.user.external_id,
-            data: payload.event,
-            user: { external_id, email, phone, data, locale, timezone },
-        },
-    }).handle<{ user: User, event: UserEvent }>()
-
-    // create new entrance
-    const entrance_id = await JourneyUserStep.insert({
-        journey_id: journey.id,
-        user_id: user.id,
-        step_id: step.id,
-        type: 'completed',
-        data: {
-            event: event?.flatten(),
-        },
-    })
-
-    // trigger async processing
-    await JourneyProcessJob.from({ entrance_id }).queue()
-
+    await triggerEntrance(journey, payload)
     ctx.body = { success: true }
 })
 

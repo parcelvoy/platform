@@ -27,7 +27,7 @@ export default class CampaignTriggerSendJob extends Job {
         const { user: { id: userId }, event: { id: eventId } } = await EventPostJob.from({
             project_id,
             event: {
-                name: 'trigger',
+                name: 'campaign_trigger',
                 external_id: user.external_id,
                 data: event,
                 user: { external_id, email, phone, data, locale, timezone },
