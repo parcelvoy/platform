@@ -16,11 +16,9 @@ import PreviewImage from '../../ui/PreviewImage'
 import { Alert } from '../../ui'
 import { ProjectContext } from '../../contexts'
 import { PreferencesContext } from '../../ui/PreferencesContext'
-import { useTranslation } from 'react-i18next'
+import { Translation, useTranslation } from 'react-i18next'
 
 export const CampaignTag = ({ state }: { state: CampaignState }) => {
-    const { t } = useTranslation()
-
     const variant: Record<CampaignState, TagVariant> = {
         draft: 'plain',
         aborted: 'error',
@@ -29,16 +27,9 @@ export const CampaignTag = ({ state }: { state: CampaignState }) => {
         running: 'info',
         finished: 'success',
     }
-    const title: Record<CampaignState, string> = {
-        draft: t('draft'),
-        aborted: t('aborted'),
-        pending: t('pending'),
-        scheduled: t('scheduled'),
-        running: t('running'),
-        finished: t('finished'),
-    }
-
-    return <Tag variant={variant[state]}>{title[state]}</Tag>
+    return <Tag variant={variant[state]}>
+        <Translation>{ (t) => t(state) }</Translation>
+    </Tag>
 }
 
 export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
