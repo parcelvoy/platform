@@ -1,10 +1,8 @@
 import { Context } from 'koa'
 import { AuthTypeConfig } from './Auth'
-import { getAdminByEmail } from './AdminRepository'
 import AuthProvider from './AuthProvider'
 import App from '../app'
 import { combineURLs, firstQueryParam } from '../utilities'
-import Admin from './Admin'
 import { RequestError } from '../core/errors'
 import AuthError from './AuthError'
 
@@ -40,13 +38,7 @@ export default class BasicAuthProvider extends AuthProvider {
             throw new RequestError(AuthError.InvalidCredentials)
         }
 
-        // Find admin, otherwise first time, create
-        let admin = await getAdminByEmail(email)
-        if (!admin) {
-            admin = await Admin.insertAndFetch({ email, first_name: 'Admin' })
-        }
-
         // Process the login
-        await this.login({ email, domain: 'local' }, ctx)
+        await this.login({ email, first_name: 'Admin', domain: 'local' }, ctx)
     }
 }
