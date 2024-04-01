@@ -64,7 +64,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                 label={t('campaign')}
                 subtitle={t('send_campaign_desc')}
                 get={useCallback(async id => await api.campaigns.get(projectId, id), [projectId])}
-                search={useCallback(async q => await api.campaigns.search(projectId, { q, limit: 50 }), [projectId])}
+                search={useCallback(async q => await api.campaigns.search(projectId, { q, limit: 50, filter: { type: 'trigger' } }), [projectId])}
                 value={value.campaign_id}
                 onChange={campaign_id => onChange({ ...value, campaign_id })}
                 required
