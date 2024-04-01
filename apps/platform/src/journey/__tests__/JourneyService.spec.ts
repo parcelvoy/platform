@@ -4,10 +4,11 @@ import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import Journey from '../Journey'
 import { setupProject, setupTestJourney } from './helpers'
-import { JourneyState, enterJourneysFromEvent } from '../JourneyService'
+import { enterJourneysFromEvent } from '../JourneyService'
 import { JourneyStep, JourneyStepMapParams, JourneyUserStep } from '../JourneyStep'
 import { make } from '../../rules/RuleEngine'
 import { uuid } from '../../utilities'
+import { JourneyState } from '../JourneyState'
 
 describe('JourneyService', () => {
 
