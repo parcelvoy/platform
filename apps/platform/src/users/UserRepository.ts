@@ -7,8 +7,8 @@ import { Device, DeviceParams, User, UserInternalParams } from '../users/User'
 import { uuid } from '../utilities'
 import { getRuleEventNames } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
-import { createEvent } from './UserEventRepository'
 import { Context } from 'koa'
+import { EventPostJob } from '../jobs'
 
 export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -121,10 +121,15 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
     await subscribeAll(user)
 
     // Create an event for the user creation
-    await createEvent(user, {
-        name: 'user_created',
-        data: { ...fields, data, external_id, anonymous_id },
-    }, false)
+    await EventPostJob.from({
+        project_id: projectId,
+        event: {
+            name: 'user_created',
+            external_id: user.external_id,
+            anonymous_id,
+            data: { ...fields, data, external_id, anonymous_id },
+        },
+    }).queue()
 
     return user
 }
