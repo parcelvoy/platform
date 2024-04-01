@@ -1,4 +1,5 @@
 import Model, { ModelParams } from '../core/Model'
+import { User } from '../users/User'
 import { setJourneyStepMap } from './JourneyRepository'
 import { JourneyStepMapParams } from './JourneyStep'
 
@@ -27,3 +28,9 @@ export default class Journey extends Model {
 
 export type JourneyParams = Omit<Journey, ModelParams | 'deleted_at' | 'stats' | 'stats_at'>
 export type UpdateJourneyParams = Omit<JourneyParams, 'project_id'>
+
+export interface JourneyEntranceTriggerParams {
+    entrance_id: number
+    user: Pick<User, 'email' | 'phone' | 'timezone' | 'locale'> & { external_id: string, device_token?: string }
+    event?: Record<string, unknown>
+}

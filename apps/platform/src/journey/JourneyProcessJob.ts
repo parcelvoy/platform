@@ -1,6 +1,6 @@
 import { Job } from '../queue'
 import Journey from './Journey'
-import { JourneyState } from './JourneyService'
+import { JourneyState } from './JourneyState'
 import { JourneyUserStep } from './JourneyStep'
 
 interface JourneyProcessParams {

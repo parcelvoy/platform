@@ -7,13 +7,13 @@ import { Database } from '../config/database'
 import { compileTemplate } from '../render'
 import { logger } from '../config/logger'
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
-import { JourneyState } from './JourneyService'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
 import { CampaignSend } from '../campaigns/Campaign'
 import { createEvent } from '../users/UserEventRepository'
+import { JourneyState } from './JourneyState'
 
 export class JourneyUserStep extends Model {
     user_id!: number

@@ -1,16 +1,15 @@
 import { User } from '../users/User'
-import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
-import { JourneyEntrance, JourneyGate, JourneyStep, JourneyStepChild, JourneyUserStep, journeyStepTypes } from './JourneyStep'
+import { getEntranceSubsequentSteps, getJourneySteps } from './JourneyRepository'
+import { JourneyEntrance, JourneyStep, JourneyUserStep } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
-import { shallowEqual } from '../utilities'
 import App from '../app'
-import { Job } from '../queue'
-import { getProject } from '../projects/ProjectService'
-import { getUserEventsForRules } from '../users/UserRepository'
 import Rule, { RuleTree } from '../rules/Rule'
-import { acquireLock, releaseLock } from '../core/Lock'
 import { check } from '../rules/RuleEngine'
 import JourneyProcessJob from './JourneyProcessJob'
+import Journey, { JourneyEntranceTriggerParams } from './Journey'
+import JourneyError from './JourneyError'
+import { RequestError } from '../core/errors'
+import EventPostJob from '../client/EventPostJob'
 
 export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
 
@@ -97,216 +96,50 @@ export const loadUserStepDataMap = async (referenceId: number | string) => {
     return JourneyUserStep.getDataMap(steps, [step!, ...userSteps])
 }
 
-type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job>)
+export const triggerEntrance = async (journey: Journey, payload: JourneyEntranceTriggerParams) => {
 
-export class JourneyState {
+    // look up target entrance step
+    const step = await JourneyStep.first(qb => qb
+        .where('journey_id', journey.id)
+        .where('id', payload.entrance_id))
 
-    /**
-     * Resumes journey sequence/cycle processing for a given entrance (user can have multiple entrances, be in the journey multiple times)
-     * @param entrance entrance user step
-     * @param user target user to run journey for
-     * @returns promise that resolves when processing ends
-     */
-    public static async resume(entrance: number | JourneyUserStep, user?: User) {
-
-        // find entrance
-        if (typeof entrance === 'number') {
-            entrance = (await JourneyUserStep.find(entrance))!
-        }
-        if (!entrance) {
-            return
-        }
-        if (entrance.entrance_id) {
-            entrance = (await JourneyUserStep.find(entrance.entrance_id))!
-            if (!entrance || entrance.entrance_id) {
-                return
-            }
-        }
-
-        // Entrance has already ended
-        if (entrance.ended_at) {
-            return
-        }
-
-        // Find user
-        if (!user) {
-            user = await User.find(entrance.user_id)
-        }
-        if (!user) {
-            return
-        }
-
-        // User-entrance mismatch
-        if (entrance.user_id !== user.id) {
-            return
-        }
-
-        const key = `journey:entrance:${entrance.id}`
-
-        const acquired = await acquireLock({ key })
-        if (!acquired) {
-            return
-        }
-
-        // Load all journey dependencies
-        const [steps, children, userSteps] = await Promise.all([
-            getJourneySteps(entrance.journey_id)
-                .then(steps => steps.map(s => journeyStepTypes[s.type]?.fromJson(s))),
-            getJourneyStepChildren(entrance.journey_id),
-            getEntranceSubsequentSteps(entrance.id),
-        ])
-
-        const state = new this(entrance, steps, children, [entrance, ...userSteps], user)
-
-        await state.run()
-
-        await releaseLock(key)
-
-        return state
+    // make sure target step is actually an entrance
+    if (!step || step.type !== JourneyEntrance.type) {
+        throw new RequestError(JourneyError.JourneyStepDoesNotExist)
     }
 
-    // Load step dependencies once and cache in state
-    private _events?: UserEvent[]
-    private _timezone?: string
+    // extract top-level vs custom properties user fields
+    const { external_id, email, phone, device_token, locale, timezone, ...data } = payload.user
 
-    // Batch enqueue jobs after processing
-    private _jobs: JobOrJobFunc[] = []
+    // create the user synchronously if new
+    const { user, event } = await EventPostJob.from({
+        project_id: journey.project_id,
+        event: {
+            name: 'journey_trigger',
+            external_id: payload.user.external_id,
+            data: {
+                ...payload.event,
+                journey: {
+                    id: journey.id,
+                    name: journey.name,
+                    entrance_id: payload.entrance_id,
+                },
+            },
+            user: { external_id, email, phone, data, locale, timezone },
+        },
+    }).handle<{ user: User, event: UserEvent }>()
 
-    constructor(
-        public readonly entrance: JourneyUserStep,
-        public readonly steps: JourneyStep[],
-        public readonly children: JourneyStepChild[],
-        public readonly userSteps: JourneyUserStep[],
-        public readonly user: User,
-    ) {}
+    // create new entrance
+    const entrance_id = await JourneyUserStep.insert({
+        journey_id: journey.id,
+        user_id: user.id,
+        step_id: step.id,
+        type: 'completed',
+        data: {
+            event: event?.flatten(),
+        },
+    })
 
-    private async run() {
-
-        let userStep = this.userSteps[this.userSteps.length - 1]
-        let step = this.steps.find(s => s.id === userStep.step_id)
-
-        while (step) {
-
-            if (userStep.step_id !== step.id) {
-
-                // create a placeholder for new step
-                this.userSteps.push(userStep = JourneyUserStep.fromJson({
-                    journey_id: this.entrance.journey_id,
-                    entrance_id: this.entrance.id,
-                    user_id: this.user.id,
-                    step_id: step.id,
-                    type: 'pending',
-                }))
-
-            }
-
-            // continue on if this step is completed
-            if (userStep.type === 'completed') {
-                step = await this.nextOrEnd(step)
-                continue
-            }
-
-            const copy = { ...userStep }
-
-            // delegate to step type
-            try {
-                await step.process(this, userStep)
-            } catch (err) {
-                userStep.type = 'error'
-            }
-
-            // persist and update the user step
-            if (userStep.id) {
-                // only update the step is something has changed
-                if (!shallowEqual(copy, userStep)) {
-                    userStep.parseJson(await JourneyUserStep.updateAndFetch(userStep.id, userStep))
-                }
-            } else {
-                userStep.parseJson(await JourneyUserStep.insertAndFetch(userStep))
-            }
-
-            // stop processing if latest isn't completed
-            if (userStep.type !== 'completed') {
-                // exit journey completely if a catastrophic error
-                // has occurred to avoid unpredictable behavior
-                if (userStep.type === 'error') {
-                    await this.end()
-                }
-                break
-            }
-        }
-
-        if (this._jobs.length) {
-            const jobs: Job[] = []
-            for (let j of this._jobs) {
-                if (typeof j === 'function') {
-                    j = await j(this)
-                }
-                jobs.push(j)
-            }
-            await App.main.queue.enqueueBatch(jobs)
-        }
-    }
-
-    private async nextOrEnd(step: JourneyStep) {
-        try {
-            const stepId = await step.next(this)
-            if (stepId) {
-                const step = this.steps.find(s => s.id === stepId)
-                if (step) {
-                    if (this.userSteps.find(s => s.step_id === step.id)) {
-                        // circular reference, this step has already visited
-                        await this.end()
-                        return
-                    }
-                    return step
-                }
-            }
-        } catch {}
-        await this.end()
-    }
-
-    private async end() {
-        await JourneyUserStep.update(q => q.where('id', this.entrance.id), {
-            ended_at: new Date(),
-        })
-    }
-
-    public childrenOf(stepId: number) {
-        return this.children.filter(sc => sc.step_id === stepId)
-    }
-
-    public job(job: JobOrJobFunc) {
-        this._jobs.push(job)
-    }
-
-    public async events() {
-        // lazy load, only grab the specific event types that we need for gates in this journey.
-        if (!this._events) {
-            this._events = await getUserEventsForRules(
-                [this.user.id],
-                this.steps.reduce<Rule[]>((a, c) => {
-                    if (c instanceof JourneyGate) {
-                        a.push(c.rule)
-                    }
-                    return a
-                }, []),
-            )
-        }
-        return this._events
-    }
-
-    public async timezone() {
-        if (!this._timezone) {
-            this._timezone = this.user.timezone
-        }
-        if (!this._timezone) {
-            this._timezone = (await getProject(this.user.project_id))!.timezone
-        }
-        return this._timezone!
-    }
-
-    public stepData() {
-        return JourneyUserStep.getDataMap(this.steps, this.userSteps)
-    }
+    // trigger async processing
+    await JourneyProcessJob.from({ entrance_id }).queue()
 }
