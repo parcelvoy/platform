@@ -1,4 +1,4 @@
-import { User, UserParams } from './User'
+import { User, UserInternalParams } from './User'
 import { Job } from '../queue'
 import { createUser, getUsersFromIdentity } from './UserRepository'
 import { addUserToList, getList, updateUsersLists } from '../lists/ListService'
@@ -7,7 +7,7 @@ import { matchingRulesForUser } from '../rules/RuleService'
 
 interface UserPatchTrigger {
     project_id: number
-    user: UserParams
+    user: UserInternalParams
     options?: {
         join_list_id?: number
         skip_list_updating?: boolean

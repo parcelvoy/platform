@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next'
 
 export default function UserDetail() {
     const { t } = useTranslation()
-    const [{ external_id, email, phone, timezone, locale, devices, data }] = useContext(UserContext)
+    const [{ external_id, email, phone, timezone, locale, created_at, devices, data }] = useContext(UserContext)
 
     return <>
         <Heading size="h3" title={t('details')} />
         <section className="container">
-            <JsonPreview value={{ external_id, email, phone, timezone, locale, devices, ...data }} />
+            <JsonPreview value={{ external_id, email, phone, timezone, locale, devices, created_at, ...data }} />
         </section>
     </>
 }

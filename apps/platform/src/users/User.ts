@@ -95,3 +95,4 @@ export class User extends Model {
 }
 
 export type UserParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' |'locale' | 'data'>> & ClientIdentity
+export type UserInternalParams = Partial<Pick<User, 'email' | 'phone' | 'timezone' |'locale' | 'created_at' | 'data'>> & ClientIdentity
