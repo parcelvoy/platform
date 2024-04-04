@@ -26,9 +26,12 @@ exports.up = async function(knex) {
             .after('id')
     })
 
-    const orgId = await knex('organizations').insert({ id: 1, username: 'local' })
-    await knex('projects').update({ organization_id: orgId }).whereNull('organization_id')
-    await knex('admins').update({ organization_id: orgId }).whereNull('organization_id')
+    const admins = await knex('admins').count({ count: '*' }).first()
+    if (admins.count > 1) {
+        const orgId = await knex('organizations').insert({ id: 1, username: 'local' })
+        await knex('projects').update({ organization_id: orgId }).whereNull('organization_id')
+        await knex('admins').update({ organization_id: orgId }).whereNull('organization_id')
+    }
 }
 
 exports.down = async function(knex) {
