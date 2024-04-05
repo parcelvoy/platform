@@ -70,9 +70,6 @@ export const clickWrapHtml = (html: string, params: TrackedLinkParams) => {
     while ((link = regex.exec(html)) !== null) {
         const redirect = link[2]
 
-        // Don't wrap already wrapped links
-        if (redirect.startsWith(App.main.env.baseUrl)) continue
-
         // Otherwise create a link wrapper around the value
         html = html.replace(
             redirect,
