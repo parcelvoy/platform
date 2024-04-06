@@ -4,7 +4,6 @@ import { WebhookTemplate } from '../../render/Template'
 import { updateSendState } from '../../campaigns/CampaignService'
 import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadWebhookChannel } from '.'
-import { JourneyUserStep } from '../../journey/JourneyStep'
 import { releaseLock } from '../../core/Lock'
 
 export default class WebhookJob extends Job {
@@ -39,15 +38,6 @@ export default class WebhookJob extends Job {
         try {
             const result = await channel.send(template, data)
             await finalizeSend(data, result)
-
-            if (result.response
-                && trigger.reference_id
-                && trigger.reference_type === 'journey'
-            ) {
-                await JourneyUserStep.update(q => q.where('id', trigger.reference_id), {
-                    data: { response: result.response },
-                })
-            }
         } catch (error: any) {
             await failSend(data, error)
         } finally {

@@ -1,6 +1,7 @@
 {
     "abort_campaign": "Cancelar campaña",
     "aborted": "Cancellado",
+    "action": "Acción",
     "add_admin": "Añadir Admin",
     "add_admin_description": "Añade un nuevo administrador a esta organización. Los administradores tienen acceso completo a todos los proyectos y ajustes, los miembros sólo pueden acceder a los proyectos de los que forman parte.",
     "add_list": "Añadir lista",

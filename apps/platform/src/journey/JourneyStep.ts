@@ -11,7 +11,7 @@ import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
-import { CampaignSend } from '../campaigns/Campaign'
+import { CampaignSend, CampaignSendReferenceType } from '../campaigns/Campaign'
 import { createEvent } from '../users/UserEventRepository'
 import { JourneyState } from './JourneyState'
 
@@ -268,13 +268,18 @@ export class JourneyAction extends JourneyStep {
         state.job(async () => {
             let send_id = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`).then(s => s?.id)
 
+            const reference = {
+                reference_id: `${userStep.id}`,
+                reference_type: 'journey' as CampaignSendReferenceType,
+            }
+
             if (!send_id) {
                 send_id = await CampaignSend.insert({
                     campaign_id: campaign.id,
                     user_id: state.user.id,
                     state: 'pending',
                     send_at: new Date(),
-                    reference_id: `${userStep.id}`,
+                    ...reference,
                 })
             }
 
@@ -282,7 +287,7 @@ export class JourneyAction extends JourneyStep {
                 campaign,
                 user: state.user,
                 send_id,
-                reference_id: `${userStep.id}`,
+                ...reference,
             })
         })
     }

@@ -145,33 +145,28 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
     )
 }
 
-export const notifyJourney = async (reference_id: string, response?: any) => {
-
-    const referenceId = parseInt(reference_id, 10)
-    // save response into user step
-    if (response) {
-        await JourneyUserStep.update(q => q.where('id', referenceId), {
-            data: {
-                response,
-            },
-        })
-    }
-
-    // trigger processing of this journey entrance
-    await JourneyProcessJob.from({ entrance_id: referenceId }).queue()
-}
-
 export const failSend = async ({ campaign, user, context }: MessageTriggerHydrated<TemplateType>, error: Error, shouldNotify = (_: any) => true) => {
+
+    // Update send record
     await updateSendState({
         campaign,
         user,
         reference_id: context.reference_id,
         state: 'failed',
     })
+
+    // Create an event on the failure
     await createEvent(user, {
         name: campaign.eventName('failed'),
         data: { ...context, error },
     }, true, ({ result, ...data }) => data)
+
+    // If this send is part of a journey, notify the journey
+    if (context.reference_id && context.reference_type === 'journey') {
+        await notifyJourney(context.reference_id)
+    }
+
+    // Notify of the error if it's a critical one
     if (shouldNotify(error)) App.main.error.notify(error)
 }
 
@@ -185,13 +180,31 @@ export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, r
         reference_id: context.reference_id,
     })
 
-    // Create an event on the user about the email
+    // Create an event on the user about the send
     await createEvent(user, {
         name: campaign.eventName('sent'),
         data: { ...context, result },
     }, true, ({ result, ...data }) => data)
 
-    if (context.reference_id) {
-        await notifyJourney(context.reference_id)
+    // If this send is part of a journey, notify the journey
+    if (context.reference_id && context.reference_type === 'journey') {
+        await notifyJourney(context.reference_id, campaign.channel === 'webhook' ? result : undefined)
     }
+}
+
+export const notifyJourney = async (reference_id: string, response?: any) => {
+
+    const referenceId = parseInt(reference_id, 10)
+
+    // Save response into user step
+    if (response) {
+        await JourneyUserStep.update(q => q.where('id', referenceId), {
+            data: {
+                response,
+            },
+        })
+    }
+
+    // Trigger processing of this journey entrance
+    await JourneyProcessJob.from({ entrance_id: referenceId }).queue()
 }
