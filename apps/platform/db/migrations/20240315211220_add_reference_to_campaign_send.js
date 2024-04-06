@@ -6,7 +6,7 @@ exports.up = async function(knex) {
             .defaultTo('0')
     })
 
-    await knex.raw('UPDATE campaign_sends SET reference_id = user_step_id, reference_type = "journal"')
+    await knex.raw('UPDATE campaign_sends SET reference_id = user_step_id, reference_type = "journey"')
 
     await knex.schema.alterTable('campaign_sends', function(table) {
         table.unique(['user_id', 'campaign_id', 'reference_id'])
