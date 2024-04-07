@@ -186,6 +186,7 @@
     "minute": "Minute",
     "minute_one": "{{count}} Minute",
     "minute_other": "{{count}} Minutes",
+    "missing": "Missing",
     "name": "Name",
     "new_team_member": "New Team Member",
     "no_providers": "No Providers",

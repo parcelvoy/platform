@@ -186,6 +186,7 @@
     "minute": "Minuto",
     "minute_one": "{{count}} Minuto",
     "minute_other": "{{count}} Minutos",
+    "missing": "Falta el Requisito",
     "name": "Nombre",
     "new_team_member": "Nuevo miembro del equipo",
     "no_providers": "Sin proveedores",
