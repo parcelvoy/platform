@@ -13,20 +13,22 @@ import TextInput from '../../ui/form/TextInput'
 import api from '../../api'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import JsonField from '../../ui/form/JsonField'
-import { Alert } from '../../ui'
+import { Alert, Tag } from '../../ui'
 import { useTranslation } from 'react-i18next'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => {
     const { t } = useTranslation()
-    return <InfoTable rows={{
-        [t('from_email')]: data.from?.address,
-        [t('from_name')]: data.from?.name,
-        [t('reply_to')]: data.reply_to,
-        [t('cc')]: data.cc,
-        [t('bcc')]: data.bcc,
-        [t('subject')]: data.subject,
-        [t('preheader')]: data.preheader,
-    }} />
+    return <>
+        <InfoTable rows={{
+            [t('from_email')]: data.from?.address ?? <Tag variant="warn">{t('missing')}</Tag>,
+            [t('from_name')]: data.from?.name ?? <Tag variant="warn">{t('missing')}</Tag>,
+            [t('reply_to')]: data.reply_to,
+            [t('cc')]: data.cc,
+            [t('bcc')]: data.bcc,
+            [t('subject')]: data.subject ?? <Tag variant="warn">{t('missing')}</Tag>,
+            [t('preheader')]: data.preheader,
+        }} />
+    </>
 }
 
 const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) => {
@@ -52,6 +54,7 @@ const EmailForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> })
 }
 
 const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const segmentLength = 160
     const optOutLength = project.text_opt_out_message?.length ?? 0
@@ -66,7 +69,7 @@ const TextTable = ({ data: { text } }: { data: TextTemplateData }) => {
 
     return <>
         <InfoTable rows={{
-            Text: text,
+            Text: text ?? <Tag variant="warn">{t('missing')}</Tag>,
         }} />
         <Heading title="Send Details" size="h4" />
         {baseLength > segmentLength && <Alert variant="plain" title="Note" body={`Carriers calculate your send rate as segments per second not messages per second. This campaign will take approximately ${Math.ceil(baseLength / segmentLength)}x longer to send due to its length.`} />}
@@ -90,8 +93,8 @@ const TextForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
 const PushTable = ({ data }: { data: PushTemplateData }) => {
     const { t } = useTranslation()
     return <InfoTable rows={{
-        [t('title')]: data.title,
-        [t('body')]: data.body,
+        [t('title')]: data.title ?? <Tag variant="warn">{t('missing')}</Tag>,
+        [t('body')]: data.body ?? <Tag variant="warn">{t('missing')}</Tag>,
         [t('deeplink')]: data.url,
         [t('raw_json')]: JSON.stringify(data.custom),
     }} />
@@ -126,8 +129,8 @@ const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
 const WebhookTable = ({ data }: { data: WebhookTemplateData }) => {
     const { t } = useTranslation()
     return <InfoTable rows={{
-        [t('method')]: data.method,
-        [t('endpoint')]: data.endpoint,
+        [t('method')]: data.method ?? <Tag variant="warn">{t('missing')}</Tag>,
+        [t('endpoint')]: data.endpoint ?? <Tag variant="warn">{t('missing')}</Tag>,
         [t('headers')]: JSON.stringify(data.headers),
         [t('body')]: JSON.stringify(data.body),
     }} />

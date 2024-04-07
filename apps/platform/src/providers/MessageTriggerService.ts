@@ -65,6 +65,7 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         return
     }
 
+    // Create context object from campaign details
     const context = {
         campaign_id: campaign.id,
         campaign_name: campaign.name,
@@ -81,7 +82,8 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         ? await loadUserStepDataMap(reference_id)
         : {}
 
-    return {
+    // Create the hydrated message object
+    const response = {
         campaign,
         context,
         event,
@@ -90,6 +92,15 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
         project,
         user,
     }
+
+    // Check that the template is valid and capable of being sent
+    const [isValid, error] = template.map().validate()
+    if (!isValid) {
+        await failSend(response, error, () => false)
+        return
+    }
+
+    return response
 }
 
 export const messageLock = (campaign: Campaign, user: User) => `parcelvoy:send:${campaign.id}:${user.id}`
@@ -145,7 +156,7 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
     )
 }
 
-export const failSend = async ({ campaign, user, context }: MessageTriggerHydrated<TemplateType>, error: Error, shouldNotify = (_: any) => true) => {
+export const failSend = async ({ campaign, user, context }: MessageTriggerHydrated<TemplateType>, error?: Error, shouldNotify = (_: any) => true) => {
 
     // Update send record
     await updateSendState({
@@ -167,7 +178,7 @@ export const failSend = async ({ campaign, user, context }: MessageTriggerHydrat
     }
 
     // Notify of the error if it's a critical one
-    if (shouldNotify(error)) App.main.error.notify(error)
+    if (error && shouldNotify(error)) App.main.error.notify(error)
 }
 
 export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, result: any) => {
