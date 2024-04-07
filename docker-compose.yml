@@ -47,6 +47,8 @@ services:
       RUNNER: 'api'
       APP_SECRET: ${APP_SECRET}
       PORT: 3001
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_COMPILED_MESSAGE: ${LOG_COMPILED_MESSAGE:-true}
       DB_CLIENT: ${DB_CLIENT}
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}
@@ -112,6 +114,8 @@ services:
       BASE_URL: ${BASE_URL}
       RUNNER: 'worker'
       APP_SECRET: ${APP_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_COMPILED_MESSAGE: ${LOG_COMPILED_MESSAGE:-true}
       DB_CLIENT: ${DB_CLIENT}
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}

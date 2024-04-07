@@ -14,6 +14,7 @@ export interface Env {
     config: {
         monoDocker: boolean
         multiOrg: boolean
+        logCompiledMessage: boolean
     }
     db: DatabaseConfig
     queue: QueueConfig
@@ -59,6 +60,7 @@ export default (type?: EnvType): Env => {
         config: {
             monoDocker: (process.env.MONO ?? 'false') === 'true',
             multiOrg: (process.env.MULTI_ORG ?? 'false') === 'true',
+            logCompiledMessage: (process.env.LOG_COMPILED_MESSAGE ?? 'false') === 'true',
         },
         db: {
             host: process.env.DB_HOST!,

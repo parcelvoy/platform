@@ -1,3 +1,4 @@
+import App from '../../app'
 import { Variables, Wrap } from '../../render'
 import { EmailTemplate } from '../../render/Template'
 import { encodeHashid } from '../../utilities'
@@ -37,7 +38,7 @@ export default class EmailChannel {
         const result = await this.provider.send(email)
         return {
             ...result,
-            message: compiled,
+            message: App.main.env.config.logCompiledMessage ? compiled : undefined,
         }
     }
 
