@@ -49,7 +49,7 @@ export const importUsers = async ({ project_id, stream, list_id }: UserImport) =
 
     // Generate preliminary list count
     if (list_id) {
-        await ListStatsJob.from(list_id, project_id).queue()
+        await ListStatsJob.from(list_id, project_id, true).delay(2000).queue()
     }
 }
 
