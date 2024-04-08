@@ -64,13 +64,12 @@ export const encodedLinkToParts = async (link: string | URL): Promise<TrackedLin
 }
 
 export const clickWrapHtml = (html: string, params: TrackedLinkParams) => {
-    const regex = /href\s*=\s*(['"])(https?:\/\/.+?)\1/gi
+    const regex = /a.*href\s*=\s*(['"])(https?:\/\/.+?)\1/gi
     let link
 
     while ((link = regex.exec(html)) !== null) {
         const redirect = link[2]
 
-        // Otherwise create a link wrapper around the value
         html = html.replace(
             redirect,
             paramsToEncodedLink({ ...params, redirect, path: 'c' }),
