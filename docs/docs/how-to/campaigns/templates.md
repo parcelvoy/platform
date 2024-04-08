@@ -471,3 +471,17 @@ Decode a Uniform Resource Identifier (URI) component.
 ```handlebars
 {{ decodeURI url }}
 ```
+
+### Subscription
+
+#### Unsubscribe Email
+Get a url to unsubscribe a user from a given email subscription channel.
+```handlebars
+{{ unsubscribeEmailUrl }}
+```
+
+#### Preference Center
+Get a url to navigate a user to a page where they can manage what subscription channels they are subscribed to.
+```handlebars
+{{ preferencesUrl }}
+```
