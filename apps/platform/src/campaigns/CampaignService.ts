@@ -4,14 +4,14 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, SentCampaign } from './Campaign'
 import List, { UserList } from '../lists/List'
 import Subscription, { SubscriptionState, UserSubscription } from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
-import { getSubscription } from '../subscriptions/SubscriptionService'
+import { getSubscription, getUserSubscriptionState } from '../subscriptions/SubscriptionService'
 import { chunk, crossTimezoneCopy, pick, shallowEqual } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
@@ -176,12 +176,39 @@ export const getCampaignUsers = async (id: number, params: PageParams, projectId
     )
 }
 
+export const triggerCampaignSend = async ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign) => {
+    const userId = user instanceof User ? user.id : user
+    const eventId = event instanceof UserEvent ? event?.id : event
+
+    const subscriptionState = await getUserSubscriptionState(userId, campaign.subscription_id)
+    if (subscriptionState === SubscriptionState.unsubscribed) return
+
+    const reference = { reference_id, reference_type }
+    if (!send_id) {
+        send_id = await CampaignSend.insert({
+            campaign_id: campaign.id,
+            user_id: userId,
+            state: 'pending',
+            send_at: new Date(),
+            ...reference,
+        })
+    }
+
+    return sendCampaignJob({
+        campaign,
+        user: userId,
+        event: eventId,
+        send_id,
+        ...reference,
+    })
+}
+
 interface SendCampaign {
     campaign: Campaign
     user: User | number
     event?: UserEvent | number
     send_id?: number
-    reference_type?: string
+    reference_type?: CampaignSendReferenceType
     reference_id?: string
 }
 

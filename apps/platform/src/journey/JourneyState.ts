@@ -10,7 +10,7 @@ import { shallowEqual } from '../utilities'
 import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
 import { JourneyGate, JourneyStep, JourneyStepChild, JourneyUserStep, journeyStepTypes } from './JourneyStep'
 
-type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job>)
+type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job | undefined>)
 
 export class JourneyState {
 
@@ -110,7 +110,6 @@ export class JourneyState {
                     step_id: step.id,
                     type: 'pending',
                 }))
-
             }
 
             // continue on if this step is completed
@@ -138,9 +137,9 @@ export class JourneyState {
                 userStep.parseJson(await JourneyUserStep.insertAndFetch(userStep))
             }
 
-            // stop processing if latest isn't completed
+            // Stop processing if latest isn't completed
             if (userStep.type !== 'completed') {
-                // exit journey completely if a catastrophic error
+                // Exit journey completely if a catastrophic error
                 // has occurred to avoid unpredictable behavior
                 if (userStep.type === 'error') {
                     await this.end()
@@ -153,7 +152,9 @@ export class JourneyState {
             const jobs: Job[] = []
             for (let j of this._jobs) {
                 if (typeof j === 'function') {
-                    j = await j(this)
+                    const i = await j(this)
+                    if (!i) continue
+                    j = i
                 }
                 jobs.push(j)
             }

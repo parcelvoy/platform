@@ -42,11 +42,11 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     // sent, abort this job to prevent duplicate sends
     if (send && send.hasCompleted) return
 
-    // Fetch campaign and templates
+    // Fetch campaign
     const campaign = await Campaign.find(campaign_id)
     if (!campaign) return
 
-    // Get all templates then filter for users best option
+    // Get all templates
     const templates = await Template.all(
         qb => qb.where('campaign_id', campaign_id),
     )
