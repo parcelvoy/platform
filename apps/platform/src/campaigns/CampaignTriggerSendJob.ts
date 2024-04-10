@@ -55,6 +55,6 @@ export default class CampaignTriggerSendJob extends Job {
             reference_id: uuid(),
             reference_type: 'trigger',
             event: eventId,
-        }).then(job => job.queue())
+        }).then(job => job?.queue())
     }
 }
