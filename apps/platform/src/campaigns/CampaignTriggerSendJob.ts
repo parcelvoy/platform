@@ -1,9 +1,8 @@
 import { Job } from '../queue'
-import { CampaignSend } from './Campaign'
 import UserDeviceJob from '../users/UserDeviceJob'
 import EventPostJob from '../client/EventPostJob'
 import { uuid } from '../utilities'
-import { getCampaign, sendCampaignJob } from './CampaignService'
+import { getCampaign, triggerCampaignSend } from './CampaignService'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 
@@ -50,17 +49,12 @@ export default class CampaignTriggerSendJob extends Job {
             }).handle()
         }
 
-        const reference_id = uuid()
-        const send_id = await CampaignSend.insert({
-            campaign_id,
-            user_id: userId,
-            state: 'pending',
-            send_at: new Date(),
+        await triggerCampaignSend({
+            campaign,
+            user: userId,
+            reference_id: uuid(),
             reference_type: 'trigger',
-            reference_id,
-        })
-
-        await sendCampaignJob({ campaign, user: userId, send_id, reference_id, event: eventId }).queue()
-
+            event: eventId,
+        }).then(job => job?.queue())
     }
 }

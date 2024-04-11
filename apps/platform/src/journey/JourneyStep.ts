@@ -1,7 +1,7 @@
 import { add, addDays, addHours, addMinutes, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
-import { getCampaign, getCampaignSend, sendCampaignJob } from '../campaigns/CampaignService'
+import { getCampaign, getCampaignSend, triggerCampaignSend } from '../campaigns/CampaignService'
 import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
 import { Database } from '../config/database'
 import { compileTemplate } from '../render'
@@ -11,7 +11,6 @@ import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
-import { CampaignSend, CampaignSendReferenceType } from '../campaigns/Campaign'
 import { createEvent } from '../users/UserEventRepository'
 import { JourneyState } from './JourneyState'
 
@@ -266,29 +265,21 @@ export class JourneyAction extends JourneyStep {
 
         // defer job construction so that we have the journey_user_step.id value
         state.job(async () => {
-            let send_id = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`).then(s => s?.id)
+            const send_id = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`).then(s => s?.id)
 
-            const reference = {
-                reference_id: `${userStep.id}`,
-                reference_type: 'journey' as CampaignSendReferenceType,
-            }
-
-            if (!send_id) {
-                send_id = await CampaignSend.insert({
-                    campaign_id: campaign.id,
-                    user_id: state.user.id,
-                    state: 'pending',
-                    send_at: new Date(),
-                    ...reference,
-                })
-            }
-
-            return sendCampaignJob({
+            const send = triggerCampaignSend({
                 campaign,
                 user: state.user,
                 send_id,
-                ...reference,
+                reference_id: `${userStep.id}`,
+                reference_type: 'journey',
             })
+
+            if (!send) {
+                userStep.type = 'error'
+            }
+
+            return send
         })
     }
 }

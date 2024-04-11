@@ -34,6 +34,11 @@ export const getUserSubscriptions = async (id: number, params: PageParams, proje
     )
 }
 
+export const getUserSubscriptionState = async (userId: number, subscriptionId: number) => {
+    const subscription = await UserSubscription.first(qb => qb.where('user_id', userId).where('subscription_id', subscriptionId))
+    return subscription?.state ?? SubscriptionState.subscribed
+}
+
 export const allSubscriptions = async (projectId: number, channels?: ChannelType[]) => {
     return await Subscription.all(
         qb => {
