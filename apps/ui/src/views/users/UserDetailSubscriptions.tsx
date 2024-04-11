@@ -19,7 +19,7 @@ export default function UserDetailSubscriptions() {
     const [search, _, reload] = useResolver(useCallback(async () => await api.users.subscriptions(project.id, user.id, params), [api.users, project, params]))
 
     const updateSubscription = async (subscription_id: number, state: SubscriptionState) => {
-        if (!confirm(t('user_change_subscription_status'))) return
+        if (!confirm(t('users_change_subscription_status'))) return
         await updateSubscriptions([{ subscription_id, state }])
     }
 

@@ -10,10 +10,9 @@ import Tag, { TagVariant } from '../../ui/Tag'
 import Tile, { TileGrid } from '../../ui/Tile'
 import { formatDate } from '../../utils'
 import { useRoute } from '../router'
-import { useTranslation } from 'react-i18next'
+import { Translation, useTranslation } from 'react-i18next'
 
 export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
-    const { t } = useTranslation()
     const variant: Record<CampaignSendState, TagVariant | undefined> = {
         pending: 'info',
         throttled: 'warn',
@@ -21,16 +20,9 @@ export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
         sent: 'success',
         failed: 'error',
     }
-
-    const title: Record<CampaignSendState, string> = {
-        pending: t('pending'),
-        throttled: t('throttled'),
-        bounced: t('bounced'),
-        sent: t('sent'),
-        failed: t('failed'),
-    }
-
-    return <Tag variant={variant[state]}>{title[state]}</Tag>
+    return <Tag variant={variant[state]}>
+        <Translation>{ (t) => t(state) }</Translation>
+    </Tag>
 }
 
 export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
