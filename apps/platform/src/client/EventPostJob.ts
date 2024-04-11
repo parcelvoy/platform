@@ -32,7 +32,7 @@ export default class EventPostJob extends Job {
         let user = await getUserFromClientId(project_id, identity)
 
         // If no user exists, create one if we have enough information
-        if (!user) {
+        if (!user || event.user) {
             user = await UserPatchJob.from({
                 project_id,
                 user: { ...(event.user ?? {}), ...identity },
