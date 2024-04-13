@@ -1,7 +1,7 @@
 import App from '../../app'
 import { Variables, Wrap } from '../../render'
 import { EmailTemplate } from '../../render/Template'
-import { encodeHashid } from '../../utilities'
+import { encodeHashid, pick } from '../../utilities'
 import { Email } from './Email'
 import EmailProvider from './EmailProvider'
 
@@ -37,7 +37,16 @@ export default class EmailChannel {
         }
         const result = await this.provider.send(email)
         return {
-            ...result,
+            ...pick(result, [
+                'messageId',
+                'messageSize',
+                'messageTime',
+                'envelope',
+                'accepted',
+                'rejected',
+                'pending',
+                'response',
+            ]),
             message: App.main.env.config.logCompiledMessage ? compiled : undefined,
         }
     }
