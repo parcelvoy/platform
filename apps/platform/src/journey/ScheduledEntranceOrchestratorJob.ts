@@ -16,6 +16,7 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
             .whereNull('journeys.deleted_at')
             .where('journey_steps.type', JourneyEntrance.type)
             .whereJsonPath('journey_steps.data', '$.trigger', '=', 'schedule')
+            .whereNotNull('journey_steps.next_scheduled_at')
             .where('journey_steps.next_scheduled_at', '<=', new Date()),
         )
 
