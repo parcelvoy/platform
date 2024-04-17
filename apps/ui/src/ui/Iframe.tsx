@@ -8,7 +8,7 @@ interface IframeProps {
 export default function Iframe({ content, fullHeight = false }: IframeProps) {
     const ref = useRef<HTMLIFrameElement>(null)
 
-    useEffect(() => {
+    const setBody = () => {
         const frame = ref.current
         if (frame) {
             if (frame.contentDocument?.body) {
@@ -18,7 +18,9 @@ export default function Iframe({ content, fullHeight = false }: IframeProps) {
                 frame.style.minHeight = `${frame.contentWindow?.document.documentElement.scrollHeight}px`
             }
         }
-    }, [content])
+    }
+
+    useEffect(() => setBody(), [content])
 
     return (
         <iframe
@@ -26,6 +28,7 @@ export default function Iframe({ content, fullHeight = false }: IframeProps) {
             frameBorder="0"
             sandbox="allow-scripts allow-same-origin"
             ref={ref}
-            style={{ width: '100%' }} />
+            style={{ width: '100%' }}
+            onLoad={() => setBody()} />
     )
 }
