@@ -156,6 +156,9 @@ const api = {
         pathSuggestions: async (projectId: number | string) => await client
             .get<RuleSuggestions>(`${projectUrl(projectId)}/data/paths`)
             .then(r => r.data),
+        rebuildPathSuggestions: async (projectId: number | string) => await client
+            .post(`${projectUrl(projectId)}/data/paths/sync`)
+            .then(r => r.data),
     },
 
     apiKeys: createProjectEntityPath<ProjectApiKey, ProjectApiKeyParams, Omit<ProjectApiKeyParams, 'scope'>>('keys'),

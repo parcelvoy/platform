@@ -39,13 +39,19 @@ export function addLeafPaths(set: Set<string>, value: any, path = '$') {
         }
     } else if (value && typeof value === 'object') {
         for (const [key, item] of Object.entries(value)) {
-            addLeafPaths(set, item, path + '.' + key)
+            addLeafPaths(set, item, joinPath(path, key))
         }
     } else {
         if (path !== '$') {
             set.add(path)
         }
     }
+}
+
+const joinPath = (path: string, key: string) => {
+    const isValid = key.match(/^[\p{L}][\p{L}\p{N}_]*$/u)
+    if (isValid) return `${path}.${key}`
+    return `${path}['${key}']`
 }
 
 interface SyncProjectRulePathsParams {
@@ -57,7 +63,6 @@ export async function syncUserDataPaths({
     project_id,
     updatedAfter,
 }: SyncProjectRulePathsParams) {
-
     await App.main.db.transaction(async trx => {
 
         const userPaths = new Set<string>()
@@ -75,7 +80,7 @@ export async function syncUserDataPaths({
             }
         })
         for (const path of reservedPaths.user) {
-            userPaths.add(`$.${path}`)
+            userPaths.add(joinPath('$', path))
         }
 
         const eventQuery = UserEvent.query(trx)
@@ -93,7 +98,7 @@ export async function syncUserDataPaths({
                 }
                 addLeafPaths(set, data)
                 for (const path of reservedPaths.event) {
-                    set.add(`$.${path}`)
+                    set.add(joinPath('$', path))
                 }
             }
         })
@@ -135,6 +140,7 @@ export async function syncUserDataPaths({
                 }, trx)
             }
         }
+
         for (const [name, paths] of eventPaths.entries()) {
             for (const path of paths) {
                 if (!existing.find(e => e.type === 'event' && e.path === path && e.name === name)) {

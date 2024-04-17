@@ -6,7 +6,7 @@ import { visit } from '../utilities'
 export const queryValue = <T>(value: Record<string, unknown>, rule: RuleTree, cast: (item: any) => T): T[] => {
     let path = rule.path
     if (!value || !path) return []
-    if (!path.startsWith('$.')) path = '$.' + path
+    if (!path.startsWith('$.') && !path.startsWith('$[')) path = '$.' + path
     return jsonpath.query(value, path).map(v => cast(v))
 }
 
