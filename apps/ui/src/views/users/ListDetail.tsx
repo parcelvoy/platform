@@ -42,8 +42,8 @@ export default function ListDetail() {
     const state = useSearchTableState(useCallback(async params => await api.lists.users(project.id, list.id, params), [list, project]))
     const route = useRoute()
 
-    const saveList = async ({ name, rule, published }: ListUpdateParams) => {
-        const value = await api.lists.update(project.id, list.id, { name, rule, published })
+    const saveList = async ({ name, rule, published, tags }: ListUpdateParams) => {
+        const value = await api.lists.update(project.id, list.id, { name, rule, published, tags })
         setIsEditListOpen(false)
         setIsDialogOpen(true)
         setList(value)
@@ -110,9 +110,9 @@ export default function ListDetail() {
                 onClose={() => setIsEditListOpen(false)}
                 title={t('edit_list')}>
                 <FormWrapper<Omit<ListUpdateParams, 'rule'>>
-                    onSubmit={async ({ name, published }) => await saveList({ name, published })}
+                    onSubmit={async ({ name, published, tags }) => await saveList({ name, published, tags })}
                     submitLabel={t('save')}
-                    defaultValues={{ name: list.name }}
+                    defaultValues={{ name: list.name, tags: list.tags }}
                 >
                     {form => (
                         <>

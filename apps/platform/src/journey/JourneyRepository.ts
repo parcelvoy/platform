@@ -61,7 +61,7 @@ export const getJourney = async (id: number, projectId: number): Promise<Journey
 }
 
 export const updateJourney = async (id: number, { tags, ...params }: UpdateJourneyParams, db = App.main.db): Promise<Journey> => {
-    return db.transaction(async trx => {
+    const journey = await db.transaction(async trx => {
         const journey = await Journey.updateAndFetch(id, params, trx)
         if (tags) {
             await setTags({
@@ -73,6 +73,8 @@ export const updateJourney = async (id: number, { tags, ...params }: UpdateJourn
         }
         return journey
     })
+
+    return await getJourney(id, journey.project_id)
 }
 
 export const deleteJourney = async (id: number, projectId: number): Promise<void> => {

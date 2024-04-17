@@ -140,7 +140,7 @@ export const updateList = async (list: List, { tags, rule, published, ...params 
         await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
-    return list
+    return await getList(list.id, list.project_id)
 }
 
 export const archiveList = async (id: number, projectId: number) => {
