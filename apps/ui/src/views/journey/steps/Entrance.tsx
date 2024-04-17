@@ -103,14 +103,19 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
             let s = ''
             if (schedule) {
                 try {
-                    s = RRule.fromString(schedule).toText()
+                    const rule = RRule.fromString(schedule)
+                    if (rule.options.freq) {
+                        s = rule.toText()
+                    } else {
+                        s = 'once'
+                    }
                 } catch {}
             }
             return (
                 <div style={{ maxWidth: 300 }}>
                     {t('entrance_add_everyone_from') + ' '}
                     <strong>
-                        {list?.name ?? '--'}
+                        {list?.name ?? <>&#8211;</>}
                     </strong>
                     {' '}
                     {s}
@@ -215,7 +220,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     )
                 }
                 {
-                    !!stepId && (
+                    !!stepId && value.trigger === 'none' && (
                         <div style={{ maxWidth: 600 }}>
                             <CodeExample
                                 title={t('entrance_trigger')}

@@ -1,4 +1,4 @@
-import { add, addDays, addHours, addMinutes, isFuture, isPast, parse } from 'date-fns'
+import { add, addDays, addHours, addMinutes, isEqual, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { User } from '../users/User'
 import { getCampaign, getCampaignSend, triggerCampaignSend } from '../campaigns/CampaignService'
@@ -128,6 +128,16 @@ export class JourneyEntrance extends JourneyStep {
 
         if (this.schedule) {
             try {
+                const rule = RRule.fromString(this.schedule)
+
+                // If there is no frequency, only run once
+                if (!rule.options.freq) {
+                    if (isEqual(rule.options.dtstart, after)) {
+                        return null
+                    }
+                    return rule.options.dtstart
+                }
+
                 return RRule.fromString(this.schedule).after(after)
             } catch (err) {
                 App.main.error.notify(err as Error, {

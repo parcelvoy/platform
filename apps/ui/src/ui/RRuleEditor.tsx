@@ -6,8 +6,13 @@ import RadioInput from './form/RadioInput'
 import { format } from 'date-fns'
 import { FieldOption } from './form/Field'
 import { MultiOptionField } from './form/MultiOptionField'
+import Heading from './Heading'
 
 const frequencyOptions: FieldOption[] = [
+    {
+        key: 'once',
+        label: 'Once',
+    },
     {
         key: Frequency.DAILY,
         label: 'Daily',
@@ -53,68 +58,89 @@ interface RRuleEditorProps extends ControlledProps<string> {
     label?: ReactNode
 }
 
-export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps) {
+type RuleFrequency = 'once' | Frequency
+type RuleOptions = Omit<Options, 'freq'> & { freq: RuleFrequency }
 
-    const options = useMemo<Partial<Options>>(() => {
+export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps) {
+    const options = useMemo<Partial<RuleOptions>>(() => {
         if (value) {
             try {
-                return RRule.fromString(value).origOptions
+                const options = RRule.fromString(value).origOptions as RuleOptions
+                if (options.freq === undefined) {
+                    options.freq = 'once'
+                }
+                return options
             } catch {}
         }
-        return {} satisfies Partial<Options>
+        return {
+            freq: 'once',
+        } satisfies Partial<RuleOptions>
     }, [value])
+
+    const setValues = ({ freq, ...options }: Partial<RuleOptions>) => {
+        onChange(RRule.optionsToString({
+            ...options,
+            freq: freq === 'once' ? undefined : freq,
+        }))
+    }
 
     return (
         <fieldset style={{ border: 0, padding: 0 }}>
-            <legend>{label}</legend>
+            <legend>
+                <Heading size="h4" title={label} />
+            </legend>
             <RadioInput
                 label="Frequency"
                 required
-                value={options.freq}
+                value={options.freq as RuleFrequency}
                 options={frequencyOptions}
-                onChange={freq => onChange(RRule.optionsToString({ ...options, freq }))}
+                onChange={(freq: RuleFrequency) => setValues({ ...options, freq })}
             />
             <TextInput
                 name="startDate"
-                label="Start Date"
+                label={options.freq !== 'once' ? 'Start Date' : 'On Date'}
                 type="date"
                 required
                 value={options.dtstart ? format(options.dtstart, 'yyyy-MM-dd') : ''}
-                onChange={dtstart => onChange(RRule.optionsToString({ ...options, dtstart: dtstart ? new Date(dtstart) : null }))}
+                onChange={dtstart => setValues({ ...options, dtstart: dtstart ? new Date(dtstart) : null })}
             />
-            <TextInput
-                name="endDate"
-                label="End Date"
-                type="date"
-                value={options.until ? format(options.until, 'yyyy-MM-dd') : undefined}
-                onChange={endDate => onChange(RRule.optionsToString({ ...options, until: endDate ? new Date(endDate) : null }))}
-            />
-            <TextInput
-                name="interval"
-                label="Interval"
-                type="number"
-                min={1}
-                required
-                value={options.interval ?? 1}
-                onChange={interval => onChange(RRule.optionsToString({ ...options, interval }))}
-            />
-            {
-                options.freq === Frequency.DAILY && (
-                    <MultiOptionField
-                        options={dayOptions}
-                        value={(Array.isArray(options.byweekday) ? options.byweekday : options.byweekday ? [options.byweekday] : []).map(w => {
-                            if (w instanceof Weekday) {
-                                return w.toString()
-                            }
-                            return w
-                        })}
-                        onChange={byweekday => {
-                            onChange(RRule.optionsToString({ ...options, byweekday: byweekday.map(n => Weekday.fromStr(n)) }))
-                        }}
-                        label="Days"
+            { options.freq !== 'once' && (
+                <>
+                    <TextInput
+                        name="endDate"
+                        label="End Date"
+                        type="date"
+                        value={options.until ? format(options.until, 'yyyy-MM-dd') : undefined}
+                        onChange={endDate => setValues({ ...options, until: endDate ? new Date(endDate) : null })}
                     />
-                )
-            }
+                    <TextInput
+                        name="interval"
+                        label="Interval"
+                        type="number"
+                        min={1}
+                        required
+                        value={options.interval ?? 1}
+                        onChange={interval => setValues({ ...options, interval })}
+                    />
+                    {
+                        options.freq === Frequency.DAILY && (
+                            <MultiOptionField
+                                options={dayOptions}
+                                value={(Array.isArray(options.byweekday) ? options.byweekday : options.byweekday ? [options.byweekday] : []).map(w => {
+                                    if (w instanceof Weekday) {
+                                        return w.toString()
+                                    }
+                                    return w
+                                })}
+                                onChange={byweekday => {
+                                    setValues({ ...options, byweekday: byweekday.map(n => Weekday.fromStr(n)) })
+                                }}
+                                label="Days"
+                            />
+                        )
+                    }
+                </>
+            )}
         </fieldset>
     )
 }
