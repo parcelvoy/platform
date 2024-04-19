@@ -52,8 +52,8 @@ export default class TwilioTextProvider extends TextProvider {
 
     loadSetup(app: App): ProviderSetupMeta[] {
         return [{
-            name: 'Unsubscribe URL',
-            value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/unsubscribe`,
+            name: 'Inbound URL',
+            value: `${app.env.apiBaseUrl}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}/inbound`,
         }]
     }
 
@@ -103,6 +103,6 @@ export default class TwilioTextProvider extends TextProvider {
 
     static controllers(): ProviderControllers {
         const admin = createController('text', this)
-        return { admin, public: this.unsubscribe(this.namespace) }
+        return { admin, public: this.inbound(this.namespace) }
     }
 }

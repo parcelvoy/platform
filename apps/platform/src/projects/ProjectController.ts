@@ -85,6 +85,10 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             type: 'string',
             nullable: true,
         },
+        text_help_message: {
+            type: 'string',
+            nullable: true,
+        },
         link_wrap: {
             type: 'boolean',
             nullable: true,
@@ -134,6 +138,10 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
             nullable: true,
         },
         text_opt_out_message: {
+            type: 'string',
+            nullable: true,
+        },
+        text_help_message: {
             type: 'string',
             nullable: true,
         },
