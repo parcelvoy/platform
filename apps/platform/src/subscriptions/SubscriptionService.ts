@@ -1,10 +1,9 @@
-import { TextProvider } from '../providers/text/TextProvider'
 import { ChannelType } from '../config/channels'
 import { PageParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { User } from '../users/User'
 import { createEvent } from '../users/UserEventRepository'
-import { getUser, getUserFromPhone } from '../users/UserRepository'
+import { getUser } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 import App from '../app'
 import { combineURLs, encodeHashid } from '../utilities'
@@ -69,22 +68,10 @@ export const subscriptionForChannel = async (channel: ChannelType, projectId: nu
     return await Subscription.first(qb => qb.where('channel', channel).where('project_id', projectId))
 }
 
-export const unsubscribeSms = async (provider: TextProvider, body: Record<string, any>) => {
-
-    const message = provider.parseInbound(body)
-
-    // Get project ID from the matched channel
-    const projectId = provider.project_id
-
-    // Check if the message includes the word STOP
-    if (message.text.toLowerCase().includes('stop')) {
-
-        // Unsubscribe the user based on inbound SMS
-        const user = await getUserFromPhone(projectId, message.from)
-        const subscription = await subscriptionForChannel('text', projectId)
-        if (user && subscription) {
-            unsubscribe(user.id, subscription.id)
-        }
+export const unsubscribeSms = async (projectId: number, user: User) => {
+    const subscription = await subscriptionForChannel('text', projectId)
+    if (user && subscription) {
+        unsubscribe(user.id, subscription.id)
     }
 }
 

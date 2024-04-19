@@ -77,6 +77,6 @@ export default class HttpSMSTextProvider extends TextProvider {
 
     static controllers(): ProviderControllers {
         const admin = createController('text', this)
-        return { admin, public: this.unsubscribe(this.namespace) }
+        return { admin, public: this.inbound(this.namespace) }
     }
 }

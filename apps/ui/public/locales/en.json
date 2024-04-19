@@ -257,6 +257,8 @@
     "sign_out": "Sign Out",
     "sms_opt_out_message": "SMS Opt Out Message",
     "sms_opt_out_message_subtitle": "Instructions on how to opt out of SMS that will be appended to every text.",
+    "sms_help_message": "SMS Help Message",
+    "sms_help_message_subtitle": "Instructions on how to receive help that are auto sent to users if they reply with HELP.",
     "start_journey": "Start journey: ",
     "state": "State",
     "static": "Static",

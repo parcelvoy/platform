@@ -464,7 +464,6 @@ export class JourneyBalancer extends JourneyStep {
             hour: 60 * 60 * 1000,
             day: 24 * 60 * 60 * 1000,
         }
-        console.log(intervals[this.rate_interval], this.rate_interval)
         return intervals[this.rate_interval]
     }
 }

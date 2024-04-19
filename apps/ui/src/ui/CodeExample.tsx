@@ -15,7 +15,6 @@ export default function CodeExample({ code, description, title }: CodeExamplePro
 
     const handleCopy = async (value: string) => {
         await navigator.clipboard.writeText(value)
-        console.log('copied')
         toast.success('Copied code sample')
     }
 

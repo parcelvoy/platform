@@ -290,7 +290,6 @@ export const subscriptionUpdateSchema: JSONSchemaType<SubscriptionUpdateParams> 
     additionalProperties: false,
 }
 router.patch('/:subscriptionId', async ctx => {
-    console.log('got here?')
     const payload = validate(subscriptionUpdateSchema, ctx.request.body)
     ctx.body = await updateSubscription(ctx.state.subscription!.id, payload)
 })

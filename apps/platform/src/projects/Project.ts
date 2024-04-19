@@ -8,6 +8,7 @@ export default class Project extends Model {
     locale!: string
     timezone!: string
     text_opt_out_message?: string
+    text_help_message?: string
     link_wrap?: boolean
 }
 

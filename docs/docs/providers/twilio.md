@@ -19,13 +19,13 @@ If you already have a phone number, jump to step four.
 You are now setup to send SMS messages using Twilio. There is one more step however to make it fully functioning and that is to setup inbound messages so that Parcelvoy is notified of unsubscribes.
 
 ## Inbound
-By default Twilio automatically manages [opt-outs (unsubscribes)](https://support.twilio.com/hc/en-us/articles/360034798533-Getting-Started-with-Advanced-Opt-Out-for-Messaging-Services), you just have to listen for the inbound webhook to then register that event in Parcelvoy.
+Setting up inbound messaging is important to comply with carrier rules and regulations regarding unsubscribing from communications. By default Twilio automatically manages [opt-outs (unsubscribes)](https://support.twilio.com/hc/en-us/articles/360034798533-Getting-Started-with-Advanced-Opt-Out-for-Messaging-Services), you just have to listen for the inbound webhook to then register that event in Parcelvoy. An additional benefit to setting up inbound messaging is that you can use the created events to trigger journeys.
 
 To setup inbound SMS for Twilio, do the following:
 1. In Twilip, navigate to `Develop -> Phone Numbers -> Manage -> Active Numbers`.
 2. Pick the phone number you are using internally.
 3. Scroll down to the `Messaging` section.
-4. On the line item `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then copy the Unsubscribe URL from your provider into that field.
+4. On the line item `A Message Comes In` set the type to `Webhook`, the method to `HTTP POST` and then copy the Inbound URL from your provider into that field.
 5. Save the values.
 
 Inbound Twilio notifications are now configured and unsubscribe events will register as Parcelvoy user events.

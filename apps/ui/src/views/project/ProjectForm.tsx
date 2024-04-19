@@ -49,9 +49,9 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     return (
         <FormWrapper<Project>
             defaultValues={defaults}
-            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message, link_wrap }) => {
+            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap }) => {
 
-                const params = { name, description, locale, timezone, text_opt_out_message, link_wrap }
+                const params = { name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap }
 
                 const project = id
                     ? await api.projects.update(id, params)
@@ -85,6 +85,11 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                             name="text_opt_out_message"
                             label={t('sms_opt_out_message')}
                             subtitle={t('sms_opt_out_message_subtitle')} />
+                        <TextInput.Field
+                            form={form}
+                            name="text_help_message"
+                            label={t('sms_help_message')}
+                            subtitle={t('sms_help_message_subtitle')} />
                         <SwitchField
                             form={form}
                             name="link_wrap"
