@@ -127,7 +127,7 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
             name: 'user_created',
             external_id: user.external_id,
             anonymous_id,
-            data: { ...fields, data, external_id, anonymous_id },
+            data: { ...data, ...fields, external_id, anonymous_id },
         },
     }).queue()
 
