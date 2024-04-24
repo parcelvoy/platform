@@ -134,9 +134,7 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
                                     }
                                     return w
                                 })}
-                                onChange={byweekday => {
-                                    setValues({ ...options, byweekday: byweekday.map(n => Weekday.fromStr(n)) })
-                                }}
+                                onChange={byweekday => setValues({ ...options, byweekday: byweekday.map(n => Weekday.fromStr(n)) })}
                                 label="Days"
                             />
                         )
