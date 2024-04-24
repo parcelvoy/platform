@@ -124,12 +124,10 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                 steps.push(step = new JourneyStep())
             }
             let next_scheduled_at: null | Date = null
-            if (type === JourneyEntrance.type) {
-                if (data.trigger === 'schedule') {
-                    next_scheduled_at = JourneyEntrance.fromJson({ data }).nextDate(now)
-                } else {
-                    next_scheduled_at = null
-                }
+            if (type === JourneyEntrance.type
+                && data.trigger === 'schedule'
+                && step.data?.schedule !== data.schedule) {
+                next_scheduled_at = JourneyEntrance.fromJson({ data }).nextDate(now)
             }
             const fields = { data, data_key, name, next_scheduled_at, x, y }
             step.parseJson(step.id

@@ -54,7 +54,7 @@ const dayOptions: FieldOption[] = [
     },
 ]
 
-interface RRuleEditorProps extends ControlledProps<string> {
+interface RRuleEditorProps extends ControlledProps<[string, Partial<Options> | undefined]> {
     label?: ReactNode
 }
 
@@ -63,9 +63,10 @@ type RuleOptions = Omit<Options, 'freq'> & { freq: RuleFrequency }
 
 export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps) {
     const options = useMemo<Partial<RuleOptions>>(() => {
-        if (value) {
+        const rule = value[0]
+        if (rule) {
             try {
-                const options = RRule.fromString(value).origOptions as RuleOptions
+                const options = RRule.fromString(rule).origOptions as RuleOptions
                 if (options.freq === undefined) {
                     options.freq = 'once'
                 }
@@ -78,10 +79,11 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
     }, [value])
 
     const setValues = ({ freq, ...options }: Partial<RuleOptions>) => {
-        onChange(RRule.optionsToString({
+        const rule: Partial<Options> = {
             ...options,
             freq: freq === 'once' ? undefined : freq,
-        }))
+        }
+        onChange([RRule.optionsToString(rule), rule])
     }
 
     return (
