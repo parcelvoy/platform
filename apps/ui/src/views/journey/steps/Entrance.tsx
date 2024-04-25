@@ -213,8 +213,8 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                             />
                             <RRuleEditor
                                 label={t('schedule')}
-                                value={value.schedule ?? ''}
-                                onChange={schedule => onChange({ ...value, schedule })}
+                                value={[value.schedule ?? '', undefined]}
+                                onChange={([schedule, rule]) => onChange({ ...value, schedule, multiple: !!rule?.freq })}
                             />
                         </>
                     )
