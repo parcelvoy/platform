@@ -1,6 +1,5 @@
 import { add, addDays, addHours, addMinutes, isEqual, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
-import { User } from '../users/User'
 import { getCampaign, getCampaignSend, triggerCampaignSend } from '../campaigns/CampaignService'
 import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
 import { Database } from '../config/database'
@@ -11,8 +10,8 @@ import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
 import { RRule } from 'rrule'
-import { createEvent } from '../users/UserEventRepository'
 import { JourneyState } from './JourneyState'
+import { EventPostJob, UserPatchJob } from '../jobs'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -488,13 +487,13 @@ export class JourneyUpdate extends JourneyStep {
                     journey: state.stepData(),
                 }))
                 if (typeof value === 'object') {
-                    state.user.data = {
-                        ...state.user.data,
-                        ...value,
-                    }
-                    await User.update(q => q.where('id', state.user.id), {
-                        data: state.user.data,
-                    })
+                    await UserPatchJob.from({
+                        project_id: state.user.project_id,
+                        user: {
+                            external_id: state.user.external_id,
+                            data: value,
+                        },
+                    }).queue()
                 }
             } catch (err: any) {
                 logger.warn({
@@ -537,10 +536,16 @@ export class JourneyEvent extends JourneyStep {
             value = {}
         }
 
-        await createEvent(state.user, {
-            name: this.event_name,
-            data: value,
-        })
+        await EventPostJob.from({
+            project_id: state.user.project_id,
+            event: {
+                name: this.event_name,
+                external_id: state.user.external_id,
+                anonymous_id: state.user.anonymous_id,
+                data: value,
+            },
+        }).queue()
+
         userStep.type = 'completed'
     }
 }
