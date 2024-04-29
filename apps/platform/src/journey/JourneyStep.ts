@@ -493,7 +493,7 @@ export class JourneyUpdate extends JourneyStep {
                             external_id: state.user.external_id,
                             data: value,
                         },
-                    }).queue()
+                    }).handle()
                 }
             } catch (err: any) {
                 logger.warn({
