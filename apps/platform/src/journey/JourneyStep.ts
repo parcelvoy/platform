@@ -487,13 +487,17 @@ export class JourneyUpdate extends JourneyStep {
                     journey: state.stepData(),
                 }))
                 if (typeof value === 'object') {
+                    state.user.data = {
+                        ...state.user.data,
+                        ...value,
+                    }
                     await UserPatchJob.from({
                         project_id: state.user.project_id,
                         user: {
                             external_id: state.user.external_id,
                             data: value,
                         },
-                    }).handle()
+                    }).queue()
                 }
             } catch (err: any) {
                 logger.warn({
