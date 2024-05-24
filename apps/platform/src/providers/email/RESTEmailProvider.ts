@@ -27,7 +27,7 @@ export default class RESTEmailProvider extends EmailProvider {
 
     static namespace = 'rest'
     static meta = {
-        name: 'RestEmailProvider',
+        name: 'Generic REST',
         icon: 'https://parcelvoy.com/providers/webhook.svg',
         paths: {
             'Webhook URL': `/${this.namespace}`,
@@ -48,7 +48,7 @@ export default class RESTEmailProvider extends EmailProvider {
     loadSetup(app: App): ProviderSetupMeta[] {
         return [{
             name: 'Webhook URL',
-            value: `http://api:${app.env.port}/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
+            value: `http://api:${app.env.port}/api/providers/${encodeHashid(this.id)}/${(this.constructor as any).namespace}`,
         }]
     }
 
