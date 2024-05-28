@@ -3,7 +3,7 @@ import { LoggerProviderName } from '../LoggerProvider'
 import Provider, { ProviderGroup } from '../Provider'
 import { Email } from './Email'
 
-export type EmailProviderName = 'ses' | 'smtp' | 'mailgun' | 'sendgrid' | 'rest' | LoggerProviderName
+export type EmailProviderName = 'ses' | 'smtp' | 'mailgun' | 'sendgrid' | 'tachikoma' | LoggerProviderName
 
 export default abstract class EmailProvider extends Provider {
 

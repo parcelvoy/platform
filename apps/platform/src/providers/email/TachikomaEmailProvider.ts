@@ -10,31 +10,31 @@ import { trackMessageEvent } from '../../render/LinkService'
 import Router = require('@koa/router')
 import App from '../../app'
 
-export interface RESTDataParams {
+export interface TachikomaDataParams {
     host: string
     port: number
     secure: boolean
 }
 
-type RESTEmailProviderParams = Pick<RESTEmailProvider, keyof ExternalProviderParams>
+type TachikomaEmailProviderParams = Pick<TachikomaEmailProvider, keyof ExternalProviderParams>
 
-export default class RESTEmailProvider extends EmailProvider {
+export default class TachikomaEmailProvider extends EmailProvider {
     host!: string
     port!: number
     secure!: boolean
 
     // declare data: JSONTransport
 
-    static namespace = 'rest'
+    static namespace = 'tachikoma'
     static meta = {
-        name: 'Generic REST',
+        name: 'Tachikoma',
         icon: 'https://parcelvoy.com/providers/webhook.svg',
         paths: {
             'Webhook URL': `/${this.namespace}`,
         },
     }
 
-    static schema = ProviderSchema<RESTEmailProviderParams, RESTDataParams>('restProviderParams', {
+    static schema = ProviderSchema<TachikomaEmailProviderParams, TachikomaDataParams>('tachikomaProviderParams', {
         type: 'object',
         required: ['host', 'port', 'secure'],
         properties: {
@@ -57,9 +57,6 @@ export default class RESTEmailProvider extends EmailProvider {
             new RestTransport({
                 host: this.host,
                 port: this.port,
-                auth: {
-                    api_key: '',
-                },
             },
             ),
         )
