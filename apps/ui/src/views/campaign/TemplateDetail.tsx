@@ -95,6 +95,7 @@ const PushTable = ({ data }: { data: PushTemplateData }) => {
     return <InfoTable rows={{
         [t('title')]: data.title ?? <Tag variant="warn">{t('missing')}</Tag>,
         [t('body')]: data.body ?? <Tag variant="warn">{t('missing')}</Tag>,
+        [t('topic')]: data.topic ?? <Tag variant="warn">{t('missing')}</Tag>,
         [t('deeplink')]: data.url,
         [t('raw_json')]: JSON.stringify(data.custom),
     }} />
@@ -112,6 +113,12 @@ const PushForm = ({ form }: { form: UseFormReturn<TemplateUpdateParams, any> }) 
             form={form}
             name="data.body"
             label={t('body')}
+            textarea
+            required />
+        <TextInput.Field
+            form={form}
+            name="data.topic"
+            label={t('topic')}
             textarea
             required />
         <TextInput.Field

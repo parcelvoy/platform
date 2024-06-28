@@ -284,6 +284,7 @@
     "time": "Time",
     "timezone": "Timezone",
     "title": "Title",
+    "topic": "Topic",
     "translations": "Translations",
     "translations_description": "Manage the translations your campaign supports and will send to.",
     "trigger": "Trigger",

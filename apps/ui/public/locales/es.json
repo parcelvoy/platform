@@ -282,6 +282,7 @@
     "time": "Tiempo",
     "timezone": "Zona Horaria",
     "title": "Título",
+    "topic": "Tema",
     "translations": "Traducciones",
     "translations_description": "Administre las traducciones que su campaña admite y a las que enviará.",
     "trigger": "Individual (API)",

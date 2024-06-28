@@ -118,8 +118,10 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         await abortCampaign(campaign)
     }
 
-    // If we are rescheduling, abort sends to they are reset
-    if (data.send_at && data.send_at !== campaign.send_at) {
+    // If we are rescheduling, abort sends so they are reset
+    if (data.send_at
+        && campaign.send_at
+        && data.send_at !== campaign.send_at) {
         data.state = 'pending'
         await abortCampaign(campaign)
     }
