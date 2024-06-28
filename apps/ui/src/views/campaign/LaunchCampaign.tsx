@@ -97,6 +97,7 @@ export default function LaunchCampaign({ open, onClose }: LaunchCampaignParams) 
             return
         }
         params.send_at = formatISO(sendAt)
+        params.state = 'scheduled'
 
         try {
             const value = await api.campaigns.update(project.id, campaign.id, params)

@@ -16,7 +16,12 @@ interface APNParams {
 }
 
 interface FCMParams {
-    id: string
+    appName: string
+    serviceAccountKey: {
+        projectId: string
+        privateKey: string
+        clientEmail: string
+    }
 }
 
 interface PushDataParams {
@@ -81,14 +86,31 @@ export default class LocalPushProvider extends PushProvider {
             fcm: {
                 type: 'object',
                 nullable: true,
-                required: ['id'],
+                required: ['appName', 'serviceAccountKey'],
                 title: 'FCM',
                 description: 'Settings for Firebase Cloud Messaging to send messages to Android devices.',
                 properties: {
-                    id: {
+                    appName: {
                         type: 'string',
-                        title: 'Server Key',
-                        minLength: 80,
+                        title: 'App Name',
+                    },
+                    serviceAccountKey: {
+                        type: 'object',
+                        required: ['projectId', 'privateKey', 'clientEmail'],
+                        properties: {
+                            projectId: {
+                                type: 'string',
+                                title: 'Project ID',
+                            },
+                            privateKey: {
+                                type: 'string',
+                                title: 'Private Key',
+                            },
+                            clientEmail: {
+                                type: 'string',
+                                title: 'Client Email',
+                            },
+                        },
                     },
                 },
             },
@@ -99,8 +121,8 @@ export default class LocalPushProvider extends PushProvider {
     boot() {
         this.transport = new PushNotifications({
             apn: this.apn,
-            gcm: this.fcm, // Uses historical name GCM, we'll use modern name
-        })
+            fcm: this.fcm,
+        } as unknown as PushNotifications.Settings) // Types are not up to date
     }
 
     async send(push: Push): Promise<PushResponse> {

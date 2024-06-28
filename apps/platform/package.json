@@ -45,7 +45,7 @@
     "koa-static": "^5.0.0",
     "libphonenumber-js": "^1.10.24",
     "mysql2": "^3.9.4",
-    "node-pushnotifications": "^2.1.0",
+    "node-pushnotifications": "^3.0.0",
     "node-schedule": "^2.1.0",
     "nodemailer": "^6.9.5",
     "nodemailer-mailgun-transport": "^2.1.5",
