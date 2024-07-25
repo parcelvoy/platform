@@ -105,6 +105,7 @@ export default class LocalPushProvider extends PushProvider {
                             privateKey: {
                                 type: 'string',
                                 title: 'Private Key',
+                                minLength: 80,
                             },
                             clientEmail: {
                                 type: 'string',
@@ -121,7 +122,14 @@ export default class LocalPushProvider extends PushProvider {
     boot() {
         this.transport = new PushNotifications({
             apn: this.apn,
-            fcm: this.fcm,
+            fcm: {
+                appName: this.fcm?.appName,
+                serviceAccountKey: {
+                    projectId: this.fcm?.serviceAccountKey.projectId,
+                    privateKey: this.fcm?.serviceAccountKey.privateKey?.replace(/\\n/g, '\n'),
+                    clientEmail: this.fcm?.serviceAccountKey.clientEmail,
+                },
+            },
         } as unknown as PushNotifications.Settings) // Types are not up to date
     }
 
