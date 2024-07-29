@@ -64,7 +64,7 @@ export const encodedLinkToParts = async (link: string | URL): Promise<TrackedLin
 }
 
 export const clickWrapHtml = (html: string, params: TrackedLinkParams) => {
-    const regex = /a.*href\s*=\s*(['"])(https?:\/\/.+?)\1/gi
+    const regex = /a.*\s*href\s*=\s*(['"])(https?:\/\/.+?)\1/gi
     let link
 
     while ((link = regex.exec(html)) !== null) {
