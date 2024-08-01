@@ -65,7 +65,10 @@ export default class SQSQueueProvider implements QueueProvider {
     }
 
     async delay(job: Job, milliseconds: number): Promise<void> {
-        job.options.delay = milliseconds
+        // SQS Delay is in seconds, so convert milliseconds to seconds
+        // also, max delay is 15 minutes
+        const seconds = Math.min(Math.floor(milliseconds / 1000), 900)
+        job.options.delay = seconds
         await this.enqueue(job)
     }
 
