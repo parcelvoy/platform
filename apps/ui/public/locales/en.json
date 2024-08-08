@@ -211,6 +211,7 @@
     "publish": "Publish",
     "published": "Published",
     "push": "Push",
+    "rate_interval": "Rate Interval",
     "rate_limit": "Rate Limit",
     "raw_json": "Raw JSON",
     "ready": "Ready",
