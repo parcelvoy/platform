@@ -83,10 +83,10 @@ export function IntegrationForm({ project, provider: defaultProvider, onChange, 
                         name="rate_interval"
                         label={t('rate_interval')}
                         options={[
-                            { key: 'second', label: 'second' },
-                            { key: 'minute', label: 'minute' },
-                            { key: 'hour', label: 'hour' },
-                            { key: 'day', label: 'day' },
+                            { key: 'second', label: t('second') },
+                            { key: 'minute', label: t('minute') },
+                            { key: 'hour', label: t('hour') },
+                            { key: 'day', label: t('day') },
                         ]}
                     />
                 </>
