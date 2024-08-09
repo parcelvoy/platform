@@ -7,12 +7,14 @@ import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import SchemaFields from '../../ui/form/SchemaFields'
 import TextInput from '../../ui/form/TextInput'
+import RadioInput from '../../ui/form/RadioInput'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal, { ModalProps } from '../../ui/Modal'
 import Tile, { TileGrid } from '../../ui/Tile'
 import { snakeToTitle } from '../../utils'
 import './IntegrationModal.css'
 import { ChevronLeftIcon } from '../../ui/icons'
+import { useTranslation } from 'react-i18next'
 
 interface IntegrationFormParams {
     project: Project
@@ -22,6 +24,7 @@ interface IntegrationFormParams {
 }
 
 export function IntegrationForm({ project, provider: defaultProvider, onChange, meta }: IntegrationFormParams) {
+    const { t } = useTranslation()
     const [provider, setProvider] = useState<Provider | undefined>(defaultProvider)
     const { type, group } = meta
     useEffect(() => {
@@ -34,9 +37,9 @@ export function IntegrationForm({ project, provider: defaultProvider, onChange, 
         }
     }, [defaultProvider])
 
-    async function handleCreate({ name, rate_limit, data = {} }: ProviderCreateParams | ProviderUpdateParams) {
+    async function handleCreate({ name, rate_limit, rate_interval, data = {} }: ProviderCreateParams | ProviderUpdateParams) {
 
-        const params = { name, data, rate_limit, type, group }
+        const params = { name, data, rate_limit, rate_interval, type, group }
         const value = provider?.id
             ? await api.providers.update(project.id, provider?.id, params)
             : await api.providers.create(project.id, params)
@@ -74,7 +77,18 @@ export function IntegrationForm({ project, provider: defaultProvider, onChange, 
                         form={form}
                         type="number"
                         name="rate_limit"
-                        subtitle="If you need to cap send rate, enter the maximum per second limit." />
+                        subtitle="If you need to cap send rate, enter the maximum per interval limit." />
+                    <RadioInput.Field
+                        form={form}
+                        name="rate_interval"
+                        label={t('rate_interval')}
+                        options={[
+                            { key: 'second', label: t('second') },
+                            { key: 'minute', label: t('minute') },
+                            { key: 'hour', label: t('hour') },
+                            { key: 'day', label: t('day') },
+                        ]}
+                    />
                 </>
             }
         </FormWrapper>

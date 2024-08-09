@@ -36,6 +36,7 @@ describe('CampaignService', () => {
             name: uuid(),
             is_default: false,
             rate_limit: 10,
+            rate_interval: 'second',
         })
         return {
             project_id: project.id,

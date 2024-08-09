@@ -502,10 +502,11 @@ export interface Provider {
     group: string
     data: any
     rate_limit: number
+    rate_interval: string
     setup: ProviderSetupMeta[]
 }
 
-export type ProviderCreateParams = Pick<Provider, 'name' | 'data' | 'type' | 'group' | 'rate_limit'>
+export type ProviderCreateParams = Pick<Provider, 'name' | 'data' | 'type' | 'group' | 'rate_limit' | 'rate_interval'>
 export type ProviderUpdateParams = ProviderCreateParams
 export interface ProviderMeta {
     name: string
