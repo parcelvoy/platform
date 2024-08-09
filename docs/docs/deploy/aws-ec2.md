@@ -58,3 +58,14 @@ docker compose up -d # run the Docker container
 
 7. Setup security groups
 Based on what port you are using for the UI portion, you will want to make sure you have configured that port to be open as well in your security groups.
+
+8. Upgrading versions
+:::note
+If you are running a single instance of Parcelvoy you will experience downtime when upgrading versions, it's recommended for high availability to run Parcelvoy in an auto-scaling group with rolling deployments.
+:::
+
+```
+docker compose down
+docker compose pull
+docker compose up -d
+```
