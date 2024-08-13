@@ -41,7 +41,11 @@ export function ProviderSchema<_ extends ExternalProviderParams, D>(id: string, 
             data,
             rate_limit: {
                 type: 'number',
-                description: 'The per second maximum send rate.',
+                description: 'The per interval maximum send rate.',
+                nullable: true,
+            },
+            rate_interval: {
+                type: 'string',
                 nullable: true,
             },
         },
@@ -57,6 +61,7 @@ export default class Provider extends Model {
     data!: Record<string, any>
     is_default!: boolean
     rate_limit!: number
+    rate_interval!: 'second' | 'minute' | 'hour' | 'day'
     setup!: ProviderSetupMeta[]
 
     static jsonAttributes = ['data']
@@ -103,6 +108,16 @@ export default class Provider extends Model {
     }
 
     static get options(): ProviderOptions { return {} }
+
+    interval() {
+        const intervals = {
+            second: 1000,
+            minute: 60 * 1000,
+            hour: 60 * 60 * 1000,
+            day: 24 * 60 * 60 * 1000,
+        }
+        return intervals[this.rate_interval || 'second']
+    }
 }
 
 export type ProviderMap<T extends Provider> = (record: any) => T

@@ -211,6 +211,7 @@
     "publish": "Publicar",
     "published": "Publicado",
     "push": "Notificación",
+    "rate_interval": "Intervalo de Velocidad",
     "rate_limit": "Límite de Velocidad",
     "raw_json": "JSON Sin Procesar",
     "ready": "Listo",
