@@ -67,6 +67,7 @@ export const stepCategoryColors = {
     action: 'blue',
     flow: 'green',
     delay: 'yellow',
+    exit: 'red',
 }
 
 interface StepUsersProps {
@@ -686,6 +687,7 @@ export default function JourneyEditor() {
                                 project,
                                 journey,
                                 stepId: editNode.data.stepId,
+                                nodes,
                             })
                         }
                     </div>
