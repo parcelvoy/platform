@@ -36,13 +36,11 @@ export default class EmailChannel {
                 'X-Subscription-Id': encodeHashid(variables.context.subscription_id),
             },
             list: {
-                unsubscribe: [
-                    unsubscribeEmailLink({
-                        userId: variables.user.id,
-                        campaignId: variables.context.campaign_id,
-                        referenceId: variables.context.reference_id,
-                    }),
-                ],
+                unsubscribe: unsubscribeEmailLink({
+                    userId: variables.user.id,
+                    campaignId: variables.context.campaign_id,
+                    referenceId: variables.context.reference_id,
+                }),
             },
         }
         const result = await this.provider.send(email)

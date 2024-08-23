@@ -10,5 +10,5 @@ export interface Email {
     text: string
     html: string
     headers?: Record<string, any>
-    list?: { unsubscribe: string[] }
+    list?: { unsubscribe: string }
 }
