@@ -81,7 +81,7 @@ export const Render = (template: string, { user, event, journey, context }: Vari
         context,
         unsubscribeEmailUrl: new Handlebars.SafeString(unsubscribeEmailLink({
             userId: user.id,
-            campaignId: context?.campaign_id,
+            campaignId: context.campaign_id,
             referenceId: context.reference_id,
         })),
         preferencesUrl: new Handlebars.SafeString(preferencesLink(user.id)),

@@ -14,14 +14,7 @@ export default abstract class EmailProvider extends Provider {
     static group = 'email' as ProviderGroup
 
     async send(message: Email): Promise<any> {
-        const list = this.unsubscribe
-            ? { unsubscribe: [this.unsubscribe] }
-            : undefined
-
-        return await this.transport?.sendMail({
-            ...message,
-            list,
-        })
+        return await this.transport?.sendMail(message)
     }
 
     async verify(): Promise<boolean> {

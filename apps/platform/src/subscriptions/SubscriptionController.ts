@@ -54,6 +54,16 @@ publicRouter.get('/email', async ctx => {
     ctx.body = '<html><body><h3>You have been unsubscribed!</h3></body></html>'
 })
 
+publicRouter.post('/email', async ctx => {
+    const { user, campaign } = await encodedLinkToParts(ctx.URL)
+
+    if (!user) throw new RequestError(SubscriptionError.UnsubscribeInvalidUser)
+    if (!campaign) throw new RequestError(SubscriptionError.UnsubscribeInvalidCampaign)
+
+    await unsubscribe(user.id, campaign.subscription_id)
+    ctx.status = 200
+})
+
 /**
  ***
  * User-facing subscription preferences page
