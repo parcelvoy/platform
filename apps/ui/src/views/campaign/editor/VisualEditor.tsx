@@ -13,18 +13,64 @@ interface GrapesAssetManagerProps {
     close: () => void
 }
 
+interface Font {
+    name: string
+    url: string
+    value: string
+}
+
 interface GrapesReactProps {
     id: HTMLElement['id']
     mjml?: string
     onChange: (mjml: string, html: string, editor: Editor) => void
     setAssetState: (props: GrapesAssetManagerProps) => void
-    fonts?: Record<string, string>
+    fonts?: Font[]
 }
 
-function GrapesReact({ id, mjml, onChange, setAssetState, fonts = {} }: GrapesReactProps) {
+function GrapesReact({ id, mjml, onChange, setAssetState, fonts = [] }: GrapesReactProps) {
     const [editor, setEditor] = useState<Editor | undefined>(undefined)
+
+    const removeAll = (doc: Document, attr: string) => {
+        const all = doc.head.querySelectorAll(`[${attr}]`)
+        Array.from(all)
+            .forEach((el) => el.remove())
+    }
+
+    const getFontHtml = (url: string) => {
+        return `
+            <link href="${url}" rel="stylesheet" type="text/css" data-silex-font>
+            <style type="text/css" data-silex-font>
+                @import url(${url});
+            </style>
+        `
+    }
+
+    const GOOGLE_FONTS_ATTR = 'data-silex-gstatic'
+    const updateHead = (editor: Editor, fonts: Font[]) => {
+        const doc = editor.Canvas.getDocument()
+        if (!doc) return
+        removeAll(doc, GOOGLE_FONTS_ATTR)
+        let html = ''
+        for (const font of fonts) {
+            html += getFontHtml(font.url)
+        }
+        doc.head.insertAdjacentHTML('beforeend', html)
+    }
+
+    const updateFontUi = (editor: Editor, fonts: Font[]) => {
+        const styleManager = editor.StyleManager
+        const fontProperty = styleManager.getProperty('typography', 'font-family') as any
+        const list = []
+        for (const { value, name } of fonts) {
+            list.push(fontProperty.addOption({ value, name }))
+        }
+        fontProperty?.set('list' as any, list)
+        styleManager.render()
+
+        updateHead(editor, fonts)
+    }
+
     useEffect(() => {
-        console.log(fonts)
         if (!editor) {
             const editor = grapesJS.init({
                 fromElement: false,
@@ -32,7 +78,11 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = {} }: GrapesRe
                 storageManager: false,
                 autorender: false,
                 plugins: [grapesJSMJML],
-                pluginsOpts: { [grapesJSMJML as any]: { fonts } },
+                pluginsOpts: {
+                    [grapesJSMJML as any]: {
+                        fonts: fonts.reduce((acc, { name, url }) => ({ ...acc, [name]: url }), {}),
+                    },
+                },
                 height: '100%',
                 assetManager: {
                     custom: {
@@ -49,15 +99,7 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = {} }: GrapesRe
             editor.on('load', () => {
                 editor.Panels.getButton('views', 'open-blocks')
                     ?.set('active', true)
-
-                const styleManager = editor.StyleManager
-                const fontProperty = styleManager.getProperty('typography', 'font-family') as any
-                const list = []
-                for (const key of Object.keys(fonts)) {
-                    list.push(fontProperty.addOption({ value: `${key}, sans-serif`, name: key }))
-                }
-                fontProperty?.set('list' as any, list)
-                styleManager.render()
+                updateFontUi(editor, fonts)
             })
             editor.render()
             editor.setComponents(mjml ?? '<mjml><mj-body></mj-body></mjml>')
@@ -73,11 +115,15 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = {} }: GrapesRe
 export default function VisualEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
     const [showImages, setShowImages] = useState(false)
     const [assetManager, setAssetManager] = useState<GrapesAssetManagerProps | undefined>()
-    const fonts = {
-        Montserrat: 'https://fonts.googleapis.com/css?family=Montserrat',
-        'Open Sans': 'https://fonts.googleapis.com/css?family=Open+Sans',
-        Inter: 'https://fonts.googleapis.com/css?family=Inter',
-    }
+    const fonts = [{
+        name: 'Montserrat',
+        url: 'https://fonts.googleapis.com/css?family=Montserrat',
+        value: 'Montserrat',
+    }, {
+        name: 'Open Sans',
+        url: 'https://fonts.googleapis.com/css?family=Open+Sans',
+        value: 'Open Sans',
+    }]
 
     function handleSetTemplate(mjml: string, html: string) {
         setTemplate({ ...template, data: { ...template.data, mjml, html } })
