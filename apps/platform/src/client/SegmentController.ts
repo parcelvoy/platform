@@ -89,8 +89,8 @@ router.post('/segment', async ctx => {
                 project_id: ctx.state.project.id,
                 user: {
                     ...identity,
-                    email: event.traits.email,
-                    phone: event.traits.phone,
+                    email: event.traits?.email,
+                    phone: event.traits?.phone,
                     timezone: event.context.timezone,
                     locale: event.context.locale && parseLocale(event.context.locale),
                     data: event.traits,
