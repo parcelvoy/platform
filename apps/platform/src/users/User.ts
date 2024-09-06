@@ -62,6 +62,11 @@ export class User extends Model {
     }
 
     get fullName() {
+        // Handle case were user has a full name attribute in data
+        const fullName = this.data.full_name ?? this.data.fullName
+        if (fullName) return fullName
+
+        // If no attribute exists, combine first and last name
         const parts: string[] = []
         if (this.firstName) {
             parts.push(this.firstName)
