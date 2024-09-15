@@ -1,9 +1,9 @@
-import { SetStateAction, Suspense, lazy, useContext, useState } from 'react'
+import { SetStateAction, Suspense, lazy, useContext, useEffect, useState } from 'react'
 import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../../contexts'
 import './EmailEditor.css'
 import Button, { LinkButton } from '../../../ui/Button'
 import api from '../../../api'
-import { Campaign, Template } from '../../../types'
+import { Campaign, Resource, Template } from '../../../types'
 import { useNavigate } from 'react-router-dom'
 import { localeState } from '../CampaignDetail'
 import Modal from '../../../ui/Modal'
@@ -12,6 +12,7 @@ import LocaleSelector from '../LocaleSelector'
 import { toast } from 'react-hot-toast/headless'
 import { QuestionIcon } from '../../../ui/icons'
 import { useTranslation } from 'react-i18next'
+import ResourceModal from '../ResourceModal'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
@@ -23,9 +24,17 @@ export default function EmailEditor() {
     const { templates } = campaign
 
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
+    const [resources, setResources] = useState<Resource[]>([])
 
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
     const [isSaving, setIsSaving] = useState(false)
+    const [showConfig, setShowConfig] = useState(false)
+
+    useEffect(() => {
+        api.resources.all(project.id)
+            .then(resources => setResources(resources))
+            .catch(() => setResources([]))
+    }, [])
 
     async function handleTemplateSave({ id, type, data }: Template) {
         setIsSaving(true)
@@ -55,6 +64,11 @@ export default function EmailEditor() {
                     onClose={() => navigate(`../campaigns/${campaign.id}/design?locale=${locale.currentLocale?.key}`)}
                     actions={
                         <>
+                            <Button
+                                size="small"
+                                variant="secondary"
+                                onClick={() => setShowConfig(true)}
+                            >Config</Button>
                             <LinkButton
                                 icon={<QuestionIcon />}
                                 variant="secondary"
@@ -81,6 +95,7 @@ export default function EmailEditor() {
                                             <VisualEditor
                                                 template={template}
                                                 setTemplate={setTemplate}
+                                                resources={resources}
                                             />
                                         </Suspense>
                                     )
@@ -91,6 +106,13 @@ export default function EmailEditor() {
                             ))
                         }
                     </section>
+
+                    <ResourceModal
+                        open={showConfig}
+                        onClose={() => setShowConfig(false)}
+                        resources={resources}
+                        setResources={setResources}
+                    />
                 </Modal>
             </LocaleContext.Provider>
         </>

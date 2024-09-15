@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionCreateParams, SubscriptionParams, SubscriptionUpdateParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Metric, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, Resource, RuleSuggestions, SearchParams, SearchResult, Subscription, SubscriptionCreateParams, SubscriptionParams, SubscriptionUpdateParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -284,6 +284,18 @@ const api = {
             formData.append('image', image)
             await client.post(`${projectUrl(projectId)}/images`, formData)
         },
+    },
+
+    resources: {
+        all: async (projectId: number | string, type: string = 'font') => await client
+            .get<Resource[]>(`${projectUrl(projectId)}/resources?type=${type}`)
+            .then(r => r.data),
+        create: async (projectId: number | string, params: Partial<Resource>) => await client
+            .post<Resource>(`${projectUrl(projectId)}/resources`, params)
+            .then(r => r.data),
+        delete: async (projectId: number | string, id: number) => await client
+            .delete<number>(`${projectUrl(projectId)}/resources/${id}`)
+            .then(r => r.data),
     },
 
     tags: {

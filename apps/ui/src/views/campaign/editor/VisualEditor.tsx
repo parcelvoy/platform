@@ -3,7 +3,7 @@ import './VisualEditor.css'
 import grapesJS, { Editor } from 'grapesjs'
 import grapesJSMJML from 'grapesjs-mjml'
 import { useEffect, useState } from 'react'
-import { Image, Template } from '../../../types'
+import { Font, Image, Resource, Template } from '../../../types'
 import ImageGalleryModal from '../ImageGalleryModal'
 
 interface GrapesAssetManagerProps {
@@ -11,12 +11,6 @@ interface GrapesAssetManagerProps {
     open: boolean
     select: (asset: any) => void
     close: () => void
-}
-
-interface Font {
-    name: string
-    url: string
-    value: string
 }
 
 interface GrapesReactProps {
@@ -29,6 +23,7 @@ interface GrapesReactProps {
 
 function GrapesReact({ id, mjml, onChange, setAssetState, fonts = [] }: GrapesReactProps) {
     const [editor, setEditor] = useState<Editor | undefined>(undefined)
+    const [loaded, setLoaded] = useState(false)
 
     const removeAll = (doc: Document, attr: string) => {
         const all = doc.head.querySelectorAll(`[${attr}]`)
@@ -60,11 +55,16 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = [] }: GrapesRe
     const updateFontUi = (editor: Editor, fonts: Font[]) => {
         const styleManager = editor.StyleManager
         const fontProperty = styleManager.getProperty('typography', 'font-family') as any
-        const list = []
-        for (const { value, name } of fonts) {
-            list.push(fontProperty.addOption({ value, name }))
-        }
-        fontProperty?.set('list' as any, list)
+        const options = fontProperty?.getOptions()
+        const newOptions = [
+            ...options.filter((option: any) => !option.custom),
+            ...fonts.map(font => ({
+                id: font.value,
+                label: font.name,
+                custom: true,
+            })),
+        ]
+        fontProperty?.setOptions(newOptions)
         styleManager.render()
 
         updateHead(editor, fonts)
@@ -99,7 +99,7 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = [] }: GrapesRe
             editor.on('load', () => {
                 editor.Panels.getButton('views', 'open-blocks')
                     ?.set('active', true)
-                updateFontUi(editor, fonts)
+                setLoaded(true)
             })
             editor.render()
             editor.setComponents(mjml ?? '<mjml><mj-body></mj-body></mjml>')
@@ -109,22 +109,23 @@ function GrapesReact({ id, mjml, onChange, setAssetState, fonts = [] }: GrapesRe
         }
     }, [])
 
+    useEffect(() => {
+        if (editor) updateFontUi(editor, fonts)
+    }, [loaded, fonts])
+
     return <div id={id} />
 }
 
-export default function VisualEditor({ template, setTemplate }: { template: Template, setTemplate: (template: Template) => void }) {
+interface VisualEditorProps {
+    template: Template
+    setTemplate: (template: Template) => void
+    resources: Resource[]
+}
+
+export default function VisualEditor({ template, setTemplate, resources }: VisualEditorProps) {
     const [showImages, setShowImages] = useState(false)
     const [assetManager, setAssetManager] = useState<GrapesAssetManagerProps | undefined>()
-    const fonts = [{
-        name: 'Montserrat',
-        url: 'https://fonts.googleapis.com/css?family=Montserrat',
-        value: 'Montserrat',
-    }, {
-        name: 'Open Sans',
-        url: 'https://fonts.googleapis.com/css?family=Open+Sans',
-        value: 'Open Sans',
-    }]
-
+    const fonts = resources.map(resource => resource.value as Font)
     function handleSetTemplate(mjml: string, html: string) {
         setTemplate({ ...template, data: { ...template.data, mjml, html } })
     }
