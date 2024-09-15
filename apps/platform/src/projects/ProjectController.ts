@@ -93,19 +93,6 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             type: 'boolean',
             nullable: true,
         },
-        fonts: {
-            type: 'array',
-            items: {
-                type: 'object',
-                required: ['name', 'value', 'url'],
-                properties: {
-                    name: { type: 'string' },
-                    value: { type: 'string' },
-                    url: { type: 'string' },
-                },
-            },
-            nullable: true,
-        },
     },
     additionalProperties: false,
 }
@@ -160,19 +147,6 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
         },
         link_wrap: {
             type: 'boolean',
-            nullable: true,
-        },
-        fonts: {
-            type: 'array',
-            items: {
-                type: 'object',
-                required: ['name', 'value', 'url'],
-                properties: {
-                    name: { type: 'string' },
-                    value: { type: 'string' },
-                    url: { type: 'string' },
-                },
-            },
             nullable: true,
         },
     },
