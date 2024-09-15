@@ -148,6 +148,7 @@ export default (type?: EnvType): Env => {
                 clientSecret: process.env.AUTH_OPENID_CLIENT_SECRET!,
                 redirectUri: `${apiBaseUrl}/auth/login/openid/callback`,
                 domain: process.env.AUTH_OPENID_DOMAIN!,
+                responseTypes: process.env.AUTH_OPENID_RESPONSE_TYPES?.split(',') ?? ['id_token'],
             },
             google: {
                 driver: 'google',

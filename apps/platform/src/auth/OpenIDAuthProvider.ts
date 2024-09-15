@@ -14,6 +14,7 @@ export interface OpenIDConfig extends AuthTypeConfig {
     clientSecret: string
     redirectUri: string
     domain?: string
+    responseTypes: string[]
 }
 
 export default class OpenIDAuthProvider extends AuthProvider {
@@ -115,7 +116,7 @@ export default class OpenIDAuthProvider extends AuthProvider {
             client_id: this.config.clientId,
             client_secret: this.config.clientSecret,
             redirect_uris: [this.config.redirectUri],
-            response_types: ['id_token'],
+            response_types: this.config.responseTypes ?? ['id_token'],
         })
         return this.client
     }

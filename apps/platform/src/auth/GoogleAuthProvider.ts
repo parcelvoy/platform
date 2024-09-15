@@ -18,6 +18,7 @@ export default class GoogleAuthProvider extends AuthProvider {
             ...config,
             driver: 'openid',
             issuerUrl: 'https://accounts.google.com',
+            responseTypes: ['id_token'],
         })
     }
 

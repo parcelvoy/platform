@@ -29,6 +29,7 @@ AUTH_BASIC_PASSWORD=password
 | AUTH_OPENID_CLIENT_SECRET | string | true |
 | AUTH_OPENID_REDIRECT_URI | string | true |
 | AUTH_OPENID_DOMAIN_WHITELIST | string | true |
+| AUTH_OPENID_RESPONSE_TYPES | string | false |
 
 ## SAML
 
