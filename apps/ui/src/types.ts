@@ -535,6 +535,19 @@ export interface Image {
     filesize: string
 }
 
+export interface Resource {
+    id: number
+    type: string
+    name: string
+    value: Record<string, any>
+}
+
+export interface Font {
+    name: string
+    url: string
+    value: string
+}
+
 export interface Tag {
     id: number
     name: string
