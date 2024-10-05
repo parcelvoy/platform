@@ -1,4 +1,4 @@
-import { getUserFromClientId } from '../users/UserRepository'
+import { getUser, getUserFromClientId } from '../users/UserRepository'
 import { updateUsersLists } from '../lists/ListService'
 import { ClientIdentity, ClientPostEvent } from './Client'
 import { Job } from '../queue'
@@ -10,6 +10,7 @@ import { User } from '../users/User'
 
 interface EventPostTrigger {
     project_id: number
+    user_id?: number
     event: ClientPostEvent
     forward?: boolean
 }
@@ -26,10 +27,12 @@ export default class EventPostJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, event, forward = false }: EventPostTrigger) {
+    static async handler({ project_id, user_id, event, forward = false }: EventPostTrigger) {
         const { anonymous_id, external_id } = event
         const identity = { external_id, anonymous_id } as ClientIdentity
-        let user = await getUserFromClientId(project_id, identity)
+        let user = user_id
+            ? await getUser(user_id, project_id)
+            : await getUserFromClientId(project_id, identity)
 
         // If no user exists, create one if we have enough information
         if (!user || event.user) {
