@@ -123,6 +123,7 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
     // Create an event for the user creation
     await EventPostJob.from({
         project_id: projectId,
+        user_id: user.id,
         event: {
             name: 'user_created',
             external_id: user.external_id,

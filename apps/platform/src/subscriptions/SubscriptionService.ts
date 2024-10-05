@@ -2,11 +2,11 @@ import { ChannelType } from '../config/channels'
 import { PageParams } from '../core/searchParams'
 import { paramsToEncodedLink, TrackedLinkParams } from '../render/LinkService'
 import { User } from '../users/User'
-import { createEvent } from '../users/UserEventRepository'
 import { getUser } from '../users/UserRepository'
 import Subscription, { SubscriptionParams, SubscriptionState, UserSubscription } from './Subscription'
 import App from '../app'
 import { combineURLs, encodeHashid } from '../utilities'
+import { EventPostJob } from '../jobs'
 
 export const pagedSubscriptions = async (params: PageParams, projectId: number) => {
     return await Subscription.search(
@@ -104,17 +104,22 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
         })
     }
 
-    createEvent(user, {
-        name: state === SubscriptionState.unsubscribed
-            ? 'unsubscribed'
-            : 'subscribed',
-        data: {
-            project_id: user.project_id,
-            subscription_id: subscription.id,
-            subscription_name: subscription.name,
-            channel: subscription.channel,
+    await EventPostJob.from({
+        project_id: user.project_id,
+        user_id: user.id,
+        event: {
+            name: state === SubscriptionState.unsubscribed
+                ? 'unsubscribed'
+                : 'subscribed',
+            external_id: user.external_id,
+            data: {
+                project_id: user.project_id,
+                subscription_id: subscription.id,
+                subscription_name: subscription.name,
+                channel: subscription.channel,
+            },
         },
-    })
+    }).queue()
 }
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
