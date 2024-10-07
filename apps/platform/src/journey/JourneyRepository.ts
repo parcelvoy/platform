@@ -85,6 +85,10 @@ export const archiveJourney = async (id: number, projectId: number): Promise<voi
     await Journey.archive(id, qb => qb.where('project_id', projectId), { published: false })
 }
 
+export const getJourneyStepByExternalId = async (journeyId: number, externalId: string, db?: Database): Promise<JourneyStep | undefined> => {
+    return await JourneyStep.first(qb => qb.where('journey_id', journeyId).where('external_id', externalId), db)
+}
+
 export const getJourneySteps = async (journeyId: number, db?: Database): Promise<JourneyStep[]> => {
     return await JourneyStep.all(qb => qb.where('journey_id', journeyId), db)
 }
@@ -295,4 +299,14 @@ export const getEntranceLog = async (entranceId: number) => {
         userStep.step = steps.get(userStep.step_id)
     }
     return userSteps
+}
+
+export const exitUserFromJourney = async (userId: number, entranceId: number, journeyId: number) => {
+    await JourneyUserStep.update(
+        q => q.where('user_id', userId)
+            .where('entrance_id', entranceId)
+            .whereNull('ended_at')
+            .where('journey_id', journeyId),
+        { ended_at: new Date() },
+    )
 }

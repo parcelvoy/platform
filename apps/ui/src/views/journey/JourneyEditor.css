@@ -84,7 +84,10 @@
     height: 16px;
 }
 
-.component.entrance .component-handle, .journey-step.entrance .step-header-icon {
+.component.entrance .component-handle,
+.journey-step.entrance .step-header-icon,
+.component.exit .component-handle,
+.journey-step.exit .step-header-icon {
     background-color: var(--color-red-soft);
     color: var(--color-red-hard);
 }
@@ -108,11 +111,13 @@
     color: var(--color-green-hard);
 }
 
-.journey-minimap.entrance {
+.journey-minimap.entrance,
+.journey-minimap.exit {
     fill: var(--color-red-soft);
 }
 
-.journey-minimap.entrance.selected {
+.journey-minimap.entrance.selected,
+.journey-minimap.exit.selected {
     fill: var(--color-red);
 }
 
@@ -182,7 +187,8 @@
     opacity: 1;
 }
 
-.journey-step.entrance.selected {
+.journey-step.entrance.selected,
+.journey-step.exit.selected {
     border-color: var(--color-red-hard);
 }
 
@@ -200,7 +206,7 @@
 
 .journey-step .data-key {
     background-color: var(--color-background-soft);
-    padding: 5px;
+    padding: 7px 10px;
     border-radius: var(--border-radius-inner);
     display: flex;
     flex-direction: row;
