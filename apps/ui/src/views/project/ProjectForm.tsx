@@ -49,9 +49,9 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
     return (
         <FormWrapper<Project>
             defaultValues={defaults}
-            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap }) => {
+            onSubmit={async ({ id, name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap_email, link_wrap_push }) => {
 
-                const params = { name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap }
+                const params = { name, description, locale, timezone, text_opt_out_message, text_help_message, link_wrap_email, link_wrap_push }
 
                 const project = id
                     ? await api.projects.update(id, params)
@@ -92,9 +92,14 @@ export default function ProjectForm({ project, onSave }: ProjectFormProps) {
                             subtitle={t('sms_help_message_subtitle')} />
                         <SwitchField
                             form={form}
-                            name="link_wrap"
-                            label={t('link_wrapping')}
-                            subtitle={t('link_wrapping_subtitle')} />
+                            name="link_wrap_email"
+                            label={t('link_wrapping_email')}
+                            subtitle={t('link_wrapping_email_subtitle')} />
+                        <SwitchField
+                            form={form}
+                            name="link_wrap_push"
+                            label={t('link_wrapping_push')}
+                            subtitle={t('link_wrapping_push_subtitle')} />
                     </>
                 )
             }

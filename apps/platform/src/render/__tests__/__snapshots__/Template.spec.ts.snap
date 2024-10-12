@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Template compile email link wrap disabled 1`] = `
+Object {
+  "from": "from",
+  "html": "<html><body><a href=\\"https://google.com\\">link</a><img border=\\"0\\" width=\\"1\\" height=\\"1\\" alt=\\"\\" src=\\"https://parcelvoy.com/o?u=M8LRMWZ645&c=M8LRMWZ645&s=1\\" /></body></html>",
+  "subject": "subject",
+  "text": "link [https://google.com]",
+}
+`;
+
+exports[`Template compile email link wrap enabled 1`] = `
+Object {
+  "from": "from",
+  "html": "<html><body><a href=\\"https://parcelvoy.com/c?u=M8LRMWZ645&c=M8LRMWZ645&s=1&r=https%253A%252F%252Fgoogle.com\\">link</a><img border=\\"0\\" width=\\"1\\" height=\\"1\\" alt=\\"\\" src=\\"https://parcelvoy.com/o?u=M8LRMWZ645&c=M8LRMWZ645&s=1\\" /></body></html>",
+  "subject": "subject",
+  "text": "link [https://google.com]",
+}
+`;
+
+exports[`Template compile push link wrap disabled 1`] = `
+Object {
+  "body": "body",
+  "custom": Object {
+    "key": "value",
+    "url": "https://google.com",
+  },
+  "title": "title",
+  "topic": "topic",
+}
+`;
+
+exports[`Template compile push link wrap enabled 1`] = `
+Object {
+  "body": "body",
+  "custom": Object {
+    "key": "value",
+    "url": "https://parcelvoy.com/c?u=M8LRMWZ645&c=M8LRMWZ645&s=1&r=https%253A%252F%252Fgoogle.com",
+  },
+  "title": "title",
+  "topic": "topic",
+}
+`;

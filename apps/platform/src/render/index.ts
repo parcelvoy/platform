@@ -63,7 +63,7 @@ export const Wrap = ({ html, preheader, variables: { user, context, project } }:
     }
 
     // Check if link wrapping is enabled first
-    if (project.link_wrap) {
+    if (project.link_wrap_email) {
         html = clickWrapHtml(html, trackingParams)
     }
 

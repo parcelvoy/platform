@@ -1,5 +1,5 @@
 import App from '../../app'
-import { Variables, Wrap } from '../../render'
+import { Variables } from '../../render'
 import { EmailTemplate } from '../../render/Template'
 import { unsubscribeEmailLink } from '../../subscriptions/SubscriptionService'
 import { encodeHashid, pick } from '../../utilities'
@@ -26,11 +26,6 @@ export default class EmailChannel {
         const email: Email = {
             ...compiled,
             to: variables.user.email,
-            html: Wrap({
-                html: compiled.html,
-                preheader: compiled.preheader,
-                variables,
-            }), // Add link and open tracking
             headers: {
                 'X-Campaign-Id': encodeHashid(variables.context.campaign_id),
                 'X-Subscription-Id': encodeHashid(variables.context.subscription_id),
