@@ -296,3 +296,25 @@ export const getEntranceLog = async (entranceId: number) => {
     }
     return userSteps
 }
+
+export const getJourneyUserStepByExternalId = async (journeyId: number, userId: number, externalId: string, db?: Database): Promise<JourneyUserStep | undefined> => {
+    return await JourneyUserStep.first(
+        qb => qb.leftJoin('journey_steps', 'journey_steps.id', 'journey_user_step.step_id')
+            .where('journey_user_step.journey_id', journeyId)
+            .where('journey_steps.external_id', externalId)
+            .where('journey_user_step.user_id', userId)
+            .select('journey_user_step.*'),
+        db,
+    )
+}
+
+export const exitUserFromJourney = async (userId: number, entranceId: number, journeyId: number) => {
+    console.log('exiting from', userId, entranceId, journeyId)
+    await JourneyUserStep.update(
+        q => q.where('user_id', userId)
+            .where('id', entranceId)
+            .whereNull('ended_at')
+            .where('journey_id', journeyId),
+        { ended_at: new Date() },
+    )
+}

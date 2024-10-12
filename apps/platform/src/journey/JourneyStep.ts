@@ -12,6 +12,7 @@ import App from '../app'
 import { RRule } from 'rrule'
 import { JourneyState } from './JourneyState'
 import { EventPostJob, UserPatchJob } from '../jobs'
+import { exitUserFromJourney, getJourneyUserStepByExternalId } from './JourneyRepository'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -155,6 +156,38 @@ export class JourneyEntrance extends JourneyStep {
             data: {
                 list_id: listId,
             },
+            x: 0,
+            y: 0,
+        }, db)
+    }
+}
+
+export class JourneyExit extends JourneyStep {
+    static type = 'exit'
+
+    entrance_uuid!: string
+    event_name!: string
+    rule?: Rule
+
+    parseJson(json: any) {
+        super.parseJson(json)
+
+        this.entrance_uuid = json?.data?.entrance_uuid
+        this.event_name = json?.data?.event_name
+        this.rule = json?.data?.rule
+    }
+
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
+        const entrance = await getJourneyUserStepByExternalId(this.journey_id, userStep.user_id, this.entrance_uuid)
+        if (entrance) await exitUserFromJourney(userStep.user_id, entrance.id, this.journey_id)
+
+        super.process(state, userStep)
+    }
+
+    static async create(journeyId: number, db?: Database): Promise<JourneyExit> {
+        return await JourneyExit.insertAndFetch({
+            external_id: uuid(),
+            journey_id: journeyId,
             x: 0,
             y: 0,
         }, db)
@@ -556,6 +589,7 @@ export class JourneyEvent extends JourneyStep {
 
 export const journeyStepTypes = [
     JourneyEntrance,
+    JourneyExit,
     JourneyDelay,
     JourneyAction,
     JourneyGate,
