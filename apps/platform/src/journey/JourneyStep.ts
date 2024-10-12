@@ -12,7 +12,7 @@ import App from '../app'
 import { RRule } from 'rrule'
 import { JourneyState } from './JourneyState'
 import { EventPostJob, UserPatchJob } from '../jobs'
-import { exitUserFromJourney, getJourneyStepByExternalId } from './JourneyRepository'
+import { exitUserFromJourney, getJourneyUserStepByExternalId } from './JourneyRepository'
 
 export class JourneyUserStep extends Model {
     user_id!: number
@@ -178,8 +178,10 @@ export class JourneyExit extends JourneyStep {
     }
 
     async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
-        const entrance = await getJourneyStepByExternalId(this.journey_id, this.entrance_uuid)
+        const entrance = await getJourneyUserStepByExternalId(this.journey_id, userStep.user_id, this.entrance_uuid)
         if (entrance) await exitUserFromJourney(userStep.user_id, entrance.id, this.journey_id)
+
+        super.process(state, userStep)
     }
 
     static async create(journeyId: number, db?: Database): Promise<JourneyExit> {

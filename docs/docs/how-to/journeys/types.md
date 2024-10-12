@@ -9,6 +9,7 @@ sidebar_position: 1
 - [**Balancer**](#balancer): Randomly split users across paths and rate limit traffic.
 - [**Delay**](#delay): Wait for a duration or until a specific date or time before proceeding.
 - [**Entrance**](#entrance): Entry point into the `Journey` that can be triggered by events, schedules, or by other `Journeys` with `Link` steps.
+- [**Exit**](#exit): A forced exit from any path a user is in for a selected entrance.
 - [**Event**](#event): Trigger an analytic event for the user.
 - [**Experiment**](#experiment): Randomly send users down multiple paths for A/B testing purposes.
 - [**Gate**](#gate): Split a user between paths depending on the result of a condition.
@@ -81,6 +82,12 @@ All users from a provided list will start the journey on a provided interval. Th
 - **Interval**: Given the frequency, how often should the entrance happen. A frequency of daily with an interval of two would run every other day.
 - **Days**: If set, on what days should the entrance only run on.
 
+## Exit
+Sometimes you might wish to remove a user from a given journey. This can be useful for setting up things like exit criteria under which you stop a user from continuing down a journey if they perform a certain action.
+
+#### Parameters
+- **Event Name**: Which event should trigger the entrance
+- **Entrance Flow**: The entrance for the flow you wish to remove the user from. This can either be the same flow you are currently in, or any flow in the given journey. 
 
 ## Event
 If you have an external analytics provider setup (i.e. Segment) you can trigger external events using this type of step. When triggered, an event will be generated with parameters generated from the template and sent.
