@@ -89,7 +89,11 @@ const projectCreateParams: JSONSchemaType<ProjectParams> = {
             type: 'string',
             nullable: true,
         },
-        link_wrap: {
+        link_wrap_email: {
+            type: 'boolean',
+            nullable: true,
+        },
+        link_wrap_push: {
             type: 'boolean',
             nullable: true,
         },
@@ -145,7 +149,11 @@ const projectUpdateParams: JSONSchemaType<Partial<ProjectParams>> = {
             type: 'string',
             nullable: true,
         },
-        link_wrap: {
+        link_wrap_email: {
+            type: 'boolean',
+            nullable: true,
+        },
+        link_wrap_push: {
             type: 'boolean',
             nullable: true,
         },

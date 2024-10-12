@@ -9,7 +9,8 @@ export default class Project extends Model {
     timezone!: string
     text_opt_out_message?: string
     text_help_message?: string
-    link_wrap?: boolean
+    link_wrap_email?: boolean
+    link_wrap_push?: boolean
 }
 
 export type ProjectParams = Omit<Project, ModelParams | 'deleted_at' | 'organization_id'>

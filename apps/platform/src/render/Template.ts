@@ -1,10 +1,11 @@
-import Render, { Variables } from '.'
+import Render, { Variables, Wrap } from '.'
 import { Webhook } from '../providers/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import { isValid, IsValidSchema } from '../core/validate'
 import { Email, NamedEmail } from '../providers/email/Email'
 import { htmlToText } from 'html-to-text'
+import { paramsToEncodedLink } from './LinkService'
 
 export default class Template extends Model {
     project_id!: number
@@ -78,6 +79,7 @@ export class EmailTemplate extends Template {
 
     compile(variables: Variables): CompiledEmail {
         const html = Render(this.html, variables)
+        const preheader = this.preheader ? Render(this.preheader, variables) : undefined
         const email: CompiledEmail = {
             subject: Render(this.subject, variables),
             from: typeof this.from === 'string'
@@ -86,7 +88,7 @@ export class EmailTemplate extends Template {
                     name: Render(this.from?.name ?? '', variables),
                     address: Render(this.from?.address ?? '', variables),
                 },
-            html,
+            html: Wrap({ html, preheader, variables }), // Add link and open tracking
 
             // If the text copy has been left empty, generate from HTML
             text: this.text !== undefined && this.text !== ''
@@ -94,7 +96,7 @@ export class EmailTemplate extends Template {
                 : htmlToText(html),
         }
 
-        if (this.preheader) email.preheader = Render(this.preheader, variables)
+        if (preheader) email.preheader = preheader
         if (this.reply_to) email.reply_to = Render(this.reply_to, variables)
         if (this.cc) email.cc = Render(this.cc, variables)
         if (this.bcc) email.bcc = Render(this.bcc, variables)
@@ -184,16 +186,27 @@ export class PushTemplate extends Template {
     }
 
     compile(variables: Variables): CompiledPush {
+        const { project, user, context } = variables
         const custom = Object.keys(this.custom).reduce((body, key) => {
             body[key] = Render(this.custom[key], variables)
             return body
         }, {} as Record<string, any>)
 
+        const url = project.link_wrap_push
+            ? paramsToEncodedLink({
+                userId: user.id,
+                campaignId: context.campaign_id,
+                referenceId: context.reference_id,
+                redirect: this.url,
+                path: 'c',
+            })
+            : this.url
+
         return {
             topic: this.topic,
             title: Render(this.title, variables),
             body: Render(this.body, variables),
-            custom: { ...custom, url: this.url },
+            custom: { ...custom, url },
         }
     }
 

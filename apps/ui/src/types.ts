@@ -171,7 +171,8 @@ export interface Project {
     timezone: string
     text_opt_out_message?: string
     text_help_message?: string
-    link_wrap: boolean
+    link_wrap_email: boolean
+    link_wrap_push: boolean
     created_at: string
     updated_at: string
     deleted_at?: string
