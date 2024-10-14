@@ -57,6 +57,8 @@ export const initProvider = (config?: AuthProviderConfig): AuthProvider => {
 
 export const authMethods = async (organization?: Organization): Promise<AuthMethod[]> => {
 
+    if (!App.main.env.config.multiOrg) return mapMethods(App.main.env.auth)
+
     // If we know the org, don't require any extra steps like
     // providing email since we know where to route you. Otherwise
     // we need context to properly fetch SSO and such.
