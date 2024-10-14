@@ -84,7 +84,7 @@ export const validateAuth = async (ctx: Context): Promise<void> => {
 const loadProvider = async (ctx: Context): Promise<AuthProvider> => {
     const driver = ctx.params.driver as AuthProviderName
     const organization = ctx.state.organization
-    if (organization) {
+    if (organization && App.main.env.config.multiOrg) {
         return initProvider(organization.auth)
     }
 
