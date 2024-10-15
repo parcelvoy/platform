@@ -66,6 +66,7 @@ const cleanCell = (value: any, key: string) => {
         if (value.toLowerCase() === 'true') return true
         if (value === 'NULL' || value == null || value === 'undefined' || value === '') return undefined
         if (key.includes('_at')) return new Date(value)
+        if (key === 'phone' && !value.includes('+')) return `+${value}`
     }
     return value
 }
