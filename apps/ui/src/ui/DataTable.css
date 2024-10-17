@@ -94,6 +94,10 @@
     column-gap: 10px;
 }
 
+.ui-table .table-cell .multi-cell.no-image {
+    grid-template-areas: "text text";
+}
+
 .ui-table .table-cell .multi-cell .text {
     grid-area: text;
 }
