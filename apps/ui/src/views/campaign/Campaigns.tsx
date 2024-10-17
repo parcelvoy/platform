@@ -140,7 +140,7 @@ export default function Campaigns() {
                         {
                             key: 'engagement',
                             title: t('engagement'),
-                            cell: ({ item: { channel, delivery } }) => delivery.opens > 0
+                            cell: ({ item: { channel, delivery } }) => delivery?.opens > 0
                                 ? (
                                     <div className="multi-cell no-image">
                                         <div className="text">
