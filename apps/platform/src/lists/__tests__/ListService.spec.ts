@@ -5,7 +5,7 @@ import { RuleTree } from '../../rules/Rule'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { random, randomInt, uuid } from '../../utilities'
-import List, { UserList } from '../List'
+import { UserList } from '../List'
 import { addUserToList, countKey, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
 
 describe('ListService', () => {
