@@ -38,6 +38,24 @@ export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
     return `${sent} / ${total}`
 }
 
+export const OpenRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
+    const opens = (delivery?.opens ?? 0)
+    const sent = (delivery?.sent ?? 0)
+    const ratio = sent > 0 ? opens / sent : 0
+    const opensStr = opens.toLocaleString()
+    const ratioStr = ratio.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+    return `${opensStr} (${ratioStr})`
+}
+
+export const ClickRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
+    const clicks = (delivery?.clicks ?? 0)
+    const sent = (delivery?.sent ?? 0)
+    const ratio = sent > 0 ? clicks / sent : 0
+    const clicksStr = clicks.toLocaleString()
+    const ratioStr = ratio.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+    return `${clicksStr} (${ratioStr})`
+}
+
 export default function Campaigns() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
@@ -115,6 +133,16 @@ export default function Campaigns() {
                             key: 'delivery',
                             title: t('delivery'),
                             cell: ({ item: { delivery } }) => DeliveryRatio({ delivery }),
+                        },
+                        {
+                            key: 'open_rate',
+                            title: t('open_rate'),
+                            cell: ({ item: { delivery } }) => OpenRatio({ delivery }),
+                        },
+                        {
+                            key: 'click_rate',
+                            title: t('click_rate'),
+                            cell: ({ item: { delivery } }) => ClickRatio({ delivery }),
                         },
                         {
                             key: 'send_at',
