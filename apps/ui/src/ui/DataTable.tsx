@@ -124,7 +124,7 @@ export function DataTable<T>({
                                         if (!col.cell) {
                                             if ((col.key.endsWith('_at') || col.key.endsWith('_until'))
                                                 && (typeof value === 'string' || typeof value === 'number')) {
-                                                value = formatDate(preferences, value, 'Ppp')
+                                                value = formatDate(preferences, value, 'Pp')
                                             }
                                             if (typeof value === 'boolean') {
                                                 value = value ? <CheckIcon /> : <CloseIcon />

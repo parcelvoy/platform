@@ -33,12 +33,15 @@ export const CampaignTag = ({ state }: { state: CampaignState }) => {
 }
 
 export const DeliveryRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
-    const sent = (delivery?.sent ?? 0).toLocaleString()
-    const total = (delivery?.total ?? 0).toLocaleString()
-    return `${sent} / ${total}`
+    const sent = (delivery?.sent ?? 0)
+    const total = (delivery?.total ?? 0)
+    const ratio = sent > 0 ? sent / total : 0
+    const sentStr = sent.toLocaleString()
+    const ratioStr = ratio.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+    return `${sentStr} (${ratioStr})`
 }
 
-export const OpenRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
+export const OpenRate = ({ delivery }: { delivery: CampaignDelivery }) => {
     const opens = (delivery?.opens ?? 0)
     const sent = (delivery?.sent ?? 0)
     const ratio = sent > 0 ? opens / sent : 0
@@ -47,7 +50,7 @@ export const OpenRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
     return `${opensStr} (${ratioStr})`
 }
 
-export const ClickRatio = ({ delivery }: { delivery: CampaignDelivery }) => {
+export const ClickRate = ({ delivery }: { delivery: CampaignDelivery }) => {
     const clicks = (delivery?.clicks ?? 0)
     const sent = (delivery?.sent ?? 0)
     const ratio = sent > 0 ? clicks / sent : 0
@@ -135,14 +138,22 @@ export default function Campaigns() {
                             cell: ({ item: { delivery } }) => DeliveryRatio({ delivery }),
                         },
                         {
-                            key: 'open_rate',
-                            title: t('open_rate'),
-                            cell: ({ item: { delivery } }) => OpenRatio({ delivery }),
-                        },
-                        {
-                            key: 'click_rate',
-                            title: t('click_rate'),
-                            cell: ({ item: { delivery } }) => ClickRatio({ delivery }),
+                            key: 'engagement',
+                            title: t('engagement'),
+                            cell: ({ item: { channel, delivery } }) => delivery.opens > 0
+                                ? (
+                                    <div className="multi-cell no-image">
+                                        <div className="text">
+                                            <div className="title">
+                                                {OpenRate({ delivery })} {t('open_rate')}
+                                            </div>
+                                            {channel === 'email' && <div className="subtitle">
+                                                {ClickRate({ delivery })} {t('click_rate')}
+                                            </div>}
+                                        </div>
+                                    </div>
+                                )
+                                : null,
                         },
                         {
                             key: 'send_at',
@@ -150,7 +161,7 @@ export default function Campaigns() {
                             title: t('launched_at'),
                             cell: ({ item: { send_at, type } }) => {
                                 return send_at != null
-                                    ? formatDate(preferences, send_at, 'Ppp')
+                                    ? formatDate(preferences, send_at, 'Pp')
                                     : type === 'trigger'
                                         ? t('api_triggered')
                                         : <>&#8211;</>
