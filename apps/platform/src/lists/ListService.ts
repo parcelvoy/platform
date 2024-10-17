@@ -158,7 +158,7 @@ export const countKey = (list: List) => `list:${list.id}:${list.version}:count`
 
 export const addUserToList = async (user: User | number, list: List, event?: UserEvent) => {
     const userId = user instanceof User ? user.id : user
-    const count = await UserList.query()
+    const resp = await UserList.query()
         .insert({
             user_id: userId,
             list_id: list.id,
@@ -167,8 +167,8 @@ export const addUserToList = async (user: User | number, list: List, event?: Use
         })
         .onConflict(['user_id', 'list_id'])
         .ignore()
-    if (count) cacheIncr(App.main.redis, countKey(list))
-    return count
+    if (resp?.[0]) await cacheIncr(App.main.redis, countKey(list))
+    return resp
 }
 
 export const removeUserFromList = async (user: User | number, list: List) => {
@@ -177,7 +177,7 @@ export const removeUserFromList = async (user: User | number, list: List) => {
         qb.where('user_id', userId)
             .where('list_id', list.id),
     )
-    if (count) cacheDecr(App.main.redis, countKey(list))
+    if (count) await cacheDecr(App.main.redis, countKey(list))
     return count
 }
 
