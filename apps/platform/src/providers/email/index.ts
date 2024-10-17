@@ -6,6 +6,7 @@ import MailgunEmailProvider from './MailgunEmailProvider'
 import SESEmailProvider from './SESEmailProvider'
 import SMTPEmailProvider from './SMPTEmailProvider'
 import SendGridEmailProvider from './SendGridEmailProvider'
+import TachikomaEmailProvider from './TachikomaEmailProvider'
 
 type EmailProviderDerived = { new (): EmailProvider } & typeof EmailProvider
 export const typeMap: Record<string, EmailProviderDerived> = {
@@ -14,6 +15,7 @@ export const typeMap: Record<string, EmailProviderDerived> = {
     ses: SESEmailProvider,
     smtp: SMTPEmailProvider,
     logger: LoggerEmailProvider,
+    tachikoma: TachikomaEmailProvider,
 }
 
 export const providerMap = (record: { type: EmailProviderName }): EmailProvider => {
