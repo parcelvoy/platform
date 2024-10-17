@@ -11,6 +11,8 @@ import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { Chunker, visit } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
 import { RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, mergeInsertRules } from '../rules/RuleService'
+import { cacheDecr, cacheIncr } from '../config/redis'
+import App from '../app'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -152,9 +154,11 @@ export const deleteList = async (id: number, projectId: number) => {
     return await List.deleteById(id, qb => qb.where('project_id', projectId))
 }
 
+export const countKey = (list: List) => `list:${list.id}:${list.version}:count`
+
 export const addUserToList = async (user: User | number, list: List, event?: UserEvent) => {
     const userId = user instanceof User ? user.id : user
-    return await UserList.query()
+    const count = await UserList.query()
         .insert({
             user_id: userId,
             list_id: list.id,
@@ -163,15 +167,18 @@ export const addUserToList = async (user: User | number, list: List, event?: Use
         })
         .onConflict(['user_id', 'list_id'])
         .ignore()
+    if (count) cacheIncr(App.main.redis, countKey(list))
+    return count
 }
 
-export const removeUserFromList = async (user: User | number, list: List | number) => {
+export const removeUserFromList = async (user: User | number, list: List) => {
     const userId = user instanceof User ? user.id : user
-    const listId = list instanceof List ? list.id : list
-    return await UserList.delete(qb =>
+    const count = await UserList.delete(qb =>
         qb.where('user_id', userId)
-            .where('list_id', listId),
+            .where('list_id', list.id),
     )
+    if (count) cacheDecr(App.main.redis, countKey(list))
+    return count
 }
 
 export const importUsersToList = async (list: List, stream: FileStream) => {

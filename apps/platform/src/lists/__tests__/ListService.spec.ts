@@ -1,10 +1,12 @@
+import App from '../../app'
+import { cacheGet } from '../../config/redis'
 import Project from '../../projects/Project'
 import { RuleTree } from '../../rules/Rule'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { random, randomInt, uuid } from '../../utilities'
-import { UserList } from '../List'
-import { createList, listsForRule, populateList, updateList } from '../ListService'
+import List, { UserList } from '../List'
+import { addUserToList, countKey, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
 
 describe('ListService', () => {
 
@@ -155,6 +157,87 @@ describe('ListService', () => {
             const lists = await listsForRule([rule.uuid], project.id)
             expect(lists.length).toEqual(1)
             expect(lists[0]?.id).toEqual(list.id)
+        })
+    })
+
+    describe('addUserToList', () => {
+        test('should increment list count by one', async () => {
+            const { rule, project } = await makeRule()
+            const list = await createList(project.id, {
+                name: 'Dynamic List Add',
+                type: 'dynamic',
+                is_visible: true,
+                rule,
+            })
+
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test',
+            })
+
+            await addUserToList(user, list)
+
+            const value = await cacheGet(App.main.redis, countKey(list))
+            expect(value).toEqual(1)
+        })
+
+        test('should increment list count by multiple', async () => {
+            const { rule, project } = await makeRule()
+            const list = await createList(project.id, {
+                name: 'Dynamic List Add 2',
+                type: 'dynamic',
+                is_visible: true,
+                rule,
+            })
+
+            const user1 = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test1',
+            })
+            const user2 = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test2',
+            })
+            const user3 = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test3',
+            })
+
+            await addUserToList(user1, list)
+            await addUserToList(user2, list)
+            await addUserToList(user3, list)
+
+            const value = await cacheGet(App.main.redis, countKey(list))
+            expect(value).toEqual(3)
+        })
+    })
+
+    describe('removeUserFromList', () => {
+        test('should remove user from list', async () => {
+            const { rule, project } = await makeRule()
+            const list = await createList(project.id, {
+                name: 'Dynamic List Remove',
+                type: 'dynamic',
+                is_visible: true,
+                rule,
+            })
+
+            const user = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test',
+            })
+
+            const user2 = await User.insertAndFetch({
+                project_id: project.id,
+                external_id: 'test 2',
+            })
+
+            await addUserToList(user, list)
+            await addUserToList(user2, list)
+            await removeUserFromList(user, list)
+
+            const value = await cacheGet(App.main.redis, countKey(list))
+            expect(value).toEqual(1)
         })
     })
 })

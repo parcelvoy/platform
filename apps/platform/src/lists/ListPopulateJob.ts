@@ -22,6 +22,6 @@ export default class ListPopulateJob extends Job {
 
         await populateList(list)
 
-        await ListStatsJob.from(listId, projectId).queue()
+        await ListStatsJob.from(listId, projectId, true).queue()
     }
 }
