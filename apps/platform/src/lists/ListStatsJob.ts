@@ -30,7 +30,7 @@ export default class ListStatsJob extends Job {
 
         let count = await cacheGet<number>(redis, cacheKey) ?? 0
         if (!list?.users_count || reset) {
-            cacheDel(redis, cacheKey)
+            await cacheDel(redis, cacheKey)
             count = await listUserCount(listId)
             await cacheIncr(redis, cacheKey, count)
         }
