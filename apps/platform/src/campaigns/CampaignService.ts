@@ -12,7 +12,7 @@ import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
 import { getSubscription, getUserSubscriptionState } from '../subscriptions/SubscriptionService'
-import { chunk, crossTimezoneCopy, pick, shallowEqual } from '../utilities'
+import { chunk, pick, shallowEqual } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { getProject } from '../projects/ProjectService'
@@ -21,6 +21,7 @@ import CampaignGenerateListJob from './CampaignGenerateListJob'
 import Project from '../projects/Project'
 import Template from '../render/Template'
 import { subDays } from 'date-fns'
+import { raw } from '../core/Model'
 
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
     const result = await Campaign.search(
@@ -297,18 +298,9 @@ export const generateSendList = async (campaign: SentCampaign) => {
             .insert(items)
             .onConflict(['campaign_id', 'user_id', 'reference_id'])
             .merge(['state', 'send_at'])
-    }, ({ user_id, timezone }: { user_id: number, timezone: string }) => ({
-        user_id,
-        campaign_id: campaign.id,
-        state: 'pending',
-        send_at: campaign.send_in_user_timezone
-            ? crossTimezoneCopy(
-                campaign.send_at,
-                project.timezone,
-                timezone ?? project.timezone,
-            )
-            : campaign.send_at,
-    }))
+    }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
+        CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
+    )
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
@@ -466,4 +458,46 @@ export const canSendCampaignToUser = async (campaign: Campaign, user: Pick<User,
     if (campaign.channel === 'text' && !user.phone) return false
     if (campaign.channel === 'push' && !user.devices) return false
     return true
+}
+
+export const updateCampaignSendEnrollment = async (user: User) => {
+    const campaigns = await Campaign.query()
+        .leftJoin('campaign_sends', (qb) =>
+            qb.on('campaign_sends.campaign_id', 'campaigns.id')
+                .andOn('campaign_sends.user_id', raw(user.id)),
+        )
+        .leftJoin('projects', 'projects.id', 'campaigns.project_id')
+        .where('campaigns.project_id', user.project_id)
+        .where('campaigns.state', 'scheduled')
+        .select('campaigns.*', 'campaign_sends.id AS send_id', 'campaign_sends.state AS send_state', 'projects.timezone') as Array<SentCampaign & { send_id: number, send_state: CampaignSendState, timezone: string }>
+
+    const join = []
+    const leave = []
+    for (const campaign of campaigns) {
+        const match = await recipientQuery(campaign)
+            .where('users.id', user.id)
+            .first()
+
+        // If user matches recipient query and they aren't already in the
+        // list, add to send list
+        if (match && !campaign.send_id) {
+            join.push(CampaignSend.create(campaign, Project.fromJson({ timezone: campaign.timezone }), user))
+        }
+
+        // If user is not in recipient list but we have a record, remove from
+        // send list
+        if (!match && campaign.send_id && campaign.send_state === 'pending') {
+            leave.push(campaign.send_id)
+        }
+    }
+
+    if (leave.length) {
+        await CampaignSend.query().whereIn('id', leave).delete()
+    }
+    if (join.length) {
+        await CampaignSend.query()
+            .insert(join)
+            .onConflict(['campaign_id', 'user_id', 'reference_id'])
+            .merge(['state', 'send_at'])
+    }
 }

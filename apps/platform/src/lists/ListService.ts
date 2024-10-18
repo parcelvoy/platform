@@ -11,6 +11,7 @@ import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { Chunker, visit } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
 import { RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, mergeInsertRules } from '../rules/RuleService'
+import { updateCampaignSendEnrollment } from '../campaigns/CampaignService'
 import { cacheDecr, cacheIncr } from '../config/redis'
 import App from '../app'
 
@@ -297,10 +298,12 @@ export const isUserInList = async (user_id: number, list_id: number) => {
 
 export const updateUsersLists = async (user: User, results: RuleResults, event?: UserEvent) => {
 
+    const dirtyLists = new Set<number>()
     if (results.success.length) {
         const successLists = await listsForRule(results.success, user.project_id)
         for (const list of successLists) {
             await addUserToList(user, list, event)
+            dirtyLists.add(list.id)
         }
     }
 
@@ -308,7 +311,14 @@ export const updateUsersLists = async (user: User, results: RuleResults, event?:
         const failureLists = await listsForRule(results.failure, user.project_id)
         for (const list of failureLists) {
             await removeUserFromList(user, list)
+            dirtyLists.add(list.id)
         }
+    }
+
+    // If any lists were updated for the user, check associated campaigns
+    // to see if send list needs to be updated
+    if (dirtyLists.size > 0) {
+        await updateCampaignSendEnrollment(user)
     }
 }
 
