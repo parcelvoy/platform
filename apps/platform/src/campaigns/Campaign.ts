@@ -36,7 +36,7 @@ export default class Campaign extends Model {
     tags?: string[]
 
     send_in_user_timezone?: boolean
-    send_at?: string | Date
+    send_at?: string | Date | null
 
     deleted_at?: Date
 
