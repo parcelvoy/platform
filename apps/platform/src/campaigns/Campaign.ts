@@ -4,6 +4,9 @@ import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
+import { crossTimezoneCopy } from '../utilities'
+import Project from '../projects/Project'
+import { User } from '../users/User'
 
 export type CampaignState = 'draft' | 'scheduled' | 'pending' | 'running' | 'finished' | 'aborted'
 export interface CampaignDelivery {
@@ -67,6 +70,25 @@ export class CampaignSend extends Model {
 
     get hasCompleted() {
         return ['aborted', 'sent', 'failed', 'bounced'].includes(this.state)
+    }
+
+    static create(
+        campaign: SentCampaign,
+        project: Pick<Project, 'timezone'>,
+        user: Pick<User, 'id' | 'timezone'>,
+    ): CampaignSendParams {
+        return {
+            user_id: user.id,
+            campaign_id: campaign.id,
+            state: 'pending',
+            send_at: campaign.send_in_user_timezone
+                ? crossTimezoneCopy(
+                    campaign.send_at,
+                    project.timezone,
+                    user.timezone ?? project.timezone,
+                )
+                : campaign.send_at,
+        }
     }
 }
 
