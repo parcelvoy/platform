@@ -111,17 +111,18 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     }
 
     const data: Partial<Campaign> = { ...params }
+    let send_at: Date | undefined | null = data.send_at ? new Date(data.send_at) : undefined
 
     // If we are aborting, reset `send_at`
     if (data.state === 'aborted') {
-        data.send_at = undefined
+        send_at = null
         await abortCampaign(campaign)
     }
 
     // If we are rescheduling, abort sends so they are reset
-    if (data.send_at
+    if (send_at
         && campaign.send_at
-        && data.send_at !== campaign.send_at) {
+        && send_at !== campaign.send_at) {
         data.state = 'pending'
         await abortCampaign(campaign)
     }
@@ -141,6 +142,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
 
     await Campaign.update(qb => qb.where('id', id), {
         ...data,
+        send_at,
     })
 
     if (tags) {
