@@ -152,7 +152,7 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
         {
             limit: provider.rate_limit,
             points,
-            msDuration: provider.interval(),
+            msDuration: provider.interval,
         },
     )
 }

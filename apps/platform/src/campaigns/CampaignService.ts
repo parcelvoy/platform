@@ -181,6 +181,15 @@ export const getCampaignUsers = async (id: number, params: PageParams, projectId
     )
 }
 
+interface SendCampaign {
+    campaign: Campaign
+    user: User | number
+    event?: UserEvent | number
+    send_id?: number
+    reference_type?: CampaignSendReferenceType
+    reference_id?: string
+}
+
 export const triggerCampaignSend = async ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign) => {
     const userId = user instanceof User ? user.id : user
     const eventId = event instanceof UserEvent ? event?.id : event
@@ -208,15 +217,6 @@ export const triggerCampaignSend = async ({ campaign, user, event, send_id, refe
     })
 }
 
-interface SendCampaign {
-    campaign: Campaign
-    user: User | number
-    event?: UserEvent | number
-    send_id?: number
-    reference_type?: CampaignSendReferenceType
-    reference_id?: string
-}
-
 export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
     // TODO: Might also need to check for unsubscribe in here since we can
@@ -242,10 +242,6 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type
     }
 
     return job
-}
-
-export const sendCampaign = async (data: SendCampaign): Promise<void> => {
-    await sendCampaignJob(data).queue()
 }
 
 interface UpdateSendStateParams {
@@ -305,12 +301,18 @@ export const generateSendList = async (campaign: SentCampaign) => {
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
 
-export const campaignSendReadyQuery = (campaignId: number) => {
-    return CampaignSend.query()
+export const campaignSendReadyQuery = (
+    campaignId: number,
+    includeThrottled = false,
+    limit?: number,
+) => {
+    const query = CampaignSend.query()
         .where('campaign_sends.send_at', '<=', CampaignSend.raw('NOW()'))
-        .where('campaign_sends.state', 'pending')
+        .where('campaign_sends.state', includeThrottled ? ['pending', 'throttled'] : ['pending'])
         .where('campaign_id', campaignId)
         .select('user_id', 'campaign_sends.id AS send_id')
+    if (limit) query.limit(limit)
+    return query
 }
 
 export const checkStalledSends = (campaignId: number) => {
