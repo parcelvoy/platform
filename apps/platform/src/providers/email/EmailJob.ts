@@ -7,6 +7,8 @@ import { EmailTemplate } from '../../render/Template'
 import { EncodedJob } from '../../queue'
 import App from '../../app'
 import { releaseLock } from '../../core/Lock'
+import { getUserSubscriptionState } from '../../subscriptions/SubscriptionService'
+import { SubscriptionState } from '../../subscriptions/Subscription'
 
 export default class EmailJob extends Job {
     static $name = 'email'
@@ -39,6 +41,9 @@ export default class EmailJob extends Job {
         if (!isReady) return
 
         try {
+            const subscriptionState = await getUserSubscriptionState(user.id, campaign.subscription_id)
+            if (subscriptionState === SubscriptionState.unsubscribed) throw new Error('User is unsubscribed')
+
             const result = await channel.send(template, data)
             await finalizeSend(data, result)
         } catch (error: any) {

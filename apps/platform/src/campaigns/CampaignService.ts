@@ -221,6 +221,7 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type
 
     // TODO: Might also need to check for unsubscribe in here since we can
     // do individual sends
+    // Added a check for unsubscribed in EmailJob handler
     const body = {
         campaign_id: campaign.id,
         user_id: user instanceof User ? user.id : user,
