@@ -53,6 +53,8 @@ export function ProviderSchema<_ extends ExternalProviderParams, D>(id: string, 
     } as any
 }
 
+type RateInterval = 'second' | 'minute' | 'hour' | 'day'
+
 export default class Provider extends Model {
     type!: string
     name!: string
@@ -61,7 +63,7 @@ export default class Provider extends Model {
     data!: Record<string, any>
     is_default!: boolean
     rate_limit!: number
-    rate_interval!: 'second' | 'minute' | 'hour' | 'day'
+    rate_interval!: RateInterval
     setup!: ProviderSetupMeta[]
 
     static jsonAttributes = ['data']
@@ -109,7 +111,7 @@ export default class Provider extends Model {
 
     static get options(): ProviderOptions { return {} }
 
-    interval() {
+    get interval() {
         const intervals = {
             second: 1000,
             minute: 60 * 1000,
@@ -118,11 +120,21 @@ export default class Provider extends Model {
         }
         return intervals[this.rate_interval || 'second']
     }
+
+    ratePer(period: RateInterval) {
+        const intervals = {
+            second: 1,
+            minute: 60,
+            hour: 60 * 60,
+            day: 24 * 60 * 60,
+        }
+        return this.rate_limit * intervals[period]
+    }
 }
 
 export type ProviderMap<T extends Provider> = (record: any) => T
 
-export type ProviderParams = Omit<Provider, ModelParams | 'setup' | 'loadSetup' | 'interval'>
+export type ProviderParams = Omit<Provider, ModelParams | 'setup' | 'loadSetup' | 'interval' | 'ratePer'>
 
 export type ExternalProviderParams = Omit<ProviderParams, 'group'>
 

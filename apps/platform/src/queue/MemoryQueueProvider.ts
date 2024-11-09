@@ -1,4 +1,4 @@
-import { sleep } from '../utilities'
+import { sleep, uuid } from '../utilities'
 import Job from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider from './QueueProvider'
@@ -9,7 +9,8 @@ export interface MemoryConfig extends QueueTypeConfig {
 
 export default class MemoryQueueProvider implements QueueProvider {
     queue: Queue
-    backlog: Job[] = []
+    jobs: Record<string, Job> = {}
+    backlog: string[] = []
     loop: NodeJS.Timeout | undefined
     batchSize = 1000 as const
 
@@ -18,11 +19,15 @@ export default class MemoryQueueProvider implements QueueProvider {
     }
 
     async enqueue(job: Job): Promise<void> {
-        this.backlog.push(job)
+        const jobId = job.options.jobId ?? uuid()
+        if (!this.jobs[jobId]) {
+            this.jobs[jobId] = job
+            this.backlog.push(jobId)
+        }
     }
 
     async enqueueBatch(jobs: Job[]): Promise<void> {
-        this.backlog.push(...jobs)
+        for (const job of jobs) this.enqueue(job)
     }
 
     async delay(job: Job, milliseconds: number): Promise<void> {
@@ -42,12 +47,17 @@ export default class MemoryQueueProvider implements QueueProvider {
     }
 
     private async process() {
-        let job = this.backlog.shift()
-        while (job) {
-            if (job) {
-                await this.queue.dequeue(job)
+        let jobId = this.backlog.shift()
+        while (jobId) {
+
+            // If we have a jobId fetch job and dequeue
+            if (jobId) {
+                const job = this.jobs[jobId]
+                if (job) await this.queue.dequeue(job)
+                delete this.jobs[jobId]
             }
-            job = this.backlog.shift()
+
+            jobId = this.backlog.shift()
         }
         await sleep(1000)
         await this.process()

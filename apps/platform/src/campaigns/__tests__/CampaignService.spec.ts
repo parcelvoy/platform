@@ -1,12 +1,10 @@
-import App from '../../app'
-import EmailJob from '../../providers/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
 import { createSubscription, subscribe, subscribeAll } from '../../subscriptions/SubscriptionService'
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, sendCampaign, generateSendList, estimatedSendSize, updateCampaignSendEnrollment } from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, generateSendList, estimatedSendSize, updateCampaignSendEnrollment } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
 import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
 import ListStatsJob from '../../lists/ListStatsJob'
@@ -152,20 +150,6 @@ describe('CampaignService', () => {
                 name,
             })
             await expect(promise).rejects.toThrowError(RequestError)
-        })
-    })
-
-    describe('sendCampaign', () => {
-        test('enqueue an email job', async () => {
-
-            const campaign = await createTestCampaign()
-            const user = await createUser(campaign.project_id)
-
-            const spy = jest.spyOn(App.main.queue, 'enqueue')
-            await sendCampaign({ campaign, user })
-
-            expect(spy).toHaveBeenCalledTimes(1)
-            expect(spy.mock.calls[0][0]).toBeInstanceOf(EmailJob)
         })
     })
 

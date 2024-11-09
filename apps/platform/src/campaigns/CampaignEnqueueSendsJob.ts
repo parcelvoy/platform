@@ -4,6 +4,7 @@ import { CampaignJobParams } from './Campaign'
 import { chunk } from '../utilities'
 import App from '../app'
 import { acquireLock, releaseLock } from '../core/Lock'
+import { getProvider } from '../providers/ProviderRepository'
 
 export default class CampaignEnqueueSendsJob extends Job {
     static $name = 'campaign_enqueue_sends_job'
@@ -20,8 +21,18 @@ export default class CampaignEnqueueSendsJob extends Job {
         const acquired = await acquireLock({ key, timeout: 300 })
         if (!acquired) return
 
+        // If we are using redis, we can include throttled sends
+        // because they are deduped based on jobId. Not available in other
+        // queues
+        const includeThrottled = App.main.env.queue.driver === 'redis'
+
+        // Only enqueue the maximum that can be sent for the interval
+        // this job runs (every minute)
+        const provider = await getProvider(campaign.provider_id)
+        const ratePerMinute = provider?.ratePer('minute')
+
         // Anything that is ready to be sent, enqueue for sending
-        const query = campaignSendReadyQuery(campaign.id)
+        const query = campaignSendReadyQuery(campaign.id, includeThrottled, ratePerMinute)
         await chunk<{ user_id: number, send_id: number }>(query, 100, async (items) => {
             const jobs = items.map(({ user_id, send_id }) => sendCampaignJob({ campaign, user: user_id, send_id }))
             await App.main.queue.enqueueBatch(jobs)
