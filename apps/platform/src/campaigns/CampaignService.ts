@@ -219,8 +219,6 @@ export const triggerCampaignSend = async ({ campaign, user, event, send_id, refe
 
 export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
-    // TODO: Might also need to check for unsubscribe in here since we can
-    // do individual sends
     const body = {
         campaign_id: campaign.id,
         user_id: user instanceof User ? user.id : user,

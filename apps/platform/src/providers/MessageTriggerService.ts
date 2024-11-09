@@ -17,6 +17,8 @@ import { MessageTrigger } from './MessageTrigger'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
 import { createEvent } from '../users/UserEventRepository'
 import { loadUserStepDataMap } from '../journey/JourneyService'
+import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
+import { SubscriptionState } from '../subscriptions/Subscription'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -45,6 +47,18 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     // Fetch campaign
     const campaign = await Campaign.find(campaign_id)
     if (!campaign) return
+
+    // Check to see if user has already unsubscribed or not
+    const subscriptionState = await getUserSubscriptionState(user.id, campaign.subscription_id)
+    if (subscriptionState === SubscriptionState.unsubscribed) {
+        await updateSendState({
+            campaign,
+            user,
+            reference_id,
+            state: 'aborted',
+        })
+        return
+    }
 
     // Get all templates
     const templates = await Template.all(
