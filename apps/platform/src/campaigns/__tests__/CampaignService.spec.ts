@@ -1,5 +1,3 @@
-import App from '../../app'
-import EmailJob from '../../providers/email/EmailJob'
 import { RequestError } from '../../core/errors'
 import { addUserToList, createList } from '../../lists/ListService'
 import { createSubscription, subscribe, subscribeAll } from '../../subscriptions/SubscriptionService'
