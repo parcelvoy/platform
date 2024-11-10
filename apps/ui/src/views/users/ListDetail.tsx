@@ -19,6 +19,7 @@ import { useRoute } from '../router'
 import { EditIcon, SendIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 import { useTranslation } from 'react-i18next'
+import { Alert } from '../../ui'
 
 const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: Rule) => void }) => {
     const { t } = useTranslation()
@@ -38,15 +39,23 @@ export default function ListDetail() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isEditListOpen, setIsEditListOpen] = useState(false)
     const [isUploadOpen, setIsUploadOpen] = useState(false)
+    const [error, setError] = useState<string | undefined>()
 
     const state = useSearchTableState(useCallback(async params => await api.lists.users(project.id, list.id, params), [list, project]))
     const route = useRoute()
 
     const saveList = async ({ name, rule, published, tags }: ListUpdateParams) => {
-        const value = await api.lists.update(project.id, list.id, { name, rule, published, tags })
-        setIsEditListOpen(false)
-        setIsDialogOpen(true)
-        setList(value)
+        try {
+            const value = await api.lists.update(project.id, list.id, { name, rule, published, tags })
+            setError(undefined)
+            setList(value)
+            setIsEditListOpen(false)
+            setIsDialogOpen(true)
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error ?? error.message
+            setError(errorMessage)
+            setIsEditListOpen(false)
+        }
     }
 
     const uploadUsers = async (file: FileList) => {
@@ -80,6 +89,8 @@ export default function ListDetail() {
                     <Button icon={<EditIcon />} onClick={() => setIsEditListOpen(true)}>{t('edit_list')}</Button>
                 </>
             }>
+
+            {error && <Alert variant="error" title="Error">{error}</Alert>}
 
             {list.type === 'dynamic' && <RuleSection list={list} onRuleSave={async (rule: any) => await saveList({ name: list.name, rule })} />}
 

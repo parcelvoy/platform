@@ -3,7 +3,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListCreateParams, ListUpdateParams } from './List'
 import { archiveList, createList, deleteList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
-import { searchParamsSchema } from '../core/searchParams'
+import { SearchSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
 import { projectRoleMiddleware } from '../projects/ProjectService'
@@ -17,7 +17,11 @@ const router = new Router<
 router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('listUserSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await pagedLists(params, ctx.state.project.id)
 })
 
@@ -177,7 +181,11 @@ router.delete('/:listId', async ctx => {
 })
 
 router.get('/:listId/users', async ctx => {
-    const params = extractQueryParams(ctx.query, searchParamsSchema)
+    const searchSchema = SearchSchema('listUserSearchSchema', {
+        sort: 'id',
+        direction: 'desc',
+    })
+    const params = extractQueryParams(ctx.query, searchSchema)
     ctx.body = await getListUsers(ctx.state.list!.id, params, ctx.state.project.id)
 })
 

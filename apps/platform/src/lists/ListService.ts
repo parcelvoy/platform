@@ -14,6 +14,8 @@ import { DateRuleTypes, RuleResults, RuleWithEvaluationResult, checkRules, decom
 import { updateCampaignSendEnrollment } from '../campaigns/CampaignService'
 import { cacheDecr, cacheIncr } from '../config/redis'
 import App from '../app'
+import { RequestError } from '../core/errors'
+import RuleError from '../rules/RuleError'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -133,7 +135,11 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
 export const updateList = async (list: List, { tags, rule, published, ...params }: ListUpdateParams): Promise<List | undefined> => {
     list = await List.updateAndFetch(list.id, {
         ...params,
-        state: list.state === 'draft' ? published ? 'ready' : 'draft' : list.state,
+        state: list.state === 'draft'
+            ? published
+                ? 'ready'
+                : 'draft'
+            : list.state,
     })
 
     if (tags) {
@@ -153,14 +159,18 @@ export const updateList = async (list: List, { tags, rule, published, ...params 
         await mergeInsertRules(rules)
 
         // Check if there are any date rules to start the list refresh scheduler
-        const isDynamic = rules.some(rule => getDateRuleType(rule)?.dynamic)
-        list.refreshed_at = isDynamic ? new Date() : null
-        await List.update(qb => qb.where('id', list.id), {
-            refreshed_at: list.refreshed_at,
-        })
+        try {
+            const isDynamic = rules.some(rule => getDateRuleType(rule)?.dynamic)
+            list.refreshed_at = isDynamic ? new Date() : null
+            await List.update(qb => qb.where('id', list.id), {
+                refreshed_at: list.refreshed_at,
+            })
+        } catch (error: any) {
+            throw new RequestError(RuleError.CompileError(error.message))
+        }
 
-        // Start repopulation of the list
-        await ListPopulateJob.from(list.id, list.project_id).queue()
+        // Start repopulation of the list if state is published
+        if (list.state !== 'draft') await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
     return await getList(list.id, list.project_id)
