@@ -1,6 +1,9 @@
 import { ModelParams } from '../core/Model'
+import Project from '../projects/Project'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
+import { visit } from '../utilities'
+import { dateCompile } from './DateRule'
 import Rule, { RuleEvaluation, RuleTree } from './Rule'
 import { check } from './RuleEngine'
 
@@ -129,9 +132,7 @@ const checkEventRule = async (
     if (result) {
         evaluationId
             ? await RuleEvaluation.update(
-                qb => qb
-                    .where('rule_id', node.id)
-                    .where('user_id', user.id),
+                qb => qb.where('id', evaluationId),
                 { result: true },
             )
             : await RuleEvaluation.query()
@@ -145,6 +146,20 @@ const checkEventRule = async (
         return await checkRootRule(node.root_uuid!, user)
     }
     return false
+}
+
+export const splitRuleTree = (rule: RuleTree) => {
+    const eventRules: RuleTree[] = []
+    const userRules: RuleTree[] = []
+    visit(rule, r => r.children, r => {
+        if (r.id === rule.id) return
+        if (r.type === 'wrapper' && r.group === 'event') {
+            eventRules.push(r)
+        } else if (r.group === 'user') {
+            userRules.push(r)
+        }
+    })
+    return { eventRules, userRules }
 }
 
 /**
@@ -225,4 +240,64 @@ export const decompileRule = (rule: RuleTree, extras?: any): Rule[] => {
     }
     build(rule)
     return rules
+}
+
+export interface DateRuleTypes {
+    dynamic: boolean
+    after: boolean
+    before: boolean
+    value: Date
+}
+
+export const getDateRuleType = (rule: Rule): DateRuleTypes | undefined => {
+    // If not a date rule, return undefined
+    if (rule.type !== 'date') return undefined
+
+    // Calculate the raw value and the compiled value
+    const rawValue = JSON.stringify(rule.value ?? '')
+    const value = dateCompile(rule)
+
+    // A rule is dynamic if its handlebars and based on a
+    // relative date
+    const dynamic = rawValue.includes('{{') && rawValue.includes('now')
+
+    // Check operators to determine what direction events should be
+    // look for
+    const after = ['>=', '>'].includes(rule.operator)
+    const before = ['<=', '<', '='].includes(rule.operator)
+    return { dynamic, after, before, value }
+}
+
+export const getDateRuleTypes = async (rootId: number): Promise<DateRuleTypes | undefined> => {
+    const root = await Rule.find(rootId)
+    if (!root) return undefined
+    const project = await Project.find(root.project_id)
+    if (!project) return undefined
+
+    const rules = await Rule.all(
+        qb => qb.where('root_uuid', root!.uuid)
+            .where('type', 'date'),
+    )
+
+    let dynamic = false
+    let after = false
+    let before = false
+    let value = new Date()
+    for (const rule of rules) {
+        const parts = getDateRuleType(rule)
+        if (!parts) continue
+
+        // If any child of parent rule is true, parent is true
+        if (parts.dynamic) dynamic = true
+        if (parts.after) after = true
+        if (parts.before) before = true
+
+        // Set value as the earliest date possible
+        if (parts.value < value) value = parts.value
+    }
+
+    // If we have any before rules, we have to select all events ever
+    value = before ? project.created_at : value
+
+    return { dynamic, after, before, value }
 }

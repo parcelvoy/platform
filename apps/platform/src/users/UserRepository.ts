@@ -177,7 +177,11 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
     return true
 }
 
-export const getUserEventsForRules = async (userIds: number[], rules: RuleTree[]) => {
+export const getUserEventsForRules = async (
+    userIds: number[],
+    rules: RuleTree[],
+    since?: Date | null,
+) => {
     if (!userIds.length || !rules.length) return []
     const names = rules.reduce<string[]>((a, rule) => {
         if (rule) {
@@ -186,9 +190,11 @@ export const getUserEventsForRules = async (userIds: number[], rules: RuleTree[]
         return a
     }, []).filter((o, i, a) => a.indexOf(o) === i)
     if (!names.length) return []
-    return UserEvent.all(qb => qb
-        .whereIn('user_id', userIds)
-        .whereIn('name', names)
-        .orderBy('id', 'asc'),
-    )
+    return UserEvent.all(qb => {
+        qb.whereIn('user_id', userIds)
+            .whereIn('name', names)
+            .orderBy('id', 'asc')
+        if (since) qb.where('created_at', '>=', since)
+        return qb
+    })
 }
