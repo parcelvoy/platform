@@ -75,6 +75,10 @@
     border-left-color: transparent;
 }
 
+.rule .ui-text-input:hover {
+    z-index: 1;
+}
+
 .rule-inner {
     position: relative;
     display: flex;
