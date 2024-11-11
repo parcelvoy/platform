@@ -306,7 +306,7 @@ export const campaignSendReadyQuery = (
 ) => {
     const query = CampaignSend.query()
         .where('campaign_sends.send_at', '<=', CampaignSend.raw('NOW()'))
-        .where('campaign_sends.state', includeThrottled ? ['pending', 'throttled'] : ['pending'])
+        .whereIn('campaign_sends.state', includeThrottled ? ['pending', 'throttled'] : ['pending'])
         .where('campaign_id', campaignId)
         .select('user_id', 'campaign_sends.id AS send_id')
     if (limit) query.limit(limit)
