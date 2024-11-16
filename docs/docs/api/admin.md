@@ -26,7 +26,7 @@ To authenticate requests, set the `Authorization` header to be `Bearer YOUR_KEY`
 Trigger an email to be sent to a given user via API.
 
 #### Endpoint
-`POST /client/campaigns/:campaignId/trigger`
+`POST /api/client/campaigns/:campaignId/trigger`
 
 #### Body
 - **user** object
@@ -43,7 +43,7 @@ Trigger an email to be sent to a given user via API.
 
 #### Example
 ```json
-Endpoint: POST /client/campaigns/44/trigger
+Endpoint: POST /api/client/campaigns/44/trigger
 
 Headers: {
     "Authorization": "Bearer sk_token_here"
@@ -68,7 +68,7 @@ Body: {
 Trigger an SMS text message to be sent to a given user via API.
 
 #### Endpoint
-`POST /client/campaigns/:campaignId/trigger`
+`POST /api/client/campaigns/:campaignId/trigger`
 
 #### Body
 - **user** object
@@ -85,7 +85,7 @@ Trigger an SMS text message to be sent to a given user via API.
 
 #### Example
 ```json
-Endpoint: POST /client/campaigns/44/trigger
+Endpoint: POST /api/client/campaigns/44/trigger
 
 Headers: {
     "Authorization": "Bearer sk_token_here"
@@ -110,7 +110,7 @@ Body: {
 Trigger an push notification to be sent to a given user via API.
 
 #### Endpoint
-`POST /client/campaigns/:campaignId/trigger`
+`POST /api/client/campaigns/:campaignId/trigger`
 
 #### Body
 - **user** object
@@ -127,7 +127,7 @@ Trigger an push notification to be sent to a given user via API.
 
 #### Example
 ```json
-Endpoint: POST /client/campaigns/44/trigger
+Endpoint: POST /api/client/campaigns/44/trigger
 
 Headers: {
     "Authorization": "Bearer sk_token_here"

@@ -25,7 +25,7 @@ To authenticate requests, set the `Authorization` header to be `Bearer YOUR_KEY`
 Merge a previous identifier to the users new identifier. This action can only be performed once.
 
 #### Endpoint
-`POST /client/alias`
+`POST /api/client/alias`
 
 #### Body
 - **anonymous_id** string
@@ -37,7 +37,7 @@ Merge a previous identifier to the users new identifier. This action can only be
 
 #### Example
 ```json
-Endpoint: POST /client/alias
+Endpoint: POST /api/client/alias
 
 Headers: {
     "Authorization": "Bearer pk_token_here"
@@ -55,7 +55,7 @@ Body: {
 Create or update a user profile with associated traits.
 
 #### Endpoint
-`POST /client/identify`
+`POST /api/client/identify`
 
 #### Body
 - **anonymous_id** string (optional)
@@ -72,7 +72,7 @@ Create or update a user profile with associated traits.
 
 #### Example
 ```json
-Endpoint: POST /client/identify
+Endpoint: POST /api/client/identify
 
 Headers: {
     "Authorization": "Bearer pk_token_here"
@@ -115,7 +115,7 @@ Ingest information about the users device including the push notification token 
 
 #### Example
 ```json
-Endpoint: POST /client/devices
+Endpoint: POST /api/client/devices
 
 Headers: {
     "Authorization": "Bearer pk_token_here"
@@ -157,7 +157,7 @@ Either an anonymous or external ID is required in order to post an event.
 
 #### Example
 ```json
-Endpoint: POST /client/events
+Endpoint: POST /api/client/events
 
 Headers: {
     "Authorization": "Bearer pk_token_here"
