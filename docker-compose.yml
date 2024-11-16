@@ -23,6 +23,7 @@ services:
     volumes:
       - redis_data:/data
   api:
+    platform: linux/x86_64
     image: "ghcr.io/parcelvoy/api:${IMAGE_VERSION:-latest}"
     restart: always
     healthcheck:
@@ -98,6 +99,7 @@ services:
     volumes:
       - uploads:/usr/src/app/public/uploads
   worker:
+    platform: linux/x86_64
     image: "ghcr.io/parcelvoy/api:${IMAGE_VERSION:-latest}"
     restart: always
     links:
@@ -163,6 +165,7 @@ services:
       TRACKING_LINK_WRAP: ${TRACKING_LINK_WRAP}
       TRACKING_DEEPLINK_MIRROR_URL: ${TRACKING_DEEPLINK_MIRROR_URL}
   ui:
+    platform: linux/x86_64
     image: "ghcr.io/parcelvoy/ui:${PARCELVOY_VERSION:-latest}"
     depends_on:
       api:
