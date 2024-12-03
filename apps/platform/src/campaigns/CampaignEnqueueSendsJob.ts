@@ -1,5 +1,5 @@
 import { Job } from '../queue'
-import { campaignSendReadyQuery, checkStalledSends, getCampaign, sendCampaignJob } from './CampaignService'
+import { campaignSendReadyQuery, failStalledSends, getCampaign, sendCampaignJob } from './CampaignService'
 import { CampaignJobParams } from './Campaign'
 import { chunk } from '../utilities'
 import App from '../app'
@@ -39,7 +39,7 @@ export default class CampaignEnqueueSendsJob extends Job {
         })
 
         // Look for items that have stalled out and mark them as failed
-        await checkStalledSends(campaign.id)
+        await failStalledSends(campaign)
 
         await releaseLock(key)
     }
