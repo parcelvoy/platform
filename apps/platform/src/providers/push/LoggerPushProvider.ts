@@ -27,6 +27,7 @@ export default class LoggerPushProvider extends PushProvider {
             push,
             success: true,
             response: '',
+            invalidTokens: [],
         }
     }
 
