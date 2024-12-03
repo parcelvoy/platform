@@ -324,7 +324,7 @@ export const failStalledSends = async (campaign: Campaign) => {
         && differenceInDays(
             Date.now(),
             new Date(campaign.send_at),
-        ) > stalledDays
+        ) >= stalledDays
     ) return
 
     const query = CampaignSend.query()
