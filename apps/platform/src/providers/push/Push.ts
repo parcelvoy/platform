@@ -10,4 +10,5 @@ export interface PushResponse {
     push: Push
     success: boolean
     response?: string
+    invalidTokens: string[]
 }

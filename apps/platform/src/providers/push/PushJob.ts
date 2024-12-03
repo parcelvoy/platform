@@ -42,7 +42,15 @@ export default class PushJob extends Job {
 
             // Send the push and update the send record
             const result = await channel.send(template, data)
-            await finalizeSend(data, result)
+            if (result) {
+                await finalizeSend(data, result)
+
+                // A user may have multiple devices some of which
+                // may have failed even though the push was
+                // successful. We need to check for those and
+                // disable them
+                if (result.invalidTokens.length) await disableNotifications(user.id, result.invalidTokens)
+            }
 
         } catch (error: any) {
             if (error instanceof PushError) {
