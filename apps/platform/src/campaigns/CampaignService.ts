@@ -20,7 +20,7 @@ import CampaignError from './CampaignError'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
 import Project from '../projects/Project'
 import Template from '../render/Template'
-import { subDays } from 'date-fns'
+import { differenceInDays, subDays } from 'date-fns'
 import { raw } from '../core/Model'
 
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
@@ -313,12 +313,30 @@ export const campaignSendReadyQuery = (
     return query
 }
 
-export const checkStalledSends = (campaignId: number) => {
-    return CampaignSend.query()
-        .where('campaign_sends.send_at', '<', subDays(Date.now(), 2))
+export const failStalledSends = async (campaign: Campaign) => {
+
+    const stalledDays = 2
+
+    // Its not possible to have any stalled records if the campaign send
+    // was less than the number of days we are checking for
+    if (
+        campaign.send_at
+        && differenceInDays(
+            Date.now(),
+            new Date(campaign.send_at),
+        ) >= stalledDays
+    ) return
+
+    const query = CampaignSend.query()
+        .where('campaign_sends.send_at', '<', subDays(Date.now(), stalledDays))
         .where('campaign_sends.state', 'throttled')
-        .where('campaign_id', campaignId)
-        .update({ state: 'failed' })
+        .where('campaign_id', campaign.id)
+        .select('id')
+    await chunk(query, 25, async (items) => {
+        await CampaignSend.query()
+            .update({ state: 'failed' })
+            .whereIn('id', items)
+    }, ({ id }: Pick<CampaignSend, 'id'>) => id)
 }
 
 export const recipientQuery = (campaign: Campaign) => {
