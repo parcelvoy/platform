@@ -134,7 +134,6 @@ export default class LocalPushProvider extends PushProvider {
     }
 
     async send(push: Push): Promise<PushResponse> {
-        // TODO: Need a better way of bubbling up errors
         const { tokens, title, body, custom } = push
         const response = await this.transport.send(typeof tokens === 'string' ? [tokens] : tokens, {
             title,
@@ -153,13 +152,14 @@ export default class LocalPushProvider extends PushProvider {
             }
         }
 
-        if (response[0].failure > 0) {
+        if (response[0].failure > 0 && response[0].success <= 0) {
             throw new PushError('local', response[0].message[0].errorMsg, invalidTokens)
         } else {
             return {
                 push,
                 success: true,
                 response: response[0].message[0].messageId,
+                invalidTokens,
             }
         }
     }
