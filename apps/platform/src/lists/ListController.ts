@@ -18,7 +18,7 @@ router.use(projectRoleMiddleware('editor'))
 
 router.get('/', async ctx => {
     const searchSchema = SearchSchema('listUserSearchSchema', {
-        sort: 'id',
+        sort: 'updated_at',
         direction: 'desc',
     })
     const params = extractQueryParams(ctx.query, searchSchema)

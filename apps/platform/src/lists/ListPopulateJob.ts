@@ -1,7 +1,6 @@
 import { Job } from '../queue'
 import { DynamicList } from './List'
 import { getList, populateList } from './ListService'
-import ListStatsJob from './ListStatsJob'
 
 interface ListPopulateParams {
     listId: number
@@ -21,7 +20,5 @@ export default class ListPopulateJob extends Job {
         if (!list) return
 
         await populateList(list)
-
-        await ListStatsJob.from(listId, projectId, true).queue()
     }
 }

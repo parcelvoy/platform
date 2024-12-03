@@ -35,17 +35,19 @@ export const cacheDel = async (redis: Redis, key: string) => {
 }
 
 export const cacheIncr = async (redis: Redis, key: string, incr = 1, ttl?: number) => {
-    await redis.incrby(key, incr)
+    const val = await redis.incrby(key, incr)
     if (ttl) {
         await redis.expire(key, ttl)
     }
+    return val
 }
 
 export const cacheDecr = async (redis: Redis, key: string, ttl?: number) => {
-    await redis.decr(key)
+    const val = await redis.decr(key)
     if (ttl) {
         await redis.expire(key, ttl)
     }
+    return val
 }
 
 export { Redis }
