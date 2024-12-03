@@ -25,6 +25,7 @@ import JourneyStatsJob from '../journey/JourneyStatsJob'
 import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 import ScheduledEntranceJob from '../journey/ScheduledEntranceJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
+import ListRefreshJob from '../lists/ListRefreshJob'
 
 export const jobs = [
     CampaignGenerateListJob,
@@ -37,6 +38,7 @@ export const jobs = [
     JourneyDelayJob,
     JourneyProcessJob,
     JourneyStatsJob,
+    ListRefreshJob,
     ListPopulateJob,
     ListStatsJob,
     ProcessListsJob,

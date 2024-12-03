@@ -15,6 +15,7 @@ export default class List extends Model {
     users_count?: number
     tags?: string[]
     is_visible!: boolean
+    refreshed_at?: Date | null
     deleted_at?: Date
 }
 

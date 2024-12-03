@@ -309,7 +309,6 @@ export const getJourneyUserStepByExternalId = async (journeyId: number, userId: 
 }
 
 export const exitUserFromJourney = async (userId: number, entranceId: number, journeyId: number) => {
-    console.log('exiting from', userId, entranceId, journeyId)
     await JourneyUserStep.update(
         q => q.where('user_id', userId)
             .where('id', entranceId)

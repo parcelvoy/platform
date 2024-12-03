@@ -3,7 +3,11 @@ import { AnyJson, RuleTree } from './Rule'
 import { compileTemplate } from '../render'
 import { visit } from '../utilities'
 
-export const queryValue = <T>(value: Record<string, unknown>, rule: RuleTree, cast: (item: any) => T): T[] => {
+export const queryValue = <T>(
+    value: Record<string, unknown>,
+    rule: RuleTree,
+    cast: (item: any) => T = v => v,
+): T[] => {
     let path = rule.path
     if (!value || !path) return []
     if (!path.startsWith('$.') && !path.startsWith('$[')) path = '$.' + path

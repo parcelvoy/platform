@@ -8,12 +8,14 @@ import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
-import { Chunker, visit } from '../utilities'
+import { Chunker } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
-import { RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, mergeInsertRules } from '../rules/RuleService'
+import { DateRuleTypes, RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, getDateRuleType, mergeInsertRules, splitRuleTree } from '../rules/RuleService'
 import { updateCampaignSendEnrollment } from '../campaigns/CampaignService'
 import { cacheDecr, cacheIncr } from '../config/redis'
 import App from '../app'
+import { RequestError } from '../core/errors'
+import RuleError from '../rules/RuleError'
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
     const result = await List.search(
@@ -105,9 +107,18 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
         // Decompile rule into separate flat parts
         const [wrapper, ...rules] = decompileRule(rule, { project_id: projectId })
 
+        // Check if there are any date rules to start the list refresh scheduler
+        const isDynamic = rules.some(rule => getDateRuleType(rule)?.dynamic)
+        list.refreshed_at = isDynamic ? new Date() : null
+
         // Insert top level wrapper to get ID to associate
         list.rule_id = await Rule.insert(wrapper)
-        await List.update(qb => qb.where('id', list.id), { rule_id: list.rule_id })
+
+        // Update list with new settings
+        await List.update(qb => qb.where('id', list.id), {
+            rule_id: list.rule_id,
+            refreshed_at: list.refreshed_at,
+        })
 
         // Insert rest of rules
         if (rules && rules.length) {
@@ -124,7 +135,11 @@ export const createList = async (projectId: number, { tags, name, type, rule }: 
 export const updateList = async (list: List, { tags, rule, published, ...params }: ListUpdateParams): Promise<List | undefined> => {
     list = await List.updateAndFetch(list.id, {
         ...params,
-        state: list.state === 'draft' ? published ? 'ready' : 'draft' : list.state,
+        state: list.state === 'draft'
+            ? published
+                ? 'ready'
+                : 'draft'
+            : list.state,
     })
 
     if (tags) {
@@ -139,8 +154,23 @@ export const updateList = async (list: List, { tags, rule, published, ...params 
     if (rule && list.type === 'dynamic') {
 
         const rules = decompileRule(rule, { project_id: list.project_id })
+
+        // Modify the rule data structure to match modifications
         await mergeInsertRules(rules)
-        await ListPopulateJob.from(list.id, list.project_id).queue()
+
+        // Check if there are any date rules to start the list refresh scheduler
+        try {
+            const isDynamic = rules.some(rule => getDateRuleType(rule)?.dynamic)
+            list.refreshed_at = isDynamic ? new Date() : null
+            await List.update(qb => qb.where('id', list.id), {
+                refreshed_at: list.refreshed_at,
+            })
+        } catch (error: any) {
+            throw new RequestError(RuleError.CompileError(error.message))
+        }
+
+        // Start repopulation of the list if state is published
+        if (list.state !== 'draft') await ListPopulateJob.from(list.id, list.project_id).queue()
     }
 
     return await getList(list.id, list.project_id)
@@ -198,14 +228,67 @@ export const importUsersToList = async (list: List, stream: FileStream) => {
     await updateListState(list.id, { state: 'ready' })
 }
 
+interface UserListEventEvaluation {
+    rule_id: number
+    user_id: number
+    result: boolean
+}
+
+interface UserListEvaluation {
+    list: List
+    scroll: AsyncGenerator<User[], any, any>
+    since?: Date | null
+    handleRule: (evaluation: UserListEventEvaluation) => Promise<void>
+    handleEntry: (user: User, result: boolean) => Promise<void>
+}
+
+const scrollUserListForEvaluation = async ({
+    list,
+    scroll,
+    since,
+    handleRule,
+    handleEntry,
+}: UserListEvaluation) => {
+    if (!list.rule_id) return
+    const rule = await fetchAndCompileRule(list.rule_id) as RuleTree
+    const { eventRules, userRules } = splitRuleTree(rule)
+
+    for await (const users of scroll) {
+
+        // For each user, evaluate parts and batch enqueue
+        for (const user of users) {
+
+            const parts: RuleWithEvaluationResult[] = []
+            const events = await getUserEventsForRules([user.id], eventRules, since)
+
+            for (const rule of eventRules) {
+                const result = check({
+                    user: user.flatten(),
+                    events: events.map(e => e.flatten()),
+                }, rule)
+                await handleRule({
+                    rule_id: rule.id!,
+                    user_id: user.id,
+                    result,
+                })
+                parts.push({
+                    ...rule,
+                    result,
+                })
+            }
+
+            const result = checkRules(user, rule, [...parts, ...userRules])
+            await handleEntry(user, result)
+        }
+    }
+}
+
 export const populateList = async (list: List) => {
-    const { id, version: oldVersion = 0, rule_id } = list
+    const { id, version: oldVersion = 0 } = list
     const version = oldVersion + 1
     await updateListState(id, { state: 'loading', version })
 
-    if (!rule_id) return
-
-    const rule = await fetchAndCompileRule(rule_id) as RuleTree
+    const scroll = User.scroll(q => q.where('project_id', list.project_id))
 
     // Collect matching user ids, insert in batches of 100
     const userChunker = new Chunker<number>(async userIds => {
@@ -231,52 +314,18 @@ export const populateList = async (list: List) => {
             .merge(['result'])
     }, 100)
 
-    // Fetch all users and iterate over them
-    const scroll = User.scroll(q => q.where('project_id', list.project_id))
-
-    const eventRules: RuleTree[] = []
-    const userRules: RuleTree[] = []
-    visit(rule, r => r.children, r => {
-        if (r.id === rule.id) return
-        if (r.type === 'wrapper' && r.group === 'event') {
-            eventRules.push(r)
-        } else if (r.group === 'user') {
-            userRules.push(r)
-        }
+    await scrollUserListForEvaluation({
+        list,
+        scroll,
+        handleRule: async ({ rule_id, user_id, result }) => {
+            await ruleChunker.add({ rule_id, user_id, result })
+        },
+        handleEntry: async (user, result) => {
+            if (result) await userChunker.add(user.id)
+        },
     })
 
-    for await (const users of scroll) {
-
-        // For each user, evaluate parts and batch enqueue
-        for (const user of users) {
-
-            const parts: RuleWithEvaluationResult[] = []
-            const events = await getUserEventsForRules([user.id], eventRules)
-
-            for (const rule of eventRules) {
-                const result = check({
-                    user: user.flatten(),
-                    events: events.map(e => e.flatten()),
-                }, rule)
-                await ruleChunker.add({
-                    rule_id: rule.id,
-                    user_id: user.id,
-                    result,
-                })
-                parts.push({
-                    ...rule,
-                    result,
-                })
-            }
-
-            const result = checkRules(user, rule, [...parts, ...userRules])
-            if (result) {
-                await userChunker.add(user.id)
-            }
-        }
-    }
-
-    // Insert any remaining users
+    // Insert any remaining chunks
     await ruleChunker.flush()
     await userChunker.flush()
 
@@ -287,6 +336,54 @@ export const populateList = async (list: List) => {
 
     // Update list status to ready
     await updateListState(id, { state: 'ready' })
+}
+
+export const refreshList = async (list: List, types: DateRuleTypes) => {
+
+    // If there are any rules that compare before a dynamic date
+    // then we cant optimize and need to regenerate the entire list
+    if (types.before) {
+        return await populateList(list)
+    }
+
+    const { id } = list
+    await updateListState(id, { state: 'loading' })
+
+    const scroll = User.scroll(q =>
+        q.leftJoin('user_list', 'user_list.user_id', 'users.id')
+            .where('project_id', list.project_id)
+            .where('user_list.list_id', list.id)
+            .select('users.*'),
+    )
+
+    const userChunker = new Chunker<number>(async userIds => {
+        await UserList.delete(qb => qb.whereIn('user_id', userIds)
+            .where('list_id', list.id))
+    }, 50)
+
+    await scrollUserListForEvaluation({
+        list,
+        scroll,
+        since: types.value,
+        handleRule: async ({ rule_id, user_id, result }) => {
+            if (!result) {
+                await RuleEvaluation.update(
+                    qb => qb
+                        .where('rule_id', rule_id)
+                        .where('user_id', user_id),
+                    { result },
+                )
+            }
+        },
+        handleEntry: async (user, result) => {
+            if (!result) await userChunker.add(user.id)
+        },
+    })
+
+    await userChunker.flush()
+
+    // Update list status to ready
+    await updateListState(id, { state: 'ready', refreshed_at: new Date() })
 }
 
 export const isUserInList = async (user_id: number, list_id: number) => {
@@ -354,6 +451,6 @@ export const listUserCount = async (listId: number, since?: CountRange): Promise
     })
 }
 
-export const updateListState = async (id: number, params: Partial<Pick<List, 'state' | 'version' | 'users_count'>>) => {
+export const updateListState = async (id: number, params: Partial<Pick<List, 'state' | 'version' | 'users_count' | 'refreshed_at'>>) => {
     return await List.updateAndFetch(id, params)
 }
