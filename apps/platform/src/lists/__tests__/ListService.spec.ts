@@ -8,6 +8,10 @@ import { random, randomInt, uuid } from '../../utilities'
 import { UserList } from '../List'
 import { addUserToList, CacheKeys, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
 
+afterEach(() => {
+    jest.clearAllMocks()
+})
+
 describe('ListService', () => {
 
     const makeRule = async () => {
@@ -64,6 +68,17 @@ describe('ListService', () => {
     }
 
     test('populate dynamic list', async () => {
+
+        jest.spyOn(App.main.queue, 'enqueue')
+            .mockImplementation(async (job: any) => {
+                await job.handle(job.data, job)
+            })
+        jest.spyOn(App.main.queue, 'enqueueBatch')
+            .mockImplementation(async (jobs: any[]) => {
+                for (const job of jobs) {
+                    await job.handle(job.data, job)
+                }
+            })
 
         const eventNames = ['purchased', 'completed', 'viewed', 'launched']
         const { rule, project } = await makeRule()
@@ -131,12 +146,14 @@ describe('ListService', () => {
         test('should not contain draft list', async () => {
 
             const { rule, project } = await makeRule()
-            await createList(project.id, {
+            const list = await createList(project.id, {
                 name: 'Dynamic List',
                 type: 'dynamic',
                 is_visible: true,
                 rule,
             })
+
+            await updateList(list, { name: list.name, published: false })
 
             const lists = await listsForRule([rule.uuid], project.id)
             expect(lists.length).toEqual(0)
