@@ -192,15 +192,16 @@ export class PushTemplate extends Template {
             return body
         }, {} as Record<string, any>)
 
+        const renderedUrl = Render(this.url, variables)
         const url = project.link_wrap_push
             ? paramsToEncodedLink({
                 userId: user.id,
                 campaignId: context.campaign_id,
                 referenceId: context.reference_id,
-                redirect: this.url,
+                redirect: renderedUrl,
                 path: 'c',
             })
-            : this.url
+            : renderedUrl
 
         return {
             topic: this.topic,
