@@ -186,14 +186,30 @@ export class PushTemplate extends Template {
     }
 
     compile(variables: Variables): CompiledPush {
-        const { project, user, context } = variables
         const custom = Object.keys(this.custom).reduce((body, key) => {
             body[key] = Render(this.custom[key], variables)
             return body
         }, {} as Record<string, any>)
 
+        const url = this.compileUrl(variables)
+
+        return {
+            topic: this.topic,
+            title: Render(this.title, variables),
+            body: Render(this.body, variables),
+            custom: { ...custom, url },
+        }
+    }
+
+    compileUrl(variables: Variables) {
+        if (this.url === undefined) {
+            return undefined
+        }
+
+        const { project, user, context } = variables
         const renderedUrl = Render(this.url, variables)
-        const url = project.link_wrap_push
+
+        return project.link_wrap_push
             ? paramsToEncodedLink({
                 userId: user.id,
                 campaignId: context.campaign_id,
@@ -202,13 +218,6 @@ export class PushTemplate extends Template {
                 path: 'c',
             })
             : renderedUrl
-
-        return {
-            topic: this.topic,
-            title: Render(this.title, variables),
-            body: Render(this.body, variables),
-            custom: { ...custom, url },
-        }
     }
 
     validate() {
