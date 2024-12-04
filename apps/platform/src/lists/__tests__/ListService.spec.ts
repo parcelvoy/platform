@@ -6,7 +6,7 @@ import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { random, randomInt, uuid } from '../../utilities'
 import { UserList } from '../List'
-import { addUserToList, countKey, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
+import { addUserToList, CacheKeys, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
 
 describe('ListService', () => {
 
@@ -177,7 +177,7 @@ describe('ListService', () => {
 
             await addUserToList(user, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(1)
         })
 
@@ -207,7 +207,7 @@ describe('ListService', () => {
             await addUserToList(user2, list)
             await addUserToList(user3, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(3)
         })
     })
@@ -236,7 +236,7 @@ describe('ListService', () => {
             await addUserToList(user2, list)
             await removeUserFromList(user, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(1)
         })
     })
