@@ -237,6 +237,10 @@ export type List = {
     rule?: WrapperRule
     users_count: number
     tags?: string[]
+    progress?: {
+        complete: number
+        total: number
+    }
     is_visible: boolean
     created_at: string
     updated_at: string

@@ -43,7 +43,7 @@ export default class Queue {
     }
 
     async enqueue(job: Job | EncodedJob): Promise<void> {
-        logger.info(job instanceof Job ? job.toJSON() : job, 'queue:job:enqueued')
+        logger.trace(job instanceof Job ? job.toJSON() : job, 'queue:job:enqueued')
         await this.provider.enqueue(job)
 
         // Increment stats
@@ -51,7 +51,7 @@ export default class Queue {
     }
 
     async enqueueBatch(jobs: EncodedJob[]): Promise<void> {
-        logger.info({ count: jobs.length }, 'queue:job:enqueuedBatch')
+        logger.trace({ count: jobs.length }, 'queue:job:enqueuedBatch')
         await this.provider.enqueueBatch(jobs)
 
         // Increment stats
@@ -71,7 +71,7 @@ export default class Queue {
     }
 
     async started(job: EncodedJob) {
-        logger.info(job, 'queue:job:started')
+        logger.trace(job, 'queue:job:started')
     }
 
     async errored(error: Error, job?: EncodedJob) {
@@ -81,7 +81,7 @@ export default class Queue {
     }
 
     async completed(job: EncodedJob) {
-        logger.info(job, 'queue:job:completed')
+        logger.trace(job, 'queue:job:completed')
     }
 
     async start() {

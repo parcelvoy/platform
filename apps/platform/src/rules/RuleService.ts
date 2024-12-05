@@ -1,3 +1,5 @@
+import App from '../app'
+import { cacheDel, cacheGet, cacheSet } from '../config/redis'
 import { ModelParams } from '../core/Model'
 import Project from '../projects/Project'
 import { User } from '../users/User'
@@ -18,6 +20,10 @@ interface EvaluationId {
 type RuleWithEvaluationId = Rule & EvaluationId
 type RuleTreeWithEvaluationId = RuleTree & EvaluationId
 export type RuleResults = { success: string[], failure: string[] }
+
+const CacheKeys = {
+    ruleTree: (rootId: number) => `rule_tree:${rootId}`,
+}
 
 /**
  * For a given user and set of rules joined with evaluation results,
@@ -196,6 +202,8 @@ export const mergeInsertRules = async (rules: Rule[]) => {
             : await Rule.insert(rule)
     }
 
+    await cacheDel(App.main.redis, CacheKeys.ruleTree(root.id))
+
     return newItems
 }
 
@@ -204,11 +212,17 @@ export const mergeInsertRules = async (rules: Rule[]) => {
  * into a nested tree structure.
  */
 export const fetchAndCompileRule = async (rootId: number): Promise<RuleTree | undefined> => {
+
+    const cache = await cacheGet<RuleTree>(App.main.redis, CacheKeys.ruleTree(rootId))
+    if (cache) return cache
+
     const root = await Rule.find(rootId)
     if (!root) return undefined
 
     const rules = await Rule.all(qb => qb.where('root_uuid', root!.uuid))
-    return compileRule(root, rules)
+    const compiled = compileRule(root, rules)
+    await cacheSet(App.main.redis, CacheKeys.ruleTree(rootId), compiled, 3600)
+    return compiled
 }
 
 export const compileRule = (root: Rule, rules: Rule[]): RuleTree => {

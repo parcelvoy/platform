@@ -17,9 +17,15 @@ export default class List extends Model {
     is_visible!: boolean
     refreshed_at?: Date | null
     deleted_at?: Date
+    progress?: ListProgress
 }
 
-export type DynamicList = List & { rule: RuleTree }
+export type ListProgress = {
+    complete: number
+    total: number
+}
+
+export type DynamicList = List & { rule_id: number, rule: RuleTree }
 
 export class UserList extends Model {
     user_id!: number

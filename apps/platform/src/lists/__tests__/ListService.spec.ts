@@ -6,7 +6,11 @@ import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { random, randomInt, uuid } from '../../utilities'
 import { UserList } from '../List'
-import { addUserToList, countKey, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
+import { addUserToList, CacheKeys, createList, listsForRule, populateList, removeUserFromList, updateList } from '../ListService'
+
+afterEach(() => {
+    jest.clearAllMocks()
+})
 
 describe('ListService', () => {
 
@@ -64,6 +68,17 @@ describe('ListService', () => {
     }
 
     test('populate dynamic list', async () => {
+
+        jest.spyOn(App.main.queue, 'enqueue')
+            .mockImplementation(async (job: any) => {
+                await job.handle(job.data, job)
+            })
+        jest.spyOn(App.main.queue, 'enqueueBatch')
+            .mockImplementation(async (jobs: any[]) => {
+                for (const job of jobs) {
+                    await job.handle(job.data, job)
+                }
+            })
 
         const eventNames = ['purchased', 'completed', 'viewed', 'launched']
         const { rule, project } = await makeRule()
@@ -131,12 +146,14 @@ describe('ListService', () => {
         test('should not contain draft list', async () => {
 
             const { rule, project } = await makeRule()
-            await createList(project.id, {
+            const list = await createList(project.id, {
                 name: 'Dynamic List',
                 type: 'dynamic',
                 is_visible: true,
                 rule,
             })
+
+            await updateList(list, { name: list.name, published: false })
 
             const lists = await listsForRule([rule.uuid], project.id)
             expect(lists.length).toEqual(0)
@@ -177,7 +194,7 @@ describe('ListService', () => {
 
             await addUserToList(user, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(1)
         })
 
@@ -207,7 +224,7 @@ describe('ListService', () => {
             await addUserToList(user2, list)
             await addUserToList(user3, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(3)
         })
     })
@@ -236,7 +253,7 @@ describe('ListService', () => {
             await addUserToList(user2, list)
             await removeUserFromList(user, list)
 
-            const value = await cacheGet(App.main.redis, countKey(list))
+            const value = await cacheGet(App.main.redis, CacheKeys.memberCount(list))
             expect(value).toEqual(1)
         })
     })

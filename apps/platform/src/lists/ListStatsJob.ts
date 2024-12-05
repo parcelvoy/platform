@@ -1,7 +1,8 @@
 import App from '../app'
 import { cacheDel, cacheGet, cacheIncr } from '../config/redis'
 import { Job } from '../queue'
-import { countKey, getList, listUserCount, updateListState } from './ListService'
+import List from './List'
+import { CacheKeys, getList, listUserCount } from './ListService'
 
 interface ListStatsParams {
     listId: number
@@ -26,7 +27,7 @@ export default class ListStatsJob extends Job {
         if (!list) return
 
         const redis = App.main.redis
-        const cacheKey = countKey(list)
+        const cacheKey = CacheKeys.memberCount(list)
 
         let count = await cacheGet<number>(redis, cacheKey) ?? 0
         if (!list?.users_count || reset) {
@@ -36,6 +37,8 @@ export default class ListStatsJob extends Job {
         }
 
         // Update the list with the new totals
-        await updateListState(list.id, { users_count: count })
+        await List.query()
+            .update({ users_count: count })
+            .where('id', listId)
     }
 }

@@ -17,15 +17,21 @@ interface ListTableParams {
     onSelectRow?: (list: List) => void
 }
 
-export const ListTag = ({ state }: { state: ListState }) => {
+export const ListTag = ({ state, progress }: Pick<List, 'state' | 'progress'>) => {
     const variant: Record<ListState, TagVariant> = {
         draft: 'plain',
         loading: 'info',
         ready: 'success',
     }
 
+    const complete = progress?.complete ?? 0
+    const total = progress?.total ?? 0
+    const percent = total > 0 ? complete / total : 0
+    const percentStr = percent.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+
     return <Tag variant={variant[state]}>
         <Translation>{ (t) => t(state) }</Translation>
+        {progress && ` (${percentStr})`}
     </Tag>
 }
 
