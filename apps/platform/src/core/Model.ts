@@ -181,7 +181,7 @@ export default class Model {
                 // If sort is provided, order by that first, then by id
                 // for consistency
                 qb.orderBy(sort!, direction)
-                    .orderBy('id', direction),
+                    .orderBy(`${this.tableName}.id`, direction),
             )
             .when(!!cursor, qb => {
                 // To allow for sorting, `since` may contain either just

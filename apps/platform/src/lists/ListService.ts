@@ -77,9 +77,9 @@ export const getList = async (id: number, projectId: number) => {
 }
 
 export const getListUsers = async (id: number, params: PageParams, projectId: number) => {
-    return await User.search(
+    return await UserList.search(
         { ...params, fields: ['email', 'phone'], mode: 'exact' },
-        b => b.rightJoin('user_list', 'user_list.user_id', 'users.id')
+        b => b.leftJoin('users', 'user_list.user_id', 'users.id')
             .where('project_id', projectId)
             .where('list_id', id)
             .select('users.*', 'user_list.created_at'),

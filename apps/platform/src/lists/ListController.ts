@@ -182,7 +182,7 @@ router.delete('/:listId', async ctx => {
 
 router.get('/:listId/users', async ctx => {
     const searchSchema = SearchSchema('listUserSearchSchema', {
-        sort: 'id',
+        sort: 'user_list.id',
         direction: 'desc',
     })
     const params = extractQueryParams(ctx.query, searchSchema)
