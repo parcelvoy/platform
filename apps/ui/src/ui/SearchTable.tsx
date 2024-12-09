@@ -191,11 +191,13 @@ export function SearchTable<T extends Record<string, any>>({
                     setParams({ ...prevParams, ...onSort })
                 }} />
             {results && (
-                <Pagination
-                    nextCursor={results.nextCursor}
-                    prevCursor={results.prevCursor}
-                    onPrev={cursor => setParams({ ...params, cursor, page: 'prev' })}
-                    onNext={cursor => setParams({ ...params, cursor, page: 'next' })} />
+                <div>
+                    <Pagination
+                        nextCursor={results.nextCursor}
+                        prevCursor={results.prevCursor}
+                        onPrev={cursor => setParams({ ...params, cursor, page: 'prev' })}
+                        onNext={cursor => setParams({ ...params, cursor, page: 'next' })} />
+                </div>
             )}
         </>
     )
