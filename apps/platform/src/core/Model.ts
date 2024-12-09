@@ -213,7 +213,7 @@ export default class Model {
             .when(!!id?.length, qb => qb.whereIn('id', id!))
 
         const makeCursor = (result: any, sort?: string) => {
-            if (!sort || sort === 'id') return `${result.id}`
+            if (!sort || sort === 'id' || sort === `${this.tableName}.id`) return `${result.id}`
             let sortCursor = result[sort]
             if (sortCursor instanceof Date) {
                 sortCursor = formatISO(sortCursor)
