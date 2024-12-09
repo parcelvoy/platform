@@ -64,15 +64,8 @@ export const updateSubscription = async (id: number, params: Partial<Subscriptio
     return await Subscription.updateAndFetch(id, params)
 }
 
-export const subscriptionForChannel = async (channel: ChannelType, projectId: number): Promise<Subscription | undefined> => {
-    return await Subscription.first(qb => qb.where('channel', channel).where('project_id', projectId))
-}
-
-export const unsubscribeSms = async (projectId: number, user: User) => {
-    const subscription = await subscriptionForChannel('text', projectId)
-    if (user && subscription) {
-        unsubscribe(user.id, subscription.id)
-    }
+export const subscriptionsForChannel = async (channel: ChannelType, projectId: number): Promise<Subscription[]> => {
+    return await Subscription.all(qb => qb.where('channel', channel).where('project_id', projectId))
 }
 
 export const toggleSubscription = async (userId: number, subscriptionId: number, state = SubscriptionState.unsubscribed): Promise<void> => {
@@ -120,6 +113,13 @@ export const toggleSubscription = async (userId: number, subscriptionId: number,
             },
         },
     }).queue()
+}
+
+export const toggleChannelSubscriptions = async (projectId: number, user: User, channel: ChannelType, state = SubscriptionState.unsubscribed) => {
+    const subscriptions = await subscriptionsForChannel(channel, projectId)
+    for (const subscription of subscriptions) {
+        await toggleSubscription(user.id, subscription.id, state)
+    }
 }
 
 export const unsubscribe = async (userId: number, subscriptionId: number): Promise<void> => {
