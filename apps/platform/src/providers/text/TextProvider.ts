@@ -1,12 +1,13 @@
 import Router from '@koa/router'
 import { loadTextChannel } from '.'
-import { unsubscribeSms } from '../../subscriptions/SubscriptionService'
+import { toggleChannelSubscriptions } from '../../subscriptions/SubscriptionService'
 import Provider, { ProviderGroup } from '../Provider'
 import { InboundTextMessage, TextMessage, TextResponse } from './TextMessage'
 import { Context } from 'koa'
 import { getUserFromPhone } from '../../users/UserRepository'
 import { getProject } from '../../projects/ProjectService'
 import { EventPostJob } from '../../jobs'
+import { SubscriptionState } from '../../subscriptions/Subscription'
 
 export type TextProviderName = 'nexmo' | 'plivo' | 'twilio' | 'logger'
 
@@ -38,7 +39,12 @@ export abstract class TextProvider extends Provider {
 
             // If the message includes the word STOP unsubscribe immediately
             if (message.text.toLowerCase().includes('stop')) {
-                await unsubscribeSms(project.id, user)
+                await toggleChannelSubscriptions(project.id, user, 'text')
+
+            // If the message includes the word START, re-enable
+            // SMS messages for the user
+            } else if (message.text.toLowerCase().includes('start')) {
+                await toggleChannelSubscriptions(project.id, user, 'text', SubscriptionState.subscribed)
 
             // If the message includes the word HELP, send the help message
             } else if (message.text.toLowerCase().includes('help') && project.text_help_message) {

@@ -3,6 +3,7 @@ import HttpSMSTextProvider from './HttpSMSProvider'
 import LoggerTextProvider from './LoggerTextProvider'
 import NexmoTextProvider from './NexmoTextProvider'
 import PlivoTextProvider from './PlivoTextProvider'
+import TelnyxTextProvider from './TelnyxTextProvider'
 import TextChannel from './TextChannel'
 import { TextProvider, TextProviderName } from './TextProvider'
 import TwilioTextProvider from './TwilioTextProvider'
@@ -11,6 +12,7 @@ type TextProviderDerived = { new (): TextProvider } & typeof TextProvider
 export const typeMap: Record<string, TextProviderDerived> = {
     nexmo: NexmoTextProvider,
     plivo: PlivoTextProvider,
+    telnyx: TelnyxTextProvider,
     twilio: TwilioTextProvider,
     httpsms: HttpSMSTextProvider,
     logger: LoggerTextProvider,
