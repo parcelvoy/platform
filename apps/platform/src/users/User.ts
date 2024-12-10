@@ -51,6 +51,7 @@ export class User extends Model {
             email: this.email,
             phone: this.phone,
             id: this.external_id,
+            external_id: this.external_id,
             created_at: this.created_at,
             locale: this.locale,
             timezone: this.timezone,
