@@ -1,9 +1,9 @@
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useMemo, useState } from 'react'
 import { ControlledProps } from '../types'
 import { Frequency, Options, RRule, Weekday } from 'rrule'
 import TextInput from './form/TextInput'
 import RadioInput from './form/RadioInput'
-import { format } from 'date-fns'
+import { format, parse } from 'date-fns'
 import { FieldOption } from './form/Field'
 import { MultiOptionField } from './form/MultiOptionField'
 import Heading from './Heading'
@@ -77,6 +77,8 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
             freq: 'once',
         } satisfies Partial<RuleOptions>
     }, [value])
+    const [startDate, setStartDate] = useState(options.dtstart ? format(options.dtstart, 'yyyy-MM-dd') : '')
+    const [endDate, setEndDate] = useState(options.until ? format(options.until, 'yyyy-MM-dd') : '')
 
     const setValues = ({ freq, ...options }: Partial<RuleOptions>) => {
         const rule: Partial<Options> = {
@@ -103,8 +105,13 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
                 label={options.freq !== 'once' ? 'Start Date' : 'On Date'}
                 type="date"
                 required
-                value={options.dtstart ? format(options.dtstart, 'yyyy-MM-dd') : ''}
-                onChange={dtstart => setValues({ ...options, dtstart: dtstart ? new Date(dtstart) : null })}
+                value={startDate}
+                onChange={setStartDate}
+                onBlur={(event) => {
+                    const value = event.target.value
+                    const date = parse(value, 'yyyy-MM-dd', new Date())
+                    setValues({ ...options, dtstart: value ? date : null })
+                }}
             />
             { options.freq !== 'once' && (
                 <>
@@ -112,8 +119,13 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
                         name="endDate"
                         label="End Date"
                         type="date"
-                        value={options.until ? format(options.until, 'yyyy-MM-dd') : undefined}
-                        onChange={endDate => setValues({ ...options, until: endDate ? new Date(endDate) : null })}
+                        value={endDate}
+                        onChange={setEndDate}
+                        onBlur={(event) => {
+                            const value = event.target.value
+                            const date = parse(value, 'yyyy-MM-dd', new Date())
+                            setValues({ ...options, until: value ? date : null })
+                        }}
                     />
                     <TextInput
                         name="interval"
