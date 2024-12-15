@@ -5,7 +5,7 @@ import Button from '../../ui/Button'
 import Modal from '../../ui/Modal'
 import PageContent from '../../ui/PageContent'
 import { SearchTable, useSearchTableQueryState } from '../../ui/SearchTable'
-import { ArchiveIcon, EditIcon, PlusIcon } from '../../ui/icons'
+import { ArchiveIcon, DuplicateIcon, EditIcon, PlusIcon } from '../../ui/icons'
 import { JourneyForm } from './JourneyForm'
 import { Menu, MenuItem, Tag } from '../../ui'
 import { ProjectContext } from '../../contexts'
@@ -27,6 +27,11 @@ export default function Journeys() {
 
     const handleEditJourney = (id: number) => {
         navigate(id.toString())
+    }
+
+    const handleDuplicateJourney = async (id: number) => {
+        const journey = await api.journeys.duplicate(project.id, id)
+        navigate(journey.id.toString())
     }
 
     const handleArchiveJourney = async (id: number) => {
@@ -73,6 +78,9 @@ export default function Journeys() {
                             <Menu size="small">
                                 <MenuItem onClick={() => handleEditJourney(id)}>
                                     <EditIcon />{t('edit')}
+                                </MenuItem>
+                                <MenuItem onClick={async () => await handleDuplicateJourney(id)}>
+                                    <DuplicateIcon />{t('duplicate')}
                                 </MenuItem>
                                 <MenuItem onClick={async () => await handleArchiveJourney(id)}>
                                     <ArchiveIcon />{t('archive')}

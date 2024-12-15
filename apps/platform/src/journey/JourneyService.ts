@@ -1,6 +1,6 @@
 import { User } from '../users/User'
-import { getEntranceSubsequentSteps, getJourneySteps } from './JourneyRepository'
-import { JourneyEntrance, JourneyStep, JourneyUserStep } from './JourneyStep'
+import { getEntranceSubsequentSteps, getJourney, getJourneyStepMap, getJourneySteps, setJourneyStepMap } from './JourneyRepository'
+import { JourneyEntrance, JourneyStep, JourneyStepMap, JourneyUserStep } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import App from '../app'
 import Rule, { RuleTree } from '../rules/Rule'
@@ -10,6 +10,7 @@ import Journey, { JourneyEntranceTriggerParams } from './Journey'
 import JourneyError from './JourneyError'
 import { RequestError } from '../core/errors'
 import EventPostJob from '../client/EventPostJob'
+import { pick, uuid } from '../utilities'
 
 export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
 
@@ -142,4 +143,29 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
 
     // trigger async processing
     await JourneyProcessJob.from({ entrance_id }).queue()
+}
+
+export const duplicateJourney = async (journey: Journey) => {
+    const params: Partial<Journey> = pick(journey, ['project_id', 'name', 'description'])
+    params.name = `Copy of ${params.name}`
+    params.published = false
+    const newJourneyId = await Journey.insert(params)
+
+    const steps = await getJourneyStepMap(journey.id)
+    const newSteps: JourneyStepMap = {}
+    const stepKeys = Object.keys(steps)
+    const uuidMap = stepKeys.reduce((acc, curr) => {
+        acc[curr] = uuid()
+        return acc
+    }, {} as Record<string, string>)
+    for (const key of stepKeys) {
+        const step = steps[key]
+        newSteps[uuidMap[key]] = {
+            ...step,
+            children: step.children?.map(({ external_id, ...rest }) => ({ external_id: uuidMap[external_id], ...rest })),
+        }
+    }
+    await setJourneyStepMap(newJourneyId, newSteps)
+
+    return await getJourney(newJourneyId, journey.project_id)
 }

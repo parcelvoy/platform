@@ -2,7 +2,7 @@ import Router from '@koa/router'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import List, { ListCreateParams, ListUpdateParams } from './List'
-import { archiveList, createList, deleteList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
+import { archiveList, createList, deleteList, duplicateList, getList, getListUsers, importUsersToList, pagedLists, updateList } from './ListService'
 import { SearchSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
@@ -178,6 +178,10 @@ router.delete('/:listId', async ctx => {
         await archiveList(id, project_id)
     }
     ctx.body = true
+})
+
+router.post('/:listId/duplicate', async ctx => {
+    ctx.body = await duplicateList(ctx.state.list!)
 })
 
 router.get('/:listId/users', async ctx => {

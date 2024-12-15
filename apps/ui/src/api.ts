@@ -175,6 +175,9 @@ const api = {
 
     journeys: {
         ...createProjectEntityPath<Journey>('journeys'),
+        duplicate: async (projectId: number | string, journeyId: number | string) => await client
+            .post<Campaign>(`${projectUrl(projectId)}/journeys/${journeyId}/duplicate`)
+            .then(r => r.data),
         steps: {
             get: async (projectId: number | string, journeyId: number | string) => await client
                 .get<JourneyStepMap>(`/admin/projects/${projectId}/journeys/${journeyId}/steps`)
@@ -234,6 +237,9 @@ const api = {
             formData.append('file', file)
             await client.post(`${projectUrl(projectId)}/lists/${listId}/users`, formData)
         },
+        duplicate: async (projectId: number | string, listId: number | string) => await client
+            .post<List>(`${projectUrl(projectId)}/lists/${listId}/duplicate`)
+            .then(r => r.data),
     },
 
     projectAdmins: {
