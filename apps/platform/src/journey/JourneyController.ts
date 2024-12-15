@@ -11,7 +11,7 @@ import { User } from '../users/User'
 import { RequestError } from '../core/errors'
 import JourneyError from './JourneyError'
 import { getUserFromContext } from '../users/UserRepository'
-import { triggerEntrance } from './JourneyService'
+import { duplicateJourney, triggerEntrance } from './JourneyService'
 
 const router = new Router<
     ProjectState & { journey?: Journey }
@@ -169,6 +169,10 @@ router.get('/:journeyId/steps', async ctx => {
 router.put('/:journeyId/steps', async ctx => {
     const { steps, children } = await setJourneyStepMap(ctx.state.journey!.id, validate(journeyStepsParamsSchema, ctx.request.body))
     ctx.body = await toJourneyStepMap(steps, children)
+})
+
+router.post('/:journeyId/duplicate', async ctx => {
+    ctx.body = await duplicateJourney(ctx.state.journey!)
 })
 
 router.get('/:journeyId/entrances', async ctx => {

@@ -8,9 +8,9 @@ import ListPopulateJob from './ListPopulateJob'
 import { importUsers } from '../users/UserImport'
 import { FileStream } from '../storage/FileStream'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
-import { Chunker } from '../utilities'
+import { Chunker, pick } from '../utilities'
 import { getUserEventsForRules } from '../users/UserRepository'
-import { DateRuleTypes, RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, fetchAndCompileRule, getDateRuleType, mergeInsertRules, splitRuleTree } from '../rules/RuleService'
+import { DateRuleTypes, RuleResults, RuleWithEvaluationResult, checkRules, decompileRule, duplicateRule, fetchAndCompileRule, getDateRuleType, mergeInsertRules, splitRuleTree } from '../rules/RuleService'
 import { updateCampaignSendEnrollment } from '../campaigns/CampaignService'
 import { cacheDecr, cacheDel, cacheGet, cacheIncr, cacheSet } from '../config/redis'
 import App from '../app'
@@ -510,4 +510,38 @@ export const listUserCount = async (listId: number, since?: CountRange): Promise
 
 export const updateListState = async (id: number, params: Partial<Pick<List, 'state' | 'version' | 'users_count' | 'refreshed_at'>>) => {
     return await List.updateAndFetch(id, params)
+}
+
+export const duplicateList = async (list: List) => {
+    const params: Partial<List> = pick(list, ['project_id', 'name', 'type', 'rule_id', 'rule', 'is_visible'])
+    params.name = `Copy of ${params.name}`
+    params.state = 'draft'
+    let newList = await List.insertAndFetch(params)
+
+    if (list.rule_id) {
+        const clonedRuleId = await duplicateRule(list.rule_id, newList.project_id)
+        if (clonedRuleId) newList.rule_id = clonedRuleId
+
+        newList = await List.updateAndFetch(newList.id, { rule_id: clonedRuleId })
+
+        await ListPopulateJob.from(newList.id, newList.project_id).queue()
+
+        return newList
+    } else {
+        const chunker = new Chunker<Partial<UserList>>(async entries => {
+            await UserList.insert(entries)
+        }, 100)
+        const stream = UserList.query()
+            .where('list_id', list.id)
+            .stream()
+        for await (const row of stream) {
+            await chunker.add({
+                list_id: newList.id,
+                user_id: row.user_id,
+                event_id: row.event_id,
+            })
+        }
+        await chunker.flush()
+        return newList
+    }
 }

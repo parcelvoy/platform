@@ -4,7 +4,7 @@ import { ModelParams } from '../core/Model'
 import Project from '../projects/Project'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import { visit } from '../utilities'
+import { uuid, visit } from '../utilities'
 import { dateCompile } from './DateRule'
 import Rule, { RuleEvaluation, RuleTree } from './Rule'
 import { check } from './RuleEngine'
@@ -314,4 +314,34 @@ export const getDateRuleTypes = async (rootId: number): Promise<DateRuleTypes | 
     value = before ? project.created_at : value
 
     return { dynamic, after, before, value }
+}
+
+export const duplicateRule = async (ruleId: number, projectId: number) => {
+    const rule = await fetchAndCompileRule(ruleId)
+    if (!rule) return
+
+    const [{ id, ...wrapper }, ...rules] = decompileRule(rule, { project_id: projectId })
+    const newRootUuid = uuid()
+    const newRootId = await Rule.insert({ ...wrapper, uuid: newRootUuid })
+
+    const uuidMap: Record<string, string> = {
+        [rule.uuid]: newRootUuid,
+    }
+    if (rules && rules.length) {
+        const newRules: Partial<Rule>[] = []
+        for (const { id, ...rule } of rules) {
+            const newUuid = uuid()
+            uuidMap[rule.uuid] = newUuid
+            newRules.push({
+                ...rule,
+                uuid: newUuid,
+                root_uuid: newRootUuid,
+                parent_uuid: rule.parent_uuid
+                    ? uuidMap[rule.parent_uuid]
+                    : undefined,
+            })
+        }
+        await Rule.insert(newRules)
+    }
+    return newRootId
 }
