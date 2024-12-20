@@ -2,7 +2,7 @@ import { MetricsTime, Queue as BullQueue, Worker, JobsOptions, DelayedError } fr
 import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
-import { EncodedJob } from './Job'
+import { EncodedJob, JobPriority } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider, { MetricPeriod, QueueMetric } from './QueueProvider'
 import { DefaultRedis, Redis, RedisConfig } from '../config/redis'
@@ -82,9 +82,7 @@ export default class RedisQueueProvider implements QueueProvider {
                     count: 50,
                     age: 24 * 3600, // keep up to 24 hours
                 },
-                delay: job.options.delay,
-                attempts: job.options.attempts,
-                jobId: job.options.jobId,
+                ...job.options,
             },
         }
     }
@@ -123,6 +121,10 @@ export default class RedisQueueProvider implements QueueProvider {
 
     async metrics(period: MetricPeriod): Promise<QueueMetric> {
         const waiting = await this.bull.getWaitingCount()
+        const priorities = await this.bull.getCountsPerPriority([
+            JobPriority.high,
+            JobPriority.low,
+        ])
         const completed = await this.bull.getMetrics('completed')
         const data = completed.data
             .slice(0, period)
@@ -133,7 +135,9 @@ export default class RedisQueueProvider implements QueueProvider {
         data.reverse()
         return {
             data,
-            waiting,
+            waiting: waiting
+                + priorities[JobPriority.high]
+                + priorities[JobPriority.low],
         }
     }
 
