@@ -8,6 +8,7 @@ import Tile, { TileGrid } from '../../ui/Tile'
 import PageContent from '../../ui/PageContent'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { DataTable, JsonPreview, Modal } from '../../ui'
+import { useSearchParams } from 'react-router-dom'
 
 interface Series {
     label: string
@@ -21,8 +22,11 @@ export default function Performance() {
 
     const [metrics, setMetrics] = useState<Series[] | undefined>()
 
+    const [searchParams, setSearchParams] = useSearchParams()
+    const job = searchParams.get('job') ?? undefined
+
     const [jobs, setJobs] = useState<string[]>([])
-    const [currentJob, setCurrentJob] = useState<string | undefined>()
+    const [currentJob, setCurrentJob] = useState<string | undefined>(job)
     const [jobMetrics, setJobMetrics] = useState<Series[] | undefined>()
 
     const [failed, setFailed] = useState<Array<Record<string, any>>>([])
@@ -47,7 +51,7 @@ export default function Performance() {
         api.organizations.jobs()
             .then((jobs) => {
                 setJobs(jobs)
-                setCurrentJob(jobs[0])
+                if (!currentJob) setCurrentJob(jobs[0])
             })
             .catch(() => {})
 
@@ -73,6 +77,14 @@ export default function Performance() {
             })
             .catch(() => {})
     }, [currentJob])
+
+    const handleChangeJob = (job: string | undefined) => {
+        setCurrentJob(job)
+        if (job) {
+            searchParams.set('job', job)
+            setSearchParams(searchParams)
+        }
+    }
 
     const primaryAxis = useMemo(
         (): AxisOptions<Metric> => ({
@@ -118,7 +130,7 @@ export default function Performance() {
                     size="small"
                     options={jobs}
                     value={currentJob}
-                    onChange={setCurrentJob}
+                    onChange={handleChangeJob}
                 />
             } />
             {jobMetrics && <div style={{ position: 'relative', minHeight: '200px' }}>
@@ -143,7 +155,14 @@ export default function Performance() {
                         { key: 'name', title: 'Name' },
                         { key: 'attemptsMade', title: 'Attempts Made' },
                         { key: 'failedReason', title: 'Reason' },
-                        { key: 'timestamp', title: 'Timestamp' },
+                        {
+                            key: 'timestamp',
+                            title: 'Timestamp',
+                            cell: ({ item: { timestamp } }) => {
+                                const date = new Date(timestamp)
+                                return date.toLocaleString()
+                            },
+                        },
                     ]} onSelectRow={row => setSelectedFailed(row) }/>
                 </div>
             </>}
