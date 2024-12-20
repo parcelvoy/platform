@@ -45,6 +45,7 @@
     "click_rate": "Ratio de clics",
     "clicks": "Clics",
     "code": "Código",
+    "confirm_unsaved_changes": "¿Estás seguro de que deseas salir? Tienes cambios sin guardar.",
     "create": "Crear",
     "create_campaign": "Crear Campaña",
     "create_journey": "Crear Camino",

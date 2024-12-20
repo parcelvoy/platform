@@ -168,7 +168,7 @@ export function ruleDescription(preferences: Preferences, rule: Rule | GroupedRu
             </code>,
         )
 
-        nodes.push(' ' + operatorTypes[rule.type]?.find(ot => ot.key === rule.operator)?.label ?? rule.operator)
+        nodes.push(' ' + (operatorTypes[rule.type]?.find(ot => ot.key === rule.operator)?.label ?? rule.operator))
 
         if (rule.operator !== 'empty' && rule.operator !== 'is set' && rule.operator !== 'is not set') {
             nodes.push(' ')

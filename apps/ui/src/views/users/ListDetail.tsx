@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import api from '../../api'
 import { ListContext, ProjectContext } from '../../contexts'
 import { DynamicList, ListUpdateParams, Rule } from '../../types'
@@ -20,15 +20,26 @@ import { EditIcon, SendIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 import { useTranslation } from 'react-i18next'
 import { Alert } from '../../ui'
+import { useBlocker } from 'react-router-dom'
 
-const RuleSection = ({ list, onRuleSave }: { list: DynamicList, onRuleSave: (rule: Rule) => void }) => {
+interface RuleSectionProps {
+    list: DynamicList
+    onRuleSave: (rule: Rule) => void
+    onChange?: (rule: Rule) => void
+}
+
+const RuleSection = ({ list, onRuleSave, onChange }: RuleSectionProps) => {
     const { t } = useTranslation()
     const [rule, setRule] = useState<Rule>(list.rule)
+    const onSetRule = (rule: Rule) => {
+        setRule(rule)
+        onChange?.(rule)
+    }
     return <>
         <Heading size="h3" title={t('rules')} actions={
             <Button size="small" onClick={() => onRuleSave(rule) }>{t('rules_save')}</Button>
         } />
-        <RuleBuilder rule={rule} setRule={setRule} />
+        <RuleBuilder rule={rule} setRule={onSetRule} />
     </>
 }
 
@@ -39,10 +50,43 @@ export default function ListDetail() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isEditListOpen, setIsEditListOpen] = useState(false)
     const [isUploadOpen, setIsUploadOpen] = useState(false)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [error, setError] = useState<string | undefined>()
 
     const state = useSearchTableState(useCallback(async params => await api.lists.users(project.id, list.id, params), [list, project]))
     const route = useRoute()
+
+    useEffect(() => {
+        const refresh = () => {
+            api.lists.get(project.id, list.id)
+                .then(setList)
+                .then(() => state.reload)
+                .catch(() => {})
+        }
+
+        if (list.state !== 'loading') return
+        const complete = list.progress?.complete ?? 0
+        const total = list.progress?.total ?? 0
+        const percent = total > 0 ? complete / total * 100 : 0
+        const refreshRate = percent < 5 ? 1000 : 5000
+        const interval = setInterval(refresh, refreshRate)
+        refresh()
+
+        return () => clearInterval(interval)
+    }, [list.state])
+
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+    )
+
+    useEffect(() => {
+        if (blocker.state !== 'blocked') return
+        if (confirm(t('confirm_unsaved_changes'))) {
+            blocker.proceed()
+        } else {
+            blocker.reset()
+        }
+    }, [blocker.state])
 
     const saveList = async ({ name, rule, published, tags }: ListUpdateParams) => {
         try {
@@ -51,6 +95,7 @@ export default function ListDetail() {
             setList(value)
             setIsEditListOpen(false)
             setIsDialogOpen(true)
+            setHasUnsavedChanges(false)
         } catch (error: any) {
             const errorMessage = error.response?.data?.error ?? error.message
             setError(errorMessage)
@@ -92,7 +137,12 @@ export default function ListDetail() {
 
             {error && <Alert variant="error" title="Error">{error}</Alert>}
 
-            {list.type === 'dynamic' && <RuleSection list={list} onRuleSave={async (rule: any) => await saveList({ name: list.name, rule })} />}
+            {list.type === 'dynamic' && (
+                <RuleSection
+                    list={list}
+                    onRuleSave={async (rule: any) => await saveList({ name: list.name, rule })}
+                    onChange={() => setHasUnsavedChanges(true)} />
+            )}
 
             <SearchTable title="Users"
                 {...state}
