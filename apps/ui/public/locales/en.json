@@ -45,6 +45,7 @@
     "click_rate": "Click Rate",
     "clicks": "Clicks",
     "code": "Code",
+    "confirm_unsaved_changes": "Are you sure you want to leave? You have unsaved changes.",
     "create": "Create",
     "create_campaign": "Create Campaign",
     "create_journey": "Create Journey",
