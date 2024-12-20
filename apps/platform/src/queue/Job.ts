@@ -6,9 +6,14 @@ interface JobOptions {
     jobId?: string
 }
 
+interface JobState {
+    attemptsMade: number
+}
+
 export interface EncodedJob {
     data: any
     options: JobOptions
+    state: JobState
     name: string
     token?: string
 }
@@ -27,6 +32,10 @@ export default class Job implements EncodedJob {
     options: JobOptions = {
         delay: 0,
         attempts: 3,
+    }
+
+    state: JobState = {
+        attemptsMade: 0,
     }
 
     static $name: string = Job.constructor.name

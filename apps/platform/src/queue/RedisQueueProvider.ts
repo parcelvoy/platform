@@ -95,6 +95,9 @@ export default class RedisQueueProvider implements QueueProvider {
                     ...job.data.options,
                     jobId: job.id,
                 },
+                state: {
+                    attemptsMade: job.attemptsMade,
+                },
                 token,
             })
         }, {
