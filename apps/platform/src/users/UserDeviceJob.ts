@@ -13,7 +13,14 @@ export default class UserDeviceJob extends Job {
         return new this(data)
     }
 
-    static async handler({ project_id, ...device }: UserDeviceTrigger) {
-        await saveDevice(project_id, device)
+    static async handler({ project_id, ...device }: UserDeviceTrigger, job: UserDeviceJob) {
+        const attempts = job.options.attempts ?? 1
+        const attemptsMade = job.state.attemptsMade ?? 0
+
+        try {
+            await saveDevice(project_id, device)
+        } catch (error) {
+            if (attemptsMade < (attempts - 1)) throw error
+        }
     }
 }
