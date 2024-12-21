@@ -295,7 +295,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
         await CampaignSend.query()
             .insert(items)
             .onConflict(['campaign_id', 'user_id', 'reference_id'])
-            .merge(['state', 'send_at'])
+            .ignore()
     }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
         CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
     )
