@@ -23,6 +23,10 @@ import Template from '../render/Template'
 import { differenceInDays, subDays } from 'date-fns'
 import { raw } from '../core/Model'
 
+export const CacheKeys = {
+    pendingStats: 'campaigns:pending_stats',
+}
+
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
     const result = await Campaign.search(
         { ...params, fields: ['name'] },
