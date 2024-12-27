@@ -10,7 +10,7 @@ export default class CampaignStateJob extends Job {
     static async handler() {
 
         // Fetch anything that is currently running or has finished
-        // within the last two days
+        // within the last two days or has activity
         const openedCampaignIds = await App.main.redis.smembers(CacheKeys.pendingStats)
         const campaigns = await Campaign.query()
             .whereIn('state', ['scheduled', 'running'])
