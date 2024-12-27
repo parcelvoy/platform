@@ -1,7 +1,8 @@
+import App from '../app'
 import { Job } from '../queue'
 import { unsubscribe } from '../subscriptions/SubscriptionService'
 import { CampaignSend } from './Campaign'
-import { getCampaignSend, updateCampaignSend } from './CampaignService'
+import { CacheKeys, getCampaignSend, updateCampaignSend } from './CampaignService'
 
 interface CampaignIteraction {
     user_id: number
@@ -25,6 +26,7 @@ export default class CampaignInteractJob extends Job {
 
         if (type === 'opened' && !send.opened_at) {
             await updateCampaignSend(send.id, { opened_at: new Date() })
+            await App.main.redis.sadd(CacheKeys.pendingStats, campaign_id)
         }
 
         if (type === 'clicked') {
