@@ -84,7 +84,7 @@ export const getListUsers = async (id: number, params: PageParams, projectId: nu
             .where('list_id', id)
             .select('users.*', 'user_list.created_at', 'user_list.id', 'user_list.user_id'),
         App.main.db,
-        (item) => ({ ...item, id: item.user_id }) as any,
+        (item) => User.fromJson({ ...item, id: item.user_id }) as any,
     )
 }
 
