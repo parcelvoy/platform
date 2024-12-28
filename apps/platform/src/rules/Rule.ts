@@ -1,6 +1,6 @@
 import Model, { ModelParams } from '../core/Model'
 
-export type Operator = '=' | '!=' | '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor' | 'empty' | 'contains' | 'starts with' | 'ends with' | 'any' | 'none'
+export type Operator = '=' | '!=' | '<' |'<=' | '>' | '>=' | '=' | 'is set' | 'is not set' | 'or' | 'and' | 'xor' | 'empty' | 'contains' | 'not contain' | 'starts with' | 'not start with' | 'ends with' | 'any' | 'none'
 export type RuleType = 'wrapper' | 'string' | 'number' | 'boolean' | 'date' | 'array'
 export type RuleGroup = 'user' | 'event' | 'parent'
 

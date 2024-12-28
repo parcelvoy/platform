@@ -33,10 +33,14 @@ export default {
                 return v !== ruleValue
             case 'starts with':
                 return v?.startsWith(ruleValue)
+            case 'not start with':
+                return !v?.startsWith(ruleValue)
             case 'ends with':
                 return v?.endsWith(ruleValue)
             case 'contains':
                 return v?.includes(ruleValue)
+            case 'not contain':
+                return !v?.includes(ruleValue)
             default:
                 throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
             }
