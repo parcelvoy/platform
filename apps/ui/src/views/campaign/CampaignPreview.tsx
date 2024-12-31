@@ -18,6 +18,7 @@ import { ChannelType, TemplateProofParams, User } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import SourceEditor from '../../ui/SourceEditor'
 import { useTranslation } from 'react-i18next'
+import { flattenUser } from '../../ui/utils'
 
 interface UserLookupProps extends Omit<ModalProps, 'title'> {
     onSelected: (user: User) => void
@@ -190,7 +191,7 @@ export default function CampaignPreview() {
                 onClose={setIsUserLookupOpen}
                 onSelected={user => {
                     setValue(JSON.stringify({
-                        user,
+                        user: flattenUser(user),
                         event: {},
                     }, undefined, 4))
                 }} />
