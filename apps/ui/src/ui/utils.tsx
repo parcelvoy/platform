@@ -1,5 +1,6 @@
 import { Key, useState } from 'react'
 import { Modifier, usePopper } from 'react-popper'
+import { User } from '../types'
 
 const modifiers: Array<Partial<Modifier<any, any>>> = [
     {
@@ -61,3 +62,25 @@ export const highlightSearch = (
 ) => (text && search)
     ? text.replaceAll(search, `<strong class="${matchClassName}">$&</strong>`)
     : (text ?? '')
+
+export const flattenUser = ({ email, phone, id, external_id, timezone, locale, created_at, devices, data }: User) => orderKeys({
+    ...data,
+    email,
+    phone,
+    id,
+    external_id,
+    created_at,
+    locale,
+    timezone,
+    devices,
+})
+
+export const orderKeys = (unorderedObj: Record<string, any>) => {
+    return Object.keys(unorderedObj).sort().reduce(
+        (obj: Record<string, any>, key) => {
+            obj[key] = unorderedObj[key]
+            return obj
+        },
+        {},
+    )
+}
