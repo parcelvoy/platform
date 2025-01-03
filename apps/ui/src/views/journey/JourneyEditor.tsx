@@ -1,5 +1,5 @@
-import { createElement, DragEventHandler, Fragment, memo, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { createElement, DragEventHandler, Fragment, memo, ReactNode, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useBlocker, useNavigate } from 'react-router-dom'
 import ReactFlow, {
     addEdge,
     Background,
@@ -493,14 +493,12 @@ export default function JourneyEditor() {
     const journeyId = journey.id
 
     const loadSteps = useCallback(async () => {
-
         const steps = await api.journeys.steps.get(project.id, journeyId)
 
         const { edges, nodes } = stepsToNodes(steps)
 
         setNodes(nodes)
         setEdges(edges)
-
     }, [project, journeyId])
 
     useEffect(() => {
@@ -508,10 +506,29 @@ export default function JourneyEditor() {
     }, [loadSteps])
 
     const [saving, setSaving] = useState(false)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+    )
+
+    useEffect(() => {
+        if (blocker.state !== 'blocked') return
+        if (confirm(t('confirm_unsaved_changes'))) {
+            blocker.proceed()
+        } else {
+            blocker.reset()
+        }
+    }, [blocker.state])
+
+    const handleSetNodes = (nodes: SetStateAction<Array<Node<any, string | undefined>>>) => {
+        setHasUnsavedChanges(true)
+        setNodes(nodes)
+    }
+
     const saveSteps = useCallback(async () => {
 
         setSaving(true)
-
         try {
             const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
 
@@ -524,6 +541,7 @@ export default function JourneyEditor() {
         } catch (error: any) {
             toast.error(`Unable to save: ${error}`)
         } finally {
+            setHasUnsavedChanges(false)
             setSaving(false)
         }
     }, [project, journey, nodes, edges])
@@ -580,7 +598,7 @@ export default function JourneyEditor() {
             },
         }
 
-        setNodes(nds => nds.concat(newStep))
+        handleSetNodes(nds => nds.concat(newStep))
 
     }, [setNodes, flowInstance, project, journey])
 
@@ -658,7 +676,7 @@ export default function JourneyEditor() {
                             label={t('name')}
                             name="name"
                             value={editNode.data.name ?? ''}
-                            onChange={name => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, name } } : n))}
+                            onChange={name => handleSetNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, name } } : n))}
                         />
                         {
                             type.hasDataKey && (
@@ -667,14 +685,14 @@ export default function JourneyEditor() {
                                     subtitle={t('data_key_description')}
                                     name="data_key"
                                     value={editNode.data.data_key}
-                                    onChange={data_key => setNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, data_key } } : n))}
+                                    onChange={data_key => handleSetNodes(nds => nds.map(n => n.id === editNode.id ? { ...n, data: { ...n.data, data_key } } : n))}
                                 />
                             )
                         }
                         {
                             type.Edit && createElement(type.Edit, {
                                 value: editNode.data.data ?? {},
-                                onChange: data => setNodes(nds => nds.map(n => n.id === editNode.id
+                                onChange: data => handleSetNodes(nds => nds.map(n => n.id === editNode.id
                                     ? {
                                         ...editNode,
                                         data: {
