@@ -1,7 +1,6 @@
 import App from '../app'
 import { cacheIncr } from '../config/redis'
 import { Job } from '../queue'
-import { JobPriority } from '../queue/Job'
 import { getUser } from '../users/UserRepository'
 import { DynamicList } from './List'
 import { CacheKeys, cleanupList, evaluateUserList, getList } from './ListService'
@@ -16,12 +15,6 @@ interface ListEvaluateUserParams {
 
 export default class ListEvaluateUserJob extends Job {
     static $name = 'list_evaluate_user_job'
-
-    options = {
-        delay: 0,
-        attempts: 3,
-        priority: JobPriority.low,
-    }
 
     static from(params: ListEvaluateUserParams): ListEvaluateUserJob {
         return new this(params)
