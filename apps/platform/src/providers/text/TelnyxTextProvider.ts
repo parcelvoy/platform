@@ -57,7 +57,7 @@ export default class TelnyxTextProvider extends TextProvider {
         const response = await fetch('https://api.telnyx.com/v2/messages', {
             method: 'POST',
             headers: {
-                Authorization: `Basic ${this.api_key}`,
+                Authorization: `Bearer ${this.api_key}`,
                 'Content-Type': 'application/json',
                 'User-Agent': 'parcelvoy/v1 (+https://github.com/parcelvoy/platform)',
             },
