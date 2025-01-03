@@ -4,7 +4,7 @@ import './EmailEditor.css'
 import Button, { LinkButton } from '../../../ui/Button'
 import api from '../../../api'
 import { Campaign, Resource, Template } from '../../../types'
-import { useNavigate } from 'react-router-dom'
+import { useBlocker, useNavigate } from 'react-router-dom'
 import { localeState } from '../CampaignDetail'
 import Modal from '../../../ui/Modal'
 import HtmlEditor from './HtmlEditor'
@@ -29,12 +29,26 @@ export default function EmailEditor() {
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
     const [isSaving, setIsSaving] = useState(false)
     const [showConfig, setShowConfig] = useState(false)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
     useEffect(() => {
         api.resources.all(project.id)
             .then(resources => setResources(resources))
             .catch(() => setResources([]))
     }, [])
+
+    const blocker = useBlocker(
+        ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+    )
+
+    useEffect(() => {
+        if (blocker.state !== 'blocked') return
+        if (confirm(t('confirm_unsaved_changes'))) {
+            blocker.proceed()
+        } else {
+            blocker.reset()
+        }
+    }, [blocker.state])
 
     async function handleTemplateSave({ id, type, data }: Template) {
         setIsSaving(true)
@@ -46,8 +60,14 @@ export default function EmailEditor() {
             setCampaign(newCampaign)
             toast.success(t('template_saved'))
         } finally {
+            setHasUnsavedChanges(false)
             setIsSaving(false)
         }
+    }
+
+    const handleTemplateChange = (change: SetStateAction<Template | undefined>) => {
+        setHasUnsavedChanges(true)
+        setTemplate(change)
     }
 
     const campaignChange = (change: SetStateAction<Campaign>) => {
@@ -94,7 +114,7 @@ export default function EmailEditor() {
                                         <Suspense key={template.id} fallback={null}>
                                             <VisualEditor
                                                 template={template}
-                                                setTemplate={setTemplate}
+                                                setTemplate={handleTemplateChange}
                                                 resources={resources}
                                             />
                                         </Suspense>
@@ -102,7 +122,7 @@ export default function EmailEditor() {
                                     : <HtmlEditor
                                         template={template}
                                         key={template.id}
-                                        setTemplate={setTemplate} />
+                                        setTemplate={handleTemplateChange} />
                             ))
                         }
                     </section>
