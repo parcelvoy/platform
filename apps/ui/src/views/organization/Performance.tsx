@@ -28,10 +28,12 @@ const Chart = ({ series }: { series: Series[] }) => {
                 }}
             >
                 <XAxis dataKey="date"
-                    tickFormatter={date => format(date, 'HH:mm aa')}
+                    tickFormatter={date => format(date, 'h:mm aa')}
                     type="number"
-                    domain = {['auto', 'auto']}
-                    tick={{ fontSize: 12 }} />
+                    domain = {['dataMin', 'dataMax']}
+                    tick={{ fontSize: 12 }}
+                    tickCount={15}
+                    tickMargin={8} />
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={count => count.toLocaleString() } />
                 <CartesianGrid vertical={false} />
                 <Tooltip
@@ -152,7 +154,7 @@ export default function Performance() {
             {jobMetrics && <Chart series={jobMetrics} />}
 
             {failed.length && <>
-                <Heading size="h4" title="Failed" />
+                <Heading size="h4" title="Failed Jobs" />
                 <div className="failed">
                     <DataTable items={failed} columns={[
                         { key: 'id', title: 'ID' },

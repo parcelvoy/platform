@@ -4,6 +4,10 @@
     border-radius: var(--border-radius);
 }
 
+.recharts-cartesian-axis-ticks {
+    padding-top: 10px;
+}
+
 .recharts-cartesian-grid-horizontal line {
     stroke: var(--color-grey);
 }

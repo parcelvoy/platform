@@ -156,7 +156,7 @@ export function SearchTable<T extends Record<string, any>>({
                 entity={tagEntity}
                 value={params.tag ?? []}
                 onChange={tag => setParams({ ...params, tag })}
-                placeholder="Filter By Tag..."
+                placeholder={t('filter')}
             />,
         )
     }
