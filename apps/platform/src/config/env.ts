@@ -73,6 +73,8 @@ export default (type?: EnvType): Env => {
         redis: {
             host: process.env.REDIS_HOST!,
             port: parseInt(process.env.REDIS_PORT!),
+            username: process.env.REDIS_USERNAME,
+            password: process.env.REDIS_PASSWORD,
             tls: process.env.REDIS_TLS === 'true',
         },
         queue: driver<QueueConfig>(process.env.QUEUE_DRIVER, {

@@ -3,14 +3,18 @@ import IORedis, { Redis } from 'ioredis'
 export interface RedisConfig {
     host: string
     port: number
+    username?: string
+    password?: string
     tls: boolean
 }
 
-export const DefaultRedis = (config: RedisConfig, extraOptions = {}): Redis => {
+export const DefaultRedis = ({ port, host, username, password, tls }: RedisConfig, extraOptions = {}): Redis => {
     return new IORedis({
-        port: config.port,
-        host: config.host,
-        tls: config.tls
+        port,
+        host,
+        ...username && { username },
+        ...password && { password },
+        tls: tls
             ? { rejectUnauthorized: false }
             : undefined,
         ...extraOptions,
