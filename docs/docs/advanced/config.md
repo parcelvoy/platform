@@ -20,12 +20,24 @@ Find below a list of all environment variables that can be set at launch to conf
 ### Queue
 | key | type | required |
 |--|--|--|
-| QUEUE_DRIVER | 'sqs' or 'memory' | true |
+| QUEUE_DRIVER | 'sqs' or 'redis' or 'memory' | true |
 | AWS_SQS_QUEUE_URL | string | If driver is SQS |
 | AWS_REGION | string | If driver is SQS |
 | AWS_ACCESS_KEY_ID | string | If driver is SQS |
 | AWS_SECRET_ACCESS_KEY | string | If driver is SQS |
+| REDIS_HOST | string | If driver is Redis |
+| REDIS_PORT | string | If driver is Redis |
+| REDIS_TLS | boolean | false |
 
+
+### Redis
+| key | type | required |
+|--|--|--|
+| REDIS_HOST | string | true |
+| REDIS_PORT | string | true |
+| REDIS_TLS | boolean | false |
+| REDIS_USERNAME | string | false |
+| REDIS_PASSWORD | string | false |
 
 ### Storage
 | key | type | required |
