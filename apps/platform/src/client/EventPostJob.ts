@@ -20,7 +20,7 @@ export default class EventPostJob extends Job {
 
     options = {
         delay: 0,
-        attempts: 1,
+        attempts: 2,
     }
 
     static from(data: EventPostTrigger): EventPostJob {
