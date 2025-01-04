@@ -34,7 +34,17 @@ router.get('/performance/jobs', async ctx => {
 })
 
 router.get('/performance/jobs/:job', async ctx => {
-    ctx.body = await App.main.stats.list(ctx.params.job)
+    const jobName = ctx.params.job
+    ctx.body = [
+        {
+            label: 'added',
+            data: await App.main.stats.list(jobName),
+        },
+        {
+            label: 'completed',
+            data: await App.main.stats.list(`${jobName}:completed`),
+        },
+    ]
 })
 
 router.get('/performance/failed', async ctx => {
