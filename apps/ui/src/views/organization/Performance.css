@@ -7,3 +7,15 @@
 .recharts-cartesian-grid-horizontal line {
     stroke: var(--color-grey);
 }
+
+.recharts-cartesian-axis-tick .recharts-cartesian-axis-tick-value {
+    fill: var(--color-primary);
+}
+
+.recharts-cartesian-axis-tick .recharts-cartesian-axis-tick-line {
+    stroke: var(--color-grey);
+}
+
+.recharts-cartesian-axis-line {
+    stroke: var(--color-grey);
+}

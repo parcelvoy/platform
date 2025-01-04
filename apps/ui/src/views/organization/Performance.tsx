@@ -18,7 +18,7 @@ const Chart = ({ series }: { series: Series[] }) => {
     const strokes = ['#3C82F6', '#12B981']
     const [preferences] = useContext(PreferencesContext)
     return (
-        <ResponsiveContainer width="100%" aspect={5}>
+        <ResponsiveContainer width="100%" maxHeight={250} aspect={1}>
             <LineChart
                 margin={{
                     top: 5,
@@ -141,7 +141,7 @@ export default function Performance() {
                 <Chart series={metrics} />
             </div>}
             <br /><br />
-            <Heading size="h4" title="Job Metrics" actions={
+            <Heading size="h4" title="Per Job Metrics" actions={
                 <SingleSelect
                     size="small"
                     options={jobs}
