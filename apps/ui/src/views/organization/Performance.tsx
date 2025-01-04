@@ -1,23 +1,66 @@
 import Heading from '../../ui/Heading'
-import { Chart, AxisOptions } from 'react-charts'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import api from '../../api'
-import { Metric } from '../../types'
-import { PreferencesContext } from '../../ui/PreferencesContext'
+import { Series } from '../../types'
 import Tile, { TileGrid } from '../../ui/Tile'
 import PageContent from '../../ui/PageContent'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import { DataTable, JsonPreview, Modal } from '../../ui'
 import { useSearchParams } from 'react-router-dom'
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { format } from 'date-fns'
+import './Performance.css'
+import { PreferencesContext } from '../../ui/PreferencesContext'
+import { formatDate } from '../../utils'
+import { useTranslation } from 'react-i18next'
 
-interface Series {
-    label: string
-    data: Metric[]
-    scaleType: string
+const Chart = ({ series }: { series: Series[] }) => {
+    const strokes = ['#3C82F6', '#12B981']
+    const [preferences] = useContext(PreferencesContext)
+    return (
+        <ResponsiveContainer width="100%" maxHeight={250} aspect={1}>
+            <LineChart
+                margin={{
+                    top: 5,
+                    left: 10,
+                    bottom: 5,
+                    right: 0,
+                }}
+            >
+                <XAxis dataKey="date"
+                    tickFormatter={date => format(date, 'HH:mm aa')}
+                    type="number"
+                    domain = {['auto', 'auto']}
+                    tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={count => count.toLocaleString() } />
+                <CartesianGrid vertical={false} />
+                <Tooltip
+                    contentStyle={{
+                        backgroundColor: 'var(--color-background)',
+                        border: '1px solid var(--color-grey)',
+                    }}
+                    labelFormatter={(date: number) => formatDate(preferences, date)}
+                    formatter={(value, name) => [`${name}: ${value.toLocaleString()}`]}
+                />
+                <Legend />
+                {series.map((s, index) => (
+                    <Line
+                        type="monotone"
+                        dataKey="count"
+                        data={s.data}
+                        name={s.label}
+                        key={s.label}
+                        stroke={strokes[index]}
+                        dot={false}
+                    />
+                ))}
+            </LineChart>
+        </ResponsiveContainer>
+    )
 }
 
 export default function Performance() {
-    const [preferences] = useContext(PreferencesContext)
+    const { t } = useTranslation()
     const [waiting, setWaiting] = useState(0)
 
     const [metrics, setMetrics] = useState<Series[] | undefined>()
@@ -36,12 +79,11 @@ export default function Performance() {
         api.organizations.metrics()
             .then(({ waiting, data }) => {
                 const series: Series = {
-                    label: 'Count',
+                    label: t('completed'),
                     data: data.map(item => ({
-                        date: new Date(item.date),
+                        date: Date.parse(item.date as string),
                         count: item.count,
                     })),
-                    scaleType: 'time',
                 }
                 setMetrics([series])
                 setWaiting(waiting)
@@ -64,16 +106,16 @@ export default function Performance() {
 
     useEffect(() => {
         currentJob && api.organizations.jobPerformance(currentJob)
-            .then((metrics) => {
-                const series: Series = {
-                    label: 'Count',
-                    data: metrics.map(item => ({
-                        date: new Date(item.date),
-                        count: item.count,
+            .then((series) => {
+                setJobMetrics(
+                    series.map(({ data, label }) => ({
+                        label: t(label),
+                        data: data.map(item => ({
+                            date: Date.parse(item.date as string),
+                            count: item.count,
+                        })),
                     })),
-                    scaleType: 'time',
-                }
-                setJobMetrics([series])
+                )
             })
             .catch(() => {})
     }, [currentJob])
@@ -86,46 +128,20 @@ export default function Performance() {
         }
     }
 
-    const primaryAxis = useMemo(
-        (): AxisOptions<Metric> => ({
-            getValue: datum => datum.date,
-        }),
-        [],
-    )
-    const secondaryAxes = useMemo(
-        (): Array<AxisOptions<Metric>> => [{
-            getValue: datum => datum.count,
-            elementType: 'line',
-        }],
-        [],
-    )
-
     return (
         <PageContent
             title="Performance"
             desc="View queue throughput for your project."
         >
             <Heading size="h4" title="Queue Throughput" />
-            {metrics && <div >
+            {metrics && <div>
                 <TileGrid numColumns={4}>
                     <Tile title={waiting.toLocaleString()} size="large">In Queue</Tile>
                 </TileGrid>
-                <div style={{ position: 'relative', minHeight: '200px' }}>
-                    <Chart
-                        options={{
-                            data: metrics,
-                            primaryAxis,
-                            secondaryAxes,
-                            initialWidth: 500,
-                            initialHeight: 200,
-                            tooltip: false,
-                            dark: preferences.mode === 'dark',
-                        }}
-                    />
-                </div>
+                <Chart series={metrics} />
             </div>}
             <br /><br />
-            <Heading size="h4" title="Jobs" actions={
+            <Heading size="h4" title="Per Job Metrics" actions={
                 <SingleSelect
                     size="small"
                     options={jobs}
@@ -133,19 +149,7 @@ export default function Performance() {
                     onChange={handleChangeJob}
                 />
             } />
-            {jobMetrics && <div style={{ position: 'relative', minHeight: '200px' }}>
-                <Chart
-                    options={{
-                        data: jobMetrics,
-                        primaryAxis,
-                        secondaryAxes,
-                        initialWidth: 500,
-                        initialHeight: 200,
-                        tooltip: false,
-                        dark: preferences.mode === 'dark',
-                    }}
-                />
-            </div>}
+            {jobMetrics && <Chart series={jobMetrics} />}
 
             {failed.length && <>
                 <Heading size="h4" title="Failed" />

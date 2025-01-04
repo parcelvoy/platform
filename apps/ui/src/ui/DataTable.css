@@ -92,6 +92,7 @@
     grid-template-columns: 50px auto;
     align-items: center;
     column-gap: 10px;
+    min-width: 150px;
 }
 
 .ui-table .table-cell .multi-cell.no-image {

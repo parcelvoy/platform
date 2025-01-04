@@ -82,6 +82,7 @@ export default class Queue {
 
     async completed(job: EncodedJob) {
         logger.trace(job, 'queue:job:completed')
+        await App.main.stats.increment(`${job.name}:completed`)
     }
 
     async start() {

@@ -566,7 +566,7 @@ export interface QueueMetric {
 }
 
 export interface Metric {
-    date: string | Date
+    date: string | Date | number
     count: number
 }
 
@@ -577,4 +577,9 @@ export interface LocaleOption {
 
 export interface Locale extends LocaleOption {
     id: number
+}
+
+export interface Series {
+    label: string
+    data: Metric[]
 }

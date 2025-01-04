@@ -25,7 +25,6 @@
     "i18next-http-backend": "^2.5.0",
     "monaco-editor": "^0.41.0",
     "react": "^18.2.0",
-    "react-charts": "^3.0.0-beta.57",
     "react-dom": "^18.2.0",
     "react-hook-form": "7.51.1",
     "react-hot-toast": "^2.4.0",
@@ -33,6 +32,7 @@
     "react-popper": "^2.3.0",
     "react-router-dom": "^6.28.0",
     "reactflow": "11.10.1",
+    "recharts": "^2.15.0",
     "rrule": "2.7.2",
     "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
