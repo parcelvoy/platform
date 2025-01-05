@@ -224,9 +224,22 @@ export const chunk = async <T>(
     modifier: (result: any) => T = (result) => result,
 ) => {
     const chunker = new Chunker(callback, size)
+    const handler = async (result: any, retries = 3) => {
+        try {
+            await chunker.add(modifier(result))
+        } catch (error: any) {
+
+            // In the case of deadlocks, retry the operation
+            if (['ER_LOCK_WAIT_TIMEOUT', 'ER_LOCK_DEADLOCK'].includes(error.code) && retries > 0) {
+                setTimeout(() => handler(result, retries - 1), 250)
+            } else {
+                throw error
+            }
+        }
+    }
     await query.stream(async function(stream) {
         for await (const result of stream) {
-            await chunker.add(modifier(result))
+            await handler(result)
         }
     })
     await chunker.flush()
