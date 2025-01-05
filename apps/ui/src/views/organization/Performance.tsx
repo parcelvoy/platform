@@ -14,7 +14,11 @@ import { PreferencesContext } from '../../ui/PreferencesContext'
 import { formatDate } from '../../utils'
 import { useTranslation } from 'react-i18next'
 
-const Chart = ({ series }: { series: Series[] }) => {
+interface ChartProps {
+    series: Series[]
+    formatter?: (value: number) => string
+}
+const Chart = ({ series, formatter = (value) => value.toLocaleString() }: ChartProps) => {
     const strokes = ['#3C82F6', '#12B981']
     const [preferences] = useContext(PreferencesContext)
     return (
@@ -34,7 +38,7 @@ const Chart = ({ series }: { series: Series[] }) => {
                     tick={{ fontSize: 12 }}
                     tickCount={15}
                     tickMargin={8} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={count => count.toLocaleString() } />
+                <YAxis tick={{ fontSize: 12 }} tickFormatter={count => formatter(count) } />
                 <CartesianGrid vertical={false} />
                 <Tooltip
                     contentStyle={{
@@ -42,7 +46,7 @@ const Chart = ({ series }: { series: Series[] }) => {
                         border: '1px solid var(--color-grey)',
                     }}
                     labelFormatter={(date: number) => formatDate(preferences, date)}
-                    formatter={(value, name) => [`${name}: ${value.toLocaleString()}`]}
+                    formatter={(value: any, name) => [`${name}: ${formatter(value)}`]}
                 />
                 <Legend />
                 {series.map((s, index) => (
@@ -61,6 +65,11 @@ const Chart = ({ series }: { series: Series[] }) => {
     )
 }
 
+interface JobPerformance {
+    throughput: Series[]
+    timing: Series[]
+}
+
 export default function Performance() {
     const { t } = useTranslation()
     const [waiting, setWaiting] = useState(0)
@@ -72,7 +81,7 @@ export default function Performance() {
 
     const [jobs, setJobs] = useState<string[]>([])
     const [currentJob, setCurrentJob] = useState<string | undefined>(job)
-    const [jobMetrics, setJobMetrics] = useState<Series[] | undefined>()
+    const [jobMetrics, setJobMetrics] = useState<JobPerformance | undefined>()
 
     const [failed, setFailed] = useState<Array<Record<string, any>>>([])
     const [selectedFailed, setSelectedFailed] = useState<Record<string, any> | undefined>()
@@ -109,15 +118,10 @@ export default function Performance() {
     useEffect(() => {
         currentJob && api.organizations.jobPerformance(currentJob)
             .then((series) => {
-                setJobMetrics(
-                    series.map(({ data, label }) => ({
-                        label: t(label),
-                        data: data.map(item => ({
-                            date: Date.parse(item.date as string),
-                            count: item.count,
-                        })),
-                    })),
-                )
+                setJobMetrics({
+                    throughput: series.throughput.map(({ data, label }) => ({ data, label: t(label) })),
+                    timing: series.timing.map(({ data, label }) => ({ data, label: t(label) })),
+                })
             })
             .catch(() => {})
     }, [currentJob])
@@ -135,7 +139,8 @@ export default function Performance() {
             title="Performance"
             desc="View queue throughput for your project."
         >
-            <Heading size="h4" title="Queue Throughput" />
+            <Heading size="h3" title="Queue" />
+            <Heading size="h4" title="Throughput" />
             {metrics && <div>
                 <TileGrid numColumns={4}>
                     <Tile title={waiting.toLocaleString()} size="large">In Queue</Tile>
@@ -143,7 +148,7 @@ export default function Performance() {
                 <Chart series={metrics} />
             </div>}
             <br /><br />
-            <Heading size="h4" title="Per Job Metrics" actions={
+            <Heading size="h3" title="Individual Job" actions={
                 <SingleSelect
                     size="small"
                     options={jobs}
@@ -151,7 +156,17 @@ export default function Performance() {
                     onChange={handleChangeJob}
                 />
             } />
-            {jobMetrics && <Chart series={jobMetrics} />}
+            {jobMetrics && (
+                <>
+                    <Heading size="h4" title="Throughput" />
+                    <Chart series={jobMetrics.throughput} />
+                    <Heading size="h4" title="Timing" />
+                    <Chart
+                        series={jobMetrics.timing}
+                        formatter={(value) => `${value.toLocaleString()}ms`}
+                    />
+                </>
+            )}
 
             {failed.length && <>
                 <Heading size="h4" title="Failed Jobs" />

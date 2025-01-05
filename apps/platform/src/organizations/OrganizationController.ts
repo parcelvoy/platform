@@ -35,16 +35,36 @@ router.get('/performance/jobs', async ctx => {
 
 router.get('/performance/jobs/:job', async ctx => {
     const jobName = ctx.params.job
-    ctx.body = [
-        {
-            label: 'added',
-            data: await App.main.stats.list(jobName),
-        },
-        {
-            label: 'completed',
-            data: await App.main.stats.list(`${jobName}:completed`),
-        },
-    ]
+
+    const added = await App.main.stats.list(jobName)
+    const completed = await App.main.stats.list(`${jobName}:completed`)
+    const duration = await App.main.stats.list(`${jobName}:duration`)
+    const average = duration.map((item, index) => {
+        const count = completed[index]?.count
+        return {
+            date: item.date,
+            count: count ? item.count / count : 0,
+        }
+    })
+
+    ctx.body = {
+        throughput: [
+            {
+                label: 'added',
+                data: added,
+            },
+            {
+                label: 'completed',
+                data: completed,
+            },
+        ],
+        timing: [
+            {
+                label: 'average',
+                data: average,
+            },
+        ],
+    }
 })
 
 router.get('/performance/failed', async ctx => {
