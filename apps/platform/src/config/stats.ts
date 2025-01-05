@@ -41,7 +41,7 @@ export class Stats {
 
         const results = (await multi.exec()) ?? []
         return results.map(([_, value]: any, index) => ({
-            date: new Date(keys[index] * 1000),
+            date: keys[index] * 1000,
             count: parseInt(value ?? 0),
         }))
     }

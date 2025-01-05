@@ -36,9 +36,10 @@ export default class Queue {
             App.main.error.notify(new Error(`No handler found for job: ${job.name}`))
         }
 
+        const start = Date.now()
         await this.started(job)
         await handler(job.data, job)
-        await this.completed(job)
+        await this.completed(job, Date.now() - start)
         return true
     }
 
@@ -80,9 +81,11 @@ export default class Queue {
         App.main.error.notify(error, job)
     }
 
-    async completed(job: EncodedJob) {
+    async completed(job: EncodedJob, duration: number) {
         logger.trace(job, 'queue:job:completed')
+
         await App.main.stats.increment(`${job.name}:completed`)
+        await App.main.stats.increment(`${job.name}:duration`, duration)
     }
 
     async start() {

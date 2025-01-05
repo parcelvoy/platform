@@ -334,7 +334,7 @@ const api = {
             .get<string[]>('/admin/organizations/performance/jobs')
             .then(r => r.data),
         jobPerformance: async (job: string) => await client
-            .get<Series[]>(`/admin/organizations/performance/jobs/${job}`)
+            .get<{ throughput: Series[], timing: Series[] }>(`/admin/organizations/performance/jobs/${job}`)
             .then(r => r.data),
         failed: async () => await client
             .get<any>('/admin/organizations/performance/failed')

@@ -17,6 +17,7 @@
     "api_keys": "Claves API",
     "api_triggered": "Activado por API",
     "archive": "Archivar",
+    "average": "Promedio",
     "back": "Atrás",
     "balancer": "Equilibrador",
     "balancer_desc": "Dividir aleatoriamente a los usuarios en rutas y limitar la velocidad del tráfico.",

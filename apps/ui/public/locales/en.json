@@ -17,6 +17,7 @@
     "api_keys": "API Keys",
     "api_triggered": "API Triggered",
     "archive": "Archive",
+    "average": "Average",
     "back": "Back",
     "balancer": "Balancer",
     "balancer_desc": "Randomly split users across paths and rate limit traffic.",
