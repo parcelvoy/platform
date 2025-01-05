@@ -69,8 +69,8 @@ export default function CampaignOverview() {
             <InfoTable rows={{
                 [t('id')]: campaign.id,
                 [t('channel')]: ChannelTag({ channel: campaign.channel }),
-                [t('provider')]: campaign.provider.name,
-                [t('subscription_group')]: campaign.subscription.name,
+                [t('provider')]: campaign.provider?.name,
+                [t('subscription_group')]: campaign.subscription?.name,
             }} />
 
             {campaign.type === 'blast' && <>

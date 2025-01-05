@@ -27,6 +27,7 @@ export default function ChannelTag({ channel, showIcon = true, ...params }: Chan
         text: t('text'),
         push: t('push'),
         webhook: t('webhook'),
+        in_app: t('in_app'),
     }
 
     return Tag({
