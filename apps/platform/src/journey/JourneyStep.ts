@@ -400,6 +400,7 @@ export class JourneyLink extends JourneyStep {
     parseJson(json: any) {
         super.parseJson(json)
         this.target_id = json.data?.target_id
+        this.delay = json.data?.delay ?? '1 day'
     }
 
     async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
