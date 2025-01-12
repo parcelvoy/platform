@@ -7,6 +7,7 @@ import { createUser } from '../../../users/UserRepository'
 import { uuid } from '../../../utilities'
 import LoggerTextProvider from '../LoggerTextProvider'
 import TextChannel from '../TextChannel'
+import CustomTextProvider from '../CustomTextProvider'
 
 describe('TextChannel', () => {
 
@@ -77,6 +78,39 @@ describe('TextChannel', () => {
             const message = await channel.build(template, variables)
 
             expect(message.text).not.toContain(optOut)
+        })
+    })
+
+    describe('CustomTextProvider', () => {
+        test('send method', async () => {
+            const { variables, template } = await setup()
+            const provider = new CustomTextProvider()
+            provider.api_key = 'test_api_key'
+            provider.phone_number = '1234567890'
+            const channel = new TextChannel(provider)
+
+            const message = await channel.build(template, variables)
+            const response = await channel.send(template, variables)
+
+            expect(response.success).toBe(true)
+            expect(response.message.text).toBe(message.text)
+        })
+
+        test('parseInbound method', () => {
+            const provider = new CustomTextProvider()
+            const inboundMessage = {
+                data: {
+                    owner: '1234567890',
+                    contact: '0987654321',
+                    content: 'Hello!',
+                },
+            }
+
+            const parsedMessage = provider.parseInbound(inboundMessage)
+
+            expect(parsedMessage.to).toBe(inboundMessage.data.owner)
+            expect(parsedMessage.from).toBe(inboundMessage.data.contact)
+            expect(parsedMessage.text).toBe(inboundMessage.data.content)
         })
     })
 })

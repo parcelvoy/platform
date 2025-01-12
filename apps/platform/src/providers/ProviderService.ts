@@ -5,6 +5,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
 import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
 import App from '../app'
+import CustomTextProvider from './text/CustomTextProvider'
 
 export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
@@ -84,3 +85,5 @@ export const createController = (group: ProviderGroup, type: typeof Provider): R
 
     return router
 }
+
+loadController({ admin: new Router(), public: new Router() }, CustomTextProvider)

@@ -7,6 +7,7 @@ import TelnyxTextProvider from './TelnyxTextProvider'
 import TextChannel from './TextChannel'
 import { TextProvider, TextProviderName } from './TextProvider'
 import TwilioTextProvider from './TwilioTextProvider'
+import CustomTextProvider from './CustomTextProvider'
 
 type TextProviderDerived = { new (): TextProvider } & typeof TextProvider
 export const typeMap: Record<string, TextProviderDerived> = {
@@ -16,6 +17,7 @@ export const typeMap: Record<string, TextProviderDerived> = {
     twilio: TwilioTextProvider,
     httpsms: HttpSMSTextProvider,
     logger: LoggerTextProvider,
+    custom: CustomTextProvider,
 }
 
 export const providerMap = (record: { type: TextProviderName }): TextProvider => {
