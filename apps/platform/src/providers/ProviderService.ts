@@ -6,6 +6,7 @@ import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderPar
 import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
 import App from '../app'
 import CustomTextProvider from './text/CustomTextProvider'
+import TelecallTextProvider from './text/TelecallTextProvider'
 
 export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId))
@@ -87,3 +88,4 @@ export const createController = (group: ProviderGroup, type: typeof Provider): R
 }
 
 loadController({ admin: new Router(), public: new Router() }, CustomTextProvider)
+loadController({ admin: new Router(), public: new Router() }, TelecallTextProvider)

@@ -8,6 +8,7 @@ import TextChannel from './TextChannel'
 import { TextProvider, TextProviderName } from './TextProvider'
 import TwilioTextProvider from './TwilioTextProvider'
 import CustomTextProvider from './CustomTextProvider'
+import TelecallTextProvider from './TelecallTextProvider'
 
 type TextProviderDerived = { new (): TextProvider } & typeof TextProvider
 export const typeMap: Record<string, TextProviderDerived> = {
@@ -18,6 +19,7 @@ export const typeMap: Record<string, TextProviderDerived> = {
     httpsms: HttpSMSTextProvider,
     logger: LoggerTextProvider,
     custom: CustomTextProvider,
+    telecall: TelecallTextProvider,
 }
 
 export const providerMap = (record: { type: TextProviderName }): TextProvider => {
