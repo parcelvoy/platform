@@ -416,6 +416,7 @@ export const refreshList = async (list: List, types: DateRuleTypes) => {
     const userChunker = new Chunker<number>(async userIds => {
         await UserList.delete(qb => qb.whereIn('user_id', userIds)
             .where('list_id', list.id))
+        await cacheDecr(App.main.redis, CacheKeys.memberCount(list), userIds.length)
     }, 50)
 
     await scrollUserListForEvaluation({
