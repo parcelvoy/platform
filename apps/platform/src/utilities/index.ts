@@ -138,6 +138,19 @@ export const partialMatchLocale = (locale1?: string, locale2?: string) => {
     return locale1 === locale2 || locale1Root === locale2Root
 }
 
+export const isValidIANATimezone = (timezone?: string) => {
+    try {
+        if (!timezone || typeof timezone !== 'string') {
+            return false
+        }
+
+        Intl.DateTimeFormat(undefined, { timeZone: timezone })
+        return true
+    } catch (e) {
+        return false
+    }
+}
+
 export const crossTimezoneCopy = (
     date: Date,
     fromTimezone: string,
