@@ -7,6 +7,7 @@ export interface TemplateEvent extends Record<string, any> {
 export class UserEvent extends Model {
     project_id!: number
     user_id!: number
+    distinct_id?: string
     name!: string
     data!: Record<string, unknown>
 
@@ -21,4 +22,4 @@ export class UserEvent extends Model {
     }
 }
 
-export type UserEventParams = Pick<UserEvent, 'name' | 'data'>
+export type UserEventParams = Pick<UserEvent, 'name' | 'distinct_id' | 'data'>

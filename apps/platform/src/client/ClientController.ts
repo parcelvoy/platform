@@ -185,6 +185,10 @@ const postEventsRequest: JSONSchemaType<ClientPostEventsRequest> = {
                 type: 'string',
                 nullable: true,
             },
+            distinct_id: {
+                type: 'string',
+                nullable: true,
+            },
             data: {
                 type: 'object',
                 nullable: true,

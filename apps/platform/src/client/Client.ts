@@ -27,6 +27,7 @@ export type ClientDeleteUsersRequest = string[]
 
 export type ClientPostEvent = {
     name: string
+    distinct_id?: string
     data?: Record<string, unknown>
     user?: ClientIdentifyParams
     created_at?: Date
@@ -53,6 +54,7 @@ export interface SegmentContext {
 // https://segment.com/docs/connections/spec/common/
 export type SegmentPostEvent = {
     event: string
+    messageId: string
     anonymousId: string
     userId: string
     previousId?: string

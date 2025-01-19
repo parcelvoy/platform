@@ -130,6 +130,9 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
         },
     }).handle<{ user: User, event: UserEvent }>()
 
+    // If no event because of idempotency, return
+    if (!event) return
+
     // create new entrance
     const entrance_id = await JourneyUserStep.insert({
         journey_id: journey.id,

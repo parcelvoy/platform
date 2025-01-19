@@ -7,6 +7,7 @@ import { matchingRulesForEvent } from '../rules/RuleService'
 import { enterJourneysFromEvent } from '../journey/JourneyService'
 import { UserPatchJob } from '../jobs'
 import { User } from '../users/User'
+import { uuid } from '../utilities'
 
 interface EventPostTrigger {
     project_id: number
@@ -45,16 +46,21 @@ export default class EventPostJob extends Job {
         // Create event for given user
         const dbEvent = await createAndFetchEvent(user, {
             name: event.name,
+            distinct_id: event.distinct_id ?? uuid(),
             data: event.data || {},
         }, forward)
 
-        const results = await matchingRulesForEvent(user, dbEvent)
+        if (dbEvent) {
+            const results = await matchingRulesForEvent(user, dbEvent)
 
-        // Check to see if a user has any lists
-        await updateUsersLists(user, results, dbEvent)
+            // Check to see if a user has any lists
+            await updateUsersLists(user, results, dbEvent)
 
-        // Enter any journey entrances associated with this event
-        await enterJourneysFromEvent(dbEvent, user)
+            // Enter any journey entrances associated with this event
+            await enterJourneysFromEvent(dbEvent, user)
+
+            return { user }
+        }
 
         return { user, event: dbEvent }
     }

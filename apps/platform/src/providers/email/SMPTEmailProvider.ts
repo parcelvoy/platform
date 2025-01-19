@@ -51,6 +51,7 @@ export default class SMTPEmailProvider extends EmailProvider {
             port: this.port,
             secure: this.secure,
             auth: this.auth,
+            pool: true,
         })
     }
 

@@ -27,11 +27,12 @@ export default class CampaignTriggerSendJob extends Job {
         const campaign = await getCampaign(campaign_id, project_id)
         if (!campaign) return
 
-        const { user: { id: userId }, event: { id: eventId } } = await EventPostJob.from({
+        const response = await EventPostJob.from({
             project_id,
             event: {
                 name: 'campaign_trigger',
                 external_id: user.external_id,
+                distinct_id: uuid(),
                 data: {
                     ...event,
                     campaign: { id: campaign_id, name: campaign.name },
@@ -39,6 +40,9 @@ export default class CampaignTriggerSendJob extends Job {
                 user: { external_id, email, phone, data, locale, timezone },
             },
         }).handle<{ user: User, event: UserEvent }>()
+        if (!response.event) return
+
+        const { user: { id: userId }, event: { id: eventId } } = response
 
         if (device_token) {
             await UserDeviceJob.from({
