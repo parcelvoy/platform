@@ -11,7 +11,7 @@ addFormats(validator)
 addErrors(validator)
 validator.addFormat('timezone', {
     type: 'string',
-    validate: (timezone) => {
+    validate: (timezone: string) => {
         return isValidIANATimezone(timezone)
     },
 })
