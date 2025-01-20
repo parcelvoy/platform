@@ -43,7 +43,7 @@ You can create lists that contain fixed data that can be uploaded via CSV. When 
 - `first_name`: The first name of the user
 - `last_name`: The last name of the user
 - `email`: The users email
-- `phone`: The users phone number with country code
-- `timezone`: The users timezone provided in IANA format (America/Chicago)
-- `locale`: The language
+- `phone`: The users phone number in E.164 format
+- `timezone`: The users timezone provided in IANA format (i.e. America/Chicago)
+- `locale`: The locale of the user use for language and formatting (i.e `es` or `en`)
 - `created_at`: When a user was created to override internal time setting. Must be in ISO 8601 format

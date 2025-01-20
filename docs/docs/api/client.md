@@ -61,9 +61,9 @@ Create or update a user profile with associated traits.
 - **anonymous_id** string (optional)
 - **external_id** string
 - **email** string (optional)
-- **phone** string (optional)
-- **timezone** string (optional)
-- **locale** string (optional)
+- **phone** string (optional) - Phone number in E.164 format
+- **timezone** string (optional) - The users timezone provided in IANA format (i.e. America/Chicago)
+- **locale** string (optional) - The locale of the user use for language and formatting (i.e `es` or `en`)
 - **data** object (optional)
 
 #### Responses
