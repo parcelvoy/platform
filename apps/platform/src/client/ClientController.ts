@@ -68,7 +68,11 @@ const identifyParams: JSONSchemaType<ClientIdentifyParams> = {
         },
         timezone: {
             type: 'string',
+            format: 'timezone',
             nullable: true,
+            errorMessage: {
+                format: 'The timezone value must be in the IANA format.',
+            },
         },
         locale: {
             type: 'string',
