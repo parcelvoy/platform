@@ -106,6 +106,11 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     const rule = RRule.fromString(schedule)
                     if (rule.options.freq) {
                         s = rule.toText()
+                        if (rule.options.freq === RRule.DAILY) {
+                            s += Number(rule.options.byhour) < 12
+                                ? 'am'
+                                : 'pm'
+                        }
                     } else {
                         s = 'once'
                     }

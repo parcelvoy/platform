@@ -128,6 +128,16 @@ export default function RRuleEditor({ label, onChange, value }: RRuleEditorProps
                         }}
                     />
                     <TextInput
+                        name="hour"
+                        label="Hour (24hr Format)"
+                        type="number"
+                        min={1}
+                        max={24}
+                        required
+                        value={Number(options.byhour ?? 0)}
+                        onChange={byhour => setValues({ ...options, byhour })}
+                    />
+                    <TextInput
                         name="interval"
                         label="Interval"
                         type="number"

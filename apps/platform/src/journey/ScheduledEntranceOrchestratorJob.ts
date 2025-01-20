@@ -1,4 +1,5 @@
 import App from '../app'
+import { getProject } from '../projects/ProjectService'
 import { Job } from '../queue'
 import { JourneyEntrance, JourneyStep } from './JourneyStep'
 import ScheduledEntranceJob from './ScheduledEntranceJob'
@@ -19,15 +20,16 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
             .whereJsonPath('journey_steps.data', '$.multiple', '=', true)
             .whereNotNull('journey_steps.next_scheduled_at')
             .where('journey_steps.next_scheduled_at', '<=', new Date()),
-        )
+        ) as Array<JourneyEntrance & { project_id: number }>
 
         if (!entrances.length) return
 
         const jobs: Job[] = []
         for (const entrance of entrances) {
 
+            const project = await getProject(entrance.project_id)
             await JourneyStep.update(q => q.where('id', entrance.id), {
-                next_scheduled_at: entrance.nextDate(),
+                next_scheduled_at: entrance.nextDate(project?.timezone ?? 'UTC'),
             })
 
             if (entrance.list_id) {
