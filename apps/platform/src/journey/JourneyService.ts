@@ -149,7 +149,7 @@ export const duplicateJourney = async (journey: Journey) => {
     const params: Partial<Journey> = pick(journey, ['project_id', 'name', 'description'])
     params.name = `Copy of ${params.name}`
     params.published = false
-    const newJourneyId = await Journey.insert(params)
+    const newJourney = await Journey.insertAndFetch(params)
 
     const steps = await getJourneyStepMap(journey.id)
     const newSteps: JourneyStepMap = {}
@@ -165,7 +165,7 @@ export const duplicateJourney = async (journey: Journey) => {
             children: step.children?.map(({ external_id, ...rest }) => ({ external_id: uuidMap[external_id], ...rest })),
         }
     }
-    await setJourneyStepMap(newJourneyId, newSteps)
+    await setJourneyStepMap(newJourney, newSteps)
 
-    return await getJourney(newJourneyId, journey.project_id)
+    return await getJourney(newJourney.id, journey.project_id)
 }

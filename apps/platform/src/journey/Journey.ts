@@ -21,7 +21,7 @@ export default class Journey extends Model {
             name,
             published: true,
         })
-        const { steps, children } = await setJourneyStepMap(journey.id, stepMap)
+        const { steps, children } = await setJourneyStepMap(journey, stepMap)
         return { journey, steps, children }
     }
 }

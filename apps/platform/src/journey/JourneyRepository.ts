@@ -6,6 +6,7 @@ import Journey, { JourneyParams, UpdateJourneyParams } from './Journey'
 import { JourneyStep, JourneyEntrance, JourneyUserStep, JourneyStepMap, toJourneyStepMap, JourneyStepChild } from './JourneyStep'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
 import { User } from '../users/User'
+import { getProject } from '../projects/ProjectService'
 
 export const pagedJourneys = async (params: PageParams, projectId: number) => {
     const result = await Journey.search(
@@ -107,15 +108,16 @@ export const getJourneyStepMap = async (journeyId: number) => {
     return toJourneyStepMap(steps, children)
 }
 
-export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepMap) => {
+export const setJourneyStepMap = async (journey: Journey, stepMap: JourneyStepMap) => {
     return await App.main.db.transaction(async trx => {
 
         const [steps, children] = await Promise.all([
-            getJourneySteps(journeyId, trx),
-            getJourneyStepChildren(journeyId, trx),
+            getJourneySteps(journey.id, trx),
+            getJourneyStepChildren(journey.id, trx),
         ])
 
         const now = new Date()
+        const project = await getProject(journey.project_id)
 
         // Create or update steps
         for (const [external_id, { type, x = 0, y = 0, data = {}, data_key, name = '' }] of Object.entries(stepMap)) {
@@ -126,7 +128,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
             let next_scheduled_at: null | Date = null
             if (type === JourneyEntrance.type && data.trigger === 'schedule') {
                 if (step.data?.schedule !== data.schedule) {
-                    next_scheduled_at = JourneyEntrance.fromJson({ data }).nextDate(now)
+                    next_scheduled_at = JourneyEntrance.fromJson({ data }).nextDate(project?.timezone ?? 'UTC', now)
                 } else {
                     next_scheduled_at = step.next_scheduled_at
                 }
@@ -137,7 +139,7 @@ export const setJourneyStepMap = async (journeyId: number, stepMap: JourneyStepM
                 : await JourneyStep.insertAndFetch({
                     ...fields,
                     external_id,
-                    journey_id: journeyId,
+                    journey_id: journey.id,
                     type,
                 }, trx),
             )

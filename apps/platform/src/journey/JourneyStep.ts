@@ -9,7 +9,7 @@ import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import Rule from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import App from '../app'
-import { RRule } from 'rrule'
+import { rrulestr } from 'rrule'
 import { JourneyState } from './JourneyState'
 import { EventPostJob, UserPatchJob } from '../jobs'
 import { exitUserFromJourney, getJourneyUserStepByExternalId } from './JourneyRepository'
@@ -122,13 +122,13 @@ export class JourneyEntrance extends JourneyStep {
         this.schedule = json?.data?.schedule
     }
 
-    nextDate(after = this.next_scheduled_at): Date | null {
+    nextDate(timezone: string, after = this.next_scheduled_at): Date | null {
 
         if (this.trigger !== 'schedule' || !after) return null
 
         if (this.schedule) {
             try {
-                const rule = RRule.fromString(this.schedule)
+                const rule = rrulestr(this.schedule, { tzid: timezone })
 
                 // If there is no frequency, only run once
                 if (!rule.options.freq) {
@@ -138,7 +138,7 @@ export class JourneyEntrance extends JourneyStep {
                     return rule.options.dtstart
                 }
 
-                return RRule.fromString(this.schedule).after(after)
+                return rrulestr(this.schedule, { tzid: timezone }).after(after)
             } catch (err) {
                 App.main.error.notify(err as Error, {
                     entranceId: this.id,
