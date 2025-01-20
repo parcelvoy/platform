@@ -4,7 +4,7 @@ import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
-import { crossTimezoneCopy, isValidIANATimezone } from '../utilities'
+import { crossTimezoneCopy } from '../utilities'
 import Project from '../projects/Project'
 import { User } from '../users/User'
 
@@ -77,9 +77,6 @@ export class CampaignSend extends Model {
         project: Pick<Project, 'timezone'>,
         user: Pick<User, 'id' | 'timezone'>,
     ): CampaignSendParams {
-        const timezone = isValidIANATimezone(user.timezone)
-            ? user.timezone
-            : project.timezone
         return {
             user_id: user.id,
             campaign_id: campaign.id,
@@ -88,7 +85,7 @@ export class CampaignSend extends Model {
                 ? crossTimezoneCopy(
                     campaign.send_at,
                     project.timezone,
-                    timezone ?? project.timezone,
+                    user.timezone ?? project.timezone,
                 )
                 : campaign.send_at,
         }

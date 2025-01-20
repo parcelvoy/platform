@@ -1,7 +1,7 @@
 import Ajv, { ErrorObject, JSONSchemaType } from 'ajv'
 import addFormats from 'ajv-formats'
 import addErrors from 'ajv-errors'
-import { capitalizeFirstLetter } from '../utilities'
+import { capitalizeFirstLetter, isValidIANATimezone } from '../utilities'
 import { RequestError } from './errors'
 
 type IsValidSchema = [boolean, Error | undefined]
@@ -9,6 +9,12 @@ type IsValidSchema = [boolean, Error | undefined]
 const validator = new Ajv({ allErrors: true })
 addFormats(validator)
 addErrors(validator)
+validator.addFormat('timezone', {
+    type: 'string',
+    validate: (timezone: string) => {
+        return isValidIANATimezone(timezone)
+    },
+})
 
 export { JSONSchemaType, IsValidSchema, validator }
 
