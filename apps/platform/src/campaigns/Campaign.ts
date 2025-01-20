@@ -4,7 +4,7 @@ import Model, { ModelParams } from '../core/Model'
 import List from '../lists/List'
 import Template from '../render/Template'
 import Subscription from '../subscriptions/Subscription'
-import { crossTimezoneCopy, isValidIANATimezone } from '../utilities'
+import { crossTimezoneCopy } from '../utilities'
 import Project from '../projects/Project'
 import { User } from '../users/User'
 
