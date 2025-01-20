@@ -88,7 +88,7 @@ export class CampaignSend extends Model {
                 ? crossTimezoneCopy(
                     campaign.send_at,
                     project.timezone,
-                    timezone,
+                    timezone ?? project.timezone,
                 )
                 : campaign.send_at,
         }
