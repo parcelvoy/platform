@@ -24,7 +24,7 @@ export default class RedisQueueProvider implements QueueProvider {
 
     constructor({ concurrency, ...config }: RedisQueueConfig, queue: Queue) {
         this.queue = queue
-        this.concurrency = concurrency
+        this.concurrency = concurrency ?? 10
         this.redis = DefaultRedis(config, {
             maxRetriesPerRequest: null,
         })

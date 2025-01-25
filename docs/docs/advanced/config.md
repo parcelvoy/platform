@@ -18,7 +18,7 @@ Find below a list of all environment variables that can be set at launch to conf
 | DB_DATABASE | string | true |
 
 ### Queue
-| key | type | required |
+| key | type | required | notes
 |--|--|--|
 | QUEUE_DRIVER | 'sqs' or 'redis' or 'memory' | true |
 | AWS_SQS_QUEUE_URL | string | If driver is SQS |
@@ -28,6 +28,7 @@ Find below a list of all environment variables that can be set at launch to conf
 | REDIS_HOST | string | If driver is Redis |
 | REDIS_PORT | string | If driver is Redis |
 | REDIS_TLS | boolean | false |
+| REDIS_CONCURRENCY | number | false | number of concurrent jobs to run
 
 
 ### Redis
