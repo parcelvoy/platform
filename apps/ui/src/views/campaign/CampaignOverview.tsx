@@ -30,6 +30,8 @@ export default function CampaignOverview() {
         )?.reduce((prev, curr) => prev ? [prev, ', ', curr] : curr, '') ?? '&#8211;'
     }
 
+    const canEdit = campaign.type === 'trigger' || campaign.state === 'draft' || campaign.state === 'aborted'
+
     const extra = campaign.channel === 'text'
         ? '"phone": "+12345678900",'
         : campaign.channel === 'push'
@@ -57,7 +59,7 @@ export default function CampaignOverview() {
                 title={t('details')}
                 size="h3"
                 actions={
-                    <Button
+                    canEdit && <Button
                         size="small"
                         variant="secondary"
                         onClick={() => setIsEditOpen(true)}
