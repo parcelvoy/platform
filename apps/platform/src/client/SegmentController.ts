@@ -103,6 +103,7 @@ router.post('/segment', async ctx => {
                 event: {
                     ...identity,
                     name: event.event,
+                    distinct_id: event.messageId,
                     data: { ...event.properties, ...event.context },
                     created_at: new Date(event.timestamp),
                 },

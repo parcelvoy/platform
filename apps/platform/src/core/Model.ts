@@ -245,15 +245,16 @@ export default class Model {
         }
     }
 
-    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>, db?: Database): Promise<number>
-    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>[], db?: Database): Promise<number[]>
+    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>, db?: Database, query?: Query): Promise<number>
+    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>[], db?: Database, query?: Query): Promise<number[]>
     static async insert<T extends typeof Model>(
         this: T,
         data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
+        query: Query = qb => qb,
     ): Promise<number | number[]> {
         const formattedData = Array.isArray(data) ? data.map(o => this.formatJson(o)) : this.formatJson(data)
-        const value = await this.table(db).insert(formattedData)
+        const value = await query(this.table(db)).insert(formattedData)
         if (Array.isArray(data)) return value
         return value[0]
     }
