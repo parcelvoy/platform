@@ -291,7 +291,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
     }
 
     const query = recipientQuery(campaign)
-    await chunk<CampaignSendParams>(query, 100, async (items) => {
+    await chunk<CampaignSendParams>(query, 25, async (items) => {
         await CampaignSend.query()
             .insert(items)
             .onConflict(['campaign_id', 'user_id', 'reference_id'])
