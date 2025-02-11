@@ -1,20 +1,23 @@
+import App from '../app'
 import { PageParams } from '../core/searchParams'
 import { loadAnalytics } from '../providers/analytics'
 import { User } from '../users/User'
+import { uuid } from '../utilities'
 import { UserEvent, UserEventParams } from './UserEvent'
 
 export const createEvent = async (
     user: User,
-    { name, data }: UserEventParams,
+    { name, distinct_id, data }: UserEventParams,
     forward = true,
     filter = (data: Record<string, unknown>) => data,
-): Promise<number> => {
+): Promise<number | undefined> => {
     const id = await UserEvent.insert({
         name,
         data,
         project_id: user.project_id,
         user_id: user.id,
-    })
+        distinct_id: distinct_id ?? uuid(),
+    }, App.main.db, qb => qb.onConflict(['distinct_id']).ignore())
 
     if (forward) {
         const analytics = await loadAnalytics(user.project_id)
@@ -28,10 +31,10 @@ export const createEvent = async (
     return id
 }
 
-export const createAndFetchEvent = async (user: User, event: UserEventParams, forward = false): Promise<UserEvent> => {
+export const createAndFetchEvent = async (user: User, event: UserEventParams, forward = false): Promise<UserEvent | undefined> => {
     const id = await createEvent(user, event, forward)
-    const userEvent = await UserEvent.find(id)
-    return userEvent!
+    if (!id) return
+    return await UserEvent.find(id)
 }
 
 export const getUserEvents = async (id: number, params: PageParams, projectId: number) => {
