@@ -79,14 +79,14 @@ export default class TelnyxTextProvider extends TextProvider {
 
             // https://support.telnyx.com/en/articles/6505121-telnyx-messaging-error-codes
             const error = responseBody.errors?.[0]
-            if (error.code === 40300) {
+            if (error?.code === 40300) {
                 // Unable to send because recipient has unsubscribed
-                throw new UnsubscribeTextError(this.type, this.phone_number, responseBody.message)
-            } else if (responseBody.code === 40008) {
+                throw new UnsubscribeTextError(this.type, to, error.title)
+            } else if (error?.code === 40008) {
                 // Unable to send because region is not enabled
-                throw new UndeliverableTextError(this.type, this.phone_number, responseBody.message)
+                throw new UndeliverableTextError(this.type, to, error.title)
             }
-            throw new TextError(this.type, this.phone_number, responseBody.message)
+            throw new TextError(this.type, to, error?.title, responseBody)
         }
     }
 

@@ -83,12 +83,12 @@ export default class TwilioTextProvider extends TextProvider {
         } else {
             if (responseBody.code === 21610) {
                 // Unable to send because recipient has unsubscribed
-                throw new UnsubscribeTextError(this.type, this.phone_number, responseBody.message)
+                throw new UnsubscribeTextError(this.type, to, responseBody.message)
             } else if (responseBody.code === 21408) {
                 // Unable to send because region is not enabled
-                throw new UndeliverableTextError(this.type, this.phone_number, responseBody.message)
+                throw new UndeliverableTextError(this.type, to, responseBody.message)
             }
-            throw new TextError(this.type, this.phone_number, responseBody.message)
+            throw new TextError(this.type, to, responseBody.message)
         }
     }
 
