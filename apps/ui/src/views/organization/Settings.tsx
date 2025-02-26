@@ -8,9 +8,11 @@ import Heading from '../../ui/Heading'
 import api from '../../api'
 import { toast } from 'react-hot-toast/headless'
 import { Button } from '../../ui'
+import { useTranslation } from 'react-i18next'
 
 export default function Settings() {
     const profile = useContext(AdminContext)
+    const { t } = useTranslation()
     const [organization] = useContext(OrganizationContext)
     const deleteOrganization = async () => {
         if (confirm('Are you sure you want to delete this organization?')) {
@@ -24,7 +26,7 @@ export default function Settings() {
 
     return (
         <>
-            <PageContent title="Settings">
+            <PageContent title={t('settings')}>
                 <FormWrapper<Organization>
                     defaultValues={organization}
                     disabled={!owner}
@@ -36,7 +38,7 @@ export default function Settings() {
                     submitLabel="Save Settings"
                 >
                     {form => <>
-                        <Heading size="h3" title="General" />
+                        <Heading size="h3" title={t('general')} />
                         <TextInput.Field
                             form={form}
                             disabled={!owner}
