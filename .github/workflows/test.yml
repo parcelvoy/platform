@@ -8,7 +8,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
         
     steps:
     - uses: actions/checkout@v1
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
 
     services:
       mysql:
@@ -47,13 +47,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Node 18.x
-      uses: actions/setup-node@v2
+    - name: Node 20.x
+      uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 20.x
 
     - name: Cache NPM
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -82,12 +82,12 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
 
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - name: Node Install
