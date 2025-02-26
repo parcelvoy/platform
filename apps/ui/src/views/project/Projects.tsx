@@ -12,9 +12,11 @@ import logoUrl from '../../assets/parcelvoylogo.png'
 import { PlusIcon } from '../../ui/icons'
 import Modal from '../../ui/Modal'
 import ProjectForm from './ProjectForm'
+import { useTranslation } from 'react-i18next'
 
 export function Projects() {
     const navigate = useNavigate()
+    const { t } = useTranslation()
     const [preferences] = useContext(PreferencesContext)
     const [projects] = useResolver(api.projects.all)
     const recents = useMemo(() => {
@@ -44,22 +46,22 @@ export function Projects() {
 
     return (
         <PageContent
-            title="Projects"
-            desc="Projects are isolated workspaces with their own sets of users, events, lists, campaigns, and journeys."
+            title={t('projects')}
+            desc={t('projects_description')}
             actions={
                 <Button
                     variant="primary"
                     icon={<PlusIcon />}
                     onClick={() => setOpen(true)}
                 >
-                    {'Create Project'}
+                    {t('create_project')}
                 </Button>
             }
         >
             {
                 !!recents?.length && (
                     <>
-                        <h3>Recently Visited</h3>
+                        <h3>{t('recently_viewed')}</h3>
                         <TileGrid>
                             {
                                 recents.map(({ project, when }) => (
@@ -77,7 +79,7 @@ export function Projects() {
                     </>
                 )
             }
-            <h3>All Projects</h3>
+            <h3>{t('projects_all')}</h3>
             <TileGrid>
                 {
                     projects?.map(project => (
@@ -95,7 +97,7 @@ export function Projects() {
             <Modal
                 open={open}
                 onClose={setOpen}
-                title="Create Project"
+                title={t('create_project')}
                 size="regular"
             >
                 <ProjectForm

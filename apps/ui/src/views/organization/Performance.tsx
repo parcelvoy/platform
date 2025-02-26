@@ -136,7 +136,7 @@ export default function Performance() {
 
     return (
         <PageContent
-            title="Performance"
+            title={t('performance')}
             desc="View queue throughput for your project."
         >
             <Heading size="h3" title="Queue" />

@@ -6,6 +6,7 @@ import { checkOrganizationRole } from '../../utils'
 import { StatefulLoaderContextProvider } from '../LoaderContextProvider'
 import { OrganizationRole } from '../../types'
 import { Outlet } from 'react-router-dom'
+import { Translation } from 'react-i18next'
 
 type OrganizationLink = SidebarLink & { minRole?: OrganizationRole }
 interface OrganizationProps {
@@ -18,27 +19,27 @@ export default function Organization({ filter }: OrganizationProps) {
         {
             key: 'projects',
             to: 'projects',
-            children: 'Projects',
+            children: <Translation>{ t => t('projects') }</Translation>,
             icon: <ProjectIcon />,
         },
         {
             key: 'admins',
             to: 'admins',
-            children: 'Admins',
+            children: <Translation>{ t => t('admins') }</Translation>,
             icon: <UsersIcon />,
             minRole: 'admin',
         },
         {
             key: 'performance',
             to: 'performance',
-            children: 'Performance',
+            children: <Translation>{ t => t('performance') }</Translation>,
             icon: <PerformanceIcon />,
             minRole: 'admin',
         },
         {
             key: 'settings',
             to: 'settings',
-            children: 'Settings',
+            children: <Translation>{ t => t('settings') }</Translation>,
             icon: <SettingsIcon />,
             minRole: 'admin',
         },
