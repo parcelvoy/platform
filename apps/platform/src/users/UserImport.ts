@@ -76,7 +76,7 @@ const cleanCell = (value: any, key: string) => {
 
     // Handle missformatted phone numbers
     if (key === 'phone') {
-        return `+${`${value}`.replace(/\D/g, '')}`
+        return `+${String(value).replace(/\D/g, '')}`
     }
     return value
 }
