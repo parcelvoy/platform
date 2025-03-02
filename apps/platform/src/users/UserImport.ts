@@ -62,11 +62,21 @@ const cleanRow = (row: Record<string, any>): Record<string, any> => {
 
 const cleanCell = (value: any, key: string) => {
     if (typeof value === 'string') {
+
+        // Parse booleans stored in a string
         if (value.toLowerCase() === 'false') return false
         if (value.toLowerCase() === 'true') return true
+
+        // Parse undefined and null stored in a string
         if (value === 'NULL' || value == null || value === 'undefined' || value === '') return undefined
+
+        // Parse dates stored in a string
         if (key.includes('_at')) return new Date(value)
-        if (key === 'phone' && !value.includes('+')) return `+${value}`
+    }
+
+    // Handle missformatted phone numbers
+    if (key === 'phone') {
+        return `+${`${value}`.replace(/\D/g, '')}`
     }
     return value
 }
