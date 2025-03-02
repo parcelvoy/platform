@@ -147,6 +147,7 @@ An array containing at least one object with the following parameters:
 - **name** string (optional) - The name of the event
 - **anonymous_id** string
 - **external_id** string
+- **distinct_id** string (optional) - An unique identifier for the event to ensure idempotency
 - **data** object (optional)
 
 Either an anonymous or external ID is required in order to post an event.
