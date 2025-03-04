@@ -1,7 +1,7 @@
 import { UserEvent } from '../users/UserEvent'
 import { User } from '../users/User'
 import { check } from '../rules/RuleEngine'
-import List, { DynamicList, ListCreateParams, ListProgress, ListUpdateParams, UserList } from './List'
+import List, { DynamicList, ListCreateParams, ListProgress, ListUpdateParams, ListVersion, UserList } from './List'
 import Rule, { RuleEvaluation, RuleTree } from '../rules/Rule'
 import { PageParams } from '../core/searchParams'
 import ListPopulateJob from './ListPopulateJob'
@@ -21,9 +21,9 @@ import ListStatsJob from './ListStatsJob'
 import { PassThrough } from 'stream'
 
 export const CacheKeys = {
-    memberCount: (list: List) => `list:${list.id}:${list.version}:count`,
-    populationProgress: (list: List) => `list:${list.id}:${list.version}:progress`,
-    populationTotal: (list: Pick<List, 'id' | 'version'>) => `list:${list.id}:${list.version}:total`,
+    memberCount: (list: ListVersion) => `list:${list.id}:${list.version}:count`,
+    populationProgress: (list: ListVersion) => `list:${list.id}:${list.version}:progress`,
+    populationTotal: (list: ListVersion) => `list:${list.id}:${list.version}:total`,
 }
 
 export const pagedLists = async (params: PageParams, projectId: number) => {
@@ -202,7 +202,7 @@ export const deleteList = async (id: number, projectId: number) => {
     return await List.deleteById(id, qb => qb.where('project_id', projectId))
 }
 
-export const addUserToList = async (user: User | number, list: List, event?: UserEvent) => {
+export const addUserToList = async (user: User | number, list: ListVersion, event?: UserEvent) => {
     const userId = user instanceof User ? user.id : user
     const resp = await UserList.query()
         .insert({

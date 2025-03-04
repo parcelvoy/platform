@@ -1,15 +1,18 @@
 import { User, UserInternalParams } from './User'
 import { Job } from '../queue'
-import { createUser, getUsersFromIdentity } from './UserRepository'
-import { addUserToList, getList, updateUsersLists } from '../lists/ListService'
+import { createUser, getUsersFromIdentity, isUserDirty } from './UserRepository'
+import { addUserToList } from '../lists/ListService'
 import { ClientIdentity } from '../client/Client'
-import { matchingRulesForUser } from '../rules/RuleService'
+import UserListMatchJob from '../lists/UserListMatchJob'
 
 interface UserPatchTrigger {
     project_id: number
     user: UserInternalParams
     options?: {
-        join_list_id?: number
+        join_list?: {
+            id: number
+            version: number
+        }
         skip_list_updating?: boolean
     }
 }
@@ -29,9 +32,6 @@ export default class UserPatchJob extends Job {
             // Check for existing user
             const { anonymous, external } = await getUsersFromIdentity(project_id, identity)
             const existing = external ?? anonymous
-
-            // TODO: Utilize phone and email as backup identifiers
-            // to decrease the likelihood of future duplicates
 
             // If user, update otherwise insert
             try {
@@ -57,21 +57,17 @@ export default class UserPatchJob extends Job {
         const user = await upsert(patch)
 
         const {
-            join_list_id,
+            join_list,
             skip_list_updating = false,
         } = patch.options ?? {}
 
-        // Use updated user to check for list membership
-        if (!skip_list_updating) {
-            const results = await matchingRulesForUser(user)
-            await updateUsersLists(user, results)
+        // Use updated user to check for dynamic list membership
+        if (!skip_list_updating && isUserDirty(patch.user)) {
+            await UserListMatchJob.from(user.id, user.project_id).queue()
         }
 
         // If provided a list to join, add user to it
-        if (join_list_id) {
-            const list = await getList(join_list_id, patch.project_id)
-            if (list) await addUserToList(user, list)
-        }
+        if (join_list) await addUserToList(user, join_list)
 
         return user
     }

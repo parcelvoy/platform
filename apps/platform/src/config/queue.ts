@@ -27,6 +27,7 @@ import ScheduledEntranceJob from '../journey/ScheduledEntranceJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 import ListRefreshJob from '../lists/ListRefreshJob'
 import ListEvaluateUserJob from '../lists/ListEvaluateUserJob'
+import UserListMatchJob from '../lists/UserListMatchJob'
 
 export const jobs = [
     CampaignGenerateListJob,
@@ -53,6 +54,7 @@ export const jobs = [
     UserAliasJob,
     UserDeleteJob,
     UserDeviceJob,
+    UserListMatchJob,
     UserPatchJob,
     UserSchemaSyncJob,
     WebhookJob,

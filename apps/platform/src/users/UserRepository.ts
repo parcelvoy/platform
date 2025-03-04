@@ -198,3 +198,10 @@ export const getUserEventsForRules = async (
         return qb
     })
 }
+
+export const isUserDirty = (params: UserInternalParams) => {
+    const hasData = !!params.data && Object.keys(params.data).length > 0
+    const hasReserved = !!params.email || !!params.phone || !!params.timezone || !!params.locale || !!params.created_at
+
+    return hasData || hasReserved
+}
