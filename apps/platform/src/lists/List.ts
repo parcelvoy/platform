@@ -39,3 +39,4 @@ export class UserList extends Model {
 
 export type ListUpdateParams = Pick<List, 'name' | 'tags'> & { rule?: RuleTree, published?: boolean }
 export type ListCreateParams = ListUpdateParams & Pick<List, 'type' | 'is_visible'> & { rule?: RuleTree }
+export type ListVersion = Pick<List, 'id' | 'version'>
