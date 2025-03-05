@@ -82,7 +82,7 @@ export default class TelnyxTextProvider extends TextProvider {
             if (error?.code === '40300') {
                 // Unable to send because recipient has unsubscribed
                 throw new UnsubscribeTextError(this.type, to, error.title)
-            } else if (error?.code === '40008') {
+            } else if (error?.code === '40008' || error?.code === '40301') {
                 // Unable to send because region is not enabled
                 throw new UndeliverableTextError(this.type, to, error.title)
             }
