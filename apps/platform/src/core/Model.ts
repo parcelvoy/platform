@@ -15,16 +15,15 @@ export interface SearchResult<T> {
     limit: number
 }
 
-export default class Model {
+export class BaseModel {
 
-    id!: number
     created_at: Date = new Date()
     updated_at: Date = new Date()
 
     static jsonAttributes: string[] = []
     static virtualAttributes: string[] = []
 
-    static fromJson<T extends typeof Model>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
+    static fromJson<T extends typeof BaseModel>(this: T, json: Partial<InstanceType<T>>): InstanceType<T> {
         const model = new this()
 
         // Remove any value that could conflict with a virtual key
@@ -45,7 +44,7 @@ export default class Model {
         return (this.constructor as any).toJson(this)
     }
 
-    static toJson<T extends typeof Model>(this: T, model: any) {
+    static toJson<T extends typeof BaseModel>(this: T, model: any) {
         const json: any = {}
         const keys = [...Object.keys(model), ...this.virtualAttributes]
         for (const key of keys) {
@@ -73,11 +72,11 @@ export default class Model {
         return json
     }
 
-    static query<T extends typeof Model>(this: T, db: Database = App.main.db): Database.QueryBuilder<InstanceType<T>> {
+    static query<T extends typeof BaseModel>(this: T, db: Database = App.main.db): Database.QueryBuilder<InstanceType<T>> {
         return this.table(db)
     }
 
-    static async first<T extends typeof Model>(
+    static async first<T extends typeof BaseModel>(
         this: T,
         query: Query = (qb) => qb,
         db: Database = App.main.db,
@@ -87,7 +86,7 @@ export default class Model {
         return this.fromJson(record)
     }
 
-    static async find<T extends typeof Model>(
+    static async find<T extends typeof BaseModel>(
         this: T,
         id: number | string | undefined,
         query: Query = (qb) => qb,
@@ -105,21 +104,7 @@ export default class Model {
         return this.fromJson(record)
     }
 
-    static async findMap<T extends typeof Model>(
-        this: T,
-        ids: number[],
-        db: Database = App.main.db,
-    ) {
-        const m = new Map<number, InstanceType<T>>()
-        if (!ids.length) return m
-        const records = await this.all(q => q.whereIn('id', ids), db)
-        for (const record of records) {
-            m.set(record.id, record)
-        }
-        return m
-    }
-
-    static async all<T extends typeof Model>(
+    static async all<T extends typeof BaseModel>(
         this: T,
         query: Query = qb => qb,
         db: Database = App.main.db,
@@ -128,28 +113,29 @@ export default class Model {
         return records.map((item: any) => this.fromJson(item))
     }
 
-    static async count<T extends typeof Model>(
+    static async count<T extends typeof BaseModel>(
         this: T,
         query: Query = qb => qb,
+        column?: string,
         db: Database = App.main.db,
     ): Promise<number> {
         return await query(this.table(db))
             .clone()
             .clearSelect()
-            .count(`${this.tableName}.id as C`)
+            .count(column ? `${column} AS C` : `${this.tableName}.id as C`)
             .then(r => r[0].C || 0)
     }
 
-    static async exists<T extends typeof Model>(
+    static async exists<T extends typeof BaseModel>(
         this: T,
         query: Query = qb => qb,
         db: Database = App.main.db,
     ): Promise<boolean> {
-        const count = await this.count(qb => query(qb).limit(1), db)
+        const count = await this.count(qb => query(qb).limit(1), '*', db)
         return count > 0
     }
 
-    static async search<T extends typeof Model>(
+    static async search<T extends typeof BaseModel>(
         this: T,
         params: PageQueryParams<T>,
         query: Query = qb => qb,
@@ -245,9 +231,9 @@ export default class Model {
         }
     }
 
-    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>, db?: Database): Promise<number>
-    static async insert<T extends typeof Model>(this: T, data: Partial<InstanceType<T>>[], db?: Database): Promise<number[]>
-    static async insert<T extends typeof Model>(
+    static async insert<T extends typeof BaseModel>(this: T, data: Partial<InstanceType<T>>, db?: Database): Promise<number>
+    static async insert<T extends typeof BaseModel>(this: T, data: Partial<InstanceType<T>>[], db?: Database): Promise<number[]>
+    static async insert<T extends typeof BaseModel>(
         this: T,
         data: Partial<InstanceType<T>> | Partial<InstanceType<T>>[] = {},
         db: Database = App.main.db,
@@ -258,7 +244,7 @@ export default class Model {
         return value[0]
     }
 
-    static async insertAndFetch<T extends typeof Model>(
+    static async insertAndFetch<T extends typeof BaseModel>(
         this: T,
         data: Partial<InstanceType<T>> = {},
         db: Database = App.main.db,
@@ -269,7 +255,7 @@ export default class Model {
         return model
     }
 
-    static async update<T extends typeof Model>(
+    static async update<T extends typeof BaseModel>(
         this: T,
         query: Query,
         data: Partial<InstanceType<T>> = {},
@@ -279,7 +265,7 @@ export default class Model {
         return await query(this.table(db)).update(formattedData)
     }
 
-    static async updateAndFetch<T extends typeof Model>(
+    static async updateAndFetch<T extends typeof BaseModel>(
         this: T,
         id: number,
         data: Partial<InstanceType<T>> = {},
@@ -292,7 +278,7 @@ export default class Model {
         return model
     }
 
-    static async archive<T extends typeof Model>(
+    static async archive<T extends typeof BaseModel>(
         this: T,
         id: number,
         query: Query = qb => qb,
@@ -307,7 +293,7 @@ export default class Model {
         return model
     }
 
-    static async delete<T extends typeof Model>(
+    static async delete<T extends typeof BaseModel>(
         this: T,
         query: Query,
         db: Database = App.main.db,
@@ -315,7 +301,7 @@ export default class Model {
         return await query(this.table(db)).delete()
     }
 
-    static async deleteById<T extends typeof Model>(
+    static async deleteById<T extends typeof BaseModel>(
         this: T,
         id: number,
         query: Query = qb => qb,
@@ -329,7 +315,7 @@ export default class Model {
         return count > 0
     }
 
-    static scroll = async function * <T extends typeof Model>(
+    static scroll = async function * <T extends typeof BaseModel>(
         this: T,
         query: Query = qb => qb,
         batchSize = 100,
@@ -363,7 +349,7 @@ export default class Model {
 
     static raw = raw
 
-    static build<T extends typeof Model>(
+    static build<T extends typeof BaseModel>(
         query: Query,
         db: Database = App.main.db,
     ): Database.QueryBuilder<InstanceType<T>> {
@@ -377,6 +363,24 @@ export default class Model {
 
     static emit(event: string, payload: any) {
         App.main.events.emit(`model:${this.tableName}:${event}`, payload)
+    }
+}
+
+export default class Model extends BaseModel {
+    id!: number
+
+    static async findMap<T extends typeof Model>(
+        this: T,
+        ids: number[],
+        db: Database = App.main.db,
+    ) {
+        const m = new Map<number, InstanceType<T>>()
+        if (!ids.length) return m
+        const records = await this.all(q => q.whereIn('id', ids), db)
+        for (const record of records) {
+            m.set(record.id, record)
+        }
+        return m
     }
 }
 

@@ -189,12 +189,12 @@ interface SendCampaign {
     campaign: Campaign
     user: User | number
     event?: UserEvent | number
-    send_id?: number
+    exists?: boolean
     reference_type?: CampaignSendReferenceType
     reference_id?: string
 }
 
-export const triggerCampaignSend = async ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign) => {
+export const triggerCampaignSend = async ({ campaign, user, event, exists, reference_type, reference_id }: SendCampaign) => {
     const userId = user instanceof User ? user.id : user
     const eventId = event instanceof UserEvent ? event?.id : event
 
@@ -202,8 +202,8 @@ export const triggerCampaignSend = async ({ campaign, user, event, send_id, refe
     if (subscriptionState === SubscriptionState.unsubscribed) return
 
     const reference = { reference_id, reference_type }
-    if (!send_id) {
-        send_id = await CampaignSend.insert({
+    if (!exists) {
+        await CampaignSend.insert({
             campaign_id: campaign.id,
             user_id: userId,
             state: 'pending',
@@ -216,18 +216,16 @@ export const triggerCampaignSend = async ({ campaign, user, event, send_id, refe
         campaign,
         user: userId,
         event: eventId,
-        send_id,
         ...reference,
     })
 }
 
-export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type, reference_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
+export const sendCampaignJob = ({ campaign, user, event, reference_type, reference_id }: SendCampaign): EmailJob | TextJob | PushJob | WebhookJob => {
 
     const body = {
         campaign_id: campaign.id,
         user_id: user instanceof User ? user.id : user,
         event_id: event instanceof UserEvent ? event?.id : event,
-        send_id,
         reference_type,
         reference_id,
     }
@@ -239,9 +237,7 @@ export const sendCampaignJob = ({ campaign, user, event, send_id, reference_type
         webhook: WebhookJob.from(body),
     }
     const job = channels[campaign.channel]
-    if (send_id) {
-        job.jobId(`sid${send_id}`)
-    }
+    job.jobId(`sid_${campaign.id}_${body.user_id}_${body.reference_id}`)
 
     return job
 }
@@ -290,12 +286,16 @@ export const generateSendList = async (campaign: SentCampaign) => {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
+    // Clear any aborted sends
+    await clearCampaign(campaign)
+
+    // Generate the initial send list
     const query = recipientQuery(campaign)
-    await chunk<CampaignSendParams>(query, 25, async (items) => {
+    await chunk<CampaignSendParams>(query, 250, async (items) => {
         await CampaignSend.query()
             .insert(items)
             .onConflict(['campaign_id', 'user_id', 'reference_id'])
-            .merge(['state', 'send_at'])
+            .ignore()
     }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
         CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
     )
@@ -312,7 +312,7 @@ export const campaignSendReadyQuery = (
         .where('campaign_sends.send_at', '<=', CampaignSend.raw('NOW()'))
         .whereIn('campaign_sends.state', includeThrottled ? ['pending', 'throttled'] : ['pending'])
         .where('campaign_id', campaignId)
-        .select('user_id', 'campaign_sends.id AS send_id')
+        .select('user_id', 'reference_id')
     if (limit) query.limit(limit)
     return query
 }
@@ -335,12 +335,12 @@ export const failStalledSends = async (campaign: Campaign) => {
         .where('campaign_sends.send_at', '<', subDays(Date.now(), stalledDays))
         .where('campaign_sends.state', 'throttled')
         .where('campaign_id', campaign.id)
-        .select('id')
+        .select('user_id', 'campaign_id')
     await chunk(query, 25, async (items) => {
         await CampaignSend.query()
             .update({ state: 'failed' })
-            .whereIn('id', items)
-    }, ({ id }: Pick<CampaignSend, 'id'>) => id)
+            .whereIn(['user_id', 'campaign_id'], items)
+    }, ({ user_id, campaign_id }: CampaignSend) => ([user_id, campaign_id]))
 }
 
 export const recipientQuery = (campaign: Campaign) => {
@@ -395,6 +395,13 @@ export const abortCampaign = async (campaign: Campaign) => {
         .update({ state: 'aborted' })
 }
 
+export const clearCampaign = async (campaign: Campaign) => {
+    await CampaignSend.query()
+        .where('campaign_id', campaign.id)
+        .whereIn('state', ['pending', 'throttled', 'aborted'])
+        .delete()
+}
+
 export const duplicateCampaign = async (campaign: Campaign) => {
     const params: Partial<Campaign> = pick(campaign, ['project_id', 'list_ids', 'exclusion_list_ids', 'provider_id', 'subscription_id', 'channel', 'name', 'type'])
     params.name = `Copy of ${params.name}`
@@ -444,7 +451,7 @@ export const updateCampaignProgress = async (campaign: Campaign): Promise<void> 
     await Campaign.update(qb => qb.where('id', campaign.id).where('project_id', campaign.project_id), { state, delivery })
 }
 
-export const getCampaignSend = async (campaignId: number, userId: number, referenceId: string) => {
+export const getCampaignSend = async (campaignId: number, userId: number, referenceId = '0') => {
     return CampaignSend.first(qb => qb
         .where('campaign_id', campaignId)
         .where('user_id', userId)
@@ -452,9 +459,12 @@ export const getCampaignSend = async (campaignId: number, userId: number, refere
     )
 }
 
-export const updateCampaignSend = async (id: number, update: Partial<CampaignSend>) => {
+export const updateCampaignSend = async (campaignId: number, userId: number, referenceId: string, update: Partial<CampaignSend>) => {
     await CampaignSend.update(
-        qb => qb.where('id', id),
+        qb => qb
+            .where('campaign_id', campaignId)
+            .where('user_id', userId)
+            .where('reference_id', referenceId),
         update,
     )
 }
@@ -491,7 +501,7 @@ export const updateCampaignSendEnrollment = async (user: User) => {
         .leftJoin('projects', 'projects.id', 'campaigns.project_id')
         .where('campaigns.project_id', user.project_id)
         .where('campaigns.state', 'scheduled')
-        .select('campaigns.*', 'campaign_sends.id AS send_id', 'campaign_sends.state AS send_state', 'projects.timezone') as Array<SentCampaign & { send_id: number, send_state: CampaignSendState, timezone: string }>
+        .select('campaigns.*', 'campaign_sends.user_id', 'campaign_sends.state AS send_state', 'projects.timezone') as Array<SentCampaign & { user_id: number, send_state: CampaignSendState, timezone: string }>
 
     const join = []
     const leave = []
@@ -502,19 +512,19 @@ export const updateCampaignSendEnrollment = async (user: User) => {
 
         // If user matches recipient query and they aren't already in the
         // list, add to send list
-        if (match && !campaign.send_id) {
+        if (match && !campaign.user_id) {
             join.push(CampaignSend.create(campaign, Project.fromJson({ timezone: campaign.timezone }), user))
         }
 
         // If user is not in recipient list but we have a record, remove from
         // send list
-        if (!match && campaign.send_id && campaign.send_state === 'pending') {
-            leave.push(campaign.send_id)
+        if (!match && campaign.send_state === 'pending') {
+            leave.push([campaign.id, campaign.user_id])
         }
     }
 
     if (leave.length) {
-        await CampaignSend.query().whereIn('id', leave).delete()
+        await CampaignSend.query().whereIn(['campaign_id', 'user_id'], leave).delete()
     }
     if (join.length) {
         await CampaignSend.query()

@@ -1,7 +1,7 @@
 import { JourneyUserStep } from '../journey/JourneyStep'
 import App from '../app'
-import Campaign, { CampaignSend } from '../campaigns/Campaign'
-import { updateSendState } from '../campaigns/CampaignService'
+import Campaign from '../campaigns/Campaign'
+import { getCampaignSend, updateSendState } from '../campaigns/CampaignService'
 import { Channel } from '../config/channels'
 import { RateLimitResponse } from '../config/rateLimit'
 import { acquireLock } from '../core/Lock'
@@ -30,12 +30,12 @@ interface MessageTriggerHydrated<T> {
     context: RenderContext
 }
 
-export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, send_id, reference_type, reference_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
+export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, event_id, reference_type, reference_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
 
     const user = await User.find(user_id)
     const event = await UserEvent.find(event_id)
     const project = await Project.find(user?.project_id)
-    const send = await CampaignSend.find(send_id)
+    const send = await getCampaignSend(campaign_id, user_id, reference_id)
 
     // If user or project is deleted, abort and discard job
     if (!user || !project) return
