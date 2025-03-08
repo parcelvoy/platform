@@ -4,7 +4,7 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
-import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, SentCampaign } from './Campaign'
 import List, { UserList } from '../lists/List'
 import Subscription, { SubscriptionState, UserSubscription } from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
@@ -21,10 +21,14 @@ import CampaignGenerateListJob from './CampaignGenerateListJob'
 import Project from '../projects/Project'
 import Template from '../render/Template'
 import { differenceInDays, subDays } from 'date-fns'
-import { raw } from '../core/Model'
+import { raw, ref } from '../core/Model'
+import { cacheGet, cacheIncr } from '../config/redis'
+import App from '../app'
 
 export const CacheKeys = {
     pendingStats: 'campaigns:pending_stats',
+    populationProgress: (campaign: Campaign) => `campaigns:${campaign.id}:progress`,
+    populationTotal: (campaign: Campaign) => `campaigns:${campaign.id}:total`,
 }
 
 export const pagedCampaigns = async (params: PageParams, projectId: number) => {
@@ -67,6 +71,9 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
         campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
         campaign.provider = await getProvider(campaign.provider_id, projectId)
         campaign.tags = await getTags(Campaign.tableName, [campaign.id]).then(m => m.get(campaign.id))
+        if (campaign.state === 'loading') {
+            campaign.progress = await campaignPopulationProgress(campaign)
+        }
     }
 
     return campaign
@@ -85,14 +92,6 @@ export const createCampaign = async (projectId: number, { tags, ...params }: Cam
         delivery,
         channel: subscription.channel,
         project_id: projectId,
-    })
-
-    // Calculate initial users count
-    await Campaign.update(qb => qb.where('id', campaign.id), {
-        delivery: {
-            ...campaign.delivery,
-            total: await initialUsersCount(campaign),
-        },
     })
 
     if (tags?.length) {
@@ -128,7 +127,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     if (send_at
         && campaign.send_at
         && send_at !== campaign.send_at) {
-        data.state = 'pending'
+        data.state = 'loading'
         await abortCampaign(campaign)
     }
 
@@ -136,8 +135,8 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     if (data.state === 'scheduled') {
         await validateTemplates(projectId, id)
 
-        // Set to pending if success so scheduling starts
-        data.state = 'pending'
+        // Set to loading if success so scheduling starts
+        data.state = 'loading'
     }
 
     // If this is a trigger campaign, should always be running
@@ -159,7 +158,7 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
         })
     }
 
-    if (data.state === 'pending' && campaign.type === 'blast') {
+    if (data.state === 'loading' && campaign.type === 'blast') {
         await CampaignGenerateListJob.from(campaign).queue()
     }
 
@@ -289,16 +288,35 @@ export const generateSendList = async (campaign: SentCampaign) => {
     // Clear any aborted sends
     await clearCampaign(campaign)
 
-    // Generate the initial send list
-    const query = recipientQuery(campaign)
-    await chunk<CampaignSendParams>(query, 250, async (items) => {
-        await CampaignSend.query()
-            .insert(items)
-            .onConflict(['campaign_id', 'user_id', 'reference_id'])
-            .ignore()
-    }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
-        CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
-    )
+    const stream = UserList.query()
+        .select('users.id AS id')
+        .leftJoin('users', 'user_list.user_id', 'users.id')
+        .whereIn('user_list.list_id', campaign.list_ids ?? [])
+        .stream()
+
+    const ingest = async (lastId: number, limit: number) => {
+        const query = recipientPartialQuery(campaign, lastId, limit)
+        const cacheKey = CacheKeys.populationProgress(campaign)
+        await chunk<CampaignSendParams>(query, 300, async (items) => {
+            await CampaignSend.query()
+                .insert(items)
+                .onConflict(['campaign_id', 'user_id', 'reference_id'])
+                .ignore()
+            await cacheIncr(App.main.redis, cacheKey, items.length, 300)
+        }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
+            CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
+        )
+    }
+
+    let count = 0
+    let lastId = 0
+    const limit = 10_000
+
+    for await (const user of stream) {
+        if (count % limit === 0) await ingest(lastId, limit)
+        lastId = user.id
+        count++
+    }
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
@@ -413,15 +431,14 @@ export const duplicateCampaign = async (campaign: Campaign) => {
     return await getCampaign(cloneId, campaign.project_id)
 }
 
-const initialUsersCount = async (campaign: Campaign): Promise<number> => {
-    const response = await recipientQuery(campaign)
-        .clear('select')
-        .select(UserList.raw('COUNT(DISTINCT(users.id)) as count'))
-    const { count } = response[0]
-    return Math.max(0, count)
+export const campaignPopulationProgress = async (campaign: Campaign): Promise<CampaignPopulationProgress> => {
+    return {
+        complete: await cacheGet<number>(App.main.redis, CacheKeys.populationProgress(campaign)) ?? 0,
+        total: await cacheGet<number>(App.main.redis, CacheKeys.populationTotal(campaign)) ?? 0,
+    }
 }
 
-export const campaignProgress = async (campaignId: number): Promise<CampaignProgress> => {
+export const campaignDeliveryProgress = async (campaignId: number): Promise<CampaignProgress> => {
     const progress = await CampaignSend.query()
         .where('campaign_id', campaignId)
         .select(CampaignSend.raw("SUM(IF(state = 'sent', 1, 0)) AS sent, SUM(IF(state IN('pending', 'throttled'), 1, 0)) AS pending, COUNT(*) AS total, SUM(IF(opened_at IS NOT NULL, 1, 0)) AS opens, SUM(IF(clicks > 0, 1, 0)) AS clicks"))
@@ -443,7 +460,7 @@ export const updateCampaignProgress = async (campaign: Campaign): Promise<void> 
         return 'running'
     }
 
-    const { pending, ...delivery } = await campaignProgress(campaign.id)
+    const { pending, ...delivery } = await campaignDeliveryProgress(campaign.id)
     const state = currentState(pending, delivery)
 
     // If nothing has changed, continue otherwise update
@@ -532,4 +549,43 @@ export const updateCampaignSendEnrollment = async (user: User) => {
             .onConflict(['campaign_id', 'user_id', 'reference_id'])
             .merge(['state', 'send_at'])
     }
+}
+
+const recipientPartialQuery = (campaign: Campaign, sinceId: number, limit = 10000) => {
+    return User.query()
+        .select('users.id AS user_id', 'users.timezone')
+        .innerJoin('user_list', sbq =>
+            sbq.on('users.id', 'user_list.user_id')
+                .onIn('user_list.list_id', campaign.list_ids ?? []),
+        )
+        .where('users.project_id', campaign.project_id)
+        .where(qb => {
+            if (campaign.channel === 'email') {
+                qb.whereNotNull('users.email')
+            } else if (campaign.channel === 'text') {
+                qb.whereNotNull('users.phone')
+            } else if (campaign.channel === 'push') {
+                qb.whereNotNull('users.devices')
+            }
+        })
+        .whereNotExists(
+            UserList.query()
+                .whereIn('list_id', campaign.exclusion_list_ids ?? [])
+                .where('user_id', ref('users.id')),
+        )
+        .whereNotExists(
+            CampaignSend.query()
+                .where('campaign_id', campaign.id)
+                .where('user_id', ref('users.id'))
+                .where('state', 'sent'),
+        )
+        .whereNotExists(
+            UserSubscription.query()
+                .where('subscription_id', campaign.subscription_id)
+                .where('user_id', ref('users.id'))
+                .where('state', SubscriptionState.unsubscribed),
+        )
+        .where('users.id', '>', sinceId)
+        .orderBy('user_list.id')
+        .limit(limit)
 }

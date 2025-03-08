@@ -8,6 +8,10 @@ export const raw = (raw: Database.Value, db: Database = App.main.db) => {
     return db.raw(raw)
 }
 
+export const ref = (ref: string, db: Database = App.main.db) => {
+    return db.ref(ref)
+}
+
 export interface SearchResult<T> {
     results: T[]
     nextCursor?: string
