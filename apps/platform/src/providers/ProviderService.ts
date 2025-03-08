@@ -3,11 +3,11 @@ import { ProjectState } from '../auth/AuthMiddleware'
 import { PageParams } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
-import { createProvider, loadProvider, updateProvider } from './ProviderRepository'
+import { createProvider, getProvider, loadProvider, updateProvider } from './ProviderRepository'
 import App from '../app'
 
 export const allProviders = async (projectId: number) => {
-    return await Provider.all(qb => qb.where('project_id', projectId))
+    return await Provider.all(qb => qb.where('project_id', projectId).whereNull('deleted_at'))
 }
 
 export const hasProvider = async (projectId: number) => {
@@ -17,13 +17,18 @@ export const hasProvider = async (projectId: number) => {
 export const pagedProviders = async (params: PageParams, projectId: number) => {
     return await Provider.search(
         { ...params, fields: ['name', 'group'] },
-        b => b.where('project_id', projectId),
+        b => b.where('project_id', projectId).whereNull('deleted_at'),
         App.main.db,
         (item) => {
             item.setup = item.loadSetup(App.main)
             return item
         },
     )
+}
+
+export const archiveProvider = async (id: number, projectId: number) => {
+    await Provider.archive(id, qb => qb.where('project_id', projectId))
+    return getProvider(id, projectId)
 }
 
 export const loadController = (routers: ProviderControllers, provider: typeof Provider): ProviderMeta => {

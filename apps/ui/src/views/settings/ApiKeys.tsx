@@ -14,16 +14,17 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import { snakeToTitle } from '../../utils'
 import { toast } from 'react-hot-toast/headless'
 import Alert from '../../ui/Alert'
+import { useTranslation } from 'react-i18next'
 
 export default function ProjectApiKeys() {
-
+    const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
     const state = useSearchTableState(useCallback(async params => await api.apiKeys.search(project.id, params), [project]))
 
     const [editing, setEditing] = useState<null | Partial<ProjectApiKey>>(null)
 
     const handleArchive = async (id: number) => {
-        if (confirm('Are you sure you want to archive this key? All clients using the key will immediately be unable to access the API.')) {
+        if (confirm(t('delete_key_confirmation'))) {
             await api.apiKeys.delete(project.id, id)
             await state.reload()
         }
@@ -40,19 +41,22 @@ export default function ProjectApiKeys() {
             <SearchTable
                 {...state}
                 columns={[
-                    { key: 'name' },
+                    { key: 'name', title: t('name') },
                     {
                         key: 'scope',
+                        title: t('scope'),
                         cell: ({ item }) => snakeToTitle(item.scope),
                     },
                     {
                         key: 'role',
+                        title: t('role'),
                         cell: ({ item }) => item.scope === 'public'
                             ? undefined
                             : snakeToTitle(item.role ?? ''),
                     },
                     {
                         key: 'value',
+                        title: t('value'),
                         cell: ({ item }) => (
                             <div className="cell-content">
                                 {item.value}
@@ -60,13 +64,17 @@ export default function ProjectApiKeys() {
                             </div>
                         ),
                     },
-                    { key: 'description' },
+                    {
+                        key: 'description',
+                        title: t('description'),
+                    },
                     {
                         key: 'options',
+                        title: t('options'),
                         cell: ({ item: { id } }) => (
                             <Menu size="small">
                                 <MenuItem onClick={async () => await handleArchive(id)}>
-                                    <ArchiveIcon />Archive
+                                    <ArchiveIcon />{t('archive')}
                                 </MenuItem>
                             </Menu>
                         ),
@@ -74,19 +82,19 @@ export default function ProjectApiKeys() {
                 ]}
                 itemKey={({ item }) => item.id}
                 onSelectRow={setEditing}
-                title="API Keys"
+                title={t('api_keys')}
                 actions={
                     <Button
                         icon={<PlusIcon />}
                         size="small"
                         onClick={() => setEditing({ scope: 'public', role: 'support' })}
                     >
-                        Create Key
+                        {t('create_key')}
                     </Button>
                 }
             />
             <Modal
-                title={editing ? 'Update API Key' : 'Create API Key'}
+                title={editing?.id ? t('update_key') : t('create_key')}
                 open={Boolean(editing)}
                 onClose={() => setEditing(null)}
             >
@@ -106,7 +114,7 @@ export default function ProjectApiKeys() {
                                 }
                             }
                             defaultValues={editing}
-                            submitLabel={editing?.id ? 'Update Key' : 'Create Key'}
+                            submitLabel={editing?.id ? t('update_key') : t('create_key')}
                         >
                             {
                                 form => {
@@ -116,18 +124,18 @@ export default function ProjectApiKeys() {
                                             <TextInput.Field
                                                 form={form}
                                                 name="name"
-                                                label="Name"
+                                                label={t('name')}
                                                 required
                                             />
                                             <TextInput.Field
                                                 form={form}
                                                 name="description"
-                                                label="Description"
+                                                label={t('description')}
                                             />
                                             <RadioInput.Field
                                                 form={form}
                                                 name="scope"
-                                                label="Scope"
+                                                label={t('scope')}
                                                 options={[
                                                     { key: 'public', label: 'Public' },
                                                     { key: 'secret', label: 'Secret' },
@@ -139,7 +147,7 @@ export default function ProjectApiKeys() {
                                                     <SingleSelect.Field
                                                         form={form}
                                                         name="role"
-                                                        label="Role"
+                                                        label={t('role')}
                                                         options={projectRoles}
                                                         getOptionDisplay={snakeToTitle}
                                                         required
