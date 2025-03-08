@@ -27,6 +27,7 @@ export default class CampaignGenerateListJob extends Job {
 
         // Use approximate size for progress
         await cacheSet<number>(App.main.redis, CacheKeys.populationTotal(campaign), estimatedSize, 86400)
+        await cacheSet<number>(App.main.redis, CacheKeys.populationProgress(campaign), 0, 86400)
 
         // Increase lock duration based on estimated send size
         const lockTime = Math.ceil(Math.max(estimatedSize / 1000, 900))

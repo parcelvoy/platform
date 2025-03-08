@@ -63,10 +63,13 @@ export default function CampaignDetail() {
         setLocale(localeState(templates ?? []))
     }, [campaign.id])
     const [isLaunchOpen, setIsLaunchOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     const handleAbort = async () => {
+        setIsLoading(true)
         const value = await api.campaigns.update(project.id, campaign.id, { state: 'aborted' })
         setCampaign(value)
+        setIsLoading(false)
     }
 
     const tabs = [
@@ -114,6 +117,7 @@ export default function CampaignDetail() {
                 >{t('change_schedule')}</Button>
                 <Button
                     icon={<ForbiddenIcon />}
+                    isLoading={isLoading}
                     onClick={async () => await handleAbort()}
                 >{t('abort_campaign')}</Button>
             </>
@@ -121,6 +125,7 @@ export default function CampaignDetail() {
         running: (
             <Button
                 icon={<ForbiddenIcon />}
+                isLoading={isLoading}
                 onClick={async () => await handleAbort()}
             >{t('abort_campaign')}</Button>
         ),
