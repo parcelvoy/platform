@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
 import { CampaignDelivery as Delivery, CampaignSendState } from '../../types'
@@ -51,9 +51,29 @@ export default function CampaignDelivery() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
     const [preferences] = useContext(PreferencesContext)
-    const [{ id, state, send_at, delivery }] = useContext(CampaignContext)
+    const [campaign, setCampaign] = useContext(CampaignContext)
+    const { id, state, send_at, delivery, progress } = campaign
     const searchState = useSearchTableState(useCallback(async params => await api.campaigns.users(project.id, id, params), [id, project]))
     const route = useRoute()
+
+    useEffect(() => {
+        const refresh = () => {
+            api.campaigns.get(project.id, campaign.id)
+                .then(setCampaign)
+                .then(() => searchState.reload)
+                .catch(() => {})
+        }
+
+        if (state !== 'loading') return
+        const complete = progress?.complete ?? 0
+        const total = progress?.total ?? 0
+        const percent = total > 0 ? complete / total * 100 : 0
+        const refreshRate = percent < 5 ? 1000 : 5000
+        const interval = setInterval(refresh, refreshRate)
+        refresh()
+
+        return () => clearInterval(interval)
+    }, [state])
 
     return (
         <>

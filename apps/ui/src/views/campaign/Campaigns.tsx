@@ -18,17 +18,23 @@ import { ProjectContext } from '../../contexts'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { Translation, useTranslation } from 'react-i18next'
 
-export const CampaignTag = ({ state }: { state: CampaignState }) => {
+export const CampaignTag = ({ state, progress }: Pick<Campaign, 'state' | 'progress'>) => {
     const variant: Record<CampaignState, TagVariant> = {
         draft: 'plain',
         aborted: 'error',
-        pending: 'info',
+        loading: 'info',
         scheduled: 'info',
         running: 'info',
         finished: 'success',
     }
+
+    const complete = progress?.complete ?? 0
+    const total = progress?.total ?? 0
+    const percent = total > 0 ? complete / total : 0
+    const percentStr = percent.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
     return <Tag variant={variant[state]}>
         <Translation>{ (t) => t(state) }</Translation>
+        {progress && ` (${percentStr})`}
     </Tag>
 }
 

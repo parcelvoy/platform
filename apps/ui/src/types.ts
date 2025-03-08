@@ -349,7 +349,7 @@ export interface JourneyEntranceDetail {
     userSteps: JourneyUserStep[]
 }
 
-export type CampaignState = 'draft' | 'pending' | 'scheduled' | 'running' | 'finished' | 'aborted'
+export type CampaignState = 'draft' | 'loading' | 'scheduled' | 'running' | 'finished' | 'aborted'
 
 export interface CampaignDelivery {
     sent: number
@@ -381,6 +381,10 @@ export interface Campaign {
     send_in_user_timezone: boolean
     send_at: string
     screenshot_url: string
+    progress?: {
+        complete: number
+        total: number
+    }
     created_at: string
     updated_at: string
 }

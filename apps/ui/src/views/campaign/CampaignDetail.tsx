@@ -57,7 +57,7 @@ export default function CampaignDetail() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
     const [campaign, setCampaign] = useContext(CampaignContext)
-    const { name, templates, state } = campaign
+    const { name, templates, state, progress } = campaign
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     useEffect(() => {
         setLocale(localeState(templates ?? []))
@@ -105,7 +105,7 @@ export default function CampaignDetail() {
                 onClick={() => setIsLaunchOpen(true)}
             >{t('restart_campaign')}</Button>
         ),
-        pending: <></>,
+        loading: <></>,
         scheduled: (
             <>
                 <Button
@@ -130,7 +130,7 @@ export default function CampaignDetail() {
     return (
         <PageContent
             title={name}
-            desc={state !== 'draft' && <CampaignTag state={campaign.state} />}
+            desc={state !== 'draft' && <CampaignTag state={state} progress={progress} />}
             actions={campaign.type !== 'trigger' && action[state]}
             fullscreen={true}>
             <NavigationTabs tabs={tabs} />
