@@ -25,10 +25,6 @@ export default class CampaignGenerateListJob extends Job {
         // Approximate the size of the send list
         const estimatedSize = await estimatedSendSize(campaign)
 
-        // Use approximate size for progress
-        await cacheSet<number>(App.main.redis, CacheKeys.populationTotal(campaign), estimatedSize, 86400)
-        await cacheSet<number>(App.main.redis, CacheKeys.populationProgress(campaign), 0, 86400)
-
         // Increase lock duration based on estimated send size
         const lockTime = Math.ceil(Math.max(estimatedSize / 1000, 900))
         logger.info({ id, estimatedSize, lockTime }, 'campaign:generate:estimated_size')
@@ -36,6 +32,10 @@ export default class CampaignGenerateListJob extends Job {
         const acquired = await acquireLock({ key, timeout: lockTime })
         logger.info({ id, acquired }, 'campaign:generate:lock')
         if (!acquired) return
+
+        // Use approximate size for progress
+        await cacheSet<number>(App.main.redis, CacheKeys.populationTotal(campaign), estimatedSize, 86400)
+        await cacheSet<number>(App.main.redis, CacheKeys.populationProgress(campaign), 0, 86400)
 
         logger.info({ id }, 'campaign:generate:querying')
         await generateSendList(campaign)
