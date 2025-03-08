@@ -307,12 +307,12 @@ export class JourneyAction extends JourneyStep {
 
         // defer job construction so that we have the journey_user_step.id value
         state.job(async () => {
-            const send_id = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`).then(s => s?.id)
+            const campaignSend = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`)
 
             const send = triggerCampaignSend({
                 campaign,
                 user: state.user,
-                send_id,
+                exists: !!campaignSend,
                 reference_id: `${userStep.id}`,
                 reference_type: 'journey',
             })

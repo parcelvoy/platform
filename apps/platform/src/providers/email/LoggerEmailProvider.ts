@@ -1,5 +1,5 @@
 import { logger } from '../../config/logger'
-import { randomInt, sleep } from '../../utilities'
+import { randomInt, sleep, uuid } from '../../utilities'
 import { ExternalProviderParams, ProviderControllers, ProviderSchema } from '../Provider'
 import { createController } from '../ProviderService'
 import { Email } from './Email'
@@ -24,6 +24,17 @@ export default class LoggerEmailProvider extends EmailProvider {
         if (this.addLatency) await sleep(randomInt())
 
         logger.info(message, 'provider:email:logger')
+
+        return {
+            messageId: uuid(),
+            messageSize: 0,
+            messageTime: Date.now(),
+            envelope: {},
+            accepted: [message.to],
+            rejected: [],
+            pending: [],
+            response: 'Message sent to logger',
+        }
     }
 
     async verify(): Promise<boolean> {

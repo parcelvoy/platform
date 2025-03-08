@@ -25,7 +25,7 @@ export default class CampaignInteractJob extends Job {
         if (!send) return
 
         if (type === 'opened' && !send.opened_at) {
-            await updateCampaignSend(send.id, { opened_at: new Date() })
+            await updateCampaignSend(campaign_id, user_id, reference_id, { opened_at: new Date() })
             await App.main.redis.sadd(CacheKeys.pendingStats, campaign_id)
         }
 
@@ -34,11 +34,11 @@ export default class CampaignInteractJob extends Job {
             if (!send.opened_at) {
                 updates.opened_at = new Date()
             }
-            await updateCampaignSend(send.id, updates)
+            await updateCampaignSend(campaign_id, user_id, reference_id, updates)
         }
 
         if (type === 'complained' || type === 'bounced') {
-            await updateCampaignSend(send.id, { state: 'bounced' })
+            await updateCampaignSend(campaign_id, user_id, reference_id, { state: 'bounced' })
         }
 
         if (subscription_id && action === 'unsubscribe') {
