@@ -6,7 +6,7 @@ import { analyticsProviders } from './analytics'
 import { emailProviders } from './email'
 import Provider from './Provider'
 import { getProvider } from './ProviderRepository'
-import { allProviders, loadController, pagedProviders } from './ProviderService'
+import { allProviders, archiveProvider, loadController, pagedProviders } from './ProviderService'
 import { pushProviders } from './push'
 import { textProviders } from './text'
 import { webhookProviders } from './webhook'
@@ -72,6 +72,10 @@ adminRouter.get('/meta', async ctx => {
             type: provider.namespace,
             schema: provider.schema,
         }))
+})
+
+adminRouter.delete('/:id', async ctx => {
+    ctx.body = await archiveProvider(parseInt(ctx.params.id), ctx.state.project.id)
 })
 
 export { adminRouter, publicRouter, providers }

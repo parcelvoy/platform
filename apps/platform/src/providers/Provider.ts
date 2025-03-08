@@ -65,6 +65,7 @@ export default class Provider extends Model {
     rate_limit!: number
     rate_interval!: RateInterval
     setup!: ProviderSetupMeta[]
+    deleted_at?: Date
 
     static jsonAttributes = ['data']
 
