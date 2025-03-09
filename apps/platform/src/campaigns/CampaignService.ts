@@ -292,37 +292,27 @@ export const generateSendList = async (campaign: SentCampaign) => {
     const now = Date.now()
     const cacheKey = CacheKeys.populationProgress(campaign)
 
-    const stream = UserList.query()
-        .select('id')
-        .whereIn('list_id', campaign.list_ids ?? [])
-        .stream()
+    logger.debug({ campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
 
-    logger.debug({ campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
-
-    let count = 0
-    const limit = 10_000
-
-    for await (const user of stream) {
-        if (count % limit === 0) {
-            logger.debug({ count, campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
-            await recipientPartialQuery({
-                campaign,
-                project,
-                sinceId: user.id,
-                callback: async (items) => {
-                    await CampaignSend.query()
-                        .insert(items)
-                        .onConflict(['campaign_id', 'user_id', 'reference_id'])
-                        .ignore()
-                    await cacheIncr(App.main.redis, cacheKey, items.length, 300)
-                },
-                limit,
-            })
-        }
-        count++
+    let nextId: number | null = 0
+    while (nextId !== null) {
+        logger.debug({ nextId, campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
+        nextId = await recipientPartialQuery({
+            campaign,
+            project,
+            sinceId: nextId,
+            callback: async (items) => {
+                await CampaignSend.query()
+                    .insert(items)
+                    .onConflict(['campaign_id', 'user_id', 'reference_id'])
+                    .ignore()
+                await cacheIncr(App.main.redis, cacheKey, items.length, 300)
+            },
+            limit: 10_000,
+        })
     }
 
-    logger.debug({ count, campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
+    logger.debug({ nextId, campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
@@ -579,18 +569,19 @@ export const recipientPartialQuery = async ({ campaign, project, sinceId, callba
                 users.timezone,
                 users.phone,
                 users.email,
-                users.project_id
+                users.project_id,
+                user_list.id AS user_list_id
             from users 
             inner join user_list 
                 on users.id = user_list.user_id 
                     and user_list.list_id IN (${lists.join(',')}) 
-            where user_list.id >= ${sinceId}
+            where user_list.id > ${sinceId}
             order by user_list.id 
             limit ${limit}
         ;`)
 
         const query = Model.query(trx)
-            .select('users.id AS user_id', 'users.timezone')
+            .select('users.id AS user_id', 'users.timezone', 'users.user_list_id')
             .from(`${table} AS users`)
             .where('users.project_id', campaign.project_id)
             .where(qb => {
@@ -614,10 +605,13 @@ export const recipientPartialQuery = async ({ campaign, project, sinceId, callba
                     .where('state', SubscriptionState.unsubscribed),
             )
 
+        let nextId = null
         await chunk<CampaignSendParams>(query, 500, async (items) => {
             await callback(items)
-        }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
-            CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
-        )
+        }, ({ user_id, timezone, user_list_id }: { user_id: number, timezone: string, user_list_id: number }) => {
+            nextId = user_list_id
+            return CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone }))
+        })
+        return nextId
     })
 }
