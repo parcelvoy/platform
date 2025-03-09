@@ -292,7 +292,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
     const now = Date.now()
     const cacheKey = CacheKeys.populationProgress(campaign)
 
-    logger.debug({ campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
+    logger.info({ campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
 
     let lastId = 0
     let isExhausted = false
@@ -302,18 +302,14 @@ export const generateSendList = async (campaign: SentCampaign) => {
             project,
             sinceId: lastId,
             callback: async (items) => {
-                await CampaignSend.query()
-                    .insert(items)
-                    .onConflict()
-                    .ignore()
                 await cacheIncr(App.main.redis, cacheKey, items.length, 300)
             },
             limit: 10_000,
         }))
-        logger.debug({ campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
+        logger.info({ campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
     }
 
-    logger.debug({ lastId, campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
+    logger.info({ lastId, campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
@@ -608,7 +604,13 @@ export const recipientPartialQuery = async ({ campaign, project, sinceId, callba
                 .where('state', SubscriptionState.unsubscribed),
         )
 
-    await chunk<CampaignSendParams>(query, 250, async (items) => {
+    await chunk<CampaignSendParams>(query, 1000, async (items) => {
+        await App.main.db.transaction(async (trx) => {
+            await CampaignSend.query(trx)
+                .insert(items)
+                .onConflict()
+                .ignore()
+        }, { isolationLevel: 'read committed' })
         await callback(items)
     }, ({ user_id, timezone }: { user_id: number, timezone: string }) => {
         return CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone }))
