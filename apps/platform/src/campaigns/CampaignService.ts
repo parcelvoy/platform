@@ -2,6 +2,7 @@ import PushJob from '../providers/push/PushJob'
 import WebhookJob from '../providers/webhook/WebhookJob'
 import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
+import { logger } from '../config/logger'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, SentCampaign } from './Campaign'
@@ -288,6 +289,7 @@ export const generateSendList = async (campaign: SentCampaign) => {
     // Clear any aborted sends
     await clearCampaign(campaign)
 
+    const now = Date.now()
     const cacheKey = CacheKeys.populationProgress(campaign)
 
     const stream = UserList.query()
@@ -295,11 +297,14 @@ export const generateSendList = async (campaign: SentCampaign) => {
         .whereIn('list_id', campaign.list_ids ?? [])
         .stream()
 
+    logger.debug({ campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
+
     let count = 0
     const limit = 10_000
 
     for await (const user of stream) {
         if (count % limit === 0) {
+            logger.debug({ count, campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
             await recipientPartialQuery({
                 campaign,
                 project,
@@ -316,6 +321,8 @@ export const generateSendList = async (campaign: SentCampaign) => {
         }
         count++
     }
+
+    logger.debug({ count, campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
