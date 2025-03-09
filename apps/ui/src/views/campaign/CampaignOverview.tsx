@@ -78,7 +78,7 @@ export default function CampaignOverview() {
             {campaign.type === 'blast' && <>
                 <Heading title={t('delivery')} size="h4" />
                 <InfoTable rows={{
-                    [t('state')]: CampaignTag({ state: campaign.state }),
+                    [t('state')]: CampaignTag({ state: campaign.state, send_at: campaign.send_at }),
                     [t('launched_at')]: campaign.send_at ? formatDate(preferences, campaign.send_at, undefined, project.timezone) : undefined,
                     [t('in_timezone')]: campaign.send_in_user_timezone ? 'Yes' : 'No',
                     [t('send_lists')]: DelimitedLists({ lists: campaign.lists }),

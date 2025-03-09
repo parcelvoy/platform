@@ -18,10 +18,11 @@ import { ProjectContext } from '../../contexts'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { Translation, useTranslation } from 'react-i18next'
 
-export const CampaignTag = ({ state, progress }: Pick<Campaign, 'state' | 'progress'>) => {
+export const CampaignTag = ({ state, progress, send_at }: Pick<Campaign, 'state' | 'progress' | 'send_at'>) => {
     const variant: Record<CampaignState, TagVariant> = {
         draft: 'plain',
         aborted: 'error',
+        aborting: 'error',
         loading: 'info',
         scheduled: 'info',
         running: 'info',
@@ -32,8 +33,11 @@ export const CampaignTag = ({ state, progress }: Pick<Campaign, 'state' | 'progr
     const total = progress?.total ?? 0
     const percent = total > 0 ? complete / total : 0
     const percentStr = percent.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 0 })
+
+    const label = state === 'aborting' && send_at ? 'rescheduling' : state
+
     return <Tag variant={variant[state]}>
-        <Translation>{ (t) => t(state) }</Translation>
+        <Translation>{ (t) => t(label) }</Translation>
         {progress && ` (${percentStr})`}
     </Tag>
 }
@@ -136,7 +140,7 @@ export default function Campaigns() {
                             key: 'state',
                             title: t('state'),
                             sortable: true,
-                            cell: ({ item: { state } }) => CampaignTag({ state }),
+                            cell: ({ item: { state, send_at } }) => CampaignTag({ state, send_at }),
                         },
                         {
                             key: 'delivery',

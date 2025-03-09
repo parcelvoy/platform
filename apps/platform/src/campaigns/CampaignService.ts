@@ -26,6 +26,7 @@ import Model, { raw, ref } from '../core/Model'
 import { cacheGet, cacheIncr } from '../config/redis'
 import App from '../app'
 import { releaseLock } from '../core/Lock'
+import CampaignAbortJob from './CampaignAbortJob'
 
 export const CacheKeys = {
     pendingStats: 'campaigns:pending_stats',
@@ -119,18 +120,19 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
     const data: Partial<Campaign> = { ...params }
     let send_at: Date | undefined | null = data.send_at ? new Date(data.send_at) : undefined
 
+    const isRescheduling = send_at != null
+        && campaign.send_at != null
+        && send_at !== campaign.send_at
+
     // If we are aborting, reset `send_at`
     if (data.state === 'aborted') {
         send_at = null
-        await abortCampaign(campaign)
+        data.state = 'aborting'
     }
 
     // If we are rescheduling, abort sends so they are reset
-    if (send_at
-        && campaign.send_at
-        && send_at !== campaign.send_at) {
-        data.state = 'loading'
-        await abortCampaign(campaign)
+    if (isRescheduling) {
+        data.state = 'aborting'
     }
 
     // Check templates to make sure we can schedule a send
@@ -162,6 +164,10 @@ export const updateCampaign = async (id: number, projectId: number, { tags, ...p
 
     if (data.state === 'loading' && campaign.type === 'blast') {
         await CampaignGenerateListJob.from(campaign).queue()
+    }
+
+    if (data.state === 'aborting') {
+        await CampaignAbortJob.from({ ...campaign, reschedule: isRescheduling }).queue()
     }
 
     return await getCampaign(id, projectId)

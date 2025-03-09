@@ -8,7 +8,7 @@ import { crossTimezoneCopy } from '../utilities'
 import Project from '../projects/Project'
 import { User } from '../users/User'
 
-export type CampaignState = 'draft' | 'scheduled' | 'loading' | 'running' | 'finished' | 'aborted'
+export type CampaignState = 'draft' | 'scheduled' | 'loading' | 'running' | 'finished' | 'aborting' | 'aborted'
 export interface CampaignDelivery {
     sent: number
     total: number

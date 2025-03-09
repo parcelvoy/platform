@@ -35,7 +35,7 @@ export default function Settings() {
 
                         toast.success('Saved organization settings')
                     }}
-                    submitLabel="Save Settings"
+                    submitLabel={t('save_settings')}
                 >
                     {form => <>
                         <Heading size="h3" title={t('general')} />
