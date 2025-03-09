@@ -26,7 +26,7 @@ export default class CampaignGenerateListJob extends Job {
         const estimatedSize = await estimatedSendSize(campaign)
 
         // Increase lock duration based on estimated send size
-        const lockTime = Math.ceil(Math.max(estimatedSize / 1000, 900))
+        const lockTime = Math.ceil(Math.max(estimatedSize / 500, 900))
         logger.info({ campaignId: id, estimatedSize, lockTime }, 'campaign:generate:estimated_size')
 
         const acquired = await acquireLock({ key, timeout: lockTime })

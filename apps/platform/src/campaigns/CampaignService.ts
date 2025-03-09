@@ -25,6 +25,7 @@ import { differenceInDays, subDays } from 'date-fns'
 import Model, { raw, ref } from '../core/Model'
 import { cacheGet, cacheIncr } from '../config/redis'
 import App from '../app'
+import { releaseLock } from '../core/Lock'
 
 export const CacheKeys = {
     pendingStats: 'campaigns:pending_stats',
@@ -286,30 +287,27 @@ export const generateSendList = async (campaign: SentCampaign) => {
         throw new RequestError('Unable to send to a campaign that does not have an associated list', 404)
     }
 
-    // Clear any aborted sends
-    await clearCampaign(campaign)
-
     const now = Date.now()
     const cacheKey = CacheKeys.populationProgress(campaign)
 
     logger.info({ campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:started')
 
-    let lastId = 0
-    let isExhausted = false
-    while (!isExhausted) {
-        ({ isExhausted, lastId } = await recipientPartialQuery({
-            campaign,
-            project,
-            sinceId: lastId,
-            callback: async (items) => {
-                await cacheIncr(App.main.redis, cacheKey, items.length, 300)
-            },
-            limit: 10_000,
-        }))
+    // Generate the initial send list
+    const query = recipientQuery(campaign)
+    await chunk<CampaignSendParams>(query, 500, async (items) => {
+        await App.main.db.transaction(async (trx) => {
+            await CampaignSend.query(trx)
+                .insert(items)
+                .onConflict(['campaign_id', 'user_id', 'reference_id'])
+                .merge(['state', 'send_at'])
+        })
+        await cacheIncr(App.main.redis, cacheKey, items.length, 300)
         logger.info({ campaign: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress')
-    }
+    }, ({ user_id, timezone }: { user_id: number, timezone: string }) =>
+        CampaignSend.create(campaign, project, User.fromJson({ id: user_id, timezone })),
+    )
 
-    logger.info({ lastId, campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
+    logger.info({ campaignId: campaign.id, elapsed: Date.now() - now }, 'campaign:generate:progress:finished')
 
     await Campaign.update(qb => qb.where('id', campaign.id), { state: 'scheduled' })
 }
@@ -404,6 +402,7 @@ export const abortCampaign = async (campaign: Campaign) => {
         .where('campaign_id', campaign.id)
         .where('state', 'pending')
         .update({ state: 'aborted' })
+    await releaseLock(`campaign_generate_${campaign.id}`)
 }
 
 export const clearCampaign = async (campaign: Campaign) => {
@@ -448,6 +447,7 @@ export const campaignDeliveryProgress = async (campaignId: number): Promise<Camp
 export const updateCampaignProgress = async (campaign: Campaign): Promise<void> => {
     const currentState = (pending: number, delivery: CampaignDelivery) => {
         if (campaign.type === 'trigger') return 'running'
+        if (campaign.state === 'loading') return 'loading'
         if (pending <= 0) return 'finished'
         if (delivery.sent === 0) return 'scheduled'
         return 'running'

@@ -13,7 +13,7 @@ export default class CampaignStateJob extends Job {
         // within the last two days or has activity since last run
         const openedCampaignIds = await App.main.redis.smembers(CacheKeys.pendingStats).then(ids => ids.map(parseInt).filter(x => x))
         const campaigns = await Campaign.query()
-            .whereIn('state', ['scheduled', 'running'])
+            .whereIn('state', ['loading', 'scheduled', 'running'])
             .orWhere(function(qb) {
                 qb.where('state', 'finished')
                     .where('send_at', '>', subDays(Date.now(), 2))
