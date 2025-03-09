@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect } from 'react'
 import api from '../../api'
 import { CampaignContext, ProjectContext } from '../../contexts'
-import { CampaignDelivery as Delivery, CampaignSendState } from '../../types'
+import { CampaignDelivery as Delivery, CampaignSendState, CampaignState } from '../../types'
 import Alert from '../../ui/Alert'
 import Heading from '../../ui/Heading'
 import { PreferencesContext } from '../../ui/PreferencesContext'
@@ -19,13 +19,14 @@ export const CampaignSendTag = ({ state }: { state: CampaignSendState }) => {
         bounced: 'error',
         sent: 'success',
         failed: 'error',
+        aborted: 'warn',
     }
     return <Tag variant={variant[state]}>
         <Translation>{ (t) => t(state) }</Translation>
     </Tag>
 }
 
-export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
+export const CampaignStats = ({ state, delivery }: { state: CampaignState, delivery: Delivery }) => {
     const { t } = useTranslation()
     const percent = new Intl.NumberFormat(undefined, { style: 'percent', minimumFractionDigits: 2 })
 
@@ -35,7 +36,7 @@ export const CampaignStats = ({ delivery }: { delivery: Delivery }) => {
     const openRate = percent.format(delivery.total ? delivery.opens / delivery.total : 0)
     const clickRate = percent.format(delivery.total ? delivery.clicks / delivery.total : 0)
 
-    const SentSpan: React.ReactNode = <span>{sent}/<small>{total}</small></span>
+    const SentSpan: React.ReactNode = <span>{sent}/<small>{state === 'loading' ? `~${total}` : total}</small></span>
 
     return (
         <TileGrid numColumns={4}>
@@ -60,11 +61,11 @@ export default function CampaignDelivery() {
         const refresh = () => {
             api.campaigns.get(project.id, campaign.id)
                 .then(setCampaign)
-                .then(() => searchState.reload)
+                .then(searchState.reload)
                 .catch(() => {})
         }
 
-        if (state !== 'loading') return
+        if (!['loading', 'aborting'].includes(state)) return
         const complete = progress?.complete ?? 0
         const total = progress?.total ?? 0
         const percent = total > 0 ? complete / total * 100 : 0
@@ -83,7 +84,7 @@ export default function CampaignDelivery() {
                     {state === 'scheduled'
                         && <Alert title={t('scheduled')}>{t('campaign_alert_scheduled')} <strong>{formatDate(preferences, send_at)}</strong></Alert>
                     }
-                    {delivery && <CampaignStats delivery={delivery} />}
+                    {delivery && <CampaignStats delivery={delivery} state={state} />}
                     <Heading title={t('users')} size="h4" />
                     <SearchTable
                         {...searchState}

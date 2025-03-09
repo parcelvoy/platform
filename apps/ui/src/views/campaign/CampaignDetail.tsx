@@ -57,7 +57,7 @@ export default function CampaignDetail() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
     const [campaign, setCampaign] = useContext(CampaignContext)
-    const { name, templates, state, progress } = campaign
+    const { name, templates, state, send_at, progress } = campaign
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     useEffect(() => {
         setLocale(localeState(templates ?? []))
@@ -68,6 +68,7 @@ export default function CampaignDetail() {
     const handleAbort = async () => {
         setIsLoading(true)
         const value = await api.campaigns.update(project.id, campaign.id, { state: 'aborted' })
+        console.log('finished', value)
         setCampaign(value)
         setIsLoading(false)
     }
@@ -108,6 +109,19 @@ export default function CampaignDetail() {
                 onClick={() => setIsLaunchOpen(true)}
             >{t('restart_campaign')}</Button>
         ),
+        aborting: send_at
+            ? (
+                <Button
+                    icon={<SendIcon />}
+                    isLoading={true}
+                >{t('rescheduling')}</Button>
+            )
+            : (
+                <Button
+                    icon={<ForbiddenIcon />}
+                    isLoading={true}
+                >{t('abort_campaign')}</Button>
+            ),
         loading: <></>,
         scheduled: (
             <>
@@ -135,7 +149,11 @@ export default function CampaignDetail() {
     return (
         <PageContent
             title={name}
-            desc={state !== 'draft' && <CampaignTag state={state} progress={progress} />}
+            desc={state !== 'draft' && <CampaignTag
+                state={state}
+                progress={progress}
+                send_at={send_at}
+            />}
             actions={campaign.type !== 'trigger' && action[state]}
             fullscreen={true}>
             <NavigationTabs tabs={tabs} />

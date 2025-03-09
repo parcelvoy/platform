@@ -349,7 +349,7 @@ export interface JourneyEntranceDetail {
     userSteps: JourneyUserStep[]
 }
 
-export type CampaignState = 'draft' | 'loading' | 'scheduled' | 'running' | 'finished' | 'aborted'
+export type CampaignState = 'draft' | 'loading' | 'scheduled' | 'running' | 'finished' | 'aborting' | 'aborted'
 
 export interface CampaignDelivery {
     sent: number
@@ -389,7 +389,7 @@ export interface Campaign {
     updated_at: string
 }
 
-export type CampaignSendState = 'pending' | 'throttled' | 'bounced' | 'sent' | 'failed'
+export type CampaignSendState = 'pending' | 'sent' | 'throttled' | 'failed' | 'bounced' | 'aborted'
 
 export type CampaignUpdateParams = Partial<Pick<Campaign, 'name' | 'state' | 'list_ids' | 'exclusion_list_ids' | 'subscription_id' | 'tags'>>
 export type CampaignCreateParams = Pick<Campaign, 'name' | 'type' | 'list_ids' | 'exclusion_list_ids' | 'channel' | 'subscription_id' | 'provider_id' | 'tags'>

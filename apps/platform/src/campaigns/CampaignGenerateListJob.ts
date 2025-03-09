@@ -10,8 +10,8 @@ import { CacheKeys, estimatedSendSize, generateSendList, getCampaign } from './C
 export default class CampaignGenerateListJob extends Job {
     static $name = 'campaign_generate_list_job'
 
-    static from(data: CampaignJobParams): CampaignGenerateListJob {
-        return new this(data)
+    static from({ id, project_id }: CampaignJobParams): CampaignGenerateListJob {
+        return new this({ id, project_id }).jobId(`cid_${id}_generate`)
     }
 
     static async handler({ id, project_id }: CampaignJobParams) {

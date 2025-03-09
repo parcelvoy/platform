@@ -28,8 +28,10 @@ import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrches
 import ListRefreshJob from '../lists/ListRefreshJob'
 import ListEvaluateUserJob from '../lists/ListEvaluateUserJob'
 import UserListMatchJob from '../lists/UserListMatchJob'
+import CampaignAbortJob from '../campaigns/CampaignAbortJob'
 
 export const jobs = [
+    CampaignAbortJob,
     CampaignGenerateListJob,
     CampaignEnqueueSendJob,
     CampaignInteractJob,
