@@ -86,6 +86,20 @@ export class User extends Model {
         return this.data.last_name ?? this.data.lastName ?? this.data.surname
     }
 
+    static formatJson(json: Record<string, any>): Record<string, unknown> {
+        if (json.phone) {
+            const parsedNumber = parsePhoneNumber(json.phone)
+            if (parsedNumber) {
+                json.data = {
+                    ...json.data,
+                    phone_country: parsedNumber.country,
+                    phone_is_valid: parsedNumber.isValid(),
+                }
+            }
+        }
+        return super.formatJson(json)
+    }
+
     toJSON() {
         const json = super.toJSON()
 
