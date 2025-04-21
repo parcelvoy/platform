@@ -5,7 +5,7 @@ import { updateSendState } from '../../campaigns/CampaignService'
 import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadTextChannel } from '.'
 import App from '../../app'
-import { UnsubscribeTextError } from './TextError'
+import { UndeliverableTextError, UnsubscribeTextError } from './TextError'
 import { releaseLock } from '../../core/Lock'
 
 export default class TextJob extends Job {
@@ -45,7 +45,7 @@ export default class TextJob extends Job {
             const result = await channel.send(template, data)
             await finalizeSend(data, result)
         } catch (error: any) {
-            await failSend(data, error, (error: any) => !(error instanceof UnsubscribeTextError))
+            await failSend(data, error, (error: any) => !(error instanceof UnsubscribeTextError || error instanceof UndeliverableTextError))
         } finally {
             await releaseLock(messageLock(campaign, user))
         }
