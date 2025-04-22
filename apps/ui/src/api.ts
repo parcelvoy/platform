@@ -240,6 +240,9 @@ const api = {
         duplicate: async (projectId: number | string, listId: number | string) => await client
             .post<List>(`${projectUrl(projectId)}/lists/${listId}/duplicate`)
             .then(r => r.data),
+        recount: async (projectId: number | string, listId: number | string) => await client
+            .post<List>(`${projectUrl(projectId)}/lists/${listId}/recount`)
+            .then(r => r.data),
     },
 
     projectAdmins: {

@@ -40,7 +40,7 @@ export default class ListEvaluateUserJob extends Job {
             await evaluate()
         } finally {
             const cacheKey = CacheKeys.populationProgress(list)
-            const count = await cacheIncr(App.main.redis, cacheKey, 1, 300)
+            const count = await cacheIncr(App.main.redis, cacheKey, 1, 86400)
             if (count >= totalCount) {
                 await cleanupList(list)
             }

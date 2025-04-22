@@ -16,10 +16,10 @@ import { snakeToTitle } from '../../utils'
 import UploadField from '../../ui/form/UploadField'
 import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
 import { useRoute } from '../router'
-import { EditIcon, SendIcon, UploadIcon } from '../../ui/icons'
+import { ArchiveIcon, EditIcon, RestartIcon, SendIcon, UploadIcon } from '../../ui/icons'
 import { TagPicker } from '../settings/TagPicker'
 import { useTranslation } from 'react-i18next'
-import { Alert } from '../../ui'
+import { Alert, Menu, MenuItem } from '../../ui'
 import { useBlocker } from 'react-router-dom'
 
 interface RuleSectionProps {
@@ -109,6 +109,16 @@ export default function ListDetail() {
         await state.reload()
     }
 
+    const handleRecountList = async () => {
+        await api.lists.recount(project.id, list.id)
+        window.location.reload()
+    }
+
+    const handleArchiveList = async () => {
+        await api.lists.delete(project.id, list.id)
+        window.location.href = `/projects/${project.id}/lists`
+    }
+
     return (
         <PageContent
             title={list.name}
@@ -132,6 +142,14 @@ export default function ListDetail() {
                         onClick={() => setIsUploadOpen(true)}
                     >{t('upload_list')}</Button>}
                     <Button icon={<EditIcon />} onClick={() => setIsEditListOpen(true)}>{t('edit_list')}</Button>
+                    <Menu size="regular">
+                        <MenuItem onClick={async () => await handleRecountList()}>
+                            <RestartIcon />{t('recount')}
+                        </MenuItem>
+                        <MenuItem onClick={async () => await handleArchiveList()}>
+                            <ArchiveIcon />{t('archive')}
+                        </MenuItem>
+                    </Menu>
                 </>
             }>
 
