@@ -247,6 +247,7 @@
     "rebuild_path_suggestions_desc": "¿Le gustaría recrear todas las rutas de autocompletado de datos de eventos y usuarios utilizadas para crear reglas?",
     "rebuild_path_suggestions_success": "Las sugerencias de ruta se están reconstruyendo. Esto puede tardar unos minutos dependiendo de cuántos usuarios y eventos tengas.",
     "recently_viewed": "Visto Recientemente",
+    "recount": "Contar Totales",
     "remove": "Eliminar",
     "remove_locale_warning": "¿Está seguro de que desea eliminar esta configuración regional? La plantilla no se puede recuperar.",
     "reply_to": "Responder a",

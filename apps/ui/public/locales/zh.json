@@ -238,6 +238,7 @@
   "rebuild_path_suggestions_desc": "您想重新创建用于创建规则的所有事件和用户数据自动完成路径吗？",
   "rebuild_path_suggestions_success": "正在重建路径建议。这可能需要几分钟，具体取决于您有多少用户和事件。",
   "recently_viewed": "最近浏览",
+  "recount": "计算总数",
   "remove": "移除",
   "remove_locale_warning": "您确定要删除此地区吗？模板无法恢复。",
   "reply_to": "回复至",

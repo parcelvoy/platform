@@ -7,6 +7,7 @@ import { SearchSchema } from '../core/searchParams'
 import { ProjectState } from '../auth/AuthMiddleware'
 import parse from '../storage/FileStream'
 import { projectRoleMiddleware } from '../projects/ProjectService'
+import ListStatsJob from './ListStatsJob'
 
 const router = new Router<
     ProjectState & { list?: List }
@@ -198,6 +199,15 @@ router.post('/:listId/users', async ctx => {
 
     await importUsersToList(ctx.state.list!, stream)
 
+    ctx.status = 204
+})
+
+router.post('/:listId/recount', async ctx => {
+    await ListStatsJob.from(
+        ctx.state.list!.id,
+        ctx.state.project.id,
+        true,
+    ).queue()
     ctx.status = 204
 })
 

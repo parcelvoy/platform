@@ -247,6 +247,7 @@
     "rebuild_path_suggestions_desc": "Would you like to recreate all of the event and user data autocomplete paths used for creating rules?",
     "rebuild_path_suggestions_success": "Path suggestions are rebuilding. This might take a few minutes depending on how many users and events you have.",
     "recently_viewed": "Recently Viewed",
+    "recount": "Recount",
     "remove": "Remove",
     "remove_locale_warning": "Are you sure you want to delete this locale? The template cannot be recovered.",
     "reply_to": "Reply To",
