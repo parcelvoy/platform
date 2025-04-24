@@ -39,14 +39,20 @@ const driver = <T extends DriverConfig>(driver: string | undefined, loaders: Dri
     return { ...loadedDriver, driver: driverKey } as T
 }
 
-// 24 hours?
+// 24 hours
 const defaultTokenLife = 24 * 60 * 60
+
+const isKeyEmpty = (value: string | undefined) => value === undefined || value === ''
+
+const envBool = (value: string | undefined, defaultValue: boolean) => isKeyEmpty(value) ? defaultValue : value === 'true'
+
+const envInt = (value: string | undefined, defaultValue: number) => isKeyEmpty(value) ? defaultValue : parseInt(value!)
 
 type EnvType = 'production' | 'test'
 export default (type?: EnvType): Env => {
     dotenv.config({ path: `.env${type === 'test' ? '.test' : ''}` })
 
-    const port = parseInt(process.env.PORT ?? '3000')
+    const port = envInt(process.env.PORT, 3000)
     const baseUrl = process.env.BASE_URL ?? `http://localhost:${port}`
     const apiBaseUrl = process.env.API_BASE_URL ?? `${baseUrl}/api`
 
@@ -58,21 +64,21 @@ export default (type?: EnvType): Env => {
     return {
         runners: (process.env.RUNNER ?? 'api,worker').split(',') as Runner[],
         config: {
-            monoDocker: (process.env.MONO ?? 'false') === 'true',
-            multiOrg: (process.env.MULTI_ORG ?? 'false') === 'true',
-            logCompiledMessage: (process.env.LOG_COMPILED_MESSAGE ?? 'false') === 'true',
+            monoDocker: envBool(process.env.MONO, false),
+            multiOrg: envBool(process.env.MULTI_ORG, false),
+            logCompiledMessage: envBool(process.env.LOG_COMPILED_MESSAGE, false),
         },
         db: {
             host: process.env.DB_HOST!,
             user: process.env.DB_USERNAME!,
             password: process.env.DB_PASSWORD!,
-            port: parseInt(process.env.DB_PORT!),
+            port: envInt(process.env.DB_PORT, 3306),
             database: process.env.DB_DATABASE!,
             migrationPaths: process.env.DB_MIGRATION_PATHS?.split(',') ?? [],
         },
         redis: {
             host: process.env.REDIS_HOST!,
-            port: parseInt(process.env.REDIS_PORT!),
+            port: envInt(process.env.REDIS_PORT, 6379),
             username: process.env.REDIS_USERNAME,
             password: process.env.REDIS_PASSWORD,
             tls: process.env.REDIS_TLS === 'true',
@@ -88,9 +94,9 @@ export default (type?: EnvType): Env => {
             }),
             redis: () => ({
                 host: process.env.REDIS_HOST!,
-                port: parseInt(process.env.REDIS_PORT!),
+                port: envInt(process.env.REDIS_PORT, 6379),
                 tls: process.env.REDIS_TLS === 'true',
-                concurrency: parseInt(process.env.REDIS_CONCURRENCY ?? '10'),
+                concurrency: envInt(process.env.REDIS_CONCURRENCY, 10),
             }),
         }),
         storage: driver<StorageConfig>(process.env.STORAGE_DRIVER ?? 'local', {
