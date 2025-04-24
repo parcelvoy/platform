@@ -66,7 +66,7 @@ You can utilize either SAML or OpenID to connect to your Google Account. We'll b
 8. Navigate to your new SAML configuration and select User Access. Make sure to turn this on for the groups you would like to have access.
 9. Open your IDE. In your environment variables add or replace the following:
 ```
-AUTH_DRIVER=basic
+AUTH_DRIVER=saml
 AUTH_SAML_CALLBACK_URL=// The domain from above
 AUTH_SAML_ENTRY_POINT_URL=// The SSO URL you previously copied
 AUTH_SAML_ISSUER=// The entity ID from above
