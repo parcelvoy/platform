@@ -1,0 +1,20 @@
+name: '❔ Question'
+description: 'Submit a general question to the community.'
+title: '❔ Question: '
+labels: [ 'type: question' ]
+body:
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: '❔ What is your question?'
+      description: 'The stage is yours. Ask away! Try to provide as much context as possible.'
+      placeholder: 'What is the best way to ...'
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: '👀 Have you spent some time to check if this question has been asked before?'
+      options:
+        - label: "I checked and didn't find a similar issue"
+          required: true

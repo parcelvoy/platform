@@ -1,0 +1,60 @@
+name: '🐛 Bug Report'
+description: 'Submit a bug report'
+title: '🐛 Bug: '
+labels: [ 'type: bug' ]
+body:
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: '📜 Description'
+      description: 'A clear and concise description of what the bug is.'
+      placeholder: 'It bugs out when ...'
+  - type: textarea
+    id: steps-to-reproduce
+    validations:
+      required: true
+    attributes:
+      label: '👟 Reproduction steps'
+      description: 'How do you trigger this bug? Please walk us through it step by step.'
+      placeholder: "1. Install the package\n2. Run the command ..."
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: '👍 Expected behavior'
+      description: 'What did you think should happen?'
+      placeholder: 'It should ...'
+  - type: textarea
+    id: actual-behavior
+    validations:
+      required: true
+    attributes:
+      label: '👎 Actual Behavior'
+      description: 'What did actually happen? Add screenshots, if applicable.'
+      placeholder: 'It actually ...'
+  - type: input
+    id: release-version
+    validations:
+      required: false
+    attributes:
+      label: release version
+      description: Mention the release version of the software you are using.
+      placeholder: v1.2.3
+  - type: textarea
+    id: additional-context
+    validations:
+      required: false
+    attributes:
+      label: '📃 Provide any additional context for the Bug.'
+      description: 'Add any other context about the problem here.'
+      placeholder: 'It actually ...'
+  - type: checkboxes
+    id: no-duplicate-issues
+    attributes:
+      label: '👀 Have you spent some time to check if this bug has been found before?'
+      options:
+        - label: "I checked and didn't find a similar issue"
+          required: true
