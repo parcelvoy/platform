@@ -4,7 +4,7 @@ import { PageParams } from '../core/searchParams'
 import { RetryError } from '../queue/Job'
 import { Device, DeviceParams, User, UserInternalParams } from '../users/User'
 import { deepEqual, pick, uuid } from '../utilities'
-import { getRuleEventNames } from '../rules/RuleHelpers'
+import { getRuleEventParams, RuleEventParam } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
 import { Context } from 'koa'
 import { EventPostJob } from '../jobs'
@@ -240,31 +240,27 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
 }
 
 export const getUserEventsForRules = async (
-    userIds: number[],
+    userId: number,
     rules: RuleTree[],
-    since?: Date | null,
 ) => {
-    if (!userIds.length || !rules.length) return []
-    const names = rules.reduce<string[]>((a, rule) => {
+    if (!rules.length) return []
+    const params = rules.reduce<RuleEventParam[]>((a, rule) => {
         if (rule) {
-            a.push(...getRuleEventNames(rule))
+            a.push(...getRuleEventParams(rule))
         }
         return a
-    }, []).filter((o, i, a) => a.indexOf(o) === i)
-    if (!names.length) return []
-    return UserEvent.clickhouse().all(
-        `
-        SELECT * FROM user_events 
-            WHERE user_id IN ({userIds: Array(UInt32)}) 
-            AND name IN ({names: Array(String)}) 
-            AND created_at >= {since: DateTime} 
-            ORDER BY created_at DESC
-        `,
-        {
-            userIds,
-            names,
-            since: since ?? new Date(0),
-        },
+    }, [])
+    if (!params.length) return []
+
+    return UserEvent.all(
+        qb => qb.where('user_id', userId)
+            .where(qb1 => {
+                for (const param of params) {
+                    qb1.orWhere(sbq => sbq.where('name', param.name)
+                        .where('created_at', '>=', param.since ?? new Date(0)),
+                    )
+                }
+            }),
     )
 }
 

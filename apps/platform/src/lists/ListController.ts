@@ -51,6 +51,15 @@ const ruleDefinition = (nullable = false) => ({
             type: ['string', 'number', 'boolean'],
             nullable: true,
         },
+        frequency: {
+            type: 'object',
+            required: ['period', 'operator', 'count'],
+            properties: {
+                period: { type: 'object' },
+                operator: { type: 'string', enum: ['=', '<', '<=', '>', '>='] },
+                count: { type: 'number' },
+            },
+        },
         children: {
             type: 'array',
             nullable: true,

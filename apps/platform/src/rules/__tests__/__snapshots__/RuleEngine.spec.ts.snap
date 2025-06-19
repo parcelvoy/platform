@@ -1,11 +1,32 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RuleEngine multiple combination event and user and types query 1`] = `"SELECT id FROM users FINAL PREWHERE \`data\`.\`project\` IS NOT NULL WHERE project_id = 1 INTERSECT SELECT DISTINCT user_id AS id FROM user_events WHERE project_id = 1 AND name = 'beat-game' and \`data\`.\`score\`.\`total\` <= 5 and \`data\`.\`score\`.\`isRecord\` = false"`;
+exports[`RuleEngine multiple combination event and user and types query 1`] = `
+"SELECT id FROM users FINAL PREWHERE \`data\`.\`project\` IS NOT NULL WHERE project_id = 1 INTERSECT 
+        SELECT user_id AS id 
+        FROM user_events 
+        WHERE project_id = 1 and name = 'beat-game' and (accurateCastOrNull(\`data\`.\`score\`.\`total\`, 'UInt8') <= 5 and \`data\`.\`score\`.\`isRecord\` = false)
+        GROUP BY project_id, user_id
+        HAVING count() >= 1"
+`;
 
-exports[`RuleEngine multiple combination of conditional clauses on rules query 1`] = `"SELECT id FROM users FINAL PREWHERE \`data\`.\`project\` IS NOT NULL WHERE project_id = 1 INTERSECT SELECT DISTINCT user_id AS id FROM user_events WHERE project_id = 1 AND name = 'beat-game' or \`data\`.\`score\`.\`total\` < 5 or \`data\`.\`score\`.\`isRecord\` = true"`;
+exports[`RuleEngine multiple combination of conditional clauses on rules query 1`] = `
+"SELECT id FROM users FINAL PREWHERE \`data\`.\`project\` IS NOT NULL WHERE project_id = 1 INTERSECT 
+        SELECT user_id AS id 
+        FROM user_events 
+        WHERE project_id = 1 and name = 'beat-game' and (accurateCastOrNull(\`data\`.\`score\`.\`total\`, 'UInt8') < 5 or \`data\`.\`score\`.\`isRecord\` = true)
+        GROUP BY project_id, user_id
+        HAVING count() >= 1"
+`;
 
-exports[`RuleEngine string equals query 1`] = `"CAST(email, 'String') = 'test@test.com'"`;
+exports[`RuleEngine string equals query 1`] = `"accurateCastOrNull(email, 'String') = 'test@test.com'"`;
 
 exports[`RuleEngine string is set query 1`] = `"\`data\`.\`project\` IS NOT NULL"`;
 
-exports[`RuleEngine wrapper event name match query 1`] = `"SELECT id FROM users FINAL PREWHERE CAST(\`data\`.\`id\`, 'String') = 'abcd' WHERE project_id = 1 INTERSECT SELECT DISTINCT user_id AS id FROM user_events WHERE project_id = 1 AND name = 'Account Created'"`;
+exports[`RuleEngine wrapper event name match query 1`] = `
+"SELECT id FROM users FINAL PREWHERE accurateCastOrNull(\`data\`.\`id\`, 'String') = 'abcd' WHERE project_id = 1 INTERSECT 
+        SELECT user_id AS id 
+        FROM user_events 
+        WHERE project_id = 1 and name = 'Account Created'
+        GROUP BY project_id, user_id
+        HAVING count() >= 1"
+`;

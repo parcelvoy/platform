@@ -284,4 +284,86 @@ describe('RuleEngine', () => {
             })
         })
     })
+
+    describe('time bound event rules', () => {
+        describe('check', () => {
+            const rules = [
+                make({
+                    group: 'event',
+                    path: 'name',
+                    value: 'beat-game',
+                    type: 'wrapper',
+                    operator: 'or',
+                    children: [
+                        make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
+                        make({ type: 'boolean', path: 'score.isRecord', value: true }),
+                    ],
+                    frequency: {
+                        period: {
+                            unit: 'day',
+                            value: 7,
+                            type: 'rolling',
+                        },
+                        count: 2,
+                        operator: '>=',
+                    },
+                }),
+            ]
+
+            test('if occured more than number of times in period true', () => {
+                const shouldPass = check(
+                    {
+                        user: {
+                            id: 'abcd',
+                            email: 'test@test.com',
+                            name: 'Name',
+                            project: 'Parcelvoy',
+                        },
+                        events: [
+                            {
+                                name: 'beat-game',
+                                score: {
+                                    total: 5,
+                                    isRecord: true,
+                                },
+                            },
+                            {
+                                name: 'beat-game',
+                                score: {
+                                    total: 5,
+                                    isRecord: true,
+                                },
+                            },
+                        ],
+                    },
+                    rules,
+                )
+                expect(shouldPass).toBeTruthy()
+            })
+
+            test('if occured less than number of times in period false', () => {
+                const shouldPass = check(
+                    {
+                        user: {
+                            id: 'abcd',
+                            email: 'test@test.com',
+                            name: 'Name',
+                            project: 'Parcelvoy',
+                        },
+                        events: [
+                            {
+                                name: 'beat-game',
+                                score: {
+                                    total: 5,
+                                    isRecord: true,
+                                },
+                            },
+                        ],
+                    },
+                    rules,
+                )
+                expect(shouldPass).toBeFalsy()
+            })
+        })
+    })
 })

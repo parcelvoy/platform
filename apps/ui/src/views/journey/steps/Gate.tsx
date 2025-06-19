@@ -1,9 +1,11 @@
 import { useContext } from 'react'
 import { JourneyStepType, Rule } from '../../../types'
 import { GateStepIcon } from '../../../ui/icons'
-import RuleBuilder, { createWrapperRule, ruleDescription } from '../../users/RuleBuilder'
+import RuleBuilder from '../../users/rules/RuleBuilder'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import { useTranslation } from 'react-i18next'
+import { ruleDescription } from '../../users/rules/RuleDescriptions'
+import { createWrapperRule } from '../../users/rules/RuleHelpers'
 
 interface GateConfig {
     rule: Rule

@@ -1,5 +1,26 @@
+import { inferClickHouseType } from '../config/clickhouse'
+import { Operator } from './Rule'
 import { RuleCheck, RuleEvalException } from './RuleEngine'
 import { compile, queryPath, queryValue as queryValues, whereQuery, whereQueryNullable } from './RuleHelpers'
+
+export const numComp = (leftValue: number, operator: Operator, rightValue: number) => {
+    switch (operator) {
+    case '=':
+        return leftValue === rightValue
+    case '!=':
+        return leftValue !== rightValue
+    case '<':
+        return leftValue < rightValue
+    case '>':
+        return leftValue > rightValue
+    case '<=':
+        return leftValue <= rightValue
+    case '>=':
+        return leftValue >= rightValue
+    default:
+        throw new Error('Unknown operator: ' + operator)
+    }
+}
 
 export default {
     check({ rule, value }) {
@@ -16,20 +37,9 @@ export default {
         const ruleValue = compile(rule, item => Number(item))
 
         return values.some(v => {
-            switch (rule.operator) {
-            case '=':
-                return v === ruleValue
-            case '!=':
-                return v !== ruleValue
-            case '<':
-                return v < ruleValue
-            case '>':
-                return v > ruleValue
-            case '<=':
-                return v <= ruleValue
-            case '>=':
-                return v >= ruleValue
-            default:
+            try {
+                return numComp(v, rule.operator, ruleValue)
+            } catch (e) {
                 throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
             }
         })
@@ -47,9 +57,10 @@ export default {
         }
 
         const ruleValue = compile(rule, item => Number(item))
+        const type = inferClickHouseType(ruleValue)
 
         if (['=', '!=', '<', '<=', '>', '>=', 'any', 'none'].includes(rule.operator)) {
-            return whereQuery(path, rule.operator, ruleValue)
+            return whereQuery(path, rule.operator, ruleValue, type)
         }
 
         throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)

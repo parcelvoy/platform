@@ -122,7 +122,6 @@ function StepUsers({ entrance, stepId }: StepUsersProps) {
                     {
                         key: 'created_at',
                         title: t('step_date'),
-                        cell: ({ item }) => item.created_at,
                     },
                     {
                         key: 'delay_until',
@@ -139,12 +138,14 @@ function StepUsers({ entrance, stepId }: StepUsersProps) {
 function JourneyStepNode({
     id,
     data: {
+        stepId,
         type: typeName,
         name,
         data,
         data_key,
         stats,
         editing,
+        setViewUsersStep,
     } = {},
     selected,
 }: NodeProps) {
@@ -194,7 +195,11 @@ function JourneyStepNode({
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{name || t(type.name)}</h4>
-                    <div className="step-header-stats">
+                    <div className="step-header-stats"
+                        onClickCapture={stepId
+                            ? () => setViewUsersStep({ stepId, entrance: typeName === 'entrance' })
+                            : undefined
+                        }>
                         <span className="stat">
                             {(stats.completed ?? 0).toLocaleString()}
                             {statIcons.completed}
@@ -379,7 +384,7 @@ function createEdge({
     }
 }
 
-function stepsToNodes(stepMap: JourneyStepMap) {
+function stepsToNodes(stepMap: JourneyStepMap, actions: any) {
 
     const nodes: Node[] = []
     const edges: Edge[] = []
@@ -400,6 +405,7 @@ function stepsToNodes(stepMap: JourneyStepMap) {
                 stats,
                 stats_at,
                 stepId,
+                ...actions,
             },
         })
         children?.forEach(({ external_id, path, data }) => edges.push(createEdge({
@@ -495,7 +501,9 @@ export default function JourneyEditor() {
     const loadSteps = useCallback(async () => {
         const steps = await api.journeys.steps.get(project.id, journeyId)
 
-        const { edges, nodes } = stepsToNodes(steps)
+        const { edges, nodes } = stepsToNodes(steps, {
+            setViewUsersStep,
+        })
 
         setNodes(nodes)
         setEdges(edges)
@@ -507,6 +515,7 @@ export default function JourneyEditor() {
 
     const [saving, setSaving] = useState(false)
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+    const [viewUsersStep, setViewUsersStep] = useState<null | { stepId: number, entrance?: boolean }>(null)
 
     const blocker = useBlocker(
         ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
@@ -532,7 +541,9 @@ export default function JourneyEditor() {
         try {
             const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
 
-            const refreshed = stepsToNodes(stepMap)
+            const refreshed = stepsToNodes(stepMap, {
+                setViewUsersStep,
+            })
 
             setNodes(refreshed.nodes)
             setEdges(refreshed.edges)
@@ -607,8 +618,6 @@ export default function JourneyEditor() {
     const selected = nodes.filter(n => n.selected)
 
     const editNode = nodes.find(n => n.data.editing)
-
-    const [viewUsersStep, setViewUsersStep] = useState<null | { stepId: number, entrance?: boolean }>(null)
 
     const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => {
         setNodes(nds => nds.map(x => x.id === n.id

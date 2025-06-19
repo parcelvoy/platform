@@ -1,6 +1,6 @@
 import { TemplateEvent } from '../users/UserEvent'
 import { TemplateUser, User } from '../users/User'
-import Rule, { AnyJson, RuleTree, Operator, RuleGroup, RuleType } from './Rule'
+import { Rule, AnyJson, RuleTree, Operator, RuleGroup, RuleType, EventRuleFrequency, EventRuleTree } from './Rule'
 import NumberRule from './NumberRule'
 import StringRule from './StringRule'
 import BooleanRule from './BooleanRule'
@@ -65,6 +65,7 @@ ruleRegistry.register('wrapper', WrapperRule)
 export const check = (input: RuleCheckInput, rule: RuleTree | RuleTree[]) => {
     if (Array.isArray(rule)) {
         rule = make({
+            group: 'parent',
             type: 'wrapper',
             operator: 'and',
             children: rule,
@@ -102,9 +103,18 @@ interface RuleMake {
     operator?: Operator
     value?: AnyJson
     children?: RuleTree[]
+    frequency?: EventRuleFrequency
 }
 
-export const make = ({ type, group = 'user', path = '$', operator = '=', value, children }: RuleMake): RuleTree => {
+export const make = ({
+    type,
+    group = 'user',
+    path = '$',
+    operator = '=',
+    value,
+    children,
+    frequency,
+}: RuleMake): RuleTree | EventRuleTree => {
     const rule = {
         uuid: uuid(),
         type,
@@ -113,6 +123,7 @@ export const make = ({ type, group = 'user', path = '$', operator = '=', value, 
         operator,
         value,
         children,
+        frequency,
     }
 
     children?.forEach(child => {

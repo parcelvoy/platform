@@ -9,7 +9,7 @@ type TextInputValue = string | number | readonly string[] | undefined
 export interface BaseTextInputProps<T extends TextInputValue> extends Partial<ControlledInputProps<T>> {
     type?: 'text' | 'time' | 'date' | 'datetime-local' | 'number' | 'password'
     textarea?: boolean
-    size?: 'small' | 'regular'
+    size?: 'tiny' | 'small' | 'regular'
     value?: T
     name: string
     placeholder?: string
@@ -25,6 +25,7 @@ export interface BaseTextInputProps<T extends TextInputValue> extends Partial<Co
     maxLength?: number
     icon?: ReactNode
     suffix?: ReactNode
+    prefix?: ReactNode
 }
 
 export type TextInputProps<T extends TextInputValue> = BaseTextInputProps<T> & (
@@ -62,6 +63,7 @@ export default function TextInput<X extends TextInputValue>({
     inputRef,
     hideLabel = false,
     icon,
+    prefix,
     suffix,
 }: TextInputProps<X>) {
     return (
@@ -78,7 +80,15 @@ export default function TextInput<X extends TextInputValue>({
             <div className={clsx(
                 icon && 'ui-text-input-icon-wrapper',
                 suffix && 'ui-text-input-suffix-wrapper',
+                prefix && 'ui-text-input-prefix-wrapper',
             )}>
+                {
+                    prefix && (
+                        <div className={clsx('ui-text-input-prefix', size)}>
+                            {prefix}
+                        </div>
+                    )
+                }
                 {
                     textarea
                         ? (
@@ -125,7 +135,7 @@ export default function TextInput<X extends TextInputValue>({
                 }
                 {
                     suffix && (
-                        <div className="ui-text-input-suffix">
+                        <div className={clsx('ui-text-input-suffix', size)}>
                             {suffix}
                         </div>
                     )

@@ -3,7 +3,7 @@ import { getEntranceSubsequentSteps, getJourney, getJourneyStepMap, getJourneySt
 import { JourneyEntrance, JourneyStep, JourneyStepMap, JourneyUserStep } from './JourneyStep'
 import { UserEvent } from '../users/UserEvent'
 import App from '../app'
-import Rule, { RuleTree } from '../rules/Rule'
+import { Rule, RuleTree } from '../rules/Rule'
 import { check } from '../rules/RuleEngine'
 import JourneyProcessJob from './JourneyProcessJob'
 import Journey, { JourneyEntranceTriggerParams } from './Journey'

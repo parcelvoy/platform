@@ -1,7 +1,8 @@
 import jsonpath from 'jsonpath'
-import { AnyJson, Operator, RuleGroup, RuleTree } from './Rule'
+import { AnyJson, EventRulePeriod, EventRuleTree, Operator, RuleGroup, RuleTree } from './Rule'
 import { compileTemplate } from '../render'
 import { visit } from '../utilities'
+import { subSeconds } from 'date-fns'
 
 export const queryValue = <T>(
     value: Record<string, unknown>,
@@ -27,7 +28,7 @@ export const queryPath = (rule: RuleTree): string => {
 
 export const whereQuery = <T extends AnyJson | undefined>(path: string, operator: Operator, value: T, type?: string): string => {
 
-    if (type) path = `CAST(${path}, '${type}')`
+    if (type) path = `accurateCastOrNull(${path}, '${type}')`
     if (Array.isArray(value)) {
         const parts = value.map(formattedQueryValue).join(',')
 
@@ -75,20 +76,46 @@ export const reservedPaths: Record<RuleGroup, string[]> = {
     parent: [],
 }
 
-export const isEventWrapper = (rule: RuleTree) => {
+export const isEventWrapper = (rule: RuleTree): rule is EventRuleTree => {
     return rule.group === 'event'
         && (rule.path === '$.name' || rule.path === 'name')
 }
 
-export const getRuleEventNames = (rule: RuleTree) => {
-    const names: string[] = []
+export const dateFromPeriod = (period: EventRulePeriod): { start_date: Date, end_date?: Date } => {
+    if (period.type === 'fixed') {
+        return {
+            start_date: new Date(period.start_date),
+            end_date: period.end_date ? new Date(period.end_date) : undefined,
+        }
+    }
+
+    const intervals = {
+        minute: 60,
+        hour: 60 * 60,
+        day: 24 * 60 * 60,
+        week: 7 * 24 * 60 * 60,
+        month: 30 * 24 * 60 * 60,
+        year: 365 * 24 * 60 * 60,
+    }
+    return {
+        start_date: subSeconds(Date.now(), intervals[period.unit]),
+    }
+}
+
+export type RuleEventParam = { name: string, since?: Date }
+
+export const getRuleEventParams = (rule: RuleTree): RuleEventParam[] => {
+    const params: RuleEventParam[] = []
     visit(rule, r => r.children, r => {
         if (isEventWrapper(r)) {
             const name = r.value
-            if (typeof name === 'string' && !names.includes(name)) {
-                names.push(name)
+            if (typeof name === 'string') {
+                params.push({
+                    name,
+                    since: r.frequency ? dateFromPeriod(r.frequency?.period).start_date : undefined,
+                })
             }
         }
     })
-    return names
+    return params
 }

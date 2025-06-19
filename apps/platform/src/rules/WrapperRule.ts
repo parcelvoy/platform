@@ -1,6 +1,7 @@
-import { RuleTree } from './Rule'
-import { RuleCheck, RuleCheckParams, RuleEvalException } from './RuleEngine'
-import { isEventWrapper, whereQuery } from './RuleHelpers'
+import { numComp } from './NumberRule'
+import { EventRuleFrequency, EventRulePeriod, EventRuleTree, RuleTree } from './Rule'
+import { RuleCheck, RuleCheckParams, RuleEvalException, RuleQueryParams } from './RuleEngine'
+import { dateFromPeriod, isEventWrapper, whereQuery } from './RuleHelpers'
 
 const checkWrapper = ({ input, registry, rule, value }: RuleCheckParams) => {
 
@@ -16,27 +17,88 @@ const checkWrapper = ({ input, registry, rule, value }: RuleCheckParams) => {
         return rule.children.every(predicate)
     }
 
-    if (rule.operator === 'none') {
-        return !rule.children.some(predicate)
-    }
-
-    if (rule.operator === 'xor') {
-        return rule.children.filter(predicate).length === 1
-    }
-
     throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+}
+
+const periodQuery = (period: EventRulePeriod) => {
+    if (period.type === 'rolling') {
+        return `created_at >= now() - INTERVAL ${period.value} ${period.unit}`
+    } else if (period.type === 'fixed') {
+        const start = new Date(period.start_date)
+        if (!period.end_date) {
+            return `created_at >= '${start.toISOString()}'`
+        }
+        const end = new Date(period.end_date)
+        return `(created_at >= '${start.toISOString()}' AND created_at <= '${end.toISOString()}')`
+    }
+    return undefined
+}
+
+const frequencyQuery = (frequency?: EventRuleFrequency) => {
+    const count = frequency?.count ?? 1
+    const operator = frequency?.operator ?? '>='
+    return whereQuery('count()', operator, count)
+}
+
+const eventWrapperQuery = ({ rule, registry, projectId }: RuleQueryParams & { rule: EventRuleTree }) => {
+    const children = rule.children ?? []
+    const operator = rule.operator
+    if (operator !== 'and' && operator !== 'or') {
+        throw new RuleEvalException(rule, 'unknown operator: ' + rule.operator)
+    }
+
+    const filters = children
+        .map(child => registry
+            .get(child.type)
+            ?.query({ registry, rule: child, projectId }),
+        ).join(` ${operator} `)
+    const where = [
+        `project_id = ${projectId}`,
+        whereQuery('name', '=', rule.value),
+    ]
+    if (filters) where.push(`(${filters})`)
+    if (rule.frequency?.period) {
+        const query = periodQuery(rule.frequency.period)
+        if (query) where.push(query)
+    }
+
+    return `
+        SELECT user_id AS id 
+        FROM user_events 
+        WHERE ${where.join(' and ')}
+        GROUP BY project_id, user_id
+        HAVING ${frequencyQuery(rule.frequency)}`
 }
 
 export default {
     check(params) {
         if (isEventWrapper(params.rule)) {
             if (!params.rule.value) return false
-            return params.input.events.some(event => {
-                if (event.name !== params.rule.value) {
-                    return false
+            const { operator = '>=', count = 1, period } = params.rule.frequency ?? {}
+
+            let checkCount = 0
+            for (const event of params.input.events) {
+
+                // If names don't match, skip
+                if (event.name !== params.rule.value) continue
+
+                // If event is outside of the rule period, skip
+                if (period) {
+                    const { start_date } = dateFromPeriod(period)
+                    if (event.created_at < start_date) continue
                 }
-                return checkWrapper({ ...params, value: event })
-            })
+
+                // If wrapper evaluates as true, increment checkCount
+                if (checkWrapper({ ...params, value: event })) {
+                    checkCount++
+
+                    // Determine if we can bail early
+                    if (numComp(checkCount, operator, count)) {
+                        return true
+                    }
+                }
+            }
+            return numComp(checkCount, operator, count)
         }
         return checkWrapper(params)
     },
@@ -51,15 +113,7 @@ export default {
 
         const children = rule.children ?? []
         if (isEventWrapper(rule)) {
-            return `SELECT DISTINCT user_id AS id FROM user_events WHERE project_id = ${projectId} AND `
-                + [
-                    whereQuery('name', '=', rule.value),
-                    ...children
-                        .map(child => registry
-                            .get(child.type)
-                            ?.query({ registry, rule: child, projectId }),
-                        ),
-                ].join(` ${operator} `)
+            return eventWrapperQuery({ rule, registry, projectId })
         } else if (!children.length) {
             return baseQuery + ' WHERE project_id = ' + projectId
         }

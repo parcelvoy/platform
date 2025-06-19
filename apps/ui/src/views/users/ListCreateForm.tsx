@@ -6,8 +6,8 @@ import FormWrapper from '../../ui/form/FormWrapper'
 import RadioInput from '../../ui/form/RadioInput'
 import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
-import { createWrapperRule } from './RuleBuilder'
 import { useTranslation } from 'react-i18next'
+import { createWrapperRule } from './rules/RuleHelpers'
 
 interface ListCreateFormProps {
     onCreated?: (list: List) => void

@@ -98,6 +98,13 @@ input.small {
     width: auto;
 }
 
+input.tiny {
+    padding: 5px 7px;
+    font-size: 14px;
+    line-height: 20px;
+    width: 60px;
+}
+
 textarea {
     min-height: 100px;
 }

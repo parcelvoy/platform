@@ -28,22 +28,52 @@
     transform: translate(0, -50%);
 }
 
-.ui-text-input-suffix-wrapper {
+.ui-text-input-suffix-wrapper,
+.ui-text-input-prefix-wrapper {
     width: 100%;
     display: flex;
+}
+
+.ui-text-input-prefix-wrapper input,
+.ui-text-input-suffix-wrapper input {
+    width: auto;
+    flex-grow: 1;
 }
 
 .ui-text-input-suffix-wrapper input {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    width: auto;
-    flex-grow: 1;
+}
+
+.ui-text-input-prefix-wrapper input {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.ui-text-input-suffix,
+.ui-text-input-prefix {
+    border: 1px solid var(--color-grey);
+    padding: 12px 15px;
 }
 
 .ui-text-input-suffix {
-    border: 1px solid var(--color-grey);
     border-left-width: 0;
     border-top-right-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
-    padding: 12px 15px;
+}
+
+.ui-text-input-prefix {
+    border-right-width: 0;
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.ui-text-input-suffix.tiny,
+.ui-text-input-suffix.small,
+.ui-text-input-prefix.tiny,
+.ui-text-input-prefix.small {
+    padding: 5px 7px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
 }

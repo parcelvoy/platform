@@ -2,7 +2,7 @@ import App from '../app'
 import { acquireLock, releaseLock } from '../core/Lock'
 import { getProject } from '../projects/ProjectService'
 import Job from '../queue/Job'
-import Rule from '../rules/Rule'
+import { Rule } from '../rules/Rule'
 import { User } from '../users/User'
 import { UserEvent } from '../users/UserEvent'
 import { getUserEventsForRules } from '../users/UserRepository'
@@ -198,7 +198,7 @@ export class JourneyState {
         // TODO: Find a way to not have to pull in all events, better discern
         if (!this._events) {
             this._events = await getUserEventsForRules(
-                [this.user.id],
+                this.user.id,
                 this.steps.reduce<Rule[]>((a, c) => {
                     if (c instanceof JourneyGate) {
                         a.push(c.rule)

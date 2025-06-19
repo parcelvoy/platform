@@ -1,7 +1,11 @@
+import { subDays } from 'date-fns'
 import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
-import { createUser, getUserFromClientId, saveDevice } from '../../users/UserRepository'
+import { make } from '../../rules/RuleEngine'
+import { createUser, getUserEventsForRules, getUserFromClientId, saveDevice } from '../../users/UserRepository'
 import { uuid } from '../../utilities'
 import { User } from '../User'
+import { UserEvent } from '../UserEvent'
+import { createEvent } from '../UserEventRepository'
 
 describe('UserRepository', () => {
     describe('getUserFromClientId', () => {
@@ -96,6 +100,103 @@ describe('UserRepository', () => {
             expect(freshUser?.devices?.[0].device_id).toEqual(deviceId)
             expect(freshUser?.devices?.[0].token).toEqual(token)
             expect(freshUser?.devices?.[0].app_build).toEqual('2')
+        })
+    })
+
+    describe('getUserEventsForRules', () => {
+        test('returns user events for rules', async () => {
+            const project = await createTestProject()
+            const user = await createUser(project.id, {
+                external_id: uuid(),
+            })
+            await createEvent(user, {
+                name: 'event1',
+                data: { key: 'value1' },
+            })
+            await createEvent(user, {
+                name: 'event1',
+                data: { key: 'value2' },
+            })
+            await createEvent(user, {
+                name: 'event3',
+                data: { key: 'value3' },
+            })
+
+            const rules = [
+                make({
+                    group: 'event',
+                    path: 'name',
+                    value: 'event1',
+                    type: 'wrapper',
+                    operator: 'or',
+                    children: [
+                        make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
+                        make({ type: 'boolean', path: 'score.isRecord', value: true }),
+                    ],
+                    frequency: {
+                        period: {
+                            unit: 'day',
+                            value: 7,
+                            type: 'rolling',
+                        },
+                        count: 2,
+                        operator: '>=',
+                    },
+                }),
+            ]
+
+            const events = await getUserEventsForRules(user.id, rules)
+            expect(events).toHaveLength(2)
+            expect(events[0].name).toEqual('event1')
+        })
+
+        test('does not include events outside the date range', async () => {
+            const project = await createTestProject()
+            const user = await createUser(project.id, {
+                external_id: uuid(),
+            })
+            await UserEvent.insert({
+                name: 'event1',
+                data: { key: 'value1' },
+                created_at: subDays(new Date(), 10),
+                user_id: user.id,
+                project_id: project.id,
+            })
+            await createEvent(user, {
+                name: 'event1',
+                data: { key: 'value1' },
+            })
+            await createEvent(user, {
+                name: 'event2',
+                data: { key: 'value2' },
+            })
+
+            const rules = [
+                make({
+                    group: 'event',
+                    path: 'name',
+                    value: 'event1',
+                    type: 'wrapper',
+                    operator: 'or',
+                    children: [
+                        make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
+                        make({ type: 'boolean', path: 'score.isRecord', value: true }),
+                    ],
+                    frequency: {
+                        period: {
+                            unit: 'day',
+                            value: 7,
+                            type: 'rolling',
+                        },
+                        count: 2,
+                        operator: '>=',
+                    },
+                }),
+            ]
+
+            const events = await getUserEventsForRules(user.id, rules)
+            expect(events).toHaveLength(1)
+            expect(events[0].name).toEqual('event1')
         })
     })
 })

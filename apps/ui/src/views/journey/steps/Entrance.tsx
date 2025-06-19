@@ -1,8 +1,8 @@
-import { JourneyStepType, Rule } from '../../../types'
+import { JourneyStepType, Rule, WrapperRule } from '../../../types'
 import { EntranceStepIcon } from '../../../ui/icons'
 import RadioInput from '../../../ui/form/RadioInput'
 import TextInput from '../../../ui/form/TextInput'
-import RuleBuilder, { ruleDescription } from '../../users/RuleBuilder'
+import RuleBuilder from '../../users/rules/RuleBuilder'
 import { useCallback, useContext } from 'react'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SwitchField from '../../../ui/form/SwitchField'
@@ -15,6 +15,8 @@ import RRuleEditor from '../../../ui/RRuleEditor'
 import CodeExample from '../../../ui/CodeExample'
 import { env } from '../../../config/env'
 import { useTranslation, Trans } from 'react-i18next'
+import { isEventWrapper } from '../../users/rules/RuleHelpers'
+import { ruleDescription } from '../../users/rules/RuleDescriptions'
 
 interface EntranceConfig {
     trigger: 'none' | 'event' | 'schedule'
@@ -45,7 +47,7 @@ const triggerOptions = [
     },
 ]
 
-const wrapper: Rule = {
+const wrapper: WrapperRule = {
     uuid: createUuid(),
     type: 'wrapper',
     group: 'event',
@@ -135,7 +137,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     <strong>{event_name ?? ''}</strong>
                     {t('entrance_occurs')}
                     {
-                        !!rule?.children?.length && (
+                        rule && isEventWrapper(rule) && !!rule?.children?.length && (
                             <>
                                 {' '}
                                 {ruleDescription(preferences, rule)}

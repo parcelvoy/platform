@@ -60,12 +60,8 @@ export type Rule = {
     path: string
     operator: Operator
     value?: string
-    children?: Rule[]
 } & (
-    | {
-        type: 'wrapper'
-        children: Rule[]
-    }
+    | { type: 'wrapper' }
     | { type: 'string' }
     | { type: 'number' }
     | { type: 'boolean' }
@@ -73,7 +69,28 @@ export type Rule = {
     | { type: 'array' }
 )
 
-export type WrapperRule = Rule & { type: 'wrapper' }
+export type WrapperRule = Rule & { type: 'wrapper', children: Rule[] }
+
+export type EventRulePeriod = {
+    type: 'rolling'
+    unit: 'minute' | 'hour' | 'day' | 'week' | 'month'
+    value: number
+} | {
+    type: 'fixed'
+    start_date: string
+    end_date?: string
+}
+
+export interface EventRuleFrequency {
+    period: EventRulePeriod
+    operator: Operator
+    count: number | undefined
+}
+
+export type EventRule = {
+    group: 'event'
+    frequency?: EventRuleFrequency
+} & WrapperRule
 
 export interface RuleSuggestions {
     userPaths: string[]
