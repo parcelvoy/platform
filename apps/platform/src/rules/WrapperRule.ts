@@ -92,8 +92,9 @@ export default {
                 if (checkWrapper({ ...params, value: event })) {
                     checkCount++
 
-                    // Determine if we can bail early
-                    if (numComp(checkCount, operator, count)) {
+                    // Determine if we can bail early (only when checking
+                    // for a minimum count otherwise need to check all)
+                    if (numComp(checkCount, operator, count) && !['<', '<='].includes(operator)) {
                         return true
                     }
                 }
