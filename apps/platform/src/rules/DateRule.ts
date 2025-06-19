@@ -1,7 +1,7 @@
 import { isAfter, isBefore, isEqual } from 'date-fns'
 import { RuleCheck, RuleEvalException } from './RuleEngine'
 import { compile, queryPath, queryValue, whereQuery, whereQueryNullable } from './RuleHelpers'
-import Rule, { RuleTree } from './Rule'
+import { Rule, RuleTree } from './Rule'
 
 export const dateCompile = (rule: Rule | RuleTree) => compile(rule, item => {
     if (typeof item === 'string' || typeof item === 'number') {
