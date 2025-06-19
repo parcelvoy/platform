@@ -6,7 +6,17 @@ import { EventRule } from '../../../types'
 import TextInput from '../../../ui/form/TextInput'
 import { frequencyOperators, operatorTypes, periodUnits } from './RuleHelpers'
 
-export default function EventRuleEdit({ rule, setRule }: { rule: EventRule, setRule: (rule: EventRule) => void }) {
+interface EventRuleEditProps {
+    rule: EventRule
+    eventName?: string
+    setRule: (rule: EventRule) => void
+}
+
+export default function EventRuleEdit({
+    rule,
+    setRule,
+    eventName,
+}: EventRuleEditProps) {
     const { t } = useTranslation()
 
     const frequency = rule.frequency ?? {
@@ -38,6 +48,25 @@ export default function EventRuleEdit({ rule, setRule }: { rule: EventRule, setR
             ...rule,
             frequency,
         })
+    }
+
+    if (eventName) {
+        if (rule.children?.length) {
+            return <>
+                {t('rule_matching')}
+                <SingleSelect
+                    value={rule.operator}
+                    onChange={operator => setRule({ ...rule, operator })}
+                    options={operatorTypes.wrapper}
+                    required
+                    hideLabel
+                    size="small"
+                    toValue={x => x.key}
+                />
+                {t('rule_of_the_following')}
+            </>
+        }
+        return <></>
     }
 
     return <>

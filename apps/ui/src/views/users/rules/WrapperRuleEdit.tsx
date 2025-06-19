@@ -4,7 +4,7 @@ import { SingleSelect } from '../../../ui/form/SingleSelect'
 import { PlusIcon, TrashIcon } from '../../../ui/icons'
 import { createUuid } from '../../../utils'
 import EventRuleEdit from './EventRuleEdit'
-import { isEventWrapper, operatorTypes, RuleEditProps } from './RuleHelpers'
+import { createEventRule, isEventWrapper, operatorTypes, RuleEditProps } from './RuleHelpers'
 import { EventRule, WrapperRule } from '../../../types'
 import RuleEdit from './RuleEdit'
 
@@ -14,31 +14,13 @@ export default function WrapperRuleEdit({
     setRule,
     controls,
     depth = 0,
+    eventName = '',
 }: RuleEditProps<WrapperRule>) {
     const { t } = useTranslation()
 
     const handleAddEventWrapper = () => {
         const children = rule.children ?? []
-        const newRule: EventRule = {
-            uuid: createUuid(),
-            root_uuid: root.uuid,
-            parent_uuid: rule.uuid,
-            path: '$.name',
-            type: 'wrapper',
-            group: 'event',
-            value: '',
-            operator: 'and',
-            children: [],
-            frequency: {
-                period: {
-                    type: 'rolling',
-                    unit: 'day',
-                    value: 30,
-                },
-                operator: '>=',
-                count: 1,
-            },
-        }
+        const newRule: EventRule = createEventRule(rule)
         setRule({
             ...rule,
             children: [
@@ -53,7 +35,10 @@ export default function WrapperRuleEdit({
             <div className="rule-set-header">
                 {isEventWrapper(rule)
                     ? (
-                        <EventRuleEdit rule={rule} setRule={setRule} />
+                        <EventRuleEdit
+                            rule={rule}
+                            setRule={setRule}
+                            eventName={eventName} />
                     )
                     : (
                         <>

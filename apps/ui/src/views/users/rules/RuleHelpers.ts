@@ -27,26 +27,34 @@ export const createWrapperRule = (): WrapperRule => ({
     children: [],
 })
 
-export const createEventRule = (parent: Rule): EventRule => ({
-    uuid: createUuid(),
-    root_uuid: parent.root_uuid,
-    parent_uuid: parent.parent_uuid,
-    path: '$.name',
-    type: 'wrapper',
-    group: 'event',
-    value: '',
-    operator: 'and',
-    children: [],
-    frequency: {
-        period: {
-            type: 'rolling',
-            unit: 'day',
-            value: 30,
+export const createEventRule = (parent?: Rule): EventRule => {
+    const base: EventRule = {
+        uuid: createUuid(),
+        path: '$.name',
+        type: 'wrapper',
+        group: 'event',
+        value: '',
+        operator: 'and',
+        children: [],
+        frequency: {
+            period: {
+                type: 'rolling',
+                unit: 'day',
+                value: 30,
+            },
+            operator: '>=',
+            count: 1,
         },
-        operator: '>=',
-        count: 1,
-    },
-})
+    }
+    if (parent) {
+        return {
+            ...base,
+            root_uuid: parent.root_uuid ?? parent.uuid,
+            parent_uuid: parent.uuid,
+        }
+    }
+    return base
+}
 
 export const emptySuggestions = {
     userPaths: [],

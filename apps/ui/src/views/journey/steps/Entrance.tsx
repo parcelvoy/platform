@@ -1,4 +1,4 @@
-import { JourneyStepType, Rule, WrapperRule } from '../../../types'
+import { JourneyStepType, Rule } from '../../../types'
 import { EntranceStepIcon } from '../../../ui/icons'
 import RadioInput from '../../../ui/form/RadioInput'
 import TextInput from '../../../ui/form/TextInput'
@@ -6,7 +6,6 @@ import RuleBuilder from '../../users/rules/RuleBuilder'
 import { useCallback, useContext } from 'react'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import SwitchField from '../../../ui/form/SwitchField'
-import { createUuid } from '../../../utils'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import api from '../../../api'
 import { RRule } from 'rrule'
@@ -15,7 +14,7 @@ import RRuleEditor from '../../../ui/RRuleEditor'
 import CodeExample from '../../../ui/CodeExample'
 import { env } from '../../../config/env'
 import { useTranslation, Trans } from 'react-i18next'
-import { isEventWrapper } from '../../users/rules/RuleHelpers'
+import { createEventRule, isEventWrapper } from '../../users/rules/RuleHelpers'
 import { ruleDescription } from '../../users/rules/RuleDescriptions'
 
 interface EntranceConfig {
@@ -46,15 +45,6 @@ const triggerOptions = [
         label: 'Schedule',
     },
 ]
-
-const wrapper: WrapperRule = {
-    uuid: createUuid(),
-    type: 'wrapper',
-    group: 'event',
-    path: '$.name',
-    operator: 'and',
-    children: [],
-}
 
 const codeExample = (journeyId: number, entranceId: number) => `curl --request POST \\
 --url '${env.api.baseURL}/client/journeys/${journeyId}/trigger' \\
@@ -173,13 +163,26 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                                 label={t('event_name')}
                                 required
                                 value={value.event_name ?? ''}
-                                onChange={event_name => onChange({ ...value, event_name })}
+                                onChange={event_name => onChange({
+                                    ...value,
+                                    event_name,
+                                    rule: {
+                                        ...value.rule ?? createEventRule(),
+                                        value: event_name,
+                                    },
+                                })}
                             />
                             {
                                 value.event_name && (
                                     <RuleBuilder
-                                        rule={value.rule ?? wrapper}
-                                        setRule={rule => onChange({ ...value, rule })}
+                                        rule={value.rule ?? createEventRule()}
+                                        setRule={rule => onChange({
+                                            ...value,
+                                            rule: {
+                                                ...rule,
+                                                value: value.event_name,
+                                            },
+                                        })}
                                         eventName={value.event_name}
                                         headerPrefix={t('entrance_matching')}
                                     />
