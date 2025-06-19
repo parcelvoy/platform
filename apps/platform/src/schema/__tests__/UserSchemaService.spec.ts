@@ -82,7 +82,7 @@ describe('UserSchemaService', () => {
                 },
             })
 
-            await UserEvent.insert({
+            await UserEvent.clickhouse().insert({
                 project_id,
                 user_id,
                 name: 'ate',
@@ -91,7 +91,7 @@ describe('UserSchemaService', () => {
                 },
             })
 
-            await UserEvent.insert({
+            await UserEvent.clickhouse().insert({
                 project_id,
                 user_id,
                 name: 'drive',
@@ -135,7 +135,7 @@ describe('UserSchemaService', () => {
                 },
             })
 
-            await UserEvent.insert({
+            await UserEvent.clickhouse().insert({
                 project_id,
                 user_id,
                 name: 'test',

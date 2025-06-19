@@ -50,11 +50,14 @@ exports.up = async function(knex) {
                 uuid UUID,
                 created_at DateTime64(3, 'UTC'),
                 data JSON,
-                INDEX user_id_idx user_id TYPE set(1000) GRANULARITY 1
+                PROJECTION user_lookup_proj
+                (
+                    SELECT *
+                    ORDER BY (project_id, user_id, created_at)
+                )
             )
             ENGINE MergeTree()
-            PRIMARY KEY (project_id, name, user_id)
-            ORDER BY (project_id, name, user_id, created_at)
+            ORDER BY (project_id, name, created_at)
             ${isTest ? '' : 'PARTITION BY project_id'}
             SETTINGS enable_json_type = 1
         `,

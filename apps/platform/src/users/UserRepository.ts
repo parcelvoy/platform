@@ -171,7 +171,7 @@ export const deleteUser = async (projectId: number, externalId: string): Promise
     })
 
     // Delete the user events from ClickHouse
-    await UserEvent.delete('project_id = {projectId: UInt32} AND user_id = {userId: UInt32}', {
+    await UserEvent.clickhouse().delete('project_id = {projectId: UInt32} AND user_id = {userId: UInt32}', {
         projectId,
         userId: user.id,
     })
@@ -179,6 +179,11 @@ export const deleteUser = async (projectId: number, externalId: string): Promise
     // Delete the user from the database
     await User.delete(qb => qb.where('project_id', projectId)
         .where('id', user.id),
+    )
+
+    // Delete the user events from the database
+    await UserEvent.delete(qb => qb.where('project_id', projectId)
+        .where('user_id', user.id),
     )
 }
 
@@ -247,7 +252,7 @@ export const getUserEventsForRules = async (
         return a
     }, []).filter((o, i, a) => a.indexOf(o) === i)
     if (!names.length) return []
-    return UserEvent.all(
+    return UserEvent.clickhouse().all(
         `
         SELECT * FROM user_events 
             WHERE user_id IN ({userIds: Array(UInt32)}) 

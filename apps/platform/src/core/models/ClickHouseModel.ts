@@ -57,6 +57,31 @@ export const clickhouseDelete = async <T extends typeof RawModel>(
     })
 }
 
+export const clickhouseSearch = async <T extends typeof RawModel>(
+    model: T,
+    query: string,
+    params: PageParams,
+    clickhouse = App.main.clickhouse,
+) => {
+    const limit = params.limit ?? 25
+    const offset = parseInt(params.cursor ?? '0') ?? 0
+    const result = await clickhouse.query({
+        query: `${query} LIMIT {limit: UInt32} OFFSET {offset: UInt32}`,
+        query_params: {
+            limit,
+            offset,
+        },
+        format: 'JSONEachRow',
+    })
+    const results = await result.json()
+    return {
+        results: results.map((item: any) => model.fromJson(item)),
+        limit,
+        prevCursor: offset > 0 ? `${Math.max(0, offset - limit)}` : undefined,
+        nextCursor: results.length < limit ? undefined : `${offset + limit}`,
+    }
+}
+
 export class ClickHouseModel extends RawModel {
 
     static async insert<T extends typeof RawModel>(
@@ -111,23 +136,7 @@ export class ClickHouseModel extends RawModel {
         params: PageParams,
         clickhouse = App.main.clickhouse,
     ) {
-        const limit = params.limit ?? 25
-        const offset = parseInt(params.cursor ?? '0') ?? 0
-        const result = await clickhouse.query({
-            query: `${query} LIMIT {limit: UInt32} OFFSET {offset: UInt32}`,
-            query_params: {
-                limit,
-                offset,
-            },
-            format: 'JSONEachRow',
-        })
-        const results = await result.json()
-        return {
-            results: results.map((item: any) => this.fromJson(item)),
-            limit,
-            prevCursor: offset > 0 ? `${Math.max(0, offset - limit)}` : undefined,
-            nextCursor: results.length < limit ? undefined : `${offset + limit}`,
-        }
+        return clickhouseSearch(this, query, params, clickhouse)
     }
 
     static async exists<T extends typeof RawModel>(

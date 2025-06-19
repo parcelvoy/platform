@@ -114,7 +114,7 @@ describe('ListService', () => {
                 }
 
                 // create events
-                await UserEvent.insert(events)
+                await UserEvent.clickhouse().insert(events)
             }
 
             const userCount = await User.count(q => q.where('project_id', project.id))

@@ -23,3 +23,56 @@ export default (config: ClickhouseConfig) => {
         },
     })
 }
+
+export const inferClickHouseType = (value: any): string => {
+    if (value === null || value === undefined) {
+        return 'Nullable(String)'
+    }
+
+    const type = typeof value
+
+    if (type === 'string') {
+        return 'String'
+    }
+
+    if (type === 'boolean') {
+        return 'UInt8' // Booleans often stored as 0/1 in ClickHouse
+    }
+
+    if (type === 'number') {
+        if (Number.isInteger(value)) {
+            if (value >= 0) {
+                if (value <= 255) return 'UInt8'
+                if (value <= 65535) return 'UInt16'
+                if (value <= 4294967295) return 'UInt32'
+                return 'UInt64'
+            } else {
+                if (value >= -128 && value <= 127) return 'Int8'
+                if (value >= -32768 && value <= 32767) return 'Int16'
+                if (value >= -2147483648 && value <= 2147483647) return 'Int32'
+                return 'Int64'
+            }
+        } else {
+            return 'Float64' // ClickHouse supports Float32/64, but Float64 is safer for JS precision
+        }
+    }
+
+    if (type === 'bigint') {
+        return value >= 0n ? 'UInt64' : 'Int64'
+    }
+
+    if (Array.isArray(value)) {
+        const elementTypes = new Set(value.map(inferClickHouseType))
+        if (elementTypes.size === 1) {
+            return `Array(${[...elementTypes][0]})`
+        } else {
+            return 'Array(String)' // fallback for mixed types
+        }
+    }
+
+    if (type === 'object') {
+        return 'JSON'
+    }
+
+    return 'String' // Fallback for unhandled cases
+}

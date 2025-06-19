@@ -3,7 +3,6 @@ import { PageParams } from '../core/searchParams'
 import { loadAnalytics } from '../providers/analytics'
 import { User } from '../users/User'
 import { UserEvent, UserEventParams } from './UserEvent'
-import App from '../app'
 
 export const createEvent = async (
     user: User,
@@ -19,12 +18,12 @@ export const createEvent = async (
         uuid: randomUUID(),
         created_at: new Date(),
     }
-    await UserEvent.insert(eventData)
+    await UserEvent.clickhouse().insert(eventData)
 
     // TODO: Remove, temporary during transition to new event system
-    await App.main.db('user_events').insert({
+    await UserEvent.insert({
         name,
-        data: JSON.stringify(data),
+        data,
         project_id: user.project_id,
         user_id: user.id,
         created_at: new Date(),
@@ -46,7 +45,7 @@ export const createEvent = async (
 
 export const getUserEvents = async (id: number, params: PageParams, projectId: number) => {
     const searchClause = params.q ? ` AND \`name\` LIKE '%${params.q}%' ` : ''
-    return await UserEvent.search(
+    return await UserEvent.clickhouse().search(
         `
         SELECT * FROM user_events 
         WHERE project_id = ${projectId}

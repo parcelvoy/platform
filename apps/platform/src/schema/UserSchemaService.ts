@@ -83,7 +83,7 @@ export async function syncUserDataPaths({
             userPaths.add(joinPath('$', path))
         }
 
-        const eventQuery = await UserEvent.query(`SELECT name, data FROM user_events WHERE project_id = {projectId: UInt32} ${updatedAfter ? 'AND created_at >= {updatedAfter: DateTime64(3, \'UTC\')}' : ''}`, {
+        const eventQuery = await UserEvent.clickhouse().query(`SELECT name, data FROM user_events WHERE project_id = {projectId: UInt32} ${updatedAfter ? 'AND created_at >= {updatedAfter: DateTime64(3, \'UTC\')}' : ''}`, {
             projectId: project_id,
             updatedAfter,
         })

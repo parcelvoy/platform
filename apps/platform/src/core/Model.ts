@@ -1,7 +1,7 @@
 import App from '../app'
 import { Database } from '../config/database'
 import { SQLModel } from './models/SQLModel'
-import { clickhouseAll, clickhouseDelete, clickhouseInsert, clickhouseQuery } from './models/ClickHouseModel'
+import { clickhouseAll, clickhouseDelete, clickhouseInsert, clickhouseQuery, clickhouseSearch } from './models/ClickHouseModel'
 
 export interface SearchResult<T> {
     results: T[]
@@ -101,6 +101,14 @@ export class UniversalModel extends Model {
                 clickhouse = App.main.clickhouse,
             ) {
                 return clickhouseDelete(this, where, params, clickhouse)
+            }.bind(this),
+            search: async function(
+                this: T,
+                query: string,
+                params: any = {},
+                clickhouse = App.main.clickhouse,
+            ): Promise<SearchResult<InstanceType<T>>> {
+                return clickhouseSearch(this, query, params, clickhouse)
             }.bind(this),
         }
     }
