@@ -5,12 +5,14 @@ import './Preview.css'
 import { ReactNode, useContext } from 'react'
 import { ProjectContext } from '../contexts'
 import JsonPreview from './JsonPreview'
+import clsx from 'clsx'
 
 interface PreviewProps {
     template: Pick<Template, 'type' | 'data'>
+    size?: 'small' | 'large'
 }
 
-export default function Preview({ template }: PreviewProps) {
+export default function Preview({ template, size = 'large' }: PreviewProps) {
     const [project] = useContext(ProjectContext)
     const { data, type } = template
 
@@ -26,7 +28,7 @@ export default function Preview({ template }: PreviewProps) {
                         </div>
                     )
                 }
-                <Iframe content={data.html ?? ''} />
+                <Iframe content={data.html ?? ''} allowScroll={size !== 'small'} />
             </div>
         )
     } else if (type === 'text') {
@@ -63,7 +65,7 @@ export default function Preview({ template }: PreviewProps) {
     }
 
     return (
-        <section className="preview">
+        <section className={clsx('preview', size)}>
             {preview}
         </section>
     )

@@ -53,7 +53,7 @@ export default function UserDetailEvents() {
                             <JsonPreview value={{ name: event.name, ...event.data, created_at: event.created_at }} />
                         </Column>
                         <Column>
-                            {event.name === 'email_sent' && event.data?.result?.message?.html && <Iframe content={event.data.result.message.html ?? ''} fullHeight={true} /> }
+                            {event.name === 'email_sent' && event.data?.result?.message?.html && <Iframe content={event.data.result.message.html ?? ''} fullHeight={true} width="100%" /> }
                         </Column>
                     </Columns>
                 </Modal>

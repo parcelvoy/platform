@@ -574,6 +574,7 @@ export default function JourneyEditor() {
     }
 
     const publishJourney = async () => {
+        if (!confirm(t('journey_publish_confirmation'))) return
         setSaving(true)
         try {
             await api.journeys.publish(project.id, journey.id)

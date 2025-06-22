@@ -286,6 +286,7 @@
     background: var(--color-background-soft);
     border-radius: var(--border-radius-inner);
     padding: 5px 10px;
+    cursor: pointer;
 }
 
 .journey-step-header .step-header-stats:hover .stat {

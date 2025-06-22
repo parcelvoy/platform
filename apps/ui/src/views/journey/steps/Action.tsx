@@ -1,16 +1,15 @@
 import { useCallback, useState } from 'react'
-import api, { apiUrl } from '../../../api'
+import api from '../../../api'
 import { Campaign, JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { ActionStepIcon } from '../../../ui/icons'
 import { CampaignForm } from '../../campaign/CampaignForm'
 import { useResolver } from '../../../hooks'
-import PreviewImage from '../../../ui/PreviewImage'
 import { useTranslation } from 'react-i18next'
 import { ChannelIcon } from '../../campaign/ChannelTag'
 import Preview from '../../../ui/Preview'
 import { SingleSelect } from '../../../ui/form/SingleSelect'
-import { Heading } from '../../../ui'
+import { Heading, LinkButton } from '../../../ui'
 import { locales } from '../../campaign/CampaignDetail'
 
 interface ActionConfig {
@@ -27,12 +26,21 @@ const JourneyTemplatePreview = ({ campaign }: { campaign: Campaign }) => {
             title={t('preview')}
             size="h4"
             actions={
-                <SingleSelect
-                    options={allLocales}
-                    size="small"
-                    value={locale}
-                    onChange={(locale) => setLocale(locale)}
-                />
+                <>
+                    <SingleSelect
+                        options={allLocales}
+                        size="small"
+                        value={locale}
+                        onChange={(locale) => setLocale(locale)}
+                    />
+                    <LinkButton
+                        to={`/projects/${campaign.project_id}/campaigns/${campaign.id}`}
+                        size="small"
+                        target="_blank"
+                    >
+                        {t('edit_campaign')}
+                    </LinkButton>
+                </>
             }
         />
         {template && <Preview template={template} />}
@@ -50,7 +58,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
             campaign_id,
         },
     }) {
-
+        const { t } = useTranslation()
         const [campaign] = useResolver(useCallback(async () => {
             if (campaign_id) {
                 return await api.campaigns.get(projectId, campaign_id)
@@ -68,23 +76,9 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                 </div>
                 <div className="journey-step-action-preview">
                     { campaign
-                        ? (
-                            campaign.channel !== 'webhook'
-                                ? (
-                                    <PreviewImage
-                                        url={apiUrl(projectId, `campaigns/${campaign.id}/preview`)}
-                                        width={250}
-                                        height={200}
-                                    />
-                                )
-                                : (
-                                    <div className="placeholder">
-                                        <ChannelIcon channel={campaign.channel} />
-                                    </div>
-                                )
-                        )
+                        ? <Preview template={campaign.templates[0]} size="small" />
                         : (
-                            <div className="journey-step-action-preview-placeholder">Create campaign to preview</div>
+                            <div className="journey-step-action-preview-placeholder">{t('journey_campaign_create_preview')}</div>
                         )}
                 </div>
             </>
@@ -123,7 +117,6 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                             onSave={onCreated}
                         />
                     )}
-                    onEditLink={campaign => window.open(`/projects/${projectId}/campaigns/${campaign.id}`)}
                 />
 
                 {campaign && <JourneyTemplatePreview campaign={campaign} />}
