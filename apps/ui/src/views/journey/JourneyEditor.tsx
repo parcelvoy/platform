@@ -578,7 +578,7 @@ export default function JourneyEditor() {
         setSaving(true)
         try {
             await api.journeys.publish(project.id, journey.id)
-            window.location.href = `/projects/${project.id}/journeys/${journey.parent_id}`
+            window.location.href = `/projects/${project.id}/journeys/${journey.parent_id ?? journey.id}`
             toast.success(t('journey_published'))
         } finally {
             setSaving(false)
@@ -777,7 +777,7 @@ export default function JourneyEditor() {
                         <Tag
                             variant={journey.status === 'live' ? 'success' : 'plain'}
                             size="large">
-                            {journey.status === 'live' ? t('live') : t('draft')}
+                            {t(journey.status)}
                         </Tag>
                         <Button
                             variant="secondary"

@@ -43,10 +43,11 @@ export const createJourney = async (projectId: number, { tags, ...params }: Jour
 
         const journey = await Journey.insertAndFetch({
             ...params,
+            status: 'draft',
             project_id: projectId,
         }, trx)
 
-        // auto-create entrance step
+        // Auto-create entrance step
         await JourneyEntrance.create(journey.id, undefined, trx)
 
         if (tags?.length) {

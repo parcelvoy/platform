@@ -6,8 +6,8 @@ import { Journey } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import TextInput from '../../ui/form/TextInput'
 import { TagPicker } from '../settings/TagPicker'
-// import SwitchField from '../../ui/form/SwitchField'
 import { useTranslation } from 'react-i18next'
+import RadioInput from '../../ui/form/RadioInput'
 
 interface JourneyFormProps {
     journey?: Journey
@@ -17,6 +17,10 @@ interface JourneyFormProps {
 export function JourneyForm({ journey, onSaved }: JourneyFormProps) {
     const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
+    const statusOptions = [
+        { key: 'live', label: t('live') },
+        { key: 'off', label: t('off') },
+    ]
     return (
         <FormWrapper<Journey>
             onSubmit={async ({ id, name, description, status, tags }) => {
@@ -49,11 +53,14 @@ export function JourneyForm({ journey, onSaved }: JourneyFormProps) {
                             name="tags"
                             label={t('tags')}
                         />
-                        {/* <SwitchField
+                        {journey?.status}
+                        <RadioInput.Field
                             form={form}
-                            name="published"
-                            label={t('published')}
-                        /> */}
+                            name="status"
+                            label={t('status')}
+                            options={statusOptions}
+                            required
+                        />
                     </>
                 )
             }
