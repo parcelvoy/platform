@@ -13,35 +13,7 @@ import { rrulestr } from 'rrule'
 import { JourneyState } from './JourneyState'
 import { EventPostJob, UserPatchJob } from '../jobs'
 import { exitUserFromJourney, getJourneyUserStepByExternalId } from './JourneyRepository'
-
-export class JourneyUserStep extends Model {
-    user_id!: number
-    type!: string
-    journey_id!: number
-    step_id!: number
-    delay_until?: Date
-    entrance_id?: number
-    ended_at?: Date
-    data?: Record<string, unknown>
-    ref?: string
-
-    step?: JourneyStep
-
-    static tableName = 'journey_user_step'
-
-    static jsonAttributes = ['data']
-    static virtualAttributes = ['step']
-
-    static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
-        return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
-            const step = steps.find(s => s.id === step_id)
-            if (data && step && !a[step.dataKey]) {
-                a[step.dataKey] = data
-            }
-            return a
-        }, {})
-    }
-}
+import JourneyUserStep from './JourneyUserStep'
 
 export class JourneyStepChild extends Model {
 
@@ -423,7 +395,7 @@ export class JourneyLink extends JourneyStep {
                 .join('journeys', 'journey_id', '=', 'journeys.id')
                 .where('journeys.id', this.target_id)
                 .where('journeys.project_id', state.user.project_id)
-                .where('journeys.published', true)
+                .where('journeys.status', 'live')
                 .whereNull('journeys.deleted_at')
                 .where('type', 'entrance'),
             )

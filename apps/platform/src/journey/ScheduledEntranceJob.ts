@@ -1,5 +1,6 @@
 import { Job } from '../queue'
-import { JourneyEntrance, JourneyUserStep } from './JourneyStep'
+import { JourneyEntrance } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 import { chunk, Chunker, uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'

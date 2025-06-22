@@ -354,7 +354,6 @@ const edgeTypes: EdgeTypes = {
 }
 
 const DATA_FORMAT = 'application/parcelvoy-journey-step'
-
 const STEP_STYLE = 'smoothstep'
 
 interface CreateEdgeParams {
@@ -497,6 +496,8 @@ export default function JourneyEditor() {
     const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
     const journeyId = journey.id
+    const isDraft = journey.status === 'draft'
+    const draftId = journey.draft_id
 
     const loadSteps = useCallback(async () => {
         const steps = await api.journeys.steps.get(project.id, journeyId)
@@ -557,6 +558,32 @@ export default function JourneyEditor() {
         }
     }, [project, journey, nodes, edges])
 
+    const createDraft = async () => {
+        setSaving(true)
+        try {
+            const newDraft = await api.journeys.version(project.id, journey.id)
+            setJourney(newDraft)
+            editDraft(newDraft.id)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const editDraft = (id: number) => {
+        window.location.href = `/projects/${project.id}/journeys/${id}`
+    }
+
+    const publishJourney = async () => {
+        setSaving(true)
+        try {
+            await api.journeys.publish(project.id, journey.id)
+            window.location.href = `/projects/${project.id}/journeys/${journey.parent_id}`
+            toast.success(t('journey_published'))
+        } finally {
+            setSaving(false)
+        }
+    }
+
     const onConnect = useCallback(async (connection: Connection) => {
         const sourceNode = nodes.find(n => n.id === connection.source)
         const data = await getStepType(sourceNode?.data.type)?.newEdgeData?.() ?? {}
@@ -614,9 +641,7 @@ export default function JourneyEditor() {
     }, [setNodes, flowInstance, project, journey])
 
     const [editOpen, setEditOpen] = useState(false)
-
     const selected = nodes.filter(n => n.selected)
-
     const editNode = nodes.find(n => n.data.editing)
 
     const onNodeDoubleClick = useCallback<NodeMouseHandler>((_, n) => {
@@ -730,26 +755,52 @@ export default function JourneyEditor() {
             open={true}
             onClose={async () => { await navigate('../journeys') }}
             actions={
-                <>
-                    <Tag
-                        variant={journey.published ? 'success' : 'plain'}
-                        size="large">
-                        {journey.published ? t('published') : t('draft')}
-                    </Tag>
-                    <Button
-                        variant="secondary"
-                        onClick={() => setEditOpen(true)}
-                    >
-                        {t('edit_details')}
-                    </Button>
-                    <Button
-                        onClick={saveSteps}
-                        isLoading={saving}
-                        variant="primary"
-                    >
-                        {t('save')}
-                    </Button>
-                </>
+                isDraft
+                    ? <>
+                        <Button
+                            onClick={publishJourney}
+                            isLoading={saving}
+                            variant="secondary"
+                        >
+                            {t('publish')}
+                        </Button>
+                        <Button
+                            onClick={saveSteps}
+                            isLoading={saving}
+                            variant="primary"
+                        >
+                            {t('journey_draft_save')}
+                        </Button>
+                    </>
+                    : <>
+                        <Tag
+                            variant={journey.status === 'live' ? 'success' : 'plain'}
+                            size="large">
+                            {journey.status === 'live' ? t('live') : t('draft')}
+                        </Tag>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setEditOpen(true)}
+                        >
+                            {t('edit_details')}
+                        </Button>
+                        {draftId
+                            ? <Button
+                                onClick={() => editDraft(draftId)}
+                                isLoading={saving}
+                                variant="primary"
+                            >
+                                {t('journey_draft_edit')}
+                            </Button>
+                            : <Button
+                                onClick={createDraft}
+                                isLoading={saving}
+                                variant="primary"
+                            >
+                                {t('journey_draft_create')}
+                            </Button>
+                        }
+                    </>
             }
         >
             <div className={clsx('journey', editNode && 'editing')}>
@@ -770,7 +821,9 @@ export default function JourneyEditor() {
                                 setNodes(nds => nds.map(n => n.data.editing ? { ...n, data: { ...n.data, editing: false } } : n))
                             }
                         }}
-                        elementsSelectable
+                        elementsSelectable={isDraft}
+                        nodesDraggable={isDraft}
+                        nodesConnectable={isDraft}
                         onDragOver={onDragOver}
                         onDrop={onDrop}
                         panOnScroll
@@ -784,7 +837,7 @@ export default function JourneyEditor() {
                         {
                             !editNode && (
                                 <>
-                                    <Controls />
+                                    <Controls showInteractive={isDraft} />
                                     <MiniMap
                                         nodeClassName={({ data }: Node<JourneyStep>) => `journey-minimap ${getStepType(data.type)?.category ?? 'unknown'}`}
                                     />
@@ -814,7 +867,7 @@ export default function JourneyEditor() {
                         }
                     </ReactFlow>
                 </div>
-                <div className="journey-options">
+                {isDraft && <div className="journey-options">
                     {
                         stepEdit ?? (
                             <>
@@ -846,7 +899,7 @@ export default function JourneyEditor() {
                             </>
                         )
                     }
-                </div>
+                </div>}
             </div>
             <Modal
                 open={editOpen}

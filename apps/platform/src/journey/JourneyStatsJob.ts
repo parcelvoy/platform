@@ -1,6 +1,7 @@
 import { Job } from '../queue'
 import Journey from './Journey'
-import { JourneyStep, JourneyUserStep } from './JourneyStep'
+import { JourneyStep } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 
 interface JourneyStatsParams {
     journey_id: number

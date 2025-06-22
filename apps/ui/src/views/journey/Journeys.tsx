@@ -10,11 +10,12 @@ import { JourneyForm } from './JourneyForm'
 import { Menu, MenuItem, Tag } from '../../ui'
 import { ProjectContext } from '../../contexts'
 import { useTranslation } from 'react-i18next'
+import { Journey } from '../../types'
 
-export const JourneyTag = ({ published }: { published: boolean }) => {
+export const JourneyTag = ({ status }: Pick<Journey, 'status'>) => {
     const { t } = useTranslation()
-    const variant = published ? 'success' : 'plain'
-    const title = published ? t('published') : t('draft')
+    const variant = status === 'live' ? 'success' : 'plain'
+    const title = t(status)
     return <Tag variant={variant}>{title}</Tag>
 }
 
@@ -56,12 +57,7 @@ export default function Journeys() {
                     {
                         key: 'status',
                         title: t('status'),
-                        cell: ({ item }) => <JourneyTag published={item.published} />,
-                    },
-                    {
-                        key: 'usage',
-                        title: t('usage'),
-                        cell: ({ item }) => item.stats?.entrance.toLocaleString(),
+                        cell: ({ item }) => <JourneyTag status={item.status} />,
                     },
                     {
                         key: 'created_at',

@@ -274,11 +274,15 @@ export type DynamicList = List & { type: 'dynamic' }
 export type ListCreateParams = Pick<List, 'name' | 'rule' | 'type' | 'tags' | 'is_visible'>
 export type ListUpdateParams = Pick<List, 'name' | 'rule' | 'tags'> & { published?: boolean }
 
+type JourneyStatus = 'draft' | 'live' | 'off'
+
 export interface Journey {
     id: number
+    parent_id?: number
+    draft_id?: number
     name: string
     description?: string
-    published: boolean
+    status: JourneyStatus
     tags?: string[]
     created_at: string
     updated_at: string

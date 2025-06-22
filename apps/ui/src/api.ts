@@ -178,6 +178,12 @@ const api = {
         duplicate: async (projectId: number | string, journeyId: number | string) => await client
             .post<Campaign>(`${projectUrl(projectId)}/journeys/${journeyId}/duplicate`)
             .then(r => r.data),
+        version: async (projectId: number | string, journeyId: number | string) => await client
+            .post<Journey>(`${projectUrl(projectId)}/journeys/${journeyId}/version`)
+            .then(r => r.data),
+        publish: async (projectId: number | string, journeyId: number | string) => await client
+            .post<Journey>(`${projectUrl(projectId)}/journeys/${journeyId}/publish`)
+            .then(r => r.data),
         steps: {
             get: async (projectId: number | string, journeyId: number | string) => await client
                 .get<JourneyStepMap>(`/admin/projects/${projectId}/journeys/${journeyId}/steps`)

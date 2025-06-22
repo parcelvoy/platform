@@ -1,6 +1,7 @@
 import { User } from '../users/User'
 import { getEntranceSubsequentSteps, getJourney, getJourneyStepMap, getJourneySteps, setJourneyStepMap } from './JourneyRepository'
-import { JourneyEntrance, JourneyStep, JourneyStepMap, JourneyUserStep } from './JourneyStep'
+import { JourneyEntrance, JourneyStep, JourneyStepMap } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 import { UserEvent } from '../users/UserEvent'
 import App from '../app'
 import { Rule, RuleTree } from '../rules/Rule'
@@ -14,12 +15,17 @@ import { pick, uuid } from '../utilities'
 
 export const enterJourneysFromEvent = async (event: UserEvent, user?: User) => {
 
-    // look up all entrances in published journeys
+    // Look up all entrances in live journeys
     const entrances = await JourneyEntrance.all(q => q
         .join('journeys', 'journey_steps.journey_id', '=', 'journeys.id')
         .where('journeys.project_id', event.project_id)
-        .where('journeys.published', true)
+
+        // Exclude journeys that are not live or the root journey
+        .where('journeys.status', 'live')
+        .whereNull('journeys.parent_id')
         .whereNull('journeys.deleted_at')
+
+        // Filter down the step type to be an entrance
         .where('journey_steps.type', JourneyEntrance.type)
         .whereJsonPath('journey_steps.data', '$.trigger', '=', 'event')
         .whereJsonPath('journey_steps.data', '$.event_name', '=', event.name),
@@ -145,27 +151,36 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
     await JourneyProcessJob.from({ entrance_id }).queue()
 }
 
-export const duplicateJourney = async (journey: Journey) => {
+export const duplicateJourney = async (journey: Journey, asChild = false) => {
     const params: Partial<Journey> = pick(journey, ['project_id', 'name', 'description'])
-    params.name = `Copy of ${params.name}`
-    params.published = false
-    const newJourney = await Journey.insertAndFetch(params)
+    const newJourney = await Journey.insertAndFetch({
+        ...params,
+        name: asChild ? params.name : `Copy of ${params.name}`,
+        status: 'draft',
+        parent_id: asChild ? journey.parent_id ?? journey.id : undefined,
+    })
 
+    // If there is a parent record, the child steps must match
+    // UUIDs otherwise remap them for the separate duplicate journey
     const steps = await getJourneyStepMap(journey.id)
-    const newSteps: JourneyStepMap = {}
-    const stepKeys = Object.keys(steps)
-    const uuidMap = stepKeys.reduce((acc, curr) => {
-        acc[curr] = uuid()
-        return acc
-    }, {} as Record<string, string>)
-    for (const key of stepKeys) {
-        const step = steps[key]
-        newSteps[uuidMap[key]] = {
-            ...step,
-            children: step.children?.map(({ external_id, ...rest }) => ({ external_id: uuidMap[external_id], ...rest })),
+    if (asChild) {
+        await setJourneyStepMap(newJourney, steps)
+    } else {
+        const newSteps: JourneyStepMap = {}
+        const stepKeys = Object.keys(steps)
+        const uuidMap = stepKeys.reduce((acc, curr) => {
+            acc[curr] = uuid()
+            return acc
+        }, {} as Record<string, string>)
+        for (const key of stepKeys) {
+            const step = steps[key]
+            newSteps[uuidMap[key]] = {
+                ...step,
+                children: step.children?.map(({ external_id, ...rest }) => ({ external_id: uuidMap[external_id], ...rest })),
+            }
         }
+        await setJourneyStepMap(newJourney, newSteps)
     }
-    await setJourneyStepMap(newJourney, newSteps)
 
     return await getJourney(newJourney.id, journey.project_id)
 }

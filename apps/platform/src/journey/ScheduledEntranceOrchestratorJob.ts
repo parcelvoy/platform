@@ -10,11 +10,16 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
 
     static async handler() {
 
-        // look up all scheduler entrances
+        // Look up all scheduler entrances
         const entrances = await JourneyEntrance.all(q => q
             .join('journeys', 'journey_steps.journey_id', '=', 'journeys.id')
-            .where('journeys.published', true)
+
+            // Exclude journeys that are not live or the root journey
+            .where('journeys.status', 'live')
+            .whereNull('journeys.parent_id')
             .whereNull('journeys.deleted_at')
+
+            // Filter down the step type to be an entrance
             .where('journey_steps.type', JourneyEntrance.type)
             .whereJsonPath('journey_steps.data', '$.trigger', '=', 'schedule')
             .whereJsonPath('journey_steps.data', '$.multiple', '=', true)

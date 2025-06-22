@@ -1,7 +1,7 @@
 import { Job } from '../queue'
 import App from '../app'
 import { chunk } from '../utilities'
-import { JourneyUserStep } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 import Journey from './Journey'
 import JourneyProcessJob from './JourneyProcessJob'
 
@@ -9,15 +9,14 @@ interface JourneyDelayJobParams {
     journey_id: number
 }
 
-/**
- * A job to be run on a schedule to queue up all journeys that need
- * to be rechecked
- */
 export default class JourneyDelayJob extends Job {
     static $name = 'journey_delay_job'
 
     static async enqueueActive(app: App) {
-        const query = Journey.query(app.db).select('id').where('published', true)
+        const query = Journey.query(app.db)
+            .select('id')
+            .where('status', 'live')
+            .whereNull('deleted_at')
         await chunk<{ id: number }>(query, app.queue.batchSize, async journeys => {
             app.queue.enqueueBatch(journeys.map(({ id }) => JourneyDelayJob.from(id)))
         })

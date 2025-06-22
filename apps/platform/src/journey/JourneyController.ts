@@ -5,8 +5,9 @@ import { searchParamsSchema } from '../core/searchParams'
 import { JSONSchemaType, validate } from '../core/validate'
 import { extractQueryParams } from '../utilities'
 import Journey, { JourneyEntranceTriggerParams, JourneyParams } from './Journey'
-import { createJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep, archiveJourney, deleteJourney, exitUserFromJourney } from './JourneyRepository'
-import { JourneyStep, JourneyStepMapParams, JourneyUserStep, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import { createJourney, getJourneyStepMap, getJourney, pagedJourneys, setJourneyStepMap, updateJourney, pagedEntrancesByJourney, getEntranceLog, pagedUsersByStep, archiveJourney, deleteJourney, exitUserFromJourney, publishJourney } from './JourneyRepository'
+import { JourneyStep, JourneyStepMapParams, journeyStepTypes, toJourneyStepMap } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 import { User } from '../users/User'
 import { RequestError } from '../core/errors'
 import JourneyError from './JourneyError'
@@ -45,8 +46,9 @@ const journeyParams: JSONSchemaType<JourneyParams> = {
             },
             nullable: true,
         },
-        published: {
-            type: 'boolean',
+        status: {
+            type: 'string',
+            enum: ['off', 'draft', 'live'],
         },
     },
     additionalProperties: false,
@@ -173,6 +175,14 @@ router.put('/:journeyId/steps', async ctx => {
 
 router.post('/:journeyId/duplicate', async ctx => {
     ctx.body = await duplicateJourney(ctx.state.journey!)
+})
+
+router.post('/:journeyId/version', async ctx => {
+    ctx.body = await duplicateJourney(ctx.state.journey!, true)
+})
+
+router.post('/:journeyId/publish', async ctx => {
+    ctx.body = await publishJourney(ctx.state.journey!)
 })
 
 router.get('/:journeyId/entrances', async ctx => {

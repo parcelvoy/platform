@@ -8,7 +8,8 @@ import { UserEvent } from '../users/UserEvent'
 import { getUserEventsForRules } from '../users/UserRepository'
 import { shallowEqual } from '../utilities'
 import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
-import { JourneyGate, JourneyStep, JourneyStepChild, JourneyUserStep, journeyStepTypes } from './JourneyStep'
+import { JourneyGate, JourneyStep, JourneyStepChild, journeyStepTypes } from './JourneyStep'
+import JourneyUserStep from './JourneyUserStep'
 
 type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job | undefined>)
 

@@ -3,11 +3,17 @@ import { User } from '../users/User'
 import { setJourneyStepMap } from './JourneyRepository'
 import { JourneyStepMapParams } from './JourneyStep'
 
+type JourneyStatus = 'draft' | 'live' | 'off'
+type JourneyType = 'revision' | 'journey'
+
 export default class Journey extends Model {
     name!: string
     project_id!: number
+    parent_id?: number
+    draft_id?: number
     description?: string
-    published!: boolean
+    status!: JourneyStatus
+    type!: JourneyType
     deleted_at?: Date
     tags?: string[]
     stats?: Record<string, number>
@@ -19,14 +25,14 @@ export default class Journey extends Model {
         const journey = await this.insertAndFetch({
             project_id,
             name,
-            published: true,
+            status: 'live',
         })
         const { steps, children } = await setJourneyStepMap(journey, stepMap)
         return { journey, steps, children }
     }
 }
 
-export type JourneyParams = Omit<Journey, ModelParams | 'deleted_at' | 'stats' | 'stats_at'>
+export type JourneyParams = Omit<Journey, ModelParams | 'parent_id' | 'draft_id' | 'type' | 'deleted_at' | 'stats' | 'stats_at'>
 export type UpdateJourneyParams = Omit<JourneyParams, 'project_id'>
 
 export interface JourneyEntranceTriggerParams {
