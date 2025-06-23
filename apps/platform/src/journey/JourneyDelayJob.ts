@@ -15,7 +15,7 @@ export default class JourneyDelayJob extends Job {
     static async enqueueActive(app: App) {
         const query = Journey.query(app.db)
             .select('id')
-            .where('status', 'live')
+            .whereNot('status', 'off')
             .whereNull('deleted_at')
         await chunk<{ id: number }>(query, app.queue.batchSize, async journeys => {
             app.queue.enqueueBatch(journeys.map(({ id }) => JourneyDelayJob.from(id)))

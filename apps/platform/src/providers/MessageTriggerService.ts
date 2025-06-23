@@ -1,4 +1,4 @@
-import { JourneyUserStep } from '../journey/JourneyStep'
+import JourneyUserStep from '../journey/JourneyUserStep'
 import App from '../app'
 import Campaign from '../campaigns/Campaign'
 import { getCampaignSend, updateSendState } from '../campaigns/CampaignService'

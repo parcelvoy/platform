@@ -1,5 +1,6 @@
 import addMinutes from 'date-fns/addMinutes'
-import { JourneyDelay, JourneyUserStep } from '../JourneyStep'
+import { JourneyDelay } from '../JourneyStep'
+import JourneyUserStep from '../JourneyUserStep'
 import { setupTestJourney } from './helpers'
 import { JourneyState } from '../JourneyState'
 

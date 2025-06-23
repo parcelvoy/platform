@@ -1,6 +1,7 @@
 import Project from '../../projects/Project'
 import Journey from '../Journey'
-import { JourneyEntrance, JourneyUserStep } from '../JourneyStep'
+import { JourneyEntrance } from '../JourneyStep'
+import JourneyUserStep from '../JourneyUserStep'
 import { Frequency, RRule } from 'rrule'
 import { addDays } from 'date-fns'
 import { User } from '../../users/User'

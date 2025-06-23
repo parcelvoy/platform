@@ -94,6 +94,7 @@ export const deleteJourney = async (id: number, projectId: number): Promise<void
 
 export const archiveJourney = async (id: number, projectId: number): Promise<void> => {
     await Journey.archive(id, qb => qb.where('project_id', projectId), { status: 'off', deleted_at: new Date() })
+    await Journey.update(qb => qb.where('parent_id', id).where('project_id', projectId), { deleted_at: new Date() })
 }
 
 export const publishJourney = async (journey: Journey): Promise<void> => {
