@@ -105,20 +105,20 @@ export const loadUserStepDataMap = async (referenceId: number | string) => {
 
 export const triggerEntrance = async (journey: Journey, payload: JourneyEntranceTriggerParams) => {
 
-    // look up target entrance step
+    // Look up target entrance step
     const step = await JourneyStep.first(qb => qb
         .where('journey_id', journey.id)
         .where('id', payload.entrance_id))
 
-    // make sure target step is actually an entrance
+    // Make sure target step is actually an entrance
     if (!step || step.type !== JourneyEntrance.type) {
         throw new RequestError(JourneyError.JourneyStepDoesNotExist)
     }
 
-    // extract top-level vs custom properties user fields
+    // Extract top-level vs custom properties user fields
     const { external_id, email, phone, device_token, locale, timezone, ...data } = payload.user
 
-    // create the user synchronously if new
+    // Create the user synchronously if new
     const { user, event } = await EventPostJob.from({
         project_id: journey.project_id,
         event: {
@@ -136,7 +136,7 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
         },
     }).handle<{ user: User, event: UserEvent }>()
 
-    // create new entrance
+    // Create new entrance
     const entrance_id = await JourneyUserStep.insert({
         journey_id: journey.id,
         user_id: user.id,
@@ -147,7 +147,7 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
         },
     })
 
-    // trigger async processing
+    // Trigger async processing
     await JourneyProcessJob.from({ entrance_id }).queue()
 }
 

@@ -7,7 +7,7 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
-import ProcessJourneysJob from '../journey/ProcessJourneysJob'
+import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 import { acquireLock } from '../core/Lock'
 
@@ -36,7 +36,7 @@ export default (app: App) => {
             app.queue.enqueue(UserSchemaSyncJob.from({
                 delta: subHours(new Date(), 1),
             }))
-            app.queue.enqueue(ProcessJourneysJob.from())
+            app.queue.enqueue(UpdateJourneysJob.from())
             app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
     })

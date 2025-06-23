@@ -203,6 +203,11 @@ const api = {
                 .get<JourneyEntranceDetail>(`${projectUrl(projectId)}/journeys/entrances/${entranceId}`)
                 .then(r => r.data),
         },
+        users: {
+            trigger: async (projectId: number | string, journeyId: number | string, entranceId: number | string, user: User) => await client
+                .post<JourneyEntranceDetail>(`${projectUrl(projectId)}/journeys/${journeyId}/trigger`, { entrance_id: entranceId, user: { external_id: user.external_id } })
+                .then(r => r.data),
+        },
     },
 
     templates: {

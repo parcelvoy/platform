@@ -20,7 +20,7 @@ import UserAliasJob from '../users/UserAliasJob'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UserDeviceJob from '../users/UserDeviceJob'
 import JourneyStatsJob from '../journey/JourneyStatsJob'
-import ProcessJourneysJob from '../journey/ProcessJourneysJob'
+import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 import ScheduledEntranceJob from '../journey/ScheduledEntranceJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 import CampaignAbortJob from '../campaigns/CampaignAbortJob'
@@ -45,7 +45,7 @@ export const jobs = [
     ScheduledEntranceJob,
     ScheduledEntranceOrchestratorJob,
     TextJob,
-    ProcessJourneysJob,
+    UpdateJourneysJob,
     UserAliasJob,
     UserDeleteJob,
     UserDeviceJob,

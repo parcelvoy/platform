@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState, useEffect, useCallback } from 'react'
+import { useContext, useMemo, useState, useEffect } from 'react'
 import { CampaignContext, LocaleContext, ProjectContext } from '../../contexts'
 import './CampaignPreview.css'
 import api from '../../api'
@@ -11,59 +11,13 @@ import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import { Column, Columns } from '../../ui/Columns'
 import TextInput from '../../ui/form/TextInput'
-import ButtonGroup from '../../ui/ButtonGroup'
 import Modal, { ModalProps } from '../../ui/Modal'
-import { SearchTable, useSearchTableState } from '../../ui/SearchTable'
-import { ChannelType, TemplateProofParams, User } from '../../types'
+import { ChannelType, TemplateProofParams } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import SourceEditor from '../../ui/SourceEditor'
 import { useTranslation } from 'react-i18next'
 import { flattenUser } from '../../ui/utils'
-
-interface UserLookupProps extends Omit<ModalProps, 'title'> {
-    onSelected: (user: User) => void
-}
-
-const UserLookup = ({ open, onClose, onSelected }: UserLookupProps) => {
-    const [project] = useContext(ProjectContext)
-    const { t } = useTranslation()
-    const state = useSearchTableState(useCallback(async params => await api.users.search(project.id, params), [project]))
-    const [value, setValue] = useState<string>('')
-
-    return <Modal
-        title={t('user_lookup')}
-        open={open}
-        onClose={onClose}
-        size="regular">
-        <div className="user-lookup">
-            <ButtonGroup>
-                <TextInput<string>
-                    name="search"
-                    placeholder={(t('enter_email'))}
-                    hideLabel={true}
-                    value={value}
-                    onChange={setValue} />
-                <Button
-                    variant="secondary"
-                    onClick={() => state.setParams({
-                        ...state.params,
-                        q: value,
-                    })}>{t('search')}</Button>
-            </ButtonGroup>
-            <SearchTable
-                {...state}
-                columns={[
-                    { key: 'full_name', title: 'Name' },
-                    { key: 'email' },
-                    { key: 'phone' },
-                ]}
-                onSelectRow={(user) => {
-                    onSelected(user)
-                    onClose(false)
-                }} />
-        </div>
-    </Modal>
-}
+import { UserLookup } from '../users/UserLookup'
 
 interface SendProofProps extends Omit<ModalProps, 'title'> {
     type: ChannelType

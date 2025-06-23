@@ -168,6 +168,7 @@
     "journey_draft_create": "Create Draft",
     "journey_draft_edit": "Edit Draft",
     "journey_draft_save": "Save Draft",
+    "journey_add_user_to_entrance": "Add User to Entrance",
     "journey_campaign_create_preview": "Create campaign to preview",
     "journey_publish_confirmation": "Are you sure you want to publish this draft? It will immediately go live for all users.",
     "journey_saved": "Journey Saved!",

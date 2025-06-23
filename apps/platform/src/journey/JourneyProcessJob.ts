@@ -22,7 +22,7 @@ export default class JourneyProcessJob extends Job {
         // Make sure journey is still active
         const exists = await Journey.exists(
             qb => qb.where('id', entrance.journey_id)
-                .where('status', 'live')
+                .whereNot('status', 'off')
                 .whereNull('deleted_at'),
         )
         if (!exists) return

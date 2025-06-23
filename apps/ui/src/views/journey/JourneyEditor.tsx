@@ -30,7 +30,7 @@ import ReactFlow, {
     useReactFlow,
 } from 'reactflow'
 import { JourneyContext, ProjectContext } from '../../contexts'
-import { camelToTitle, createComparator, createUuid } from '../../utils'
+import { createComparator, createUuid } from '../../utils'
 import * as journeySteps from './steps/index'
 import clsx from 'clsx'
 import api from '../../api'
@@ -46,10 +46,8 @@ import { JourneyForm } from './JourneyForm'
 import { ActionStepIcon, CheckCircleIcon, CloseIcon, CopyIcon, DelayStepIcon, EntranceStepIcon, ForbiddenIcon, KeyIcon } from '../../ui/icons'
 import Tag from '../../ui/Tag'
 import TextInput from '../../ui/form/TextInput'
-import { SearchTable } from '../../ui'
-import { useSearchTableState } from '../../ui/SearchTable'
-import { typeVariants } from './EntranceDetails'
 import { useTranslation } from 'react-i18next'
+import { JourneyStepUsers } from './JourneyStepUsers'
 
 const getStepType = (type: string) => (type ? journeySteps[type as keyof typeof journeySteps] as JourneyStepType : null) ?? null
 
@@ -68,71 +66,6 @@ export const stepCategoryColors = {
     flow: 'green',
     delay: 'yellow',
     exit: 'red',
-}
-
-interface StepUsersProps {
-    stepId: number
-    entrance?: boolean
-}
-
-function StepUsers({ entrance, stepId }: StepUsersProps) {
-
-    const { t } = useTranslation()
-    const [{ id: projectId }] = useContext(ProjectContext)
-    const [{ id: journeyId }] = useContext(JourneyContext)
-
-    const state = useSearchTableState(useCallback(async params => await api.journeys.steps.searchUsers(projectId, journeyId, stepId, params), [projectId, journeyId, stepId]), {
-        limit: 10,
-    })
-
-    return (
-        <>
-            <SearchTable
-                {...state}
-                columns={[
-                    {
-                        key: 'name',
-                        title: t('name'),
-                        cell: ({ item }) => item.user!.full_name ?? '-',
-                    },
-                    {
-                        key: 'external_id',
-                        title: t('external_id'),
-                        cell: ({ item }) => item.user?.external_id ?? '-',
-                    },
-                    {
-                        key: 'email',
-                        title: t('email'),
-                        cell: ({ item }) => item.user?.email ?? '-',
-                    },
-                    {
-                        key: 'phone',
-                        title: t('phone'),
-                        cell: ({ item }) => item.user?.phone ?? '-',
-                    },
-                    {
-                        key: 'type',
-                        title: t('type'),
-                        cell: ({ item }) => (
-                            <Tag variant={typeVariants[item.type]}>
-                                {camelToTitle(item.type)}
-                            </Tag>
-                        ),
-                    },
-                    {
-                        key: 'created_at',
-                        title: t('step_date'),
-                    },
-                    {
-                        key: 'delay_until',
-                        title: t('delay_until'),
-                        cell: ({ item }) => item.delay_until,
-                    },
-                ]}
-                onSelectRow={entrance ? ({ id }) => window.open(`/projects/${projectId}/entrances/${id}`, '_blank') : undefined}
-            />
-        </>
-    )
 }
 
 function JourneyStepNode({
@@ -915,18 +848,12 @@ export default function JourneyEditor() {
                     }}
                 />
             </Modal>
-            <Modal
+            <JourneyStepUsers
                 open={!!viewUsersStep}
                 onClose={() => setViewUsersStep(null)}
-                title={t('users')}
-                size="large"
-            >
-                {
-                    viewUsersStep && (
-                        <StepUsers {...viewUsersStep} />
-                    )
-                }
-            </Modal>
+                entrance={viewUsersStep?.entrance ?? false}
+                stepId={viewUsersStep?.stepId ?? 0}
+            />
         </Modal>
     )
 }
