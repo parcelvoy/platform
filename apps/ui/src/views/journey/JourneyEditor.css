@@ -111,6 +111,16 @@
     color: var(--color-green-hard);
 }
 
+.component.info .component-handle {
+    background-color: var(--color-purple-soft);
+    color: var(--color-purple-hard);
+}
+
+.journey-step.info .step-header-icon {
+    background-color: var(--color-purple-hard);
+    color: var(--color-purple-soft);
+}
+
 .journey-minimap.entrance,
 .journey-minimap.exit {
     fill: var(--color-red-soft);
@@ -143,6 +153,14 @@
 
 .journey-minimap.flow.selected {
     fill: var(--color-green);
+}
+
+.journey-minimap.info {
+    fill: var(--color-purple-soft);
+}
+
+.journey-minimap.info.selected {
+    fill: var(--color-purple);
 }
 
 .journey .react-flow__minimap {
@@ -202,6 +220,23 @@
 
 .journey-step.delay.selected {
     border-color: var(--color-yellow-hard);
+}
+
+.journey-step.info {
+    background: var(--color-purple-soft);
+    border-color: var(--color-purple-soft);
+}
+
+.journey-step.info.selected {
+    border-color: var(--color-purple-hard);
+}
+
+.journey-step.info .journey-step-header {
+    border-bottom: none;
+}
+
+.journey-step.info .journey-step-body {
+    padding-top: 0;
 }
 
 .journey-step .data-key {
@@ -302,7 +337,7 @@
 }
 
 .journey-step-body {
-    padding: 20px;
+    padding: 15px;
 }
 
 .journey-step-body-name {

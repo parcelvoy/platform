@@ -38,7 +38,7 @@ export function JourneyStepUsers({ open, onClose, entrance, stepId }: StepUsersP
             title={t('users')}
             size="large"
             actions={
-                <Button
+                entrance && <Button
                     size="small"
                     variant="primary"
                     onClick={() => setIsUserLookupOpen(true)}
@@ -84,7 +84,6 @@ export function JourneyStepUsers({ open, onClose, entrance, stepId }: StepUsersP
                     {
                         key: 'delay_until',
                         title: t('delay_until'),
-                        cell: ({ item }) => item.delay_until,
                     },
                 ]}
                 onSelectRow={entrance ? ({ id }) => window.open(`/projects/${projectId}/entrances/${id}`, '_blank') : undefined}

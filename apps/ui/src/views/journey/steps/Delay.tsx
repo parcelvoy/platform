@@ -7,6 +7,8 @@ import { formatDate, formatDuration, snakeToTitle } from '../../../utils'
 import { PreferencesContext } from '../../../ui/PreferencesContext'
 import { parse, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
+import { MultiOptionField } from '../../../ui/form/MultiOptionField'
+import { FieldOption } from '../../../ui/form/Field'
 
 interface DelayStepConfig {
     format: 'duration' | 'time' | 'date'
@@ -15,7 +17,39 @@ interface DelayStepConfig {
     days: number
     time?: string
     date?: string
+    exclusion_days?: string[]
 }
+
+export const dayOptions: FieldOption[] = [
+    {
+        key: 0,
+        label: 'Sun',
+    },
+    {
+        key: 1,
+        label: 'Mon',
+    },
+    {
+        key: 2,
+        label: 'Tue',
+    },
+    {
+        key: 3,
+        label: 'Wed',
+    },
+    {
+        key: 4,
+        label: 'Thu',
+    },
+    {
+        key: 5,
+        label: 'Fri',
+    },
+    {
+        key: 6,
+        label: 'Sat',
+    },
+]
 
 export const delayStep: JourneyStepType<DelayStepConfig> = {
     name: 'delay',
@@ -101,14 +135,24 @@ export const delayStep: JourneyStepType<DelayStepConfig> = {
                     ))
                 }
                 { value.format === 'time'
-                    && <TextInput
-                        name="time"
-                        label={t('time')}
-                        type="time"
-                        subtitle={t('delay_time_desc')}
-                        value={value.time ?? ''}
-                        onChange={time => onChange({ ...value, time })}
-                    />
+                    && <div style={{ maxWidth: 400 }}>
+                        <TextInput
+                            name="time"
+                            label={t('time')}
+                            type="time"
+                            subtitle={t('delay_time_desc')}
+                            value={value.time ?? ''}
+                            onChange={time => onChange({ ...value, time })}
+                        />
+                        <MultiOptionField
+                            options={dayOptions}
+                            value={value.exclusion_days ?? []}
+                            onChange={days => onChange({ ...value, exclusion_days: days })}
+                            label={t('delay_exclusion_dates')}
+                            subtitle={t('delay_exclusion_dates_desc')}
+                            max={6}
+                        />
+                    </div>
                 }
                 { value.format === 'date'
                     && <TextInput

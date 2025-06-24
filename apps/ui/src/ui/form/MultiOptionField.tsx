@@ -4,6 +4,7 @@ import { FieldOption } from './Field'
 
 interface MultiOptionFieldProps extends ControlledInputProps<any[]> {
     options: FieldOption[]
+    max?: number
 }
 
 export function MultiOptionField({
@@ -14,7 +15,10 @@ export function MultiOptionField({
     subtitle,
     required,
     value,
+    max,
 }: MultiOptionFieldProps) {
+
+    const atLimit = max !== undefined && value.length >= max
 
     return (
         <div className="options-group">
@@ -34,6 +38,7 @@ export function MultiOptionField({
                     options.map(({ key, label }) => {
 
                         const selected = !!value?.includes(key)
+                        const isDisabled = disabled ?? (atLimit && !selected)
 
                         return (
                             <label
@@ -48,7 +53,7 @@ export function MultiOptionField({
                                         : value?.filter(v => v !== key) ?? [],
                                     )}
                                     style={{ display: 'none' }}
-                                    disabled={disabled}
+                                    disabled={isDisabled}
                                 />
                                 {label}
                             </label>

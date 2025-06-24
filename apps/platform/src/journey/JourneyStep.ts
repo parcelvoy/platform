@@ -1,4 +1,4 @@
-import { add, addDays, addHours, addMinutes, isEqual, isFuture, isPast, parse } from 'date-fns'
+import { add, addDays, addHours, addMinutes, getDay, isEqual, isFuture, isPast, parse } from 'date-fns'
 import Model from '../core/Model'
 import { getCampaign, getCampaignSend, triggerCampaignSend } from '../campaigns/CampaignService'
 import { crossTimezoneCopy, random, snakeCase, uuid } from '../utilities'
@@ -176,6 +176,7 @@ export class JourneyDelay extends JourneyStep {
     days = 0
     time?: string
     date?: string
+    exclusion_days?: number[] // 0 = Sunday, 6 = Saturday
 
     parseJson(json: any) {
         super.parseJson(json)
@@ -185,18 +186,19 @@ export class JourneyDelay extends JourneyStep {
         this.hours = json?.data?.hours
         this.days = json?.data?.days
         this.time = json?.data?.time
+        this.exclusion_days = json?.data?.exclusion_days
     }
 
     async process(state: JourneyState, userStep: JourneyUserStep) {
 
-        // if no delay has been set yet, calculate one
+        // If no delay has been set yet, calculate one
         if (!userStep.delay_until) {
             userStep.delay_until = await this.offset(state)
             userStep.type = 'delay'
             return
         }
 
-        // if delay has passed, change to completed
+        // If delay has passed, change to completed
         if (!isFuture(userStep.delay_until)) {
             userStep.type = 'completed'
         }
@@ -216,11 +218,15 @@ export class JourneyDelay extends JourneyStep {
                 minutes: this.minutes,
             })
         } else if (this.format === 'time' && time) {
-            const localDate = utcToZonedTime(baseDate, timezone)
+            let localDate = utcToZonedTime(baseDate, timezone)
             const parsedDate = parse(time, 'HH:mm', baseDate)
             localDate.setMinutes(parsedDate.getMinutes())
             localDate.setHours(parsedDate.getHours())
             localDate.setSeconds(0)
+
+            if (this.exclusion_days?.length) {
+                localDate = this.nextNotExcludedDay(localDate)
+            }
 
             const nextDate = zonedTimeToUtc(localDate, timezone)
 
@@ -242,6 +248,17 @@ export class JourneyDelay extends JourneyStep {
         }
 
         return baseDate
+    }
+
+    private nextNotExcludedDay(date: Date): Date {
+        for (let i = 0; i < 7; i++) {
+            if (this.exclusion_days?.includes(getDay(date))) {
+                date = addDays(date, 1)
+            } else {
+                return date
+            }
+        }
+        return date
     }
 }
 
@@ -333,7 +350,7 @@ export class JourneyGate extends JourneyStep {
 }
 
 /**
- * randomly distribute users to different branches
+ * Randomly distribute users to different branches
  */
 export class JourneyExperiment extends JourneyStep {
     static type = 'experiment'
@@ -361,7 +378,7 @@ export class JourneyExperiment extends JourneyStep {
 }
 
 /**
- * add user to another journey
+ * Add user to another journey
  */
 export class JourneyLink extends JourneyStep {
     static type = 'link'
@@ -419,6 +436,10 @@ export class JourneyLink extends JourneyStep {
         // mark this step as completed
         userStep.type = 'completed'
     }
+}
+
+export class JourneySticky extends JourneyStep {
+    static type = 'sticky'
 }
 
 export class JourneyBalancer extends JourneyStep {
@@ -571,6 +592,7 @@ export const journeyStepTypes = [
     JourneyUpdate,
     JourneyBalancer,
     JourneyEvent,
+    JourneySticky,
 ].reduce<Record<string, typeof JourneyStep>>((a, c) => {
     a[c.type] = c
     return a

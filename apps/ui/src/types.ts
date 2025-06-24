@@ -338,7 +338,7 @@ export interface JourneyStepTypeEdgeProps<T, E> extends ControlledProps<E> {
 export interface JourneyStepType<T = any, E = any> {
     name: string
     icon: ReactNode
-    category: 'entrance' | 'delay' | 'flow' | 'action' | 'exit'
+    category: 'entrance' | 'delay' | 'flow' | 'action' | 'exit' | 'info'
     description: string
     Describe?: ComponentType<JourneyStepTypeEditProps<T>>
     newData?: () => Promise<T>
@@ -348,6 +348,8 @@ export interface JourneyStepType<T = any, E = any> {
     sources?: string[]
     multiChildSources?: boolean
     hasDataKey?: boolean
+    hideTopHandle?: boolean
+    hideBottomHandle?: boolean
 }
 
 export interface JourneyUserStep {

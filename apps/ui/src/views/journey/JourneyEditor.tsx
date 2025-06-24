@@ -66,6 +66,7 @@ export const stepCategoryColors = {
     flow: 'green',
     delay: 'yellow',
     exit: 'red',
+    info: 'purple',
 }
 
 function JourneyStepNode({
@@ -110,7 +111,7 @@ function JourneyStepNode({
     return (
         <>
             {
-                type.category !== 'entrance' && (
+                !type.hideTopHandle && (
                     <Handle type="target" position={Position.Top} id={'t-' + id} />
                 )
             }
@@ -128,7 +129,7 @@ function JourneyStepNode({
                         {type.icon}
                     </span>
                     <h4 className="step-header-title">{name || t(type.name)}</h4>
-                    <div className="step-header-stats"
+                    {type.category !== 'info' && <div className="step-header-stats"
                         onClickCapture={stepId
                             ? () => setViewUsersStep({ stepId, entrance: typeName === 'entrance' })
                             : undefined
@@ -153,7 +154,7 @@ function JourneyStepNode({
                                 </span>
                             )
                         }
-                    </div>
+                    </div>}
                 </div>
                 <div className="journey-step-body">
                     {
@@ -175,7 +176,7 @@ function JourneyStepNode({
                 </div>
             </div>
             {
-                (
+                !type.hideBottomHandle && (
                     Array.isArray(type.sources)
                         ? type.sources
                         : ['']
@@ -431,6 +432,7 @@ export default function JourneyEditor() {
     const journeyId = journey.id
     const isDraft = journey.status === 'draft'
     const draftId = journey.draft_id
+    const parentId = journey.parent_id
 
     const loadSteps = useCallback(async () => {
         const steps = await api.journeys.steps.get(project.id, journeyId)
@@ -691,6 +693,12 @@ export default function JourneyEditor() {
             actions={
                 isDraft
                     ? <>
+                        {!parentId && <Button
+                            variant="secondary"
+                            onClick={() => setEditOpen(true)}
+                        >
+                            {t('edit_details')}
+                        </Button>}
                         <Button
                             onClick={publishJourney}
                             isLoading={saving}
@@ -764,7 +772,7 @@ export default function JourneyEditor() {
                         selectNodesOnDrag
                         fitView
                         maxZoom={1}
-                        minZoom={0.2}
+                        minZoom={0.1}
                         zoomOnDoubleClick={false}
                     >
                         <Background className="internal-canvas" />

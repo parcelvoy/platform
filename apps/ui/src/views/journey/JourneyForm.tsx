@@ -21,6 +21,7 @@ export function JourneyForm({ journey, onSaved }: JourneyFormProps) {
         { key: 'live', label: t('live') },
         { key: 'off', label: t('off') },
     ]
+    const isCreated = journey?.id && journey?.status !== 'draft'
     return (
         <FormWrapper<Journey>
             onSubmit={async ({ id, name, description, status, tags }) => {
@@ -53,14 +54,13 @@ export function JourneyForm({ journey, onSaved }: JourneyFormProps) {
                             name="tags"
                             label={t('tags')}
                         />
-                        {journey?.status}
-                        <RadioInput.Field
+                        {isCreated && <RadioInput.Field
                             form={form}
                             name="status"
                             label={t('status')}
                             options={statusOptions}
                             required
-                        />
+                        />}
                     </>
                 )
             }

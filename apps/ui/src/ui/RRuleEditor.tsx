@@ -23,7 +23,7 @@ const frequencyOptions: FieldOption[] = [
     },
 ]
 
-const dayOptions: FieldOption[] = [
+export const dayOptions: FieldOption[] = [
     {
         key: 'MO',
         label: 'Mon',

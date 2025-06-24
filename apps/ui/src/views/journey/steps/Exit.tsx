@@ -56,4 +56,5 @@ export const exitStep: JourneyStepType<ExitConfig> = {
             />
         )
     },
+    hideBottomHandle: true,
 }

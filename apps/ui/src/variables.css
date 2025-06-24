@@ -32,6 +32,10 @@
     --color-green-soft: #D1FADF;
     --color-green-hard: #039855;
 
+    --color-purple: #8729c1;
+    --color-purple-soft: #F7D8FF;
+    --color-purple-hard: #4e0c77;
+
     --color-shadow: rgba(0, 0, 0, 0.1);
     --color-shadow-soft: rgba(0, 0, 0, 0.05);
 
@@ -59,4 +63,7 @@
 
     --color-shadow: var(--color-grey);
     --color-shadow-soft: var(--color-grey-soft);
+
+    --color-purple-soft: #4e0c77;
+    --color-purple-hard: #d1a7ea;
 }
