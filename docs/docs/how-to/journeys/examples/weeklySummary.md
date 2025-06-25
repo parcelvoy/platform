@@ -3,7 +3,7 @@ title: Weekly Summary
 sidebar_position: 3
 ---
 
-# Weely Summary
+# Weekly Summary
 
 ## Scenario
 You have an e-commerce site and you want to sent weekly stats to all vendors that sell products through your platform, letting them know how many people viewed and purchased their products in the past 7 days.
