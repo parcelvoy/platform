@@ -19,7 +19,7 @@ export function createStatefulRoute<T extends { id: number }>({ context, path, a
         loader: async ({ params: { projectId = '', entityId = '' } }) => await apiPath.get(projectId, entityId),
         element: context
             ? (
-                <StatefulLoaderContextProvider context={context}>
+                <StatefulLoaderContextProvider key={path} context={context}>
                     {element}
                 </StatefulLoaderContextProvider>
             )

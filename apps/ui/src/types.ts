@@ -401,6 +401,7 @@ export interface Campaign {
     exclusion_list_ids?: number[]
     exclusion_lists?: List[]
     tags?: string[]
+    journeys?: Journey[]
     send_in_user_timezone: boolean
     send_at: string
     screenshot_url: string

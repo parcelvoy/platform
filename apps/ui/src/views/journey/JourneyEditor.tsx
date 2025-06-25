@@ -856,12 +856,12 @@ export default function JourneyEditor() {
                     }}
                 />
             </Modal>
-            <JourneyStepUsers
+            {!!viewUsersStep && <JourneyStepUsers
                 open={!!viewUsersStep}
                 onClose={() => setViewUsersStep(null)}
                 entrance={viewUsersStep?.entrance ?? false}
                 stepId={viewUsersStep?.stepId ?? 0}
-            />
+            />}
         </Modal>
     )
 }

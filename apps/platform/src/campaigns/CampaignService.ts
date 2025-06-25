@@ -26,6 +26,7 @@ import App from '../app'
 import { releaseLock } from '../core/Lock'
 import CampaignAbortJob from './CampaignAbortJob'
 import { getRuleQuery } from '../rules/RuleEngine'
+import { getJourneysForCampaign } from '../journey/JourneyService'
 
 export const CacheKeys = {
     pendingStats: 'campaigns:pending_stats',
@@ -73,6 +74,7 @@ export const getCampaign = async (id: number, projectId: number): Promise<Campai
         campaign.subscription = await getSubscription(campaign.subscription_id, projectId)
         campaign.provider = await getProvider(campaign.provider_id, projectId)
         campaign.tags = await getTags(Campaign.tableName, [campaign.id]).then(m => m.get(campaign.id))
+        if (campaign.type === 'trigger') campaign.journeys = await getJourneysForCampaign(projectId, campaign.id)
         if (campaign.state === 'loading') {
             campaign.progress = await campaignPopulationProgress(campaign)
         }

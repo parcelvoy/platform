@@ -1,7 +1,7 @@
 import { ReactNode, useContext, useState } from 'react'
 import { Link } from 'react-router'
 import { CampaignContext, ProjectContext } from '../../contexts'
-import { List } from '../../types'
+import { Journey, List } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import { InfoTable } from '../../ui/InfoTable'
@@ -23,15 +23,45 @@ export default function CampaignOverview() {
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [isEditOpen, setIsEditOpen] = useState(false)
 
-    const DelimitedLists = ({ lists, delimiter = ' ' }: { lists?: List[], delimiter?: ReactNode }) => {
-        if (!lists || lists?.length === 0) return <>&#8211;</>
+    interface DelimitedItemParams {
+        items?: any[]
+        delimiter?: ReactNode
+        mapper: (item: any) => { id: string | number, title: string, url: string }
+    }
+    const DelimitedItems = ({ items, delimiter = ' ', mapper }: DelimitedItemParams) => {
+        if (!items || items?.length === 0) return <>&#8211;</>
         return <div className="tag-list">
-            {lists?.map<ReactNode>(
-                list => (
-                    <Tag variant="plain" key={list.id}><Link to={`/projects/${campaign.project_id}/lists/${list.id}`}>{list.name}</Link></Tag>
-                ),
+            {items?.map<ReactNode>(
+                item => {
+                    const { id, title, url } = mapper(item)
+                    return (
+                        <Tag variant="plain" key={id}><Link to={url}>{title}</Link></Tag>
+                    )
+                },
             )?.reduce((prev, curr) => prev ? [prev, delimiter, curr] : curr, '')}
         </div>
+    }
+
+    const DelimitedJourneys = ({ journeys }: { journeys?: Journey[] }) => {
+        return DelimitedItems({
+            items: journeys,
+            mapper: (journey) => ({
+                id: journey.id,
+                title: journey.name,
+                url: `/projects/${project.id}/journeys/${journey.id}`,
+            }),
+        })
+    }
+
+    const DelimitedLists = ({ lists }: { lists?: List[] }) => {
+        return DelimitedItems({
+            items: lists,
+            mapper: (list) => ({
+                id: list.id,
+                title: list.name,
+                url: `/projects/${project.id}/lists/${list.id}`,
+            }),
+        })
     }
 
     const canEdit = campaign.type === 'trigger' || campaign.state === 'draft' || campaign.state === 'aborted'
@@ -91,13 +121,21 @@ export default function CampaignOverview() {
                 }} />
             </>}
             {
-                campaign.type === 'trigger' && (
-                    <CodeExample
-                        code={code}
-                        title={t('delivery')}
-                        description={t('campaign_delivery_trigger_description')}
-                    />
-                )
+                campaign.type === 'trigger' && <>
+                    {campaign.journeys?.length
+                        ? <>
+                            <Heading title={t('associations')} size="h4" />
+                            <InfoTable rows={{
+                                [t('journeys')]: DelimitedJourneys({ journeys: campaign.journeys }),
+                            }} />
+                        </>
+                        : <CodeExample
+                            code={code}
+                            title={t('delivery')}
+                            description={t('campaign_delivery_trigger_description')}
+                        />
+                    }
+                </>
             }
             <Modal
                 open={isEditOpen}

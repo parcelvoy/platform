@@ -1,6 +1,6 @@
 import { User } from '../users/User'
 import { getEntranceSubsequentSteps, getJourney, getJourneyStepMap, getJourneySteps, setJourneyStepMap } from './JourneyRepository'
-import { JourneyEntrance, JourneyStep, JourneyStepMap } from './JourneyStep'
+import { JourneyAction, JourneyEntrance, JourneyStep, JourneyStepMap } from './JourneyStep'
 import JourneyUserStep from './JourneyUserStep'
 import { UserEvent } from '../users/UserEvent'
 import App from '../app'
@@ -149,6 +149,22 @@ export const triggerEntrance = async (journey: Journey, payload: JourneyEntrance
 
     // Trigger async processing
     await JourneyProcessJob.from({ entrance_id }).queue()
+}
+
+export const getJourneysForCampaign = async (projectId: number, campaignId: number) => {
+    const journeys = await Journey.all(q => q
+        .where('project_id', projectId)
+        .leftJoin('journey_steps', 'journeys.id', '=', 'journey_steps.journey_id')
+        .where('journey_steps.type', JourneyAction.type)
+        .whereJsonPath('journey_steps.data', '$.campaign_id', '=', campaignId),
+    )
+    return Object.values(journeys.reduce((acc, curr) => {
+        const id = curr.parent_id ?? curr.id
+        if (!acc[id] || !curr.parent_id) {
+            acc[id] = curr
+        }
+        return acc
+    }, {} as Record<number, Journey>))
 }
 
 export const duplicateJourney = async (journey: Journey, asChild = false) => {
