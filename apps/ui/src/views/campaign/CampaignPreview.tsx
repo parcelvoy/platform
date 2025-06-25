@@ -52,6 +52,7 @@ export default function CampaignPreview() {
     const [isUserLookupOpen, setIsUserLookupOpen] = useState(false)
     const [isSendProofOpen, setIsSendProofOpen] = useState(false)
     const template = campaignState[0].templates.find(template => template.locale === currentLocale?.key)
+    const [proofResponse, setProofResponse] = useState<any>(undefined)
 
     if (!template) {
         return (<>
@@ -82,10 +83,11 @@ export default function CampaignPreview() {
 
     const handleSendProof = async (recipient: string) => {
         try {
-            await api.templates.proof(project.id, template.id, {
+            const response = await api.templates.proof(project.id, template.id, {
                 variables: JSON.parse(value ?? '{}'),
                 recipient,
             })
+            setProofResponse(response)
         } catch (error: any) {
             if (error.response.data.error) {
                 toast.error(error.response.data.error)
@@ -136,7 +138,7 @@ export default function CampaignPreview() {
                                 variant="secondary"
                                 onClick={() => setIsSendProofOpen(true)}>{t('send_proof')}</Button>
                     } />
-                    <Preview template={{ type: template.type, data }} />
+                    <Preview template={{ type: template.type, data }} response={proofResponse} />
                 </Column>
             </Columns>
 

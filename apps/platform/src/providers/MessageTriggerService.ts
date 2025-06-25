@@ -221,9 +221,7 @@ export const notifyJourney = async (reference_id: string, response?: any) => {
     // Save response into user step
     if (response) {
         await JourneyUserStep.update(q => q.where('id', referenceId), {
-            data: {
-                response,
-            },
+            data: response,
         })
     }
 

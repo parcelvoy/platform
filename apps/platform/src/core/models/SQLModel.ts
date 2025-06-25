@@ -29,7 +29,9 @@ export class SQLModel extends RawModel {
 
         // Take JSON attributes and stringify before insertion
         for (const attribute of this.jsonAttributes) {
-            obj[attribute] = JSON.stringify(obj[attribute])
+            obj[attribute] = obj[attribute] == null
+                ? undefined
+                : JSON.stringify(obj[attribute])
         }
 
         return this.formatJson(obj)

@@ -48,6 +48,14 @@
     padding: 5px 0;
 }
 
+.heading.heading-h5 {
+    margin: 5px 0;
+}
+
+.heading.heading-h4 h4 {
+    padding: 5px 0;
+}
+
 .heading label, .heading input {
     margin: 0;
 }

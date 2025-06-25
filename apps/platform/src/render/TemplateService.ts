@@ -124,7 +124,7 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
         logger.info(response, 'template:proof:push:result')
     } else if (template.type === 'webhook') {
         const channel = await loadWebhookChannel(campaign.provider_id, project.id)
-        await channel?.send(template, variables)
+        response = await channel?.send(template, variables)
     } else {
         throw new RequestError('Sending template proofs is only supported for email and text message types as this time.')
     }
@@ -141,6 +141,8 @@ export const sendProof = async (template: TemplateType, variables: Variables, re
             },
         },
     }).queue()
+
+    return response
 }
 
 // Determine what template to send to the user based on the following:

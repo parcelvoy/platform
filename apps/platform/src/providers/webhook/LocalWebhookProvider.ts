@@ -39,7 +39,7 @@ export default class LocalWebhookProvider extends WebhookProvider {
 
         if (response.ok) {
             return {
-                message: options,
+                request: options,
                 success: true,
                 response: responseBody,
             }

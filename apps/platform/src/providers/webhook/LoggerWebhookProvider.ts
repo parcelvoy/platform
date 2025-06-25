@@ -25,7 +25,7 @@ export default class LoggerWebhookProvider extends WebhookProvider {
 
         logger.info(options, 'provider:webhook:logger')
         return {
-            message: options,
+            request: options,
             success: true,
             response: '',
         }

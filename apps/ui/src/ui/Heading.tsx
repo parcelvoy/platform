@@ -2,7 +2,7 @@ import './Heading.css'
 
 interface HeadingProps {
     title: React.ReactNode
-    size?: 'h2' | 'h3' | 'h4'
+    size?: 'h2' | 'h3' | 'h4' | 'h5'
     actions?: React.ReactNode
     children?: React.ReactNode
 }

@@ -37,7 +37,7 @@ export default class WebhookJob extends Job {
 
         try {
             const result = await channel.send(template, data)
-            await finalizeSend(data, result)
+            await finalizeSend(data, result.response)
         } catch (error: any) {
             await failSend(data, error)
         } finally {

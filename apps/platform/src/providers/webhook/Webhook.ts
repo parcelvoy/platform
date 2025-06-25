@@ -6,7 +6,7 @@ export interface Webhook {
 }
 
 export interface WebhookResponse {
-    message: Webhook
+    request: Webhook
     success: boolean
     response: Record<string, any> | string
 }
