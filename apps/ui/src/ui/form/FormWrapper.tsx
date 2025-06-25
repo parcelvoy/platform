@@ -10,6 +10,7 @@ interface FormWrapperProps<T extends FieldValues> {
     defaultValues?: DefaultValues<T>
     disabled?: boolean
     submitLabel?: string
+    showSubmitButton?: boolean
     onSubmit: (data: T, navigate: NavigateFunction) => Promise<void>
     onError?: (error: Error) => void
 }
@@ -19,6 +20,7 @@ export default function FormWrapper<T extends FieldValues>({
     defaultValues,
     disabled,
     submitLabel,
+    showSubmitButton = true,
     onSubmit,
     onError,
 }: FormWrapperProps<T>) {
@@ -89,14 +91,14 @@ export default function FormWrapper<T extends FieldValues>({
             <>
                 {error && <Alert variant="error" title="Error">{error}</Alert>}
                 {children(form)}
-                <label className="form-submit">
+                {showSubmitButton && <label className="form-submit">
                     <Button
                         type="submit"
                         isLoading={isLoading}
                         disabled={!isValid || disabled}>
                         {submitLabel}
                     </Button>
-                </label>
+                </label>}
             </>
         </form>
     )
