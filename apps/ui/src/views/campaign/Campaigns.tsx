@@ -17,6 +17,7 @@ import { Alert } from '../../ui'
 import { ProjectContext } from '../../contexts'
 import { PreferencesContext } from '../../ui/PreferencesContext'
 import { Translation, useTranslation } from 'react-i18next'
+import { SingleSelect } from '../../ui/form/SingleSelect'
 
 export const CampaignTag = ({ state, progress, send_at }: Pick<Campaign, 'state' | 'progress' | 'send_at'>) => {
     const variant: Record<CampaignState, TagVariant> = {
@@ -69,12 +70,23 @@ export const ClickRate = ({ delivery }: { delivery: CampaignDelivery }) => {
     return `${clicksStr} (${ratioStr})`
 }
 
+const campaignTypes = [
+    { key: 'blast', label: 'Blast' },
+    { key: 'trigger', label: 'Journey' },
+]
+
 export default function Campaigns() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
     const navigate = useNavigate()
     const [preferences] = useContext(PreferencesContext)
-    const state = useSearchTableQueryState(useCallback(async params => await api.campaigns.search(project.id, params), [project.id]))
+    const state = useSearchTableQueryState(
+        useCallback(async params => await api.campaigns.search(project.id, params), [project.id]),
+        {
+            filter: {
+                type: 'blast',
+            },
+        })
     const [isCreateOpen, setIsCreateOpen] = useState(false)
 
     const handleCreateCampaign = async (campaign: Campaign) => {
@@ -203,6 +215,22 @@ export default function Campaigns() {
                     onSelectRow={async ({ id }) => { await navigate(id.toString()) }}
                     enableSearch
                     tagEntity="campaigns"
+                    filters={[
+                        <SingleSelect
+                            key="type"
+                            options={campaignTypes}
+                            prefix={t('type')}
+                            value={state.params.filter?.type}
+                            onChange={value => state.setParams({
+                                ...state.params,
+                                filter: {
+                                    ...state.params.filter,
+                                    type: value,
+                                },
+                            })}
+                            toValue={(value) => value.key}
+                        />,
+                    ]}
                 />
             </PageContent>
             <Modal

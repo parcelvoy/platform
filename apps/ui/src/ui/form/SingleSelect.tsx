@@ -15,6 +15,7 @@ export interface SingleSelectProps<T, O = T> extends ControlledInputProps<T>, Op
     optionsFooter?: ReactNode
     size?: 'small' | 'regular'
     variant?: 'plain' | 'minimal'
+    prefix?: ReactNode
 }
 
 export function SingleSelect<T, U = T>({
@@ -37,6 +38,7 @@ export function SingleSelect<T, U = T>({
     getValueKey = defaultGetValueKey,
     value,
     variant,
+    prefix,
 }: SingleSelectProps<T, U>) {
 
     const {
@@ -51,7 +53,12 @@ export function SingleSelect<T, U = T>({
     return (
         <Listbox
             as="div"
-            className={clsx('ui-select', className, variant ?? 'plain')}
+            className={clsx(
+                'ui-select',
+                className,
+                variant ?? 'plain',
+                prefix && 'ui-select-prefix-wrapper',
+            )}
             by={(left: T, right: T) => Object.is(getValueKey(left), getValueKey(right))}
             disabled={disabled}
             value={value}
@@ -76,6 +83,13 @@ export function SingleSelect<T, U = T>({
                 subtitle && (
                     <span className="label-subtitle">
                         {subtitle}
+                    </span>
+                )
+            }
+            {
+                prefix && (
+                    <span className="ui-select-prefix">
+                        {prefix}
                     </span>
                 )
             }

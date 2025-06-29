@@ -189,7 +189,12 @@ export const failSend = async ({ campaign, user, context }: MessageTriggerHydrat
     }
 
     // Notify of the error if it's a critical one
-    if (error && shouldNotify(error)) App.main.error.notify(error, context)
+    if (error && shouldNotify(error)) {
+        App.main.error.notify(error, {
+            ...context,
+            user_id: user.id,
+        })
+    }
 }
 
 export const finalizeSend = async (data: MessageTriggerHydrated<TemplateType>, result: any) => {

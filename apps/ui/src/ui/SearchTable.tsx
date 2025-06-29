@@ -17,6 +17,7 @@ export interface SearchTableProps<T extends Record<string, any>> extends Omit<Da
     description?: ReactNode
     actions?: ReactNode
     results: SearchResult<T> | null
+    filters?: ReactNode[]
     params: SearchParams
     setParams: (params: SearchParams) => void
     enableSearch?: boolean
@@ -36,25 +37,29 @@ const toTableParams = (searchParams: URLSearchParams): SearchParams => {
         tag: searchParams.getAll('tag'),
         sort: searchParams.get('sort') ?? undefined,
         direction: searchParams.get('direction') ?? undefined,
+        filter: searchParams.get('filter')
+            ? JSON.parse(searchParams.get('filter')!)
+            : undefined,
     }
 }
 
-const fromTableParams = (params: SearchParams): Record<string, string> => {
+const fromTableParams = (params: Partial<SearchParams>): Record<string, string> => {
     return prune({
         cursor: params.cursor,
         page: params.page,
-        limit: params.limit.toString(),
+        limit: (params.limit ?? DEFAULT_ITEMS_PER_PAGE).toString(),
         q: params.q,
         tag: params.tag ?? [],
         sort: params.sort,
         direction: params.direction,
+        filter: params.filter ? JSON.stringify(params.filter) : undefined,
     })
 }
 
-export const useTableSearchParams = () => {
+export const useTableSearchParams = (initialParams: Partial<SearchParams> = {}) => {
     const [searchParams, setSearchParams] = useSearchParams({
         page: DEFAULT_PAGE.toString(),
-        itemsPerPage: DEFAULT_ITEMS_PER_PAGE.toString(),
+        ...fromTableParams(initialParams),
     })
 
     const setParams = useCallback<(params: SearchParams | ((prev: SearchParams) => SearchParams)) => void>(next => {
@@ -102,9 +107,9 @@ export interface SearchTableQueryState<T> {
 /**
  * global query string state
  */
-export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>): SearchTableQueryState<T> {
+export function useSearchTableQueryState<T>(loader: (params: SearchParams) => Promise<SearchResult<T> | null>, initialParams?: Partial<SearchParams>): SearchTableQueryState<T> {
 
-    const [params, setParams] = useTableSearchParams()
+    const [params, setParams] = useTableSearchParams(initialParams)
 
     const [results,, reload] = useResolver(useCallback(async () => await loader(params), [loader, params]))
 
@@ -125,6 +130,7 @@ export function SearchTable<T extends Record<string, any>>({
     searchPlaceholder,
     setParams,
     tagEntity,
+    filters: additionalFilters = [],
     title,
     ...rest
 }: SearchTableProps<T>) {
@@ -133,8 +139,7 @@ export function SearchTable<T extends Record<string, any>>({
     const columnSort = params.sort
         ? { sort: params.sort, direction: params.direction ?? 'asc' }
         : undefined
-    const filters: ReactNode[] = []
-
+    const filters = []
     if (enableSearch) {
         filters.push(
             <TextInput
@@ -147,6 +152,10 @@ export function SearchTable<T extends Record<string, any>>({
                 icon={<SearchIcon />}
             />,
         )
+    }
+
+    if (additionalFilters) {
+        filters.push(...additionalFilters)
     }
 
     if (tagEntity) {

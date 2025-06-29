@@ -150,3 +150,23 @@
     color: var(--color-grey-hard);
     cursor: not-allowed;
 }
+
+.ui-select.ui-select-prefix-wrapper {
+    display: flex;
+}
+
+.ui-select.ui-select-prefix-wrapper .ui-select-prefix {
+    border: 1px solid var(--color-grey);
+    box-shadow: 0px 1px 5px rgba(16, 24, 40, 0.1);
+    padding: 12px 15px;
+    border-right-width: 0;
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+    color: var(--color-primary-soft);
+    font-size: 14px;
+}
+
+.ui-select.ui-select-prefix-wrapper .select-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
