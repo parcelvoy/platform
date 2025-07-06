@@ -6,7 +6,7 @@ import { ProjectContext } from '../../../contexts'
 import { useResolver } from '../../../hooks'
 import api from '../../../api'
 import { snakeToTitle } from '../../../utils'
-import { emptySuggestions, RuleEditContext } from './RuleHelpers'
+import { emptySuggestions, VariablesContext } from './RuleHelpers'
 import RuleEdit from './RuleEdit'
 
 interface RuleBuilderParams {
@@ -20,7 +20,7 @@ export default function RuleBuilder({ eventName, headerPrefix, rule, setRule }: 
     const [{ id: projectId }] = useContext(ProjectContext)
     const [suggestions] = useResolver(useCallback(async () => await api.projects.pathSuggestions(projectId), [projectId]))
     return (
-        <RuleEditContext.Provider value={useMemo(() => ({ suggestions: suggestions ?? emptySuggestions }), [suggestions])}>
+        <VariablesContext.Provider value={useMemo(() => ({ suggestions: suggestions ?? emptySuggestions }), [suggestions])}>
             <RuleEdit
                 root={rule}
                 rule={rule}
@@ -29,7 +29,7 @@ export default function RuleBuilder({ eventName, headerPrefix, rule, setRule }: 
                 eventName={eventName}
                 headerPrefix={headerPrefix}
             />
-        </RuleEditContext.Provider>
+        </VariablesContext.Provider>
     )
 }
 

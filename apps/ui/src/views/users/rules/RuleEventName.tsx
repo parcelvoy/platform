@@ -2,7 +2,7 @@ import { Combobox } from '@headlessui/react'
 import { Rule } from '../../../types'
 import { highlightSearch, usePopperSelectDropdown } from '../../../ui/utils'
 import { useContext } from 'react'
-import { RuleEditContext } from './RuleHelpers'
+import { VariablesContext } from './RuleHelpers'
 import { ButtonGroup } from '../../../ui'
 import { ChevronUpDownIcon } from '../../../ui/icons'
 import clsx from 'clsx'
@@ -18,7 +18,7 @@ export default function RuleEventName<T extends Rule>({ rule, setRule }: {
         styles,
     } = usePopperSelectDropdown()
 
-    const { suggestions } = useContext(RuleEditContext)
+    const { suggestions } = useContext(VariablesContext)
     return (
         <Combobox onChange={(value: string) => setRule({ ...rule, value })}>
             <ButtonGroup>

@@ -1,5 +1,5 @@
 import { createContext, ReactNode } from 'react'
-import { EventRule, Operator, Rule, RuleGroup, RuleSuggestions, RuleType, WrapperRule } from '../../../types'
+import { EventRule, Operator, Rule, RuleGroup, RuleType, VariableSuggestions, WrapperRule } from '../../../types'
 import { createUuid } from '../../../utils'
 
 export interface GroupedRule extends Omit<Rule, 'value'> {
@@ -56,13 +56,13 @@ export const createEventRule = (parent?: Rule, value = ''): EventRule => {
     return base
 }
 
-export const emptySuggestions = {
+export const emptySuggestions: VariableSuggestions = {
     userPaths: [],
     eventPaths: {},
 }
 
-export const RuleEditContext = createContext<{
-    suggestions: RuleSuggestions
+export const VariablesContext = createContext<{
+    suggestions: VariableSuggestions
 }>({
     suggestions: emptySuggestions,
 })

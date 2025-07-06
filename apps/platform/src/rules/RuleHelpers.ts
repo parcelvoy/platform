@@ -3,6 +3,7 @@ import { AnyJson, EventRulePeriod, EventRuleTree, Operator, RuleGroup, RuleTree 
 import { compileTemplate } from '../render'
 import { visit } from '../utilities'
 import { subSeconds } from 'date-fns'
+import { RulePathDataType } from './ProjectRulePath'
 
 export const queryValue = <T>(
     value: Record<string, unknown>,
@@ -76,6 +77,10 @@ export const reservedPaths: Record<RuleGroup, string[]> = {
         'created_at',
     ],
     parent: [],
+}
+
+export const reservedPathDataType = (path: string): RulePathDataType => {
+    return path === 'created_at' ? 'date' : 'string'
 }
 
 export const isEventWrapper = (rule: RuleTree): rule is EventRuleTree => {

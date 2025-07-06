@@ -1,12 +1,13 @@
 import { useContext, useMemo } from 'react'
 import { highlightSearch, usePopperSelectDropdown } from '../../../ui/utils'
-import { operatorTypes, RuleEditContext, RuleEditProps, ruleTypes } from './RuleHelpers'
+import { operatorTypes, VariablesContext, RuleEditProps, ruleTypes } from './RuleHelpers'
 import { ButtonGroup } from '../../../ui'
 import { SingleSelect } from '../../../ui/form/SingleSelect'
 import { Combobox } from '@headlessui/react'
 import { ChevronUpDownIcon } from '../../../ui/icons'
 import clsx from 'clsx'
 import TextInput from '../../../ui/form/TextInput'
+import { RulePath } from '../../../types'
 
 export default function FilterRuleEdit({
     rule,
@@ -21,31 +22,21 @@ export default function FilterRuleEdit({
         attributes,
         styles,
     } = usePopperSelectDropdown()
-    const { suggestions } = useContext(RuleEditContext)
+    const { suggestions } = useContext(VariablesContext)
     const { path } = rule
     const hasValue = rule?.operator && !['is set', 'is not set', 'empty'].includes(rule?.operator)
-    const pathSuggestions = useMemo<string[]>(() => {
-        let paths = (
-            group === 'event'
-                ? [
-                    ...(eventName ? suggestions.eventPaths[eventName] ?? [] : []),
-                    '$.name',
-                ]
-                : [
-                    ...suggestions.userPaths,
-                    '$.id',
-                    '$.email',
-                    '$.phone',
-                    '$.timezone',
-                    '$.locale',
-                ]
-        ).filter((p, i, a) => a.indexOf(p) === i).sort()
+    const pathSuggestions = useMemo<RulePath[]>(() => {
+        let paths = group === 'event'
+            ? eventName
+                ? suggestions.eventPaths[eventName] ?? []
+                : []
+            : suggestions.userPaths
 
         if (path) {
             let search = path.toLowerCase()
             if (search.startsWith('.')) search = '$' + search
             if (!search.startsWith('$.')) search = '$.' + search
-            paths = paths.filter(p => p.toLowerCase().startsWith(search))
+            paths = paths.filter(p => p.path.toLowerCase().startsWith(search))
         }
 
         return paths
@@ -63,7 +54,7 @@ export default function FilterRuleEdit({
                     size="small"
                     toValue={x => x.key as typeof rule.type}
                 />
-                <Combobox onChange={(path: string) => setRule({ ...rule, path })}>
+                <Combobox onChange={({ data_type: type, path }: RulePath) => setRule({ ...rule, type, path })}>
                     <span className="ui-text-input">
                         <Combobox.Input
                             value={rule.path}
@@ -85,13 +76,13 @@ export default function FilterRuleEdit({
                         {
                             pathSuggestions.map(s => (
                                 <Combobox.Option
-                                    key={s}
+                                    key={s.path}
                                     value={s}
                                     className={({ active, selected }) => clsx('select-option', active && 'active', selected && 'selected')}
                                 >
                                     <span
                                         dangerouslySetInnerHTML={{
-                                            __html: highlightSearch(s, rule.path),
+                                            __html: highlightSearch(s.path, rule.path),
                                         }}
                                     />
                                 </Combobox.Option>

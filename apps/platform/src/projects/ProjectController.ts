@@ -1,7 +1,7 @@
 import Router from '@koa/router'
 import { ProjectParams } from './Project'
 import { JSONSchemaType, validate } from '../core/validate'
-import { extractQueryParams } from '../utilities'
+import { extractQueryParams, KeyedSet } from '../utilities'
 import { searchParamsSchema } from '../core/searchParams'
 import { ParameterizedContext } from 'koa'
 import { allProjects, createProject, getProject, pagedProjects, requireProjectRole, updateProject } from './ProjectService'
@@ -9,7 +9,7 @@ import { AuthState, ProjectState } from '../auth/AuthMiddleware'
 import { getProjectAdmin } from './ProjectAdminRepository'
 import { RequestError } from '../core/errors'
 import { ProjectError } from './ProjectError'
-import { ProjectRulePath } from '../rules/ProjectRulePath'
+import { GetProjectRulePath, ProjectRulePath } from '../rules/ProjectRulePath'
 import { getAdmin } from '../auth/AdminRepository'
 import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import App from '../app'
@@ -178,20 +178,27 @@ subrouter.patch('/', async ctx => {
 
 subrouter.get('/data/paths', async ctx => {
     ctx.body = await ProjectRulePath
-        .all(q => q.where('project_id', ctx.state.project.id))
-        .then(list => list.reduce((a, { type, name, path }) => {
-            if (type === 'event') {
-                (a.eventPaths[name!] ?? (a.eventPaths[name!] = [])).push(path)
+        .all(q => q.where('project_id', ctx.state.project.id).select('path', 'type', 'name', 'data_type'))
+        .then(list => list.reduce((a, rulePath) => {
+            const { path, type, name, data_type } = rulePath
+            if (type === 'event' && name) {
+                if (!a.eventPaths[name]) {
+                    const set = new KeyedSet<GetProjectRulePath>(item => item.path)
+                    set.add({ path, type, name, data_type })
+                    a.eventPaths[name] = set
+                } else {
+                    a.eventPaths[name].add({ path, type, name, data_type })
+                }
             } else {
-                a.userPaths.push(path)
+                a.userPaths.add({ path, type, name, data_type })
             }
             return a
         }, {
-            userPaths: [],
+            userPaths: new KeyedSet<GetProjectRulePath>(item => item.path),
             eventPaths: {},
         } as {
-            userPaths: string[]
-            eventPaths: { [name: string]: string[] }
+            userPaths: KeyedSet<GetProjectRulePath>,
+            eventPaths: { [name: string]: KeyedSet<GetProjectRulePath> }
         }))
 })
 
