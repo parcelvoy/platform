@@ -2,6 +2,10 @@
     padding-bottom: 5px;
 }
 
+.options-group label {
+    margin: 10px 0 5px;
+}
+
 .options-group .options {
     width: 100%;
     display: flex;
@@ -13,6 +17,7 @@
 }
 
 .options-group .options label {
+    display: block;
     margin: 0;
 }
 

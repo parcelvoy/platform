@@ -1,0 +1,44 @@
+.email-editor {
+    background: var(--color-white);
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    overflow: scroll;
+}
+
+.maily-editor-body {
+    width: 650px;
+    padding-bottom: 100px;
+}
+
+.mly-editor button,
+.tippy-content button {
+    border: none;
+    background: none;
+    color: var(--color-black);
+}
+
+.mly-editor button svg {
+    color: var(--color-black);
+}
+
+#slash-command button p {
+    margin: 0;
+}
+
+:where(.mly-editor) button,
+:where(.mly-editor) input,
+:where(.mly-editor) optgroup,
+:where(.mly-editor) select,
+:where(.mly-editor) textarea {
+    border-color: transparent;
+}
+
+.mly-sr-only {
+    display: unset;
+}
+
+.node-variable button {
+    border: 1px solid var(--color-grey-hard);
+    border-radius: var(--border-radius-outer);
+}

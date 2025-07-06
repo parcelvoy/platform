@@ -119,11 +119,6 @@ form .form-submit {
     display: inline-block;
 }
 
-label {
-    display: block;
-    margin: 10px 0 5px;
-}
-
 form .label {
     display: block;
     margin: 5px 0;
@@ -152,55 +147,6 @@ label.hide-label {
     color: var(--color-primary-soft);
     font-weight: 400;
     font-size: 14px;
-}
-
-label .switch {
-    display: inline-block;
-    height: 26px;
-    position: relative;
-    width: 46px;
-}
-
-label .switch input {
-    display: none;
-}
-
-label .switch .slider {
-    background-color: var(--color-grey);
-    bottom: 0;
-    cursor: pointer;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    transition: .4s;
-}
-
-label .switch .slider:before {
-    background-color: var(--color-background);
-    bottom: 4px;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    position: absolute;
-    transition: .4s;
-}
-
-label .switch input:checked + .slider {
-    background-color: var(--color-green);
-}
-
-label .switch input:checked + .slider:before {
-    transform: translateX(20px);
-}
-
-label .switch .slider.round {
-    border-radius: 26px;
-}
-
-label .switch .slider.round:before {
-    border-radius: 50%;
 }
 
 fieldset {

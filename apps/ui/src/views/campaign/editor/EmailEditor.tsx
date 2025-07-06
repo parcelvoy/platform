@@ -13,9 +13,12 @@ import { QuestionIcon } from '../../../ui/icons'
 import { useTranslation } from 'react-i18next'
 import ResourceModal from './ResourceModal'
 import { TemplateContextProvider } from '../TemplateContextProvider'
+import { useResolver } from '../../../hooks'
+import { emptySuggestions, VariablesContext } from '../../users/rules/RuleHelpers'
 import VariantSelector from '../variants/VariantSelector'
 
-const VisualEditor = lazy(async () => await import('./VisualEditor'))
+// const VisualEditor = lazy(async () => await import('./VisualEditor'))
+const MailyEditor = lazy(async () => await import('./MailyEditor'))
 
 function EmailEditor() {
 
@@ -28,6 +31,7 @@ function EmailEditor() {
     const [resources, setResources] = useState<Resource[]>([])
 
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
+    const [suggestions] = useResolver(useCallback(async () => await api.projects.pathSuggestions(1), [template]))
     const [isSaving, setIsSaving] = useState(false)
     const [showConfig, setShowConfig] = useState(false)
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)

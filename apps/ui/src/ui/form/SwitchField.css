@@ -1,0 +1,56 @@
+.ui-switch {
+    display: block;
+}
+
+.ui-siwtch label {
+    margin: 10px 0 5px;
+}
+
+.ui-switch .ui-switch-toggle {
+    display: inline-block;
+    height: 26px;
+    position: relative;
+    width: 46px;
+}
+
+.ui-switch .ui-switch-toggle input {
+    display: none;
+}
+
+.ui-switch .ui-switch-toggle .slider {
+    background-color: var(--color-grey);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.ui-switch .ui-switch-toggle .slider:before {
+    background-color: var(--color-background);
+    bottom: 4px;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+}
+
+.ui-switch .ui-switch-toggle input:checked + .slider {
+    background-color: var(--color-green);
+}
+
+.ui-switch .ui-switch-toggle input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.ui-switch .ui-switch-toggle .slider.round {
+    border-radius: 26px;
+}
+
+.ui-switch .ui-switch-toggle .slider.round:before {
+    border-radius: 50%;
+}

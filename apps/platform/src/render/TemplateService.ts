@@ -49,8 +49,7 @@ export const createTemplate = async (projectId: number, params: TemplateParams) 
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
-    const template = await Template.updateAndFetch(templateId, prune(params))
-    return template
+    return await Template.updateAndFetch(templateId, prune(params))
 }
 
 export const deleteTemplate = async (id: number, projectId: number) => {

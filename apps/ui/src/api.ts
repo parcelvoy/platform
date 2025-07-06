@@ -327,7 +327,8 @@ const api = {
         create: async (projectId: number | string, image: File) => {
             const formData = new FormData()
             formData.append('image', image)
-            await client.post(`${projectUrl(projectId)}/images`, formData)
+            const response = await client.post<Image>(`${projectUrl(projectId)}/images`, formData)
+            return response.data
         },
     },
 

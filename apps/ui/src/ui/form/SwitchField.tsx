@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { FieldPath, FieldValues } from 'react-hook-form'
 import { FieldProps } from './Field'
+import './SwitchField.css'
 
 interface SwitchFieldProps<X extends FieldValues, P extends FieldPath<X>> extends FieldProps<X, P> {
     checked?: boolean
@@ -19,14 +20,14 @@ export default function SwitchField<X extends FieldValues, P extends FieldPath<X
 }: SwitchFieldProps<X, P>) {
     const id = useId()
     return (
-        <label>
+        <label className="ui-switch">
             { label && <span>
                 {label ?? name}
                 {required && <span style={{ color: 'red' }}>&nbsp;*</span>}
             </span>
             }
             {subtitle && <span className="label-subtitle">{subtitle}</span>}
-            <div className="switch">
+            <div className="ui-switch-toggle">
                 <input
                     type="checkbox"
                     id={id}
