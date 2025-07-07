@@ -42,3 +42,7 @@
     border: 1px solid var(--color-grey-hard);
     border-radius: var(--border-radius-outer);
 }
+
+.mly-prose :where(ul > li):not(:where([class~=mly-not-prose], [class~=mly-not-prose] *))::marker {
+    color: var(--color-black);
+}

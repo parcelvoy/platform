@@ -85,9 +85,7 @@ export default function MailyEditor({ template, setTemplate }: MailyEditorProps)
                         }
 
                         if (query) {
-                            let search = query.toLowerCase()
-                            if (search.startsWith('.')) search = '$' + search
-                            if (!search.startsWith('$.')) search = '$.' + search
+                            const search = query.toLowerCase().replace('$.', '').replace('$[', '[')
                             return variables.filter(p => p.name.toLowerCase().startsWith(search))
                         }
 
