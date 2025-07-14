@@ -4,7 +4,7 @@ import { PageParams } from '../core/searchParams'
 import { RetryError } from '../queue/Job'
 import { Device, DeviceParams, User, UserInternalParams } from '../users/User'
 import { deepEqual, pick, uuid } from '../utilities'
-import { getRuleEventParams, RuleEventParam } from '../rules/RuleHelpers'
+import { getRuleEventParams } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
 import { Context } from 'koa'
 import { EventPostJob } from '../jobs'
@@ -249,23 +249,18 @@ export const disableNotifications = async (userId: number, tokens: string[]): Pr
 
 export const getUserEventsForRules = async (
     userId: number,
-    rules: RuleTree[],
+    rule: RuleTree,
 ) => {
-    if (!rules.length) return []
-    const params = rules.reduce<RuleEventParam[]>((a, rule) => {
-        if (rule) {
-            a.push(...getRuleEventParams(rule))
-        }
-        return a
-    }, [])
+    const params = getRuleEventParams(rule)
     if (!params.length) return []
 
     return UserEvent.all(
         qb => qb.where('user_id', userId)
-            .where(qb1 => {
-                for (const param of params) {
-                    qb1.orWhere(sbq => sbq.where('name', param.name)
-                        .where('created_at', '>=', param.since ?? new Date(0)),
+            .where(eqb => {
+                for (const { name, since } of params) {
+                    eqb.orWhere(sbq =>
+                        sbq.where('name', name)
+                            .where('created_at', '>=', since ?? new Date(0)),
                     )
                 }
             }),

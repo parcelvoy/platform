@@ -8,7 +8,7 @@ import { UserEvent } from '../users/UserEvent'
 import { getUserEventsForRules } from '../users/UserRepository'
 import { shallowEqual } from '../utilities'
 import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
-import { JourneyGate, JourneyStep, JourneyStepChild, journeyStepTypes } from './JourneyStep'
+import { JourneyStep, JourneyStepChild, journeyStepTypes } from './JourneyStep'
 import JourneyUserStep from './JourneyUserStep'
 
 type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job | undefined>)
@@ -195,20 +195,9 @@ export class JourneyState {
         this._jobs.push(job)
     }
 
-    public async events() {
+    public async events(rule: Rule) {
         // TODO: Find a way to not have to pull in all events, better discern
-        if (!this._events) {
-            this._events = await getUserEventsForRules(
-                this.user.id,
-                this.steps.reduce<Rule[]>((a, c) => {
-                    if (c instanceof JourneyGate) {
-                        a.push(c.rule)
-                    }
-                    return a
-                }, []),
-            )
-        }
-        return this._events
+        return await getUserEventsForRules(this.user.id, rule)
     }
 
     public async timezone() {

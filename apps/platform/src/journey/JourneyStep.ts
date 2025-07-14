@@ -335,7 +335,7 @@ export class JourneyGate extends JourneyStep {
 
         if (!passed && !failed) return
 
-        const events = await state.events()
+        const events = await state.events(this.rule)
 
         const params = {
             user: state.user.flatten(),

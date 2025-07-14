@@ -122,30 +122,28 @@ describe('UserRepository', () => {
                 data: { key: 'value3' },
             })
 
-            const rules = [
-                make({
-                    group: 'event',
-                    path: 'name',
-                    value: 'event1',
-                    type: 'wrapper',
-                    operator: 'or',
-                    children: [
-                        make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
-                        make({ type: 'boolean', path: 'score.isRecord', value: true }),
-                    ],
-                    frequency: {
-                        period: {
-                            unit: 'day',
-                            value: 7,
-                            type: 'rolling',
-                        },
-                        count: 2,
-                        operator: '>=',
+            const rule = make({
+                group: 'event',
+                path: 'name',
+                value: 'event1',
+                type: 'wrapper',
+                operator: 'or',
+                children: [
+                    make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
+                    make({ type: 'boolean', path: 'score.isRecord', value: true }),
+                ],
+                frequency: {
+                    period: {
+                        unit: 'day',
+                        value: 7,
+                        type: 'rolling',
                     },
-                }),
-            ]
+                    count: 2,
+                    operator: '>=',
+                },
+            })
 
-            const events = await getUserEventsForRules(user.id, rules)
+            const events = await getUserEventsForRules(user.id, rule)
             expect(events).toHaveLength(2)
             expect(events[0].name).toEqual('event1')
         })
@@ -171,30 +169,28 @@ describe('UserRepository', () => {
                 data: { key: 'value2' },
             })
 
-            const rules = [
-                make({
-                    group: 'event',
-                    path: 'name',
-                    value: 'event1',
-                    type: 'wrapper',
-                    operator: 'or',
-                    children: [
-                        make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
-                        make({ type: 'boolean', path: 'score.isRecord', value: true }),
-                    ],
-                    frequency: {
-                        period: {
-                            unit: 'day',
-                            value: 7,
-                            type: 'rolling',
-                        },
-                        count: 2,
-                        operator: '>=',
+            const rule = make({
+                group: 'event',
+                path: 'name',
+                value: 'event1',
+                type: 'wrapper',
+                operator: 'or',
+                children: [
+                    make({ type: 'number', path: 'score.total', operator: '<', value: 5 }),
+                    make({ type: 'boolean', path: 'score.isRecord', value: true }),
+                ],
+                frequency: {
+                    period: {
+                        unit: 'day',
+                        value: 7,
+                        type: 'rolling',
                     },
-                }),
-            ]
+                    count: 2,
+                    operator: '>=',
+                },
+            })
 
-            const events = await getUserEventsForRules(user.id, rules)
+            const events = await getUserEventsForRules(user.id, rule)
             expect(events).toHaveLength(1)
             expect(events[0].name).toEqual('event1')
         })
