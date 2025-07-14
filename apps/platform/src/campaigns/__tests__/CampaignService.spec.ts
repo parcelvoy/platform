@@ -4,7 +4,7 @@ import { createSubscription, subscribe } from '../../subscriptions/SubscriptionS
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, generateSendList, estimatedSendSize } from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, populateSendList, estimatedSendSize } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
 import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
 import ListStatsJob from '../../lists/ListStatsJob'
@@ -172,7 +172,7 @@ describe('CampaignService', () => {
                 await subscribe(user.id, params.subscription_id)
             }
 
-            await generateSendList(campaign)
+            await populateSendList(campaign)
 
             const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
 
@@ -214,7 +214,7 @@ describe('CampaignService', () => {
                 await subscribe(user.id, params.subscription_id)
             }
 
-            await generateSendList(campaign)
+            await populateSendList(campaign)
 
             const sends = await CampaignSend.all(qb => qb.where('campaign_id', campaign.id))
             const updatedCampaign = await Campaign.find(campaign.id)

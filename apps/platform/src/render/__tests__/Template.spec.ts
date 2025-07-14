@@ -19,7 +19,7 @@ describe('Template', () => {
                 project: Project.fromJson({
                     link_wrap_email: true,
                 }),
-                user: User.fromJson({ id: 1 }),
+                user: User.fromJson({ id: 1, data: {} }),
                 context: {
                     template_id: 1,
                     campaign_id: 1,
@@ -46,7 +46,7 @@ describe('Template', () => {
                 project: Project.fromJson({
                     link_wrap_email: false,
                 }),
-                user: User.fromJson({ id: 1 }),
+                user: User.fromJson({ id: 1, data: {} }),
                 context: {
                     template_id: 1,
                     campaign_id: 1,
@@ -78,7 +78,7 @@ describe('Template', () => {
                 project: Project.fromJson({
                     link_wrap_push: false,
                 }),
-                user: User.fromJson({ id: 1 }),
+                user: User.fromJson({ id: 1, data: {} }),
                 context: {
                     template_id: 1,
                     campaign_id: 1,
@@ -109,7 +109,7 @@ describe('Template', () => {
                 project: Project.fromJson({
                     link_wrap_push: true,
                 }),
-                user: User.fromJson({ id: 1 }),
+                user: User.fromJson({ id: 1, data: {} }),
                 context: {
                     template_id: 1,
                     campaign_id: 1,
