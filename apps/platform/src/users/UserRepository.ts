@@ -189,7 +189,7 @@ export const deleteUser = async (projectId: number, externalId: string): Promise
     })
 }
 
-export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams, trx?: Transaction): Promise<Device | undefined> => {
+export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams, trx?: Transaction): Promise<number | undefined> => {
 
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity, trx)
     if (!user) throw new RetryError()
@@ -217,6 +217,8 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
         if (previousUser) {
             await updateUserDeviceState(previousUser, hasPushDevice, trx)
         }
+
+        return device.id
     } else {
         // If no device found, create a new one
         const newDevice = {
@@ -226,11 +228,13 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
             token,
             user_id: user.id,
         }
-        await Device.insert(newDevice, trx)
+        const deviceId = await Device.insert(newDevice, trx)
 
         // If user previously had another device, no need to update
-        if (user.has_push_device || !token) return
+        if (user.has_push_device || !token) return deviceId
         await updateUserDeviceState(user, true, trx)
+
+        return deviceId
     }
 }
 
