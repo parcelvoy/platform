@@ -201,8 +201,8 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
     // in the DB to reflect their current push state
     if (device) {
 
-        const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version'])
-        const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version'])
+        const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
+        const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
 
         // If nothing has changed on the device, just return the ID
         const isDirty = !deepEqual(oldParams, newParams) || device.user_id !== user.id
