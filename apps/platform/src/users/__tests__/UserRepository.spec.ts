@@ -68,7 +68,7 @@ describe('UserRepository', () => {
 
             const userDb = await User.find(user.id)
             const deviceDb = await Device.find(deviceId)
-            expect(userDb?.has_push_device).toEqual(1)
+            expect(userDb?.has_push_device).toEqual(true)
             expect(deviceDb?.user_id).toEqual(userDb?.id)
             expect(deviceDb?.device_id).toEqual(deviceUuid)
         })
@@ -137,8 +137,12 @@ describe('UserRepository', () => {
 
             const devices = await Device.all(qb => qb.where('user_id', user.id))
             const devices2 = await Device.all(qb => qb.where('user_id', user2.id))
+            const userDb1 = await User.find(user.id)
+            const userDb2 = await User.find(user2.id)
             expect(devices.length).toEqual(0)
             expect(devices2.length).toEqual(1)
+            expect(userDb1?.has_push_device).toEqual(false)
+            expect(userDb2?.has_push_device).toEqual(true)
         })
     })
 
