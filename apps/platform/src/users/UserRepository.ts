@@ -200,9 +200,18 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
     // If we have a device, move it to the new user and update both users
     // in the DB to reflect their current push state
     if (device) {
+
+        const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version'])
+        const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version'])
+
+        // If nothing has changed on the device, just return the ID
+        const isDirty = !deepEqual(oldParams, newParams) || device.user_id !== user.id
+        if (!isDirty) return device.id
+
+        // Update the device, combining the old and new params
         await Device.update(qb => qb.where('id', device.id), {
-            ...pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version']),
-            ...params,
+            ...oldParams,
+            ...newParams,
             user_id: user.id,
         }, trx)
 
