@@ -9,6 +9,7 @@ import { loadPushChannel } from '.'
 import App from '../../app'
 import { releaseLock } from '../../core/Lock'
 import { EventPostJob } from '../../jobs'
+import { getPushDevicesForUser } from '../../users/DeviceRepository'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -22,6 +23,7 @@ export default class PushJob extends Job {
         if (!data) return
 
         const { campaign, template, user, project, context } = data
+        const devices = await getPushDevicesForUser(project.id, user.id)
 
         try {
             // Load email channel so its ready to send
@@ -41,7 +43,7 @@ export default class PushJob extends Job {
             if (!isReady) return
 
             // Send the push and update the send record
-            const result = await channel.send(template, data)
+            const result = await channel.send(template, devices, data)
             if (result) {
                 await finalizeSend(data, result)
 
@@ -49,7 +51,7 @@ export default class PushJob extends Job {
                 // may have failed even though the push was
                 // successful. We need to check for those and
                 // disable them
-                if (result.invalidTokens.length) await disableNotifications(user.id, result.invalidTokens)
+                if (result.invalidTokens.length) await disableNotifications(user, result.invalidTokens)
             }
 
         } catch (error: any) {
@@ -57,7 +59,7 @@ export default class PushJob extends Job {
 
                 // If the push is unable to send, find invalidated tokens
                 // and disable those devices
-                await disableNotifications(user.id, error.invalidTokens)
+                await disableNotifications(user, error.invalidTokens)
 
                 // Update send record
                 await updateSendState({

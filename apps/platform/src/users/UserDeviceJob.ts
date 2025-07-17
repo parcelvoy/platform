@@ -1,7 +1,7 @@
 import { Job } from '../queue'
 import { saveDevice } from './UserRepository'
-import { DeviceParams } from './User'
 import App from '../app'
+import { DeviceParams } from './Device'
 
 type UserDeviceTrigger = DeviceParams & {
     project_id: number

@@ -27,6 +27,7 @@ describe('CampaignService', () => {
         const subscription = await createSubscription(project.id, {
             name: uuid(),
             channel: 'email',
+            is_public: true,
         })
         const provider = await createProvider(project.id, {
             type: 'smtp',

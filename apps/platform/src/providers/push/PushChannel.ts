@@ -2,6 +2,7 @@ import { PushTemplate } from '../../render/Template'
 import { Variables } from '../../render'
 import { PushProvider } from './PushProvider'
 import { PushResponse } from './Push'
+import { PushDevice } from '../../users/Device'
 
 export default class PushChannel {
     readonly provider: PushProvider
@@ -14,10 +15,15 @@ export default class PushChannel {
         }
     }
 
-    async send(template: PushTemplate, variables: Variables): Promise<PushResponse | undefined> {
+    async send(template: PushTemplate, devices: PushDevice[], variables: Variables): Promise<PushResponse | undefined> {
 
         // Find tokens from active devices with push enabled
-        const tokens = variables.user.pushEnabledDevices.map(device => device.token)
+        // Temporarily include the old table
+        const oldDevices = variables.user?.devices?.filter(device => device.token != null) as PushDevice[] ?? []
+        const tokens: string[] = [
+            ...devices.map(device => device.token),
+            ...oldDevices.map(device => device.token),
+        ]
 
         const push = {
             tokens,
