@@ -29,7 +29,7 @@ exports.up = async function(knex) {
         })
 
     await knex.schema.table('users', function(table) {
-        table.tinyint('has_push_device').defaultTo(0)
+        table.boolean('has_push_device').defaultTo(0)
     })
 }
 
