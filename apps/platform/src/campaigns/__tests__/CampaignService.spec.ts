@@ -4,11 +4,12 @@ import { createSubscription, subscribe } from '../../subscriptions/SubscriptionS
 import { User } from '../../users/User'
 import { uuid } from '../../utilities'
 import Campaign, { CampaignSend, SentCampaign } from '../Campaign'
-import { allCampaigns, createCampaign, getCampaign, populateSendList, estimatedSendSize } from '../CampaignService'
+import { allCampaigns, createCampaign, getCampaign, populateSendList, estimatedSendSize, triggerCampaignSend } from '../CampaignService'
 import { createProvider } from '../../providers/ProviderRepository'
 import { createTestProject } from '../../projects/__tests__/ProjectTestHelpers'
 import ListStatsJob from '../../lists/ListStatsJob'
 import { createUser } from '../../users/UserRepository'
+import EmailJob from '../../providers/email/EmailJob'
 
 afterEach(() => {
     jest.clearAllMocks()
@@ -257,6 +258,36 @@ describe('CampaignService', () => {
 
             const sendSize = await estimatedSendSize(campaign)
             expect(sendSize).toEqual(40)
+        })
+    })
+
+    describe('triggerCampaignSend', () => {
+        test('trigger successful', async () => {
+            const params = await createCampaignDependencies()
+            const campaign = await createTestCampaign(params) as SentCampaign
+
+            const user = await createEmptyUser(params.project_id)
+            await subscribe(user.id, params.subscription_id)
+
+            const response = await triggerCampaignSend({ campaign, user, exists: false })
+
+            expect(response).toBeDefined()
+            expect(response).toBeInstanceOf(EmailJob)
+        })
+
+        test('trigger failure because no email', async () => {
+            const params = await createCampaignDependencies()
+            const campaign = await createTestCampaign(params) as SentCampaign
+
+            const user = await createUser(campaign.project_id, {
+                external_id: uuid(),
+                data: {},
+            })
+            await subscribe(user.id, params.subscription_id)
+
+            const response = await triggerCampaignSend({ campaign, user, exists: false })
+
+            expect(response).toBeUndefined()
         })
     })
 })

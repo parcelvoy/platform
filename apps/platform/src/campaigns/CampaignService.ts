@@ -203,17 +203,20 @@ interface SendCampaign {
     reference_id?: string
 }
 
-export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: SendCampaign) => {
-    const userId = user instanceof User ? user.id : user
+export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: SendCampaign & { user: User }) => {
 
-    const subscriptionState = await getUserSubscriptionState(userId, campaign.subscription_id)
+    // Check if the user can receive the campaign and has not unsubscribed
+    if (!canSendCampaignToUser(campaign, user)) return
+
+    const subscriptionState = await getUserSubscriptionState(user, campaign.subscription_id)
     if (subscriptionState === SubscriptionState.unsubscribed) return
 
+    // If the send doesn't already exist, lets create it ahead of scheduling
     const reference = { reference_id, reference_type }
     if (!exists) {
         await CampaignSend.insert({
             campaign_id: campaign.id,
-            user_id: userId,
+            user_id: user.id,
             state: 'pending',
             send_at: new Date(),
             ...reference,
@@ -222,7 +225,7 @@ export const triggerCampaignSend = async ({ campaign, user, exists, reference_ty
 
     return sendCampaignJob({
         campaign,
-        user: userId,
+        user,
         ...reference,
     })
 }
@@ -568,9 +571,9 @@ export const estimatedSendSize = async (campaign: Campaign) => {
     return lists.reduce((acc, list) => (list.users_count ?? 0) + acc, 0)
 }
 
-export const canSendCampaignToUser = async (campaign: Campaign, user: Pick<User, 'email' | 'phone' | 'devices'>) => {
+export const canSendCampaignToUser = (campaign: Campaign, user: Pick<User, 'email' | 'phone' | 'has_push_device' | 'devices'>) => {
     if (campaign.channel === 'email' && !user.email) return false
     if (campaign.channel === 'text' && !user.phone) return false
-    if (campaign.channel === 'push' && !user.devices) return false
+    if (campaign.channel === 'push' && !(user.has_push_device || !!user.devices)) return false
     return true
 }
