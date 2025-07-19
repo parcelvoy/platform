@@ -2,7 +2,7 @@ import { RuleTree } from '../rules/Rule'
 import { ClientAliasParams, ClientIdentity } from '../client/Client'
 import { PageParams } from '../core/searchParams'
 import { RetryError } from '../queue/Job'
-import { Device, DeviceParams, User, UserInternalParams } from '../users/User'
+import { User, UserInternalParams } from '../users/User'
 import { deepEqual, pick, uuid } from '../utilities'
 import { getRuleEventParams } from '../rules/RuleHelpers'
 import { UserEvent } from './UserEvent'
@@ -10,15 +10,17 @@ import { Context } from 'koa'
 import { EventPostJob } from '../jobs'
 import { Transaction } from '../core/Model'
 import App from '../app'
+import { Device, DeviceParams } from './Device'
+import { getDeviceFromIdOrToken, markDevicesAsPushDisabled, userHasPushDevice } from './DeviceRepository'
 import Project from '../projects/Project'
 
-export const getUser = async (id: number, projectId?: number): Promise<User | undefined> => {
+export const getUser = async (id: number, projectId?: number, trx?: Transaction): Promise<User | undefined> => {
     return await User.find(id, qb => {
         if (projectId) {
             qb.where('project_id', projectId)
         }
         return qb
-    })
+    }, trx)
 }
 
 export const getUserFromContext = async (ctx: Context): Promise<User | undefined> => {
@@ -190,64 +192,87 @@ export const deleteUser = async (projectId: number, externalId: string): Promise
     })
 }
 
-export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams, trx?: Transaction): Promise<Device | undefined> => {
+export const saveDevice = async (projectId: number, { external_id, anonymous_id, ...params }: DeviceParams, trx?: Transaction): Promise<number | undefined> => {
 
     const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity, trx)
     if (!user) throw new RetryError()
 
-    const devices = user.devices ? [...user.devices] : []
-    let device = devices?.find(device => {
-        return device.device_id === params.device_id
-            || (device.token === params.token && device.token != null)
-    })
-    if (device) {
-        const newDevice = { ...device, ...params }
-        const isDirty = !deepEqual(device, newDevice)
-        if (!isDirty) return device
-        Object.assign(device, params)
-    } else {
-        device = {
-            ...params,
-            device_id: params.device_id,
-        }
-        devices.push(device)
-    }
+    const { device_id, token } = params
+    const device = await getDeviceFromIdOrToken(projectId, device_id, token, trx)
 
+    // If we have a device, move it to the new user and update both users
+    // in the DB to reflect their current push state
+    if (device) {
+
+        const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
+        const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
+
+        // If nothing has changed on the device, just return the ID
+        const isDirty = !deepEqual(oldParams, newParams) || device.user_id !== user.id
+        if (!isDirty) return device.id
+
+        // Update the device, combining the old and new params
+        await Device.update(qb => qb.where('id', device.id), {
+            ...oldParams,
+            ...newParams,
+            user_id: user.id,
+        }, trx)
+
+        // If this user had no previous push device, update the db
+        if (!user.has_push_device && !!token) {
+            await updateUserDeviceState(user, true, trx)
+        }
+
+        // Update the user we stole the device from
+        const previousUser = await getUser(device.user_id, projectId, trx)
+        const hasPushDevice = await userHasPushDevice(user.project_id, device.user_id, trx)
+        if (previousUser) {
+            await updateUserDeviceState(previousUser, hasPushDevice, trx)
+        }
+
+        return device.id
+    } else {
+        // If no device found, create a new one
+        const newDevice = {
+            ...params,
+            project_id: projectId,
+            device_id: device_id ?? uuid(),
+            token,
+            user_id: user.id,
+        }
+        const deviceId = await Device.insert(newDevice, trx)
+
+        // If user previously had another device, no need to update
+        if (user.has_push_device || !token) return deviceId
+        await updateUserDeviceState(user, true, trx)
+
+        return deviceId
+    }
+}
+
+export const disableNotifications = async (user: User, tokens: string[]): Promise<boolean> => {
+
+    await App.main.db.transaction(async (trx) => {
+
+        // Wipe the token from all devices provided
+        await markDevicesAsPushDisabled(user.project_id, tokens, trx)
+
+        // Check if the user has any push devices left
+        const hasPushDevice = await userHasPushDevice(user.project_id, user.id, trx)
+
+        // If the push state has changed for a user, update the record
+        if (hasPushDevice === user.has_push_device) return
+        await updateUserDeviceState(user, hasPushDevice, trx)
+    })
+    return true
+}
+
+const updateUserDeviceState = async (user: User, hasPushDevice: boolean, trx?: Transaction): Promise<void> => {
     const after = await User.updateAndFetch(user.id, {
-        devices,
+        has_push_device: hasPushDevice,
         version: Date.now(),
     }, trx)
     await User.clickhouse().upsert(after, user)
-
-    return device
-}
-
-export const disableNotifications = async (userId: number, tokens: string[]): Promise<boolean> => {
-
-    await App.main.db.transaction(async (trx) => {
-        const user = await User.find(userId, undefined, trx)
-        if (!user) return false
-        if (!user.devices?.length) return false
-
-        const devices = []
-        for (const { token, ...device } of user.devices) {
-            if (token && tokens.includes(token)) {
-                devices.push(device)
-            } else {
-                devices.push({
-                    ...device,
-                    token,
-                })
-            }
-        }
-
-        const after = await User.updateAndFetch(user.id, {
-            devices,
-            version: Date.now(),
-        }, trx)
-        await User.clickhouse().upsert(after, user)
-    })
-    return true
 }
 
 export const getUserEventsForRules = async (

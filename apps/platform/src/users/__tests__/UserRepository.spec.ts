@@ -6,6 +6,7 @@ import { uuid } from '../../utilities'
 import { User } from '../User'
 import { UserEvent } from '../UserEvent'
 import { createEvent } from '../UserEventRepository'
+import { Device } from '../Device'
 
 describe('UserRepository', () => {
     describe('getUserFromClientId', () => {
@@ -54,9 +55,10 @@ describe('UserRepository', () => {
                 external_id: uuid(),
             })
 
-            const device = await saveDevice(project.id, {
+            const deviceUuid = uuid()
+            const deviceId = await saveDevice(project.id, {
                 external_id: user.external_id,
-                device_id: uuid(),
+                device_id: deviceUuid,
                 token: uuid(),
                 os: 'ios',
                 model: 'iPhone',
@@ -64,9 +66,11 @@ describe('UserRepository', () => {
                 app_version: '1.0',
             })
 
-            const freshUser = await User.find(user.id)
-            expect(freshUser?.devices?.length).toEqual(1)
-            expect(freshUser?.devices?.[0].device_id).toEqual(device?.device_id)
+            const userDb = await User.find(user.id)
+            const deviceDb = await Device.find(deviceId)
+            expect(userDb?.has_push_device).toEqual(true)
+            expect(deviceDb?.user_id).toEqual(userDb?.id)
+            expect(deviceDb?.device_id).toEqual(deviceUuid)
         })
 
         test('update a device for a user', async () => {
@@ -95,11 +99,50 @@ describe('UserRepository', () => {
                 app_version: '1.1',
             })
 
-            const freshUser = await User.find(user.id)
-            expect(freshUser?.devices?.length).toEqual(1)
-            expect(freshUser?.devices?.[0].device_id).toEqual(deviceId)
-            expect(freshUser?.devices?.[0].token).toEqual(token)
-            expect(freshUser?.devices?.[0].app_build).toEqual('2')
+            const devices = await Device.all(qb => qb.where('user_id', user.id))
+            expect(devices.length).toEqual(1)
+            expect(devices[0].device_id).toEqual(deviceId)
+            expect(devices[0].token).toEqual(token)
+            expect(devices[0].app_build).toEqual('2')
+        })
+
+        test('changing a devices user moves it', async () => {
+            const project = await createTestProject()
+            const deviceId = uuid()
+            const token = uuid()
+            const user = await createUser(project.id, {
+                external_id: uuid(),
+            })
+            const user2 = await createUser(project.id, {
+                external_id: uuid(),
+            })
+            await saveDevice(project.id, {
+                external_id: user.external_id,
+                device_id: deviceId,
+                token: uuid(),
+                os: 'ios',
+                model: 'iPhone',
+                app_build: '1',
+                app_version: '1.0',
+            })
+            await saveDevice(project.id, {
+                external_id: user2.external_id,
+                device_id: deviceId,
+                token,
+                os: 'ios',
+                model: 'iPhone',
+                app_build: '2',
+                app_version: '1.1',
+            })
+
+            const devices = await Device.all(qb => qb.where('user_id', user.id))
+            const devices2 = await Device.all(qb => qb.where('user_id', user2.id))
+            const userDb1 = await User.find(user.id)
+            const userDb2 = await User.find(user2.id)
+            expect(devices.length).toEqual(0)
+            expect(devices2.length).toEqual(1)
+            expect(userDb1?.has_push_device).toEqual(false)
+            expect(userDb2?.has_push_device).toEqual(true)
         })
     })
 
