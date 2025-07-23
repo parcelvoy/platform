@@ -65,7 +65,7 @@ export type CampaignPopulationProgress = {
 
 export type SentCampaign = Campaign & { send_at: Date }
 
-export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'eventName' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'journeys' | 'deleted_at' | 'progress'>
+export type CampaignParams = Omit<Campaign, ModelParams | 'delivery' | 'eventName' | 'templates' | 'lists' | 'exclusion_lists' | 'subscription' | 'provider' | 'journeys' | 'deleted_at' | 'progress' | 'isAborted' | 'isAbortedOrDraft'>
 export type CampaignCreateParams = Omit<CampaignParams, 'state'>
 export type CampaignUpdateParams = Omit<CampaignParams, 'channel' | 'type'>
 
