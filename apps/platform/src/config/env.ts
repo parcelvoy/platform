@@ -96,14 +96,6 @@ export default (type?: EnvType): Env => {
             tls: process.env.REDIS_TLS === 'true',
         },
         queue: driver<QueueConfig>(process.env.QUEUE_DRIVER, {
-            sqs: () => ({
-                queueUrl: process.env.AWS_SQS_QUEUE_URL!,
-                region: process.env.AWS_REGION!,
-                credentials: {
-                    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-                },
-            }),
             redis: () => ({
                 host: process.env.REDIS_HOST!,
                 port: envInt(process.env.REDIS_PORT, 6379),

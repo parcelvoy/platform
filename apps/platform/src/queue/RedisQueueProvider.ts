@@ -1,4 +1,4 @@
-import { MetricsTime, Queue as BullQueue, Worker, JobsOptions, DelayedError } from 'bullmq'
+import { MetricsTime, Queue as BullQueue, Worker, JobsOptions, DelayedError, WaitingError } from 'bullmq'
 import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
@@ -70,6 +70,19 @@ export default class RedisQueueProvider implements QueueProvider {
 
         // Special error so job stays in queue instead of being removed
         throw new DelayedError()
+    }
+
+    async retry(job: EncodedJob): Promise<void> {
+        if (!job.options.jobId || !job.token) {
+            await this.enqueue(job)
+            return
+        }
+
+        const bullJob = await this.bull.getJob(job.options.jobId)
+        await bullJob?.moveToWait(job.token)
+
+        // Special error so the job is just moved
+        throw new WaitingError()
     }
 
     private adaptJob(job: EncodedJob): { name: string, data: any, opts: JobsOptions | undefined } {

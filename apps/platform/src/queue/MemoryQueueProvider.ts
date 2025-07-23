@@ -36,6 +36,10 @@ export default class MemoryQueueProvider implements QueueProvider {
         await this.enqueue(job)
     }
 
+    async retry(job: Job): Promise<void> {
+        await this.enqueue(job)
+    }
+
     start(): void {
         if (process.env.NODE_ENV === 'test') return
         if (this.loop) return

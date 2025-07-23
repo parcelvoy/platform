@@ -1,11 +1,12 @@
+import App from '../app'
 import { User, UserInternalParams } from './User'
 import { Job } from '../queue'
 import { createUser, getUsersFromIdentity, updateUser } from './UserRepository'
 import { ClientIdentity } from '../client/Client'
 import { ListVersion } from '../lists/List'
 import { addUserToList } from '../lists/ListService'
-import App from '../app'
-import { Transaction } from '../core/Model'
+import { EncodedJob } from '../queue/Job'
+import { LockError } from '../core/Lock'
 
 interface UserPatchTrigger {
     project_id: number
@@ -23,36 +24,43 @@ export default class UserPatchJob extends Job {
         return new this(data)
     }
 
-    static async handler(patch: UserPatchTrigger): Promise<User> {
+    static async handler(patch: UserPatchTrigger, raw: EncodedJob): Promise<User> {
 
-        const upsert = async (patch: UserPatchTrigger, tries = 3, trx: Transaction): Promise<User> => {
+        const app = App.main
+
+        const upsert = async (patch: UserPatchTrigger, tries = 3): Promise<User> => {
             const { project_id, user: { external_id, anonymous_id, data, ...fields } } = patch
             const identity = { external_id, anonymous_id } as ClientIdentity
 
             // Check for existing user
-            const { anonymous, external } = await getUsersFromIdentity(project_id, identity, trx)
+            const { anonymous, external } = await getUsersFromIdentity(project_id, identity)
             const existing = external ?? anonymous
 
             // If user, update otherwise insert
             try {
                 return existing
-                    ? await updateUser(existing, patch.user, anonymous, trx)
+                    ? await updateUser(existing, patch.user, anonymous)
                     : await createUser(project_id, {
                         ...identity,
                         data,
                         ...fields,
-                    }, trx)
+                    })
             } catch (error: any) {
+
+                // If record is locked, re-queue the job
+                if (error instanceof LockError) {
+                    await app.queue.retry(raw)
+                    throw error
+                }
+
                 // If there is an error (such as constraints,
-                // retry up to three times)
+                // retry inline up to three times)
                 if (tries <= 0) throw error
-                return upsert(patch, --tries, trx)
+                return upsert(patch, --tries)
             }
         }
 
-        const user = await App.main.db.transaction(async (trx) => {
-            return await upsert(patch, 1, trx)
-        })
+        const user = await upsert(patch)
 
         const {
             join_list,

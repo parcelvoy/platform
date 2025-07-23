@@ -13,6 +13,12 @@ import App from '../app'
 import { Device, DeviceParams } from './Device'
 import { getDeviceFromIdOrToken, markDevicesAsPushDisabled, userHasPushDevice } from './DeviceRepository'
 import Project from '../projects/Project'
+import { acquireLock, LockError, releaseLock } from '../core/Lock'
+
+const CacheKeys = {
+    user: (id: number) => `user:${id}`,
+    userPatch: (id: number) => `lock:user:${id}:patch`,
+}
 
 export const getUser = async (id: number, projectId?: number, trx?: Transaction): Promise<User | undefined> => {
     return await User.find(id, qb => {
@@ -149,18 +155,35 @@ export const createUser = async (projectId: number, { external_id, anonymous_id,
     return user
 }
 
-export const updateUser = async (existing: User, params: Partial<User>, anonymous?: User, trx?: Transaction): Promise<User> => {
-    const { external_id, anonymous_id, data, ...fields } = params
-    const hasChanges = isUserDirty(existing, params)
-    if (hasChanges) {
+const patchUser = async (fields: Partial<User>, existing: User, trx?: Transaction) => {
+
+    // Create a lock to prevent concurrent updates
+    const key = CacheKeys.userPatch(existing.id)
+    const acquired = await acquireLock({ key, timeout: 300 })
+    if (!acquired) throw new LockError()
+
+    try {
         const after = await User.updateAndFetch(existing.id, {
-            data: data ? { ...existing.data, ...data } : undefined,
             ...fields,
-            ...!anonymous ? { anonymous_id } : {},
             version: Date.now(),
         }, trx)
         await User.clickhouse().upsert(after, existing)
         return after
+    } finally {
+        await releaseLock(key)
+    }
+}
+
+export const updateUser = async (existing: User, params: Partial<User>, anonymous?: User, trx?: Transaction): Promise<User> => {
+    const { external_id, anonymous_id, data, ...fields } = params
+    const hasChanges = isUserDirty(existing, params)
+    if (hasChanges) {
+        return await patchUser({
+            data: data ? { ...existing.data, ...data } : undefined,
+            ...fields,
+            ...!anonymous ? { anonymous_id } : {},
+            version: Date.now(),
+        }, existing, trx)
     }
     return existing
 }
@@ -268,11 +291,9 @@ export const disableNotifications = async (user: User, tokens: string[]): Promis
 }
 
 const updateUserDeviceState = async (user: User, hasPushDevice: boolean, trx?: Transaction): Promise<void> => {
-    const after = await User.updateAndFetch(user.id, {
+    await patchUser({
         has_push_device: hasPushDevice,
-        version: Date.now(),
-    }, trx)
-    await User.clickhouse().upsert(after, user)
+    }, user, trx)
 }
 
 export const getUserEventsForRules = async (

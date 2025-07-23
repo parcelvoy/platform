@@ -6,9 +6,8 @@ import Job, { EncodedJob, JobError } from './Job'
 import MemoryQueueProvider, { MemoryConfig } from './MemoryQueueProvider'
 import QueueProvider, { MetricPeriod, QueueMetric, QueueProviderName } from './QueueProvider'
 import RedisQueueProvider, { RedisQueueConfig } from './RedisQueueProvider'
-import SQSQueueProvider, { SQSConfig } from './SQSQueueProvider'
 
-export type QueueConfig = SQSConfig | RedisQueueConfig | MemoryConfig | LoggerConfig
+export type QueueConfig = RedisQueueConfig | MemoryConfig | LoggerConfig
 
 export interface QueueTypeConfig extends DriverConfig {
     driver: QueueProviderName
@@ -19,9 +18,7 @@ export default class Queue {
     jobs: Record<string, (data: any, raw?: EncodedJob) => Promise<any>> = {}
 
     constructor(config?: QueueConfig) {
-        if (config?.driver === 'sqs') {
-            this.provider = new SQSQueueProvider(config, this)
-        } else if (config?.driver === 'redis') {
+        if (config?.driver === 'redis') {
             this.provider = new RedisQueueProvider(config, this)
         } else if (config?.driver === 'memory') {
             this.provider = new MemoryQueueProvider(this)
@@ -61,6 +58,10 @@ export default class Queue {
 
     async delay(job: EncodedJob, milliseconds: number) {
         await this.provider.delay(job, milliseconds)
+    }
+
+    async retry(job: EncodedJob) {
+        await this.provider.retry(job)
     }
 
     get batchSize() {

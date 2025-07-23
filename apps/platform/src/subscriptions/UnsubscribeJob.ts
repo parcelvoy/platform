@@ -2,12 +2,13 @@ import { Job } from '../queue'
 import { toggleSubscription } from './SubscriptionService'
 import { SubscriptionState } from './Subscription'
 import { getUserFromClientId } from '../users/UserRepository'
+import { ClientIdentity } from '../client/Client'
 
 type UserUnsubscribeParams = {
     external_id: string
     project_id: number
     subscription_id: number
-}
+} & ClientIdentity
 
 export default class UnsubscribeJob extends Job {
     static $name = 'unsubscribe'

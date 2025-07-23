@@ -1,7 +1,7 @@
 import Queue from './Queue'
 import { EncodedJob } from './Job'
 
-export type QueueProviderName = 'sqs' | 'redis' | 'memory' | 'logger'
+export type QueueProviderName = 'redis' | 'memory' | 'logger'
 
 export interface Metric {
     date: Date
@@ -27,6 +27,7 @@ export default interface QueueProvider {
     enqueue(job: EncodedJob): Promise<void>
     enqueueBatch(jobs: EncodedJob[]): Promise<void>
     delay(job: EncodedJob, milliseconds: number): Promise<void>
+    retry(job: EncodedJob): Promise<void>
     start(): void
     pause(): Promise<void>
     resume(): Promise<void>

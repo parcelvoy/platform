@@ -44,3 +44,5 @@ export const acquireLock = async ({
 export const releaseLock = async (key: string) => {
     await App.main.redis.del(`lock:${key}`)
 }
+
+export class LockError extends Error {}
