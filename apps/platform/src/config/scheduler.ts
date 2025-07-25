@@ -19,6 +19,7 @@ export default (app: App) => {
             JourneyDelayJob.enqueueActive(app)
             app.queue.enqueue(ProcessCampaignsJob.from())
             app.queue.enqueue(CampaignStateJob.from())
+            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
         lockLength: 120,
     })
@@ -30,7 +31,6 @@ export default (app: App) => {
                 delta: subHours(new Date(), 1),
             }))
             app.queue.enqueue(UpdateJourneysJob.from())
-            app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
     })
     scheduler.schedule({

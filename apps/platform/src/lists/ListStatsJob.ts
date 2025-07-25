@@ -14,7 +14,7 @@ export default class ListStatsJob extends Job {
         listId: number,
         projectId: number,
     ): ListStatsJob {
-        return new this({ listId, projectId }).deduplicationKey(`${this.name}_${listId}`)
+        return new this({ listId, projectId }).deduplicationKey(`${this.$name}_${listId}`)
     }
 
     static async handler({ listId, projectId }: ListStatsParams) {

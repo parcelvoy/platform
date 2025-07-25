@@ -1,7 +1,6 @@
 import App from '../app'
-import { getProject } from '../projects/ProjectService'
 import { Job } from '../queue'
-import { JourneyEntrance, JourneyStep } from './JourneyStep'
+import { JourneyEntrance } from './JourneyStep'
 import ScheduledEntranceJob from './ScheduledEntranceJob'
 
 export default class ScheduledEntranceOrchestratorJob extends Job {
@@ -32,12 +31,6 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
 
         const jobs: Job[] = []
         for (const entrance of entrances) {
-
-            const project = await getProject(entrance.project_id)
-            await JourneyStep.update(q => q.where('id', entrance.id), {
-                next_scheduled_at: entrance.nextDate(project?.timezone ?? 'UTC'),
-            })
-
             if (entrance.list_id) {
                 jobs.push(ScheduledEntranceJob.from({
                     entranceId: entrance.id,
@@ -49,5 +42,4 @@ export default class ScheduledEntranceOrchestratorJob extends Job {
             await App.main.queue.enqueueBatch(jobs)
         }
     }
-
 }

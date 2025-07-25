@@ -1,13 +1,15 @@
 import { Job } from '../queue'
-import { JourneyEntrance } from './JourneyStep'
+import { JourneyEntrance, JourneyStep } from './JourneyStep'
 import JourneyUserStep from './JourneyUserStep'
-import { chunk, Chunker, uuid } from '../utilities'
+import { uuid } from '../utilities'
 import App from '../app'
 import JourneyProcessJob from './JourneyProcessJob'
 import Journey from './Journey'
 import List from '../lists/List'
 import { getRuleQuery } from '../rules/RuleEngine'
-import { User } from '../users/User'
+import Project from '../projects/Project'
+import { logger } from '../config/logger'
+import { processUsers } from '../users/ProcessUsers'
 
 interface ScheduledEntranceTrigger {
     entranceId: number
@@ -18,13 +20,12 @@ export default class ScheduledEntranceJob extends Job {
     static $name = 'scheduled_entrance_job'
 
     static from(params: ScheduledEntranceTrigger) {
-        return new ScheduledEntranceJob(params)
+        return new ScheduledEntranceJob(params).deduplicationKey(`${this.$name}_${params.entranceId}`)
     }
 
     static async handler({ entranceId }: ScheduledEntranceTrigger) {
 
         const entrance = await JourneyEntrance.find(entranceId)
-
         if (!entrance || entrance.type !== JourneyEntrance.type || !entrance.list_id) {
             return
         }
@@ -33,42 +34,44 @@ export default class ScheduledEntranceJob extends Job {
             Journey.find(entrance.journey_id),
             List.find(entrance.list_id),
         ])
+        if (!list || list.project_id !== journey?.project_id) return
 
-        if (!list || list.project_id !== journey?.project_id) {
-            return // bad list id or project mismatch
-        }
+        const project = await Project.find(journey.project_id)
 
-        const ref = uuid()
-        const result = await User.clickhouse().query(
-            getRuleQuery(list.project_id, list.rule),
-        )
+        const query = getRuleQuery(list.project_id, list.rule)
+        await processUsers({
+            query,
+            cacheKey: `journeys:${journey}:entrance:${entrance.id}:users`,
+            itemMap: (user) => ({
+                key: user.id,
+                value: `${user.id}`,
+            }),
+            callback: async (pairs) => {
+                try {
+                    const ref = uuid()
+                    const items = pairs.map(({ key }) => ({
+                        user_id: parseInt(key),
+                        type: 'completed',
+                        journey_id: entrance.journey_id,
+                        step_id: entrance.id,
+                        ref,
+                    }))
+                    await JourneyUserStep.insert(items)
 
-        const chunker = new Chunker<Partial<JourneyUserStep>>(async items => {
-            await App.main.db.transaction(async (trx) => {
-                await JourneyUserStep.query(trx)
-                    .insert(items)
-            })
-        }, 500)
+                    const steps = await JourneyUserStep.all(qb => qb.select('id')
+                        .where('ref', ref),
+                    )
 
-        for await (const chunk of result.stream() as any) {
-            for (const result of chunk) {
-                const user = result.json()
-                chunker.add({
-                    user_id: user.id,
-                    type: 'completed',
-                    journey_id: entrance.journey_id,
-                    step_id: entrance.id,
-                    ref,
+                    await App.main.queue.enqueueBatch(steps.map(({ id }) => JourneyProcessJob.from({ entrance_id: id })))
+                } catch (error) {
+                    logger.error({ error, journey: journey.id }, 'campaign:generate:progress:error')
+                }
+            },
+            afterCallback: async () => {
+                await JourneyStep.update(q => q.where('id', entrance.id), {
+                    next_scheduled_at: entrance.nextDate(project?.timezone ?? 'UTC'),
                 })
-            }
-        }
-
-        await chunker.flush()
-
-        const query = JourneyUserStep.query().select('id').where('ref', ref)
-
-        await chunk<{ id: number }>(query, App.main.queue.batchSize, async items => {
-            await App.main.queue.enqueueBatch(items.map(({ id }) => JourneyProcessJob.from({ entrance_id: id })))
+            },
         })
     }
 }
