@@ -1,5 +1,5 @@
 import Queue from './Queue'
-import { EncodedJob } from './Job'
+import Job, { EncodedJob } from './Job'
 
 export type QueueProviderName = 'redis' | 'memory' | 'logger'
 
@@ -26,6 +26,7 @@ export default interface QueueProvider {
     batchSize: number
     enqueue(job: EncodedJob): Promise<void>
     enqueueBatch(jobs: EncodedJob[]): Promise<void>
+    schedule(job: typeof Job, cron: string): Promise<void>
     delay(job: EncodedJob, milliseconds: number): Promise<void>
     retry(job: EncodedJob): Promise<void>
     start(): void

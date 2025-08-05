@@ -84,6 +84,9 @@ export default class Provider extends Model {
             default(projectId: number, group: string) {
                 return `providers:project:${projectId}:${group}`
             },
+            rateLimit(id: number, period: RateInterval = 'minute') {
+                return `providers:${id}:ratelimit:${period}`
+            },
         }
     }
 

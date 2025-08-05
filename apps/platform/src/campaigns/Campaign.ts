@@ -21,6 +21,9 @@ export type CampaignProgress = CampaignDelivery & { pending: number }
 
 export type CampaignType = 'blast' | 'trigger'
 
+export const campaignAbortedStates: CampaignState[] = ['aborted', 'aborting']
+export const campaignEndedStates: CampaignState[] = ['finished', ...campaignAbortedStates]
+
 export default class Campaign extends Model {
     project_id!: number
     type!: CampaignType
@@ -52,7 +55,7 @@ export default class Campaign extends Model {
         return `${this.channel}_${action}`
     }
 
-    get isAborted() { return this.state === 'aborted' || this.state === 'aborting' }
+    get isAborted() { return campaignAbortedStates.includes(this.state) }
     get isAbortedOrDraft() {
         return this.isAborted || this.state === 'draft'
     }

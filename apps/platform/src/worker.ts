@@ -10,7 +10,7 @@ export default class Worker {
         public app: import('./app').default,
     ) {
         this.worker = new Queue(app.env.queue)
-        this.scheduler = scheduler(app)
+        this.scheduler = scheduler(app, this.worker)
         this.loadJobs()
     }
 

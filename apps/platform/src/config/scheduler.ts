@@ -10,8 +10,10 @@ import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import UpdateJourneysJob from '../journey/UpdateJourneysJob'
 import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrchestratorJob'
 import { acquireLock } from '../core/Lock'
+import Queue from '../queue'
+import CampaignProcessSendsJob from '../campaigns/CampaignProcessSendsJob'
 
-export default (app: App) => {
+export default (app: App, queue: Queue) => {
     const scheduler = new Scheduler(app)
     scheduler.schedule({
         rule: '* * * * *',
@@ -39,6 +41,12 @@ export default (app: App) => {
             app.queue.enqueue(ProcessListsJob.from())
         },
     })
+
+    queue.schedule(
+        CampaignProcessSendsJob,
+        '*/15 * * * *', // Every fifteen seconds
+    )
+
     return scheduler
 }
 

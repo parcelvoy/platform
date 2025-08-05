@@ -4,7 +4,7 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { logger } from '../config/logger'
 import { User } from '../users/User'
-import Campaign, { CampaignCreateParams, CampaignDelivery, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, campaignEndedStates, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendReferenceType, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
 import List from '../lists/List'
 import Subscription, { SubscriptionState } from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
@@ -20,7 +20,7 @@ import CampaignError from './CampaignError'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
 import Project from '../projects/Project'
 import Template from '../render/Template'
-import { differenceInDays, subDays } from 'date-fns'
+import { subDays } from 'date-fns'
 import { cacheDel, cacheGet, cacheIncr, cacheSet, DataPair } from '../config/redis'
 import App from '../app'
 import CampaignAbortJob from './CampaignAbortJob'
@@ -240,15 +240,20 @@ export const getCampaignUsers = async (id: number, params: PageParams, projectId
     )
 }
 
-interface SendCampaign {
-    campaign: Campaign
+type SendCampaign = {
+    campaign: Pick<Campaign, 'id' | 'channel'>
     user: User | number
     exists?: boolean
     reference_type?: CampaignSendReferenceType
     reference_id?: string
 }
 
-export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: SendCampaign & { user: User }) => {
+type TriggerCampaign = {
+    campaign: Campaign
+    user: User
+} & SendCampaign
+
+export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: TriggerCampaign) => {
 
     // Check if the user can receive the campaign and has not unsubscribed
     if (!canSendCampaignToUser(campaign, user)) return
@@ -439,29 +444,31 @@ export const campaignSendReadyQuery = (
     return query
 }
 
-export const failStalledSends = async (campaign: Campaign) => {
+export const providerSendReadyQuery = (
+    providerId: number,
+    limit: number,
+) => {
+    return CampaignSend.query()
+        .leftJoin('campaigns', 'campaigns.id', 'campaign_sends.campaign_id')
+        .where('campaign_sends.send_at', '<=', CampaignSend.raw('NOW()'))
+        .whereIn('campaign_sends.state', ['pending', 'throttled'])
+        .where('campaigns.provider_id', providerId)
+        .whereNotIn('campaigns.state', campaignEndedStates)
+        .select('campaign_id', 'user_id', 'reference_id', 'campaigns.channel')
+        .limit(limit)
+}
+
+export const failStalledSends = async () => {
 
     const stalledDays = 2
-
-    // Its not possible to have any stalled records if the campaign send
-    // was less than the number of days we are checking for
-    if (
-        campaign.send_at
-        && differenceInDays(
-            Date.now(),
-            new Date(campaign.send_at),
-        ) >= stalledDays
-    ) return
-
     const query = CampaignSend.query()
         .where('campaign_sends.send_at', '<', subDays(Date.now(), stalledDays))
         .where('campaign_sends.state', 'throttled')
-        .where('campaign_id', campaign.id)
-        .select('user_id', 'campaign_id')
+        .select('user_id', 'campaign_id', 'reference_id')
     await chunk(query, 25, async (items) => {
         await CampaignSend.query()
             .update({ state: 'failed' })
-            .whereIn(['user_id', 'campaign_id'], items)
+            .whereIn(['user_id', 'campaign_id', 'reference_id'], items)
     }, ({ user_id, campaign_id }: CampaignSend) => ([user_id, campaign_id]))
 }
 

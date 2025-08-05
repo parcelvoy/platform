@@ -73,6 +73,10 @@ export default class Queue {
         this.jobs[job.$name] = job.handler
     }
 
+    schedule(job: typeof Job, cron: string) {
+        this.provider.schedule(job, cron)
+    }
+
     async started(job: EncodedJob) {
         logger.trace(job, 'queue:job:started')
     }

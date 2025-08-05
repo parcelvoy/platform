@@ -18,6 +18,7 @@ import { createEvent } from '../users/UserEventRepository'
 import { loadUserStepDataMap } from '../journey/JourneyService'
 import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
+import Provider from './Provider'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -158,7 +159,7 @@ export const throttleSend = async (channel: Channel, points = 1): Promise<RateLi
 
     // Otherwise consume points and check rate
     return await App.main.rateLimiter.consume(
-        `ratelimit-${provider.id}`,
+        Provider.cacheKey.rateLimit(provider.id, 'second'),
         {
             limit: provider.rate_limit,
             points,

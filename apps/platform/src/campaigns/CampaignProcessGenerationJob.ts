@@ -3,12 +3,11 @@ import Campaign from './Campaign'
 import CampaignGenerateListJob from './CampaignGenerateListJob'
 import CampaignEnqueueSendsJob from './CampaignEnqueueSendsJob'
 import { failStalledSends } from './CampaignService'
-import Provider from '../providers/Provider'
 
-export default class ProcessCampaignsJob extends Job {
-    static $name = 'process_campaigns_job'
+export default class CampaignProcessGenerationJob extends Job {
+    static $name = 'campaign_process_generation_job'
 
-    static from(): ProcessCampaignsJob {
+    static from(): CampaignProcessGenerationJob {
         return new this().deduplicationKey(this.$name)
     }
 
@@ -28,13 +27,6 @@ export default class ProcessCampaignsJob extends Job {
 
             // Start looking through messages that are ready to send
             await CampaignEnqueueSendsJob.from(campaign).queue()
-        }
-
-        // For each provider, enqueue a job to load up all sends that are
-        // possible within the given parameters of the provider
-        const providers = await Provider.all(qb => qb.select('id'))
-        for (const { id } of providers) {
-            await CampaignEnqueueSendsJob.from({ provider_id: id }).queue()
         }
 
         // Look for items that have stalled out and mark them as failed

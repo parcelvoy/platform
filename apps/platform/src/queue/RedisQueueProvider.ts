@@ -2,7 +2,7 @@ import { MetricsTime, Queue as BullQueue, Worker, JobsOptions, DelayedError, Wai
 import { subMinutes } from 'date-fns'
 import { logger } from '../config/logger'
 import { batch } from '../utilities'
-import { EncodedJob, JobPriority } from './Job'
+import Job, { EncodedJob, JobPriority } from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
 import QueueProvider, { MetricPeriod, QueueMetric } from './QueueProvider'
 import { DefaultRedis, Redis, RedisConfig } from '../config/redis'
@@ -53,6 +53,16 @@ export default class RedisQueueProvider implements QueueProvider {
         for (const part of batch(jobs, this.batchSize)) {
             await this.bull.addBulk(part.map(item => this.adaptJob(item)))
         }
+    }
+
+    async schedule(job: typeof Job, cron: string): Promise<void> {
+        await this.bull.upsertJobScheduler(
+            job.name,
+            { pattern: cron },
+            {
+                name: job.$name,
+            },
+        )
     }
 
     async delay(job: EncodedJob, milliseconds: number): Promise<void> {
