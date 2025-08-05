@@ -16,8 +16,8 @@ import Project from '../projects/Project'
 import { acquireLock, LockError, releaseLock } from '../core/Lock'
 
 const CacheKeys = {
-    userPatch: (id: number) => `lock:u:${id}`,
-    devicePatch: (deviceId: string) => `lock:d:${deviceId}`,
+    userPatch: (id: number) => `u:${id}`,
+    devicePatch: (deviceId: string) => `d:${deviceId}`,
 }
 
 export const getUser = async (id: number, projectId?: number, trx?: Transaction): Promise<User | undefined> => {
@@ -219,59 +219,68 @@ export const saveDevice = async (projectId: number, { external_id, anonymous_id,
 
     // Make sure we aren't trying to add the same device twice
     const { device_id, token } = params
+    const key = CacheKeys.devicePatch(device_id)
+    const acquired = await acquireLock({ key, timeout: 90 })
+    if (!acquired) throw new LockError()
 
-    const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity, trx)
-    if (!user) throw new RetryError()
+    try {
 
-    const device = await getDeviceFromIdOrToken(projectId, device_id, token, trx)
+        const user = await getUserFromClientId(projectId, { external_id, anonymous_id } as ClientIdentity, trx)
+        if (!user) throw new RetryError()
 
-    // If we have a device, move it to the new user and update both users
-    // in the DB to reflect their current push state
-    if (device) {
+        const device = await getDeviceFromIdOrToken(projectId, device_id, token, trx)
 
-        const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
-        const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
+        // If we have a device, move it to the new user and update both users
+        // in the DB to reflect their current push state
+        if (device) {
 
-        // If nothing has changed on the device, just return the ID
-        const isDirty = !deepEqual(oldParams, newParams) || device.user_id !== user.id
-        if (!isDirty) return device.id
+            const oldParams = pick(device, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
+            const newParams = pick(params, ['os', 'os_version', 'model', 'app_build', 'app_version', 'token'])
 
-        // Update the device, combining the old and new params
-        await Device.update(qb => qb.where('id', device.id), {
-            ...oldParams,
-            ...newParams,
+            // If nothing has changed on the device, just return the ID
+            const isDirty = !deepEqual(oldParams, newParams) || device.user_id !== user.id
+            if (!isDirty) return device.id
+
+            // Update the device, combining the old and new params
+            await Device.update(qb => qb.where('id', device.id), {
+                ...oldParams,
+                ...newParams,
+                user_id: user.id,
+            }, trx)
+
+            // If this user had no previous push device, update the db
+            if (!user.has_push_device && !!token) {
+                await updateUserDeviceState(user, true, trx)
+            }
+
+            // Update the user we stole the device from
+            const previousUser = await getUser(device.user_id, projectId, trx)
+            const hasPushDevice = await userHasPushDevice(user.project_id, device.user_id, trx)
+            if (previousUser) {
+                await updateUserDeviceState(previousUser, hasPushDevice, trx)
+            }
+
+            return device.id
+        }
+
+        // If no device found, create a new one
+        const newDevice = {
+            ...params,
+            project_id: projectId,
+            device_id: device_id ?? uuid(),
+            token,
             user_id: user.id,
-        }, trx)
-
-        // If this user had no previous push device, update the db
-        if (!user.has_push_device && !!token) {
-            await updateUserDeviceState(user, true, trx)
         }
+        const deviceId = await Device.insert(newDevice, trx)
 
-        // Update the user we stole the device from
-        const previousUser = await getUser(device.user_id, projectId, trx)
-        const hasPushDevice = await userHasPushDevice(user.project_id, device.user_id, trx)
-        if (previousUser) {
-            await updateUserDeviceState(previousUser, hasPushDevice, trx)
-        }
+        // If user previously had another device, no need to update
+        if (user.has_push_device || !token) return deviceId
+        await updateUserDeviceState(user, true, trx)
+        return deviceId
 
-        return device.id
+    } finally {
+        await releaseLock(key)
     }
-
-    // If no device found, create a new one
-    const newDevice = {
-        ...params,
-        project_id: projectId,
-        device_id: device_id ?? uuid(),
-        token,
-        user_id: user.id,
-    }
-    const deviceId = await Device.insert(newDevice, trx)
-
-    // If user previously had another device, no need to update
-    if (user.has_push_device || !token) return deviceId
-    await updateUserDeviceState(user, true, trx)
-    return deviceId
 }
 
 export const disableNotifications = async (user: User, tokens: string[]): Promise<boolean> => {
