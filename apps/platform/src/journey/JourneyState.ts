@@ -1,17 +1,12 @@
-import App from '../app'
 import { acquireLock, releaseLock } from '../core/Lock'
 import { getProject } from '../projects/ProjectService'
-import Job from '../queue/Job'
 import { Rule } from '../rules/Rule'
 import { User } from '../users/User'
-import { UserEvent } from '../users/UserEvent'
 import { getUserEventsForRules } from '../users/UserRepository'
 import { shallowEqual } from '../utilities'
 import { getEntranceSubsequentSteps, getJourneyStepChildren, getJourneySteps } from './JourneyRepository'
 import { JourneyStep, JourneyStepChild, journeyStepTypes } from './JourneyStep'
 import JourneyUserStep from './JourneyUserStep'
-
-type JobOrJobFunc = Job | ((state: JourneyState) => Promise<Job | undefined>)
 
 export class JourneyState {
 
@@ -21,46 +16,34 @@ export class JourneyState {
      * @param user target user to run journey for
      * @returns promise that resolves when processing ends
      */
-    public static async resume(entrance: number | JourneyUserStep, user?: User) {
+    public static async resume(entrance?: number | JourneyUserStep, user?: User) {
 
-        // find entrance
-        if (typeof entrance === 'number') {
-            entrance = (await JourneyUserStep.find(entrance))!
-        }
-        if (!entrance) {
-            return
-        }
+        // Find entrance
+        entrance = entrance instanceof JourneyUserStep
+            ? entrance
+            : await JourneyUserStep.find(entrance)
+        if (!entrance) return
+
+        // If step isn't an entrance, find real entrance
         if (entrance.entrance_id) {
-            entrance = (await JourneyUserStep.find(entrance.entrance_id))!
-            if (!entrance || entrance.entrance_id) {
-                return
-            }
+            entrance = await JourneyUserStep.find(entrance.entrance_id)
+            if (!entrance || entrance.entrance_id) return
         }
 
         // Entrance has already ended
-        if (entrance.ended_at) {
-            return
-        }
+        if (entrance.ended_at) return
 
         // Find user
-        if (!user) {
-            user = await User.find(entrance.user_id)
-        }
-        if (!user) {
-            return
-        }
+        if (!user) user = await User.find(entrance.user_id)
+        if (!user) return
 
         // User-entrance mismatch
-        if (entrance.user_id !== user.id) {
-            return
-        }
+        if (entrance.user_id !== user.id) return
 
+        // Acquire lock to prevent multiple simultaneous runs
         const key = `journey:entrance:${entrance.id}`
-
         const acquired = await acquireLock({ key })
-        if (!acquired) {
-            return
-        }
+        if (!acquired) return
 
         // Load all journey dependencies
         const [steps, children, userSteps] = await Promise.all([
@@ -80,11 +63,7 @@ export class JourneyState {
     }
 
     // Load step dependencies once and cache in state
-    private _events?: UserEvent[]
-    private _timezone?: string
-
-    // Batch enqueue jobs after processing
-    private _jobs: JobOrJobFunc[] = []
+    #timezone?: string
 
     constructor(
         public readonly entrance: JourneyUserStep,
@@ -103,7 +82,7 @@ export class JourneyState {
 
             if (userStep.step_id !== step.id) {
 
-                // create a placeholder for new step
+                // Create a placeholder for new step
                 this.userSteps.push(userStep = JourneyUserStep.fromJson({
                     journey_id: this.entrance.journey_id,
                     entrance_id: this.entrance.id,
@@ -113,7 +92,7 @@ export class JourneyState {
                 }))
             }
 
-            // continue on if this step is completed
+            // Continue on if this step is completed
             if (userStep.type === 'completed') {
                 step = await this.nextOrEnd(step)
                 continue
@@ -121,14 +100,16 @@ export class JourneyState {
 
             const copy = { ...userStep }
 
-            // delegate to step type
+            // Delegate to step type
+            let processData: Record<string, any> | undefined
             try {
-                await step.process(this, userStep)
+                const data = await step.process(this, userStep)
+                if (data) processData = data
             } catch (err) {
                 userStep.type = 'error'
             }
 
-            // persist and update the user step
+            // Persist and update the user step
             if (userStep.id) {
                 // only update the step is something has changed
                 if (!shallowEqual(copy, userStep)) {
@@ -137,6 +118,9 @@ export class JourneyState {
             } else {
                 userStep.parseJson(await JourneyUserStep.insertAndFetch(userStep))
             }
+
+            // Process post actions
+            await step.postProcess(this, userStep, processData)
 
             // Stop processing if latest isn't completed
             if (userStep.type !== 'completed') {
@@ -148,19 +132,6 @@ export class JourneyState {
                 break
             }
         }
-
-        if (this._jobs.length) {
-            const jobs: Job[] = []
-            for (let j of this._jobs) {
-                if (typeof j === 'function') {
-                    const i = await j(this)
-                    if (!i) continue
-                    j = i
-                }
-                jobs.push(j)
-            }
-            await App.main.queue.enqueueBatch(jobs)
-        }
     }
 
     private async nextOrEnd(step: JourneyStep) {
@@ -170,7 +141,7 @@ export class JourneyState {
                 const step = this.steps.find(s => s.id === stepId)
                 if (step) {
                     if (this.userSteps.find(s => s.step_id === step.id)) {
-                        // circular reference, this step has already visited
+                        // Circular reference, this step has already visited
                         await this.end()
                         return
                     }
@@ -191,23 +162,19 @@ export class JourneyState {
         return this.children.filter(sc => sc.step_id === stepId)
     }
 
-    public job(job: JobOrJobFunc) {
-        this._jobs.push(job)
-    }
-
     public async events(rule: Rule) {
         // TODO: Find a way to not have to pull in all events, better discern
         return await getUserEventsForRules(this.user.id, rule)
     }
 
     public async timezone() {
-        if (!this._timezone) {
-            this._timezone = this.user.timezone
+        if (!this.#timezone) {
+            this.#timezone = this.user.timezone
         }
-        if (!this._timezone) {
-            this._timezone = (await getProject(this.user.project_id))!.timezone
+        if (!this.#timezone) {
+            this.#timezone = (await getProject(this.user.project_id))!.timezone
         }
-        return this._timezone!
+        return this.#timezone!
     }
 
     public stepData() {

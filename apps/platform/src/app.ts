@@ -147,8 +147,8 @@ export default class App {
             await this.forceClose('uncaughtException', 'uncaught error', error)
         })
 
-        process.on('unhandledRejection', async (error, promise) => {
-            await this.forceClose('unhandledRejection', `uncaught error: ${promise}, reason: ${error}`)
+        process.on('unhandledRejection', async (error: Error, promise) => {
+            await this.forceClose('unhandledRejection', `uncaught error: ${promise}, reason: ${error}, stack: ${error?.stack}`)
         })
     }
 }

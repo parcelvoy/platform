@@ -1,4 +1,3 @@
-import { Scheduler } from '../config/scheduler'
 import { sleep, uuid } from '../utilities'
 import Job from './Job'
 import Queue, { QueueTypeConfig } from './Queue'
@@ -32,7 +31,7 @@ export default class MemoryQueueProvider implements QueueProvider {
         for (const job of jobs) this.enqueue(job)
     }
 
-    async schedule(job: typeof Job, cron: string): Promise<void> {
+    async schedule(_job: typeof Job, _cron: string): Promise<void> {
         throw new Error('MemoryQueueProvider does not support scheduling jobs.')
     }
 

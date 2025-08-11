@@ -14,7 +14,7 @@ const CacheKeys = {
  */
 export const fetchAndCompileRule = async (rootId: number): Promise<RuleTree> => {
 
-    const cache = await cacheGet<RuleTree>(App.main.redis, CacheKeys.ruleTree(rootId))
+    const cache = await cacheGet<RuleTree>(CacheKeys.ruleTree(rootId))
     if (cache) return cache
 
     const root = await App.main.db('rule').where('id', rootId).first()
@@ -22,7 +22,7 @@ export const fetchAndCompileRule = async (rootId: number): Promise<RuleTree> => 
 
     const rules = await App.main.db('rule').where('root_uuid', root!.uuid)
     const compiled = compileRule(root, rules)
-    await cacheSet(App.main.redis, CacheKeys.ruleTree(rootId), compiled, 3600)
+    await cacheSet(CacheKeys.ruleTree(rootId), compiled, 3600)
     return compiled
 }
 

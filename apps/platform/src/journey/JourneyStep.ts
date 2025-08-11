@@ -16,6 +16,8 @@ import { exitUserFromJourney, getJourneyUserStepByExternalId } from './JourneyRe
 import JourneyUserStep from './JourneyUserStep'
 import Journey from './Journey'
 
+type JourneyStepProcessData = Record<string, any>
+
 export class JourneyStepChild extends Model {
 
     step_id!: number
@@ -58,8 +60,13 @@ export class JourneyStep extends Model {
         return this.data_key ?? this.id.toString()
     }
 
-    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<JourneyStepProcessData | void> {
         userStep.type = 'completed'
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async postProcess(state: JourneyState, userStep: JourneyUserStep, processData: JourneyStepProcessData | undefined): Promise<void> {
+        return Promise.resolve()
     }
 
     async next(state: JourneyState): Promise<undefined | number> {
@@ -302,7 +309,7 @@ export class JourneyAction extends JourneyStep {
         this.campaign_id = json?.data?.campaign_id
     }
 
-    async process(state: JourneyState, userStep: JourneyUserStep): Promise<void> {
+    async process(state: JourneyState, userStep: JourneyUserStep): Promise<JourneyStepProcessData | void> {
 
         const campaign = await getCampaign(this.campaign_id, state.user.project_id)
 
@@ -324,24 +331,27 @@ export class JourneyAction extends JourneyStep {
 
         userStep.type = 'action'
 
-        // defer job construction so that we have the journey_user_step.id value
-        state.job(async () => {
-            const campaignSend = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`)
+        return { campaign }
+    }
 
-            const send = triggerCampaignSend({
+    async postProcess(state: JourneyState, userStep: JourneyUserStep, processData: JourneyStepProcessData | undefined): Promise<void> {
+        if (!processData || userStep.type === 'completed') return
+
+        const { campaign } = processData || {}
+        const campaignSend = await getCampaignSend(campaign.id, state.user.id, `${userStep.id}`)
+
+        try {
+            const job = await triggerCampaignSend({
                 campaign,
                 user: state.user,
                 exists: !!campaignSend,
                 reference_id: `${userStep.id}`,
                 reference_type: 'journey',
             })
-
-            if (!send) {
-                userStep.type = 'error'
-            }
-
-            return send
-        })
+            if (job) await job.queue()
+        } catch {
+            userStep.type = 'error'
+        }
     }
 }
 

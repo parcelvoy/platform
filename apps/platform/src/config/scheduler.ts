@@ -2,7 +2,6 @@ import { cleanupExpiredRevokedTokens } from '../auth/TokenRepository'
 import { subDays, subHours } from 'date-fns'
 import nodeScheduler from 'node-schedule'
 import App from '../app'
-import ProcessCampaignsJob from '../campaigns/ProcessCampaignsJob'
 import JourneyDelayJob from '../journey/JourneyDelayJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
@@ -12,6 +11,7 @@ import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrches
 import { acquireLock } from '../core/Lock'
 import Queue from '../queue'
 import CampaignProcessSendsJob from '../campaigns/CampaignProcessSendsJob'
+import CampaignProcessGenerationJob from '../campaigns/CampaignProcessGenerationJob'
 
 export default (app: App, queue: Queue) => {
     const scheduler = new Scheduler(app)
@@ -19,7 +19,7 @@ export default (app: App, queue: Queue) => {
         rule: '* * * * *',
         callback: () => {
             JourneyDelayJob.enqueueActive(app)
-            app.queue.enqueue(ProcessCampaignsJob.from())
+            app.queue.enqueue(CampaignProcessGenerationJob.from())
             app.queue.enqueue(CampaignStateJob.from())
             app.queue.enqueue(ScheduledEntranceOrchestratorJob.from())
         },
@@ -44,7 +44,7 @@ export default (app: App, queue: Queue) => {
 
     queue.schedule(
         CampaignProcessSendsJob,
-        '*/15 * * * *', // Every fifteen seconds
+        '*/15 * * * * *', // Every fifteen seconds
     )
 
     return scheduler

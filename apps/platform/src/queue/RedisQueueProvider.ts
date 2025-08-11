@@ -57,7 +57,7 @@ export default class RedisQueueProvider implements QueueProvider {
 
     async schedule(job: typeof Job, cron: string): Promise<void> {
         await this.bull.upsertJobScheduler(
-            job.name,
+            job.$name,
             { pattern: cron },
             {
                 name: job.$name,
@@ -114,6 +114,7 @@ export default class RedisQueueProvider implements QueueProvider {
         this.worker = new Worker('parcelvoy', async (job, token) => {
             await this.queue.dequeue({
                 ...job.data,
+                name: job.name ?? job.data.name,
                 options: {
                     ...job.data.options,
                     jobId: job.id,

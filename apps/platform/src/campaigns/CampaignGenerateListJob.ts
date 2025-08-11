@@ -1,7 +1,6 @@
 import { logger } from '../config/logger'
 import { Job } from '../queue'
 import { CampaignJobParams, SentCampaign } from './Campaign'
-import CampaignEnqueueSendsJob from './CampaignEnqueueSendsJob'
 import { getCampaign, populateSendList } from './CampaignService'
 
 export default class CampaignGenerateListJob extends Job {
@@ -22,11 +21,7 @@ export default class CampaignGenerateListJob extends Job {
             logger.info({ campaignId: id }, 'campaign:generate:populating')
             await populateSendList(campaign)
 
-            logger.info({ campaignId: id }, 'campaign:generate:sending')
-            await CampaignEnqueueSendsJob.from({
-                id: campaign.id,
-                project_id: campaign.project_id,
-            }).queue()
+            logger.info({ campaignId: id }, 'campaign:generate:finished')
         } catch (error) {
             logger.info({ campaignId: id, error }, 'campaign:generate:failed')
             throw error

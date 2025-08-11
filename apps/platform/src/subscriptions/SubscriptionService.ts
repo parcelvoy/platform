@@ -41,6 +41,11 @@ export const getUserSubscriptionState = async (user: User | number, subscription
     return fetchedUser?.subscriptionState(subscriptionId)
 }
 
+export const isUserUnsubscribed = async (user: User | number, subscriptionId: number): Promise<boolean> => {
+    const state = await getUserSubscriptionState(user, subscriptionId)
+    return state === SubscriptionState.unsubscribed
+}
+
 export const allSubscriptions = async (projectId: number, channels?: ChannelType[]) => {
     return await Subscription.all(
         qb => {

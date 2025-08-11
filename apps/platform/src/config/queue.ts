@@ -10,7 +10,6 @@ import JourneyDelayJob from '../journey/JourneyDelayJob'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
 import ListStatsJob from '../lists/ListStatsJob'
 import ProcessListsJob from '../lists/ProcessListsJob'
-import ProcessCampaignsJob from '../campaigns/ProcessCampaignsJob'
 import CampaignEnqueueSendJob from '../campaigns/CampaignEnqueueSendsJob'
 import CampaignStateJob from '../campaigns/CampaignStateJob'
 import CampaignGenerateListJob from '../campaigns/CampaignGenerateListJob'
@@ -26,12 +25,16 @@ import ScheduledEntranceOrchestratorJob from '../journey/ScheduledEntranceOrches
 import CampaignAbortJob from '../campaigns/CampaignAbortJob'
 import MigrateJob from '../organizations/MigrateJob'
 import UnsubscribeJob from '../subscriptions/UnsubscribeJob'
+import CampaignProcessSendsJob from '../campaigns/CampaignProcessSendsJob'
+import CampaignProcessGenerationJob from '../campaigns/CampaignProcessGenerationJob'
 
 export const jobs = [
     CampaignAbortJob,
     CampaignGenerateListJob,
     CampaignEnqueueSendJob,
     CampaignInteractJob,
+    CampaignProcessSendsJob,
+    CampaignProcessGenerationJob,
     CampaignStateJob,
     EmailJob,
     EventPostJob,
@@ -41,7 +44,6 @@ export const jobs = [
     ListStatsJob,
     MigrateJob,
     ProcessListsJob,
-    ProcessCampaignsJob,
     PushJob,
     ScheduledEntranceJob,
     ScheduledEntranceOrchestratorJob,

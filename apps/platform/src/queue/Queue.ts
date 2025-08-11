@@ -29,6 +29,7 @@ export default class Queue {
 
     async dequeue(job: EncodedJob): Promise<boolean> {
         if (!job || !job.name) return false
+
         const handler = this.jobs[job.name]
         if (!handler) {
             App.main.error.notify(new Error(`No handler found for job: ${job.name}`))
@@ -73,8 +74,8 @@ export default class Queue {
         this.jobs[job.$name] = job.handler
     }
 
-    schedule(job: typeof Job, cron: string) {
-        this.provider.schedule(job, cron)
+    async schedule(job: typeof Job, cron: string) {
+        await this.provider.schedule(job, cron)
     }
 
     async started(job: EncodedJob) {

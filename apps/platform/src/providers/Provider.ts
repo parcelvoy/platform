@@ -87,6 +87,9 @@ export default class Provider extends Model {
             rateLimit(id: number, period: RateInterval = 'minute') {
                 return `providers:${id}:ratelimit:${period}`
             },
+            consumed(id: number) {
+                return `providers:${id}:consumed`
+            },
         }
     }
 

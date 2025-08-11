@@ -1,5 +1,4 @@
 import { Chunker } from '../utilities'
-import App from '../app'
 import { logger } from '../config/logger'
 import { cacheBatchHash, cacheBatchLength, cacheBatchReadHashAndDelete, cacheDel, cacheGet, cacheHashExists, cacheSet, DataPair, HashScanCallback } from '../config/redis'
 import { User } from './User'
@@ -22,22 +21,21 @@ export const processUsers = async ({
     afterCallback,
 }: CachedQueryParams) => {
 
-    const redis = App.main.redis
     const hashKey = cacheKey
     const hashKeyReady = `${hashKey}:ready`
-    const hashExists = await cacheHashExists(redis, hashKey)
-    const isReady = await cacheGet(redis, hashKeyReady)
+    const hashExists = await cacheHashExists(hashKey)
+    const isReady = await cacheGet(hashKeyReady)
 
     const processFromCache = async () => {
         logger.info({
             key: hashKey,
-            count: await cacheBatchLength(redis, hashKey),
+            count: await cacheBatchLength(hashKey),
         }, 'users:generate:loading:started')
 
-        await cacheBatchReadHashAndDelete(redis, hashKey, callback)
+        await cacheBatchReadHashAndDelete(hashKey, callback)
         await afterCallback?.()
-        await cacheDel(redis, hashKeyReady)
-        await cacheDel(redis, hashKey)
+        await cacheDel(hashKeyReady)
+        await cacheDel(hashKey)
 
         logger.info({ key: hashKey }, 'users:generate:loading:finished')
     }
@@ -69,7 +67,7 @@ export const processUsers = async ({
     let count = 0
     const chunker = new Chunker<DataPair>(async pairs => {
         count += pairs.length
-        await cacheBatchHash(redis, hashKey, pairs)
+        await cacheBatchHash(hashKey, pairs)
     }, 2500)
 
     // Stream the data from ClickHouse and pass it to the Redis chunker
@@ -90,7 +88,7 @@ export const processUsers = async ({
     const shouldContinue = await beforeCallback(count)
     if (!shouldContinue) return
 
-    await cacheSet(redis, hashKeyReady, 1, 86400)
+    await cacheSet(hashKeyReady, 1, 86400)
 
     // Now that we have results, pass them back to the callback
     await processFromCache()

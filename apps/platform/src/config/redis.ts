@@ -1,4 +1,5 @@
 import IORedis, { Redis } from 'ioredis'
+import App from '../app'
 
 export interface RedisConfig {
     host: string
@@ -21,24 +22,24 @@ export const DefaultRedis = ({ port, host, username, password, tls }: RedisConfi
     })
 }
 
-export const cacheGet = async <T>(redis: Redis, key: string): Promise<T | undefined> => {
+export const cacheGet = async <T>(key: string, redis = App.main.redis): Promise<T | undefined> => {
     const value = await redis.get(key)
     if (!value) return undefined
     return JSON.parse(value) as T
 }
 
-export const cacheSet = async <T>(redis: Redis, key: string, value: T, ttl?: number) => {
+export const cacheSet = async <T>(key: string, value: T, ttl?: number, redis = App.main.redis) => {
     await redis.set(key, JSON.stringify(value))
     if (ttl) {
         await redis.expire(key, ttl)
     }
 }
 
-export const cacheDel = async (redis: Redis, key: string) => {
+export const cacheDel = async (key: string, redis = App.main.redis) => {
     return await redis.del(key)
 }
 
-export const cacheIncr = async (redis: Redis, key: string, incr = 1, ttl?: number) => {
+export const cacheIncr = async (key: string, incr = 1, ttl?: number, redis = App.main.redis) => {
     const val = await redis.incrby(key, incr)
     if (ttl) {
         await redis.expire(key, ttl)
@@ -46,7 +47,7 @@ export const cacheIncr = async (redis: Redis, key: string, incr = 1, ttl?: numbe
     return val
 }
 
-export const cacheDecr = async (redis: Redis, key: string, ttl?: number) => {
+export const cacheDecr = async (key: string, ttl?: number, redis = App.main.redis) => {
     const val = await redis.decr(key)
     if (ttl) {
         await redis.expire(key, ttl)
@@ -59,9 +60,9 @@ export type DataPair = {
   value: string
 }
 export const cacheBatchHash = async (
-    redis: Redis,
     hashKey: string,
     pairs: DataPair[],
+    redis = App.main.redis,
 ): Promise<void> => {
     const pipeline = redis.pipeline()
 
@@ -78,10 +79,10 @@ export const cacheBatchHash = async (
 
 export type HashScanCallback = (pairs: DataPair[]) => Promise<void> | void
 export const cacheBatchReadHashAndDelete = async (
-    redis: Redis,
     hashKey: string,
     callback: HashScanCallback,
     scanCount = 2500,
+    redis = App.main.redis,
 ): Promise<void> => {
     let cursor = '0'
 
@@ -112,11 +113,11 @@ export const cacheBatchReadHashAndDelete = async (
     await redis.del(hashKey)
 }
 
-export const cacheBatchLength = async (redis: Redis, hashKey: string): Promise<number> => {
+export const cacheBatchLength = async (hashKey: string, redis = App.main.redis): Promise<number> => {
     return await redis.hlen(hashKey)
 }
 
-export const cacheHashExists = async (redis: Redis, hashKey: string): Promise<boolean> => {
+export const cacheHashExists = async (hashKey: string, redis = App.main.redis): Promise<boolean> => {
     const exists = await redis.exists(hashKey)
     return exists !== 0
 }

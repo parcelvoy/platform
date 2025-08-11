@@ -4,6 +4,9 @@ import { chunk } from '../utilities'
 import App from '../app'
 import { getProvider } from '../providers/ProviderRepository'
 import { ChannelType } from '../config/channels'
+import { cacheIncr } from '../config/redis'
+import { sendsAvailable } from '../providers/ProviderService'
+import Provider from '../providers/Provider'
 
 type CampaignEnqueueSendsJobParams = {
     provider_id: number
@@ -26,39 +29,11 @@ export default class CampaignEnqueueSendsJob extends Job {
     static async handler({ provider_id }: CampaignEnqueueSendsJobParams) {
 
         // Only enqueue the maximum that can be sent for the interval
-        // this job runs (every minute)
+        // this job runs (every 15 seconds)
         const provider = await getProvider(provider_id)
         if (!provider) return
-        const ratePerMinute = provider?.ratePer('minute')
-        const ratePerSecond = provider?.ratePer('second')
 
-        // Get the number of sends that have been sent this period
-        // How often should we run this? Every ten seconds?
-
-        // backlog = number of ones to still process, can be up to 2x rate limit
-        // points = how many do we have left for the period
-
-        // 10 left this second
-        // 100 queued
-        // time remaining? Does it matter?
-
-        // If we add 600 to the queue and the rate limit is 10/sec
-        // ten seconds later how many can we add?
-        // the window has shifted by 10 seconds so we can add 100 more
-        // we then need to set how many have been added to the queue
-        // in the given window so that we can shift it appropriately
-
-        const key = 'campaigns:provider:' + provider.id + ':rate_limit'
-        const response = await App.main.redis
-            .multi()
-            .get(key)
-            .ttl(key)
-            .exec()
-        const consumed = parseInt(response?.[0][1] as string) || 0
-        const ttl = parseInt(response?.[1][1] as string) || 0
-
-        const expired = (60 - ttl) * ratePerSecond
-        const available = ratePerMinute - expired
+        const available = sendsAvailable(provider)
 
         // Anything that is ready to be sent, enqueue for sending
         const query = providerSendReadyQuery(provider_id, available)
@@ -72,6 +47,6 @@ export default class CampaignEnqueueSendsJob extends Job {
             await App.main.queue.enqueueBatch(jobs)
             count += items.length
         })
-        await App.main.redis.set(key, consumed + count, 'EX', 60)
+        await cacheIncr(Provider.cacheKey.consumed(provider.id), count, 15)
     }
 }

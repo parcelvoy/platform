@@ -4,14 +4,14 @@ import TextJob from '../providers/text/TextJob'
 import EmailJob from '../providers/email/EmailJob'
 import { logger } from '../config/logger'
 import { User } from '../users/User'
-import Campaign, { CampaignCreateParams, CampaignDelivery, campaignEndedStates, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendReferenceType, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
+import Campaign, { CampaignCreateParams, CampaignDelivery, campaignEndedStates, CampaignParams, CampaignPopulationProgress, CampaignProgress, CampaignSend, CampaignSendParams, CampaignSendReferenceType, CampaignSendState, CampaignState, SentCampaign } from './Campaign'
 import List from '../lists/List'
-import Subscription, { SubscriptionState } from '../subscriptions/Subscription'
+import Subscription from '../subscriptions/Subscription'
 import { RequestError } from '../core/errors'
 import { PageParams } from '../core/searchParams'
 import { allLists } from '../lists/ListService'
 import { allTemplates, duplicateTemplate, screenshotHtml, templateInUserLocale, validateTemplates } from '../render/TemplateService'
-import { getSubscription, getUserSubscriptionState } from '../subscriptions/SubscriptionService'
+import { getSubscription, isUserUnsubscribed } from '../subscriptions/SubscriptionService'
 import { batch, chunk, cleanString, pick, shallowEqual } from '../utilities'
 import { getProvider } from '../providers/ProviderRepository'
 import { createTagSubquery, getTags, setTags } from '../tags/TagService'
@@ -29,6 +29,8 @@ import { getJourneysForCampaign } from '../journey/JourneyService'
 import { createAuditLog } from '../core/audit/AuditService'
 import { WithAdmin } from '../core/audit/Audit'
 import { processUsers } from '../users/ProcessUsers'
+import { ChannelType } from '../config/channels'
+import { canSendImmediately } from '../providers/ProviderService'
 
 export const CacheKeys = {
     pendingStats: 'campaigns:pending_stats',
@@ -253,13 +255,14 @@ type TriggerCampaign = {
     user: User
 } & SendCampaign
 
-export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: TriggerCampaign) => {
+class CampaignSendError extends Error {}
+
+export const triggerCampaignSend = async ({ campaign, user, exists, reference_type, reference_id }: TriggerCampaign): Promise<EmailJob | TextJob | PushJob | WebhookJob | undefined> => {
 
     // Check if the user can receive the campaign and has not unsubscribed
-    if (!canSendCampaignToUser(campaign, user)) return
-
-    const subscriptionState = await getUserSubscriptionState(user, campaign.subscription_id)
-    if (subscriptionState === SubscriptionState.unsubscribed) return
+    const isUnsubscribed = await isUserUnsubscribed(user, campaign.subscription_id)
+    const hasChannel = isChannelAvailable(campaign.channel, user)
+    if (!hasChannel || isUnsubscribed) throw new CampaignSendError()
 
     // If the send doesn't already exist, lets create it ahead of scheduling
     const reference = { reference_id, reference_type }
@@ -272,6 +275,10 @@ export const triggerCampaignSend = async ({ campaign, user, exists, reference_ty
             ...reference,
         })
     }
+
+    // Check if the provider queue is able to send right now
+    const canSend = await canSendImmediately(campaign.provider_id)
+    if (!canSend) return
 
     return sendCampaignJob({
         campaign,
@@ -348,10 +355,9 @@ const cleanupSendListGeneration = async (campaign: Campaign) => {
 }
 
 const cleanupGenerationCacheKeys = async (campaign: Campaign) => {
-    const redis = App.main.redis
-    await cacheDel(redis, CacheKeys.generate(campaign))
-    await cacheDel(redis, CacheKeys.populationTotal(campaign))
-    await cacheDel(redis, CacheKeys.populationProgress(campaign))
+    await cacheDel(CacheKeys.generate(campaign))
+    await cacheDel(CacheKeys.populationTotal(campaign))
+    await cacheDel(CacheKeys.populationProgress(campaign))
 }
 
 export const populateSendList = async (campaign: SentCampaign) => {
@@ -362,7 +368,6 @@ export const populateSendList = async (campaign: SentCampaign) => {
     }
 
     const now = Date.now()
-    const redis = App.main.redis
     const oneDay = 86400 // 24 hours in seconds
     const progressCacheKey = CacheKeys.populationProgress(campaign)
     const totalCacheKey = CacheKeys.populationTotal(campaign)
@@ -410,8 +415,8 @@ export const populateSendList = async (campaign: SentCampaign) => {
             value: cleanString(user.timezone) ?? project.timezone,
         }),
         beforeCallback: async (count: number) => {
-            await cacheSet<number>(redis, progressCacheKey, 0, oneDay)
-            await cacheSet(redis, totalCacheKey, count, oneDay)
+            await cacheSet<number>(progressCacheKey, 0, oneDay)
+            await cacheSet(totalCacheKey, count, oneDay)
 
             // Double check that the campaign hasn't been aborted
             const updatedCampaign = await getCampaign(campaign.id, campaign.project_id) as SentCampaign
@@ -420,7 +425,7 @@ export const populateSendList = async (campaign: SentCampaign) => {
         callback: async (pairs: DataPair[]) => {
             const items = pairs.map(({ key, value }) => CampaignSend.create(campaign, project, { id: parseInt(key), timezone: value }))
             await insertRows(items)
-            await cacheIncr(redis, progressCacheKey, items.length, oneDay)
+            await cacheIncr(progressCacheKey, items.length, oneDay)
         },
         afterCallback: async () => {
             await cleanupSendListGeneration(campaign)
@@ -446,7 +451,7 @@ export const campaignSendReadyQuery = (
 
 export const providerSendReadyQuery = (
     providerId: number,
-    limit: number,
+    limit: number | undefined,
 ) => {
     return CampaignSend.query()
         .leftJoin('campaigns', 'campaigns.id', 'campaign_sends.campaign_id')
@@ -455,7 +460,7 @@ export const providerSendReadyQuery = (
         .where('campaigns.provider_id', providerId)
         .whereNotIn('campaigns.state', campaignEndedStates)
         .select('campaign_id', 'user_id', 'reference_id', 'campaigns.channel')
-        .limit(limit)
+        .when(!!limit, qb => qb.limit(limit || 0))
 }
 
 export const failStalledSends = async () => {
@@ -542,8 +547,8 @@ export const duplicateCampaign = async (campaign: Campaign, adminId?: number) =>
 
 export const campaignPopulationProgress = async (campaign: Campaign): Promise<CampaignPopulationProgress> => {
     return {
-        complete: await cacheGet<number>(App.main.redis, CacheKeys.populationProgress(campaign)) ?? 0,
-        total: await cacheGet<number>(App.main.redis, CacheKeys.populationTotal(campaign)) ?? 0,
+        complete: await cacheGet<number>(CacheKeys.populationProgress(campaign)) ?? 0,
+        total: await cacheGet<number>(CacheKeys.populationTotal(campaign)) ?? 0,
     }
 }
 
@@ -624,9 +629,9 @@ export const estimatedSendSize = async (campaign: Campaign) => {
     return lists.reduce((acc, list) => (list.users_count ?? 0) + acc, 0)
 }
 
-export const canSendCampaignToUser = (campaign: Campaign, user: Pick<User, 'email' | 'phone' | 'has_push_device' | 'devices'>) => {
-    if (campaign.channel === 'email' && !user.email) return false
-    if (campaign.channel === 'text' && !user.phone) return false
-    if (campaign.channel === 'push' && !(user.has_push_device || !!user.devices)) return false
+export const isChannelAvailable = (channel: ChannelType, user: Pick<User, 'email' | 'phone' | 'has_push_device'>) => {
+    if (channel === 'email' && !user.email) return false
+    if (channel === 'text' && !user.phone) return false
+    if (channel === 'push' && !user.has_push_device) return false
     return true
 }

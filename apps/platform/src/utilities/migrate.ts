@@ -13,13 +13,13 @@ import MigrateJob from '../organizations/MigrateJob'
 
 export const migrateToClickhouse = async () => {
     const jobs = []
-    const shouldMigrateUsers = await cacheGet<boolean>(App.main.redis, 'migration:users') ?? false
+    const shouldMigrateUsers = await cacheGet<boolean>('migration:users') ?? false
     if (shouldMigrateUsers) jobs.push(MigrateJob.from({ type: 'users' }).jobId('migrate_users'))
 
-    const shouldMigrateEvents = await cacheGet<boolean>(App.main.redis, 'migration:events') ?? false
+    const shouldMigrateEvents = await cacheGet<boolean>('migration:events') ?? false
     if (shouldMigrateEvents) jobs.push(MigrateJob.from({ type: 'events' }).jobId('migrate_events'))
 
-    const shouldMigrateLists = await cacheGet<boolean>(App.main.redis, 'migration:lists') ?? false
+    const shouldMigrateLists = await cacheGet<boolean>('migration:lists') ?? false
     if (shouldMigrateLists) jobs.push(MigrateJob.from({ type: 'lists' }).jobId('migrate_lists'))
     await App.main.queue.enqueueBatch(jobs)
 }
@@ -60,7 +60,7 @@ export const migrateUsers = async (since?: Date, id?: number) => {
 
     await chunker.flush()
     logger.info('parcelvoy:migration users finished')
-    await cacheDel(App.main.redis, 'migration:users')
+    await cacheDel('migration:users')
 }
 
 export const migrateEvents = async (since?: Date) => {
@@ -85,7 +85,7 @@ export const migrateEvents = async (since?: Date) => {
 
     await chunker.flush()
     logger.info('parcelvoy:migration events finished')
-    await cacheDel(App.main.redis, 'migration:events')
+    await cacheDel('migration:events')
 }
 
 export const migrateStaticList = async ({ id, project_id }: List) => {
@@ -134,5 +134,5 @@ export const migrateLists = async () => {
     }
 
     logger.info('parcelvoy:migration lists finished')
-    await cacheDel(App.main.redis, 'migration:lists')
+    await cacheDel('migration:lists')
 }

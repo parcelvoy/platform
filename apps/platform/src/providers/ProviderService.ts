@@ -5,6 +5,7 @@ import { JSONSchemaType, validate } from '../core/validate'
 import Provider, { ProviderControllers, ProviderGroup, ProviderMeta, ProviderParams } from './Provider'
 import { createProvider, getProvider, loadProvider, updateProvider } from './ProviderRepository'
 import App from '../app'
+import { cacheGet } from '../config/redis'
 
 export const allProviders = async (projectId: number) => {
     return await Provider.all(qb => qb.where('project_id', projectId).whereNull('deleted_at'))
@@ -29,6 +30,32 @@ export const pagedProviders = async (params: PageParams, projectId: number) => {
 export const archiveProvider = async (id: number, projectId: number) => {
     await Provider.archive(id, qb => qb.where('project_id', projectId))
     return getProvider(id, projectId)
+}
+
+export const sendsAvailable = (provider: Provider): number | undefined => {
+    // Number of seconds between bulk sends
+    const interval = 15
+
+    // If there is no rate limit, return undefined (unlimited)
+    if (!provider.rate_limit) return undefined
+
+    // Return number of sends available over interval
+    return provider.ratePer('second') * interval
+}
+
+export const canSendImmediately = async (providerId: number): Promise<boolean> => {
+
+    // Get the provider
+    const provider = await getProvider(providerId)
+    if (!provider) return false
+
+    // Check is there are sends available (undefined means unlimited)
+    const available = sendsAvailable(provider)
+    if (!available) return true
+
+    // Compare to the number of sends already consumed over time period
+    const consumed = await cacheGet<number>(Provider.cacheKey.consumed(provider.id)) || 0
+    return available > consumed
 }
 
 export const loadController = (routers: ProviderControllers, provider: typeof Provider): ProviderMeta => {
