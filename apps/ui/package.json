@@ -5,7 +5,7 @@
   "dependencies": {
     "@fontsource/inter": "^4.5.14",
     "@headlessui/react": "1.7.18",
-    "@maily-to/core": "^0.3.1",
+    "@maily-to/core": "^0.3.3",
     "@monaco-editor/react": "^4.4.6",
     "@popperjs/core": "^2.11.6",
     "@rehookify/datepicker": "^3.2.0",
