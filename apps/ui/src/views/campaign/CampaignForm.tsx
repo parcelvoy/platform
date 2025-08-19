@@ -179,7 +179,7 @@ const ProviderSelection = ({ providers, form }: { providers: Provider[], form: U
         control: form.control,
         name: 'channel',
     })
-    providers = useMemo(() => channel ? providers.filter(p => p.group === channel) : [], [channel, providers])
+    providers = useMemo(() => channel ? providers.filter(p => p.group === channel || (channel === 'in_app' && p.group === 'push')) : [], [channel, providers])
     useEffect(() => {
         if (channel && providers.length) {
             const { provider_id } = form.getValues()

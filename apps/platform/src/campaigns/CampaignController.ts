@@ -46,7 +46,7 @@ const campaignCreateParams: JSONSchemaType<CampaignCreateParams> = {
         },
         channel: {
             type: 'string',
-            enum: ['email', 'text', 'push', 'webhook'],
+            enum: ['email', 'text', 'push', 'webhook', 'in_app'],
         },
         subscription_id: {
             type: 'integer',

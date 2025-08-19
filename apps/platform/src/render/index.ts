@@ -104,13 +104,3 @@ export const RenderObject = (object: Record<string, any> | undefined, variables:
 }
 
 export default Render
-
-export const RenderObject = (object: Record<string, any> | undefined, variables: Variables) => {
-    if (!object) return {}
-    return Object.keys(object).reduce((body, key) => {
-        body[key] = typeof object[key] === 'object'
-            ? RenderObject(object[key], variables)
-            : Render(object[key], variables)
-        return body
-    }, {} as Record<string, any>)
-}

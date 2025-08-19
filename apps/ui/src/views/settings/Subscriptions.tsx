@@ -86,7 +86,7 @@ export default function Subscriptions() {
                                     form={form}
                                     name="channel"
                                     label={t('channel')}
-                                    options={['email', 'push', 'text', 'webhook'].map((channel) => ({ key: channel, label: snakeToTitle(channel) }))}
+                                    options={['email', 'push', 'text', 'webhook', 'in_app'].map((channel) => ({ key: channel, label: snakeToTitle(channel) }))}
                                     toValue={x => x.key}
                                 />}
                             </>

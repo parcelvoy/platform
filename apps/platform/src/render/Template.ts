@@ -165,12 +165,6 @@ export class TextTemplate extends Template {
     }
 }
 
-export interface CompiledPush {
-    title: string
-    body: string
-    custom: Record<string, any>
-}
-
 export class PushTemplate extends Template {
     declare type: 'push'
     title!: string
@@ -189,7 +183,7 @@ export class PushTemplate extends Template {
         this.custom = json?.data.custom ?? {}
     }
 
-    compile(variables: Variables): CompiledPush {
+    compile(variables: Variables): BasePush {
         const custom = RenderObject(this.custom, variables)
         const url = this.compileUrl(variables)
 

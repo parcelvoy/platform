@@ -8,7 +8,13 @@ import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '.
 import { loadPushChannel } from '.'
 import { releaseLock } from '../../core/Lock'
 import { EventPostJob } from '../../jobs'
+import { EncodedJob, Job } from '../../queue'
+import { PushTemplate } from '../../render/Template'
 import { getPushDevicesForUser } from '../../users/DeviceRepository'
+import { disableNotifications } from '../../users/UserRepository'
+import { MessageTrigger } from '../MessageTrigger'
+import { finalizeSend, loadSendJob, MessageContextHydrated, messageLock, prepareSend } from '../MessageTriggerService'
+import PushError from './PushError'
 
 export default class PushJob extends Job {
     static $name = 'push'
@@ -21,7 +27,7 @@ export default class PushJob extends Job {
         const data = await loadSendJob<PushTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project, context } = data
+        const { campaign, template, user, project } = data
         const devices = await getPushDevicesForUser(project.id, user.id)
 
         // Load email channel so its ready to send
@@ -76,5 +82,36 @@ export default class PushJob extends Job {
         } finally {
             await releaseLock(messageLock(campaign, user))
         }
+    }
+
+    static async handlePushFailed(error: PushError, trigger: MessageTrigger, data: MessageContextHydrated) {
+
+        const { campaign, user, project, context } = data
+
+        // If the push is unable to send, find invalidated tokens
+        // and disable those devices
+        await disableNotifications(user, error.invalidTokens)
+
+        // Update send record
+        await updateSendState({
+            campaign,
+            user,
+            reference_id: trigger.reference_id,
+            state: 'failed',
+        })
+
+        // Create an event about the disabling
+        await EventPostJob.from({
+            project_id: project.id,
+            user_id: user.id,
+            event: {
+                name: 'notifications_disabled',
+                external_id: user.external_id,
+                data: {
+                    ...context,
+                    tokens: error.invalidTokens,
+                },
+            },
+        }).queue()
     }
 }

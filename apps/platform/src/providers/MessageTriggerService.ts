@@ -19,13 +19,16 @@ import { loadUserStepDataMap } from '../journey/JourneyService'
 import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
 
-interface MessageTriggerHydrated<T> {
+export type MessageContextHydrated = {
     user: User
     journey: Record<string, unknown> // step.data_key -> user step data
     campaign: Campaign
-    template: T
     project: Project
     context: RenderContext
+}
+
+type MessageTriggerHydrated<T> = MessageContextHydrated & {
+    template: T
 }
 
 export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, reference_type, reference_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
