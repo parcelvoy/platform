@@ -1,9 +1,9 @@
 import Project from '../../projects/Project'
-import { ProjectRulePath } from '../../rules/ProjectRulePath'
+import { ProjectRulePath, RulePathDataType } from '../../rules/ProjectRulePath'
 import { User } from '../../users/User'
 import { UserEvent } from '../../users/UserEvent'
 import { addLeafPaths, syncUserDataPaths } from '../UserSchemaService'
-import { sleep } from '../../utilities'
+import { KeyedSet, sleep } from '../../utilities'
 import { startOfSecond } from 'date-fns'
 import { reservedPaths } from '../../rules/RuleHelpers'
 
@@ -28,11 +28,11 @@ describe('UserSchemaService', () => {
                 },
             }
 
-            const set = new Set<string>()
+            const set = new KeyedSet<[string, RulePathDataType]>(item => item[0])
 
             addLeafPaths(set, data)
 
-            const arr = Array.from(set.values())
+            const arr = Array.from(set.keys())
 
             expect(arr).not.toContain('$')
             expect(arr).toContain('$.one')
