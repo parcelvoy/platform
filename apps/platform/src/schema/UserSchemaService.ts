@@ -127,7 +127,24 @@ export async function syncUserDataPaths({
         const existing = await ProjectRulePath.all(q => q.where('project_id', project_id), trx)
 
         if (!updatedAfter && existing.length) {
-            await ProjectRulePath.delete(q => q.where('project_id', project_id), trx)
+            const removeIds: number[] = []
+            for (const { id, name, type, path } of existing) {
+                let remove = false
+                if (type === 'user') {
+                    remove = !userPaths.has(path)
+                } else if (type === 'event') {
+                    remove = !eventPaths.get(name ?? '')?.has(path)
+                } else {
+                    remove = true
+                }
+                if (remove) {
+                    removeIds.push(id)
+                }
+            }
+
+            if (removeIds.length) {
+                await ProjectRulePath.delete(q => q.whereIn('id', removeIds), trx)
+            }
         }
 
         // add all new paths

@@ -416,7 +416,7 @@ export class KeyedSet<T> implements Iterable<T> {
     }
 
     keys(): string[] {
-        return Object.keys(this.#keys)
+        return [...this.#keys]
     }
 
     has(id: string): boolean {
