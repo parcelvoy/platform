@@ -3,7 +3,7 @@ import PageContent from '../../ui/PageContent'
 import { Outlet, useNavigate } from 'react-router'
 import { NavigationTabs } from '../../ui/Tabs'
 import { useContext, useEffect, useState } from 'react'
-import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../contexts'
+import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext, TemplateContext } from '../../contexts'
 import { checkProjectRole, languageName } from '../../utils'
 import { Campaign, LocaleOption, Template } from '../../types'
 import api from '../../api'
@@ -28,7 +28,10 @@ export const localeOption = (locale: string): LocaleOption => {
     }
 }
 
-export const locales = (templates: Template[]) => templates?.map(item => localeOption(item.locale))
+export const locales = (templates: Template[]) => {
+    const locales = [...new Set(templates.map(item => item.locale))]
+    return locales.map(locale => localeOption(locale))
+}
 
 export const localeState = (templates: Template[]) => {
     const allLocales = locales(templates)
@@ -59,12 +62,25 @@ export default function CampaignDetail() {
     const navigate = useNavigate()
     const [campaign, setCampaign] = useContext(CampaignContext)
     const { name, templates, state, send_at, progress } = campaign
+
+    const [template, setTemplate] = useState<Template | undefined>()
+
     const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     useEffect(() => {
         setLocale(localeState(templates ?? []))
+        setTemplate(templates[0])
     }, [campaign.id])
     const [isLaunchOpen, setIsLaunchOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+
+    const templateManager = {
+        currentTemplate: template,
+        templates: campaign.templates,
+        currentLocale: template?.locale ? localeOption(template?.locale) : undefined,
+        locales: locales(campaign.templates),
+        variants: campaign.templates.filter(t => t.locale === template?.locale),
+        setTemplate,
+    }
 
     const handleDuplicate = async (id: number) => {
         const campaign = await api.campaigns.duplicate(project.id, id)
@@ -188,7 +204,9 @@ export default function CampaignDetail() {
             fullscreen={true}>
             <NavigationTabs tabs={tabs} />
             <LocaleContext.Provider value={[locale, setLocale]}>
-                <Outlet />
+                <TemplateContext.Provider value={templateManager}>
+                    <Outlet />
+                </TemplateContext.Provider>
             </LocaleContext.Provider>
 
             <LaunchCampaign open={isLaunchOpen} onClose={setIsLaunchOpen} />

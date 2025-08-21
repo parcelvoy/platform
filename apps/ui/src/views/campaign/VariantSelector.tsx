@@ -1,12 +1,10 @@
 import { useContext, useState } from 'react'
 import { TemplateContext } from '../../contexts'
-import { Campaign, LocaleOption, UseStateContext } from '../../types'
+import { Campaign, UseStateContext } from '../../types'
 import Button from '../../ui/Button'
 import ButtonGroup from '../../ui/ButtonGroup'
 import { SingleSelect } from '../../ui/form/SingleSelect'
 import LocaleEditModal from './LocaleEditModal'
-import { useNavigate } from 'react-router'
-import TemplateCreateModal from './TemplateCreateModal'
 import { useTranslation } from 'react-i18next'
 
 interface LocaleSelectorParams {
@@ -14,58 +12,58 @@ interface LocaleSelectorParams {
     showAddState?: UseStateContext<boolean>
 }
 
-export default function LocaleSelector({
+export default function VariantSelector({
     campaignState,
     showAddState,
 }: LocaleSelectorParams) {
     const { t } = useTranslation()
     const [editOpen, setEditOpen] = useState(false)
-    const [addOpen, setAddOpen] = showAddState ?? useState(false)
+    const [_, setAddOpen] = showAddState ?? useState(false)
     const [campaign, setCampaign] = campaignState
-    const navigate = useNavigate()
 
-    const { currentLocale, locales, setTemplate } = useContext(TemplateContext)
+    const { currentTemplate, variants, setTemplate } = useContext(TemplateContext)
 
-    const handleTemplateCreate = async (campaign: Campaign, locale: LocaleOption) => {
-        setCampaign(campaign)
-        handleLocaleSelect(locale)
+    // const handleTemplateCreate = async (campaign: Campaign, locale: LocaleOption) => {
+    //     setCampaign(campaign)
+    //     const locales = [...allLocales, locale]
+    //     setLocale({ currentLocale: locale, allLocales: locales })
 
-        if (campaign.templates.length === 1 && campaign.channel === 'email') {
-            await navigate('../editor')
-        } else {
-            setAddOpen(false)
-        }
-    }
-
-    const handleLocaleSelect = (locale: LocaleOption) => {
-        setTemplate(campaign.templates.find(t => t.locale === locale.key))
-    }
+    //     if (campaign.templates.length === 1 && campaign.channel === 'email') {
+    //         await navigate('../editor')
+    //     } else {
+    //         setAddOpen(false)
+    //     }
+    // }
 
     return <>
         <ButtonGroup>
             {
-                currentLocale && (
+                variants.length > 1 && (
                     <SingleSelect
-                        options={locales}
+                        options={variants}
                         size="small"
-                        value={currentLocale}
-                        onChange={locale => handleLocaleSelect(locale)}
+                        value={currentTemplate}
+                        getOptionDisplay={(variant) => variant.id}
+                        onChange={(variant) => {
+                            console.log(variant)
+                            setTemplate(variant)
+                        }}
                     />
                 )
             }
             {
                 campaign.state !== 'finished' && (
-                    locales.length > 0
+                    variants.length > 1
                         ? <Button
                             size="small"
                             variant="secondary"
                             onClick={() => setEditOpen(true)}
-                        >{t('translations')}</Button>
+                        >{t('variants')}</Button>
                         : <Button
                             size="small"
                             variant="secondary"
                             onClick={() => setAddOpen(true)}
-                        >{t('add_translation')}</Button>
+                        >{t('campaign_variant_add')}</Button>
                 )
             }
         </ButtonGroup>
@@ -75,10 +73,10 @@ export default function LocaleSelector({
             campaign={campaign}
             setCampaign={setCampaign}
             setAddOpen={setAddOpen} />
-        <TemplateCreateModal
+        {/* <TemplateCreateModal
             open={addOpen}
             setIsOpen={setAddOpen}
             campaign={campaign}
-            onCreate={handleTemplateCreate} />
+            onCreate={handleTemplateCreate} /> */}
     </>
 }

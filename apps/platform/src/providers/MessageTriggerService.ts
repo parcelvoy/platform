@@ -9,9 +9,9 @@ import Project from '../projects/Project'
 import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
-import { templateInUserLocale } from '../render/TemplateService'
+import { templatesInUserLocale } from '../render/TemplateService'
 import { User } from '../users/User'
-import { randomInt } from '../utilities'
+import { random, randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
 import JourneyProcessJob from '../journey/JourneyProcessJob'
 import { createEvent } from '../users/UserEventRepository'
@@ -63,7 +63,9 @@ export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id
     )
 
     // Determine what template to send to the user based on the following
-    const template = templateInUserLocale(templates, project, user)
+    const template = random(
+        templatesInUserLocale(templates, project, user),
+    )
 
     // If campaign or template dont exist, log and abort
     if (!template || !campaign) {
