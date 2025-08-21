@@ -1,20 +1,21 @@
 import Router from '@koa/router'
-import { ProjectParams } from './Project'
-import { JSONSchemaType, validate } from '../core/validate'
-import { extractQueryParams, KeyedSet } from '../utilities'
-import { searchParamsSchema } from '../core/searchParams'
 import { ParameterizedContext } from 'koa'
-import { allProjects, createProject, getProject, pagedProjects, requireProjectRole, updateProject } from './ProjectService'
-import { AuthState, ProjectState } from '../auth/AuthMiddleware'
-import { getProjectAdmin } from './ProjectAdminRepository'
-import { RequestError } from '../core/errors'
-import { ProjectError } from './ProjectError'
-import { GetProjectRulePath, ProjectRulePath } from '../rules/ProjectRulePath'
-import { getAdmin } from '../auth/AdminRepository'
-import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
 import App from '../app'
-import { hasProvider } from '../providers/ProviderService'
+import { getAdmin } from '../auth/AdminRepository'
+import { AuthState, ProjectState } from '../auth/AuthMiddleware'
+import { RequestError } from '../core/errors'
+import { searchParamsSchema } from '../core/searchParams'
+import { JSONSchemaType, validate } from '../core/validate'
 import { requireOrganizationRole } from '../organizations/OrganizationService'
+import { hasProvider } from '../providers/ProviderService'
+import { RulePathVisibility } from '../rules/ProjectRulePath'
+import UserSchemaSyncJob from '../schema/UserSchemaSyncJob'
+import { extractQueryParams } from '../utilities'
+import { ProjectParams } from './Project'
+import { getProjectAdmin } from './ProjectAdminRepository'
+import { ProjectError } from './ProjectError'
+import { getRulePaths, pagedUserRulePaths, updateRulePath } from './ProjectRulePathRepository'
+import { allProjects, createProject, getProject, pagedProjects, requireProjectRole, updateProject } from './ProjectService'
 
 export async function projectMiddleware(ctx: ParameterizedContext<ProjectState>, next: () => void) {
 
@@ -177,29 +178,29 @@ subrouter.patch('/', async ctx => {
 })
 
 subrouter.get('/data/paths', async ctx => {
-    ctx.body = await ProjectRulePath
-        .all(q => q.where('project_id', ctx.state.project.id).select('path', 'type', 'name', 'data_type'))
-        .then(list => list.reduce((a, rulePath) => {
-            const { path, type, name, data_type } = rulePath
-            if (type === 'event' && name) {
-                if (!a.eventPaths[name]) {
-                    const set = new KeyedSet<GetProjectRulePath>(item => item.path)
-                    set.add({ path, type, name, data_type })
-                    a.eventPaths[name] = set
-                } else {
-                    a.eventPaths[name].add({ path, type, name, data_type })
-                }
-            } else {
-                a.userPaths.add({ path, type, name, data_type })
-            }
-            return a
-        }, {
-            userPaths: new KeyedSet<GetProjectRulePath>(item => item.path),
-            eventPaths: {},
-        } as {
-            userPaths: KeyedSet<GetProjectRulePath>,
-            eventPaths: { [name: string]: KeyedSet<GetProjectRulePath> }
-        }))
+    const visibilities: RulePathVisibility[] = ctx.state.projectRole === 'admin'
+        ? ['public', 'classified']
+        : ['public']
+    ctx.body = await getRulePaths(ctx.state.project.id, visibilities)
+})
+
+subrouter.get('/data/paths/users', async ctx => {
+    requireProjectRole(ctx, 'admin')
+    const search = extractQueryParams(ctx.query, searchParamsSchema)
+    const visibilities: RulePathVisibility[] = ctx.state.projectRole === 'admin'
+        ? ['public', 'classified', 'hidden']
+        : ['public']
+    ctx.body = await pagedUserRulePaths({
+        search,
+        projectId: ctx.state.project.id,
+        visibilities,
+    })
+})
+
+subrouter.put('/data/paths/users/:pathId', async ctx => {
+    requireProjectRole(ctx, 'admin')
+
+    ctx.body = await updateRulePath(parseInt(ctx.params.pathId), ctx.request.body.visibility)
 })
 
 subrouter.post('/data/paths/sync', async ctx => {

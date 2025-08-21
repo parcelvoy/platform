@@ -93,10 +93,12 @@ export type EventRule = {
 } & WrapperRule
 
 export interface RulePath {
+    id: number
     path: string
     type: 'user' | 'event'
     name: string
     data_type: 'string' | 'number' | 'boolean' | 'date' | 'array'
+    visibility: 'public' | 'hidden' | 'classified'
 }
 
 export interface VariableSuggestions {

@@ -393,3 +393,37 @@ export function visit<T>(item: T, children: (item: T) => undefined | T[], callba
         }
     }
 }
+
+export class KeyedSet<T> implements Iterable<T> {
+    private keys = new Set<string>()
+    private items: T[] = []
+    private lookup: (item: T) => string
+
+    constructor(lookup: (item: T) => string) {
+        this.lookup = lookup
+    }
+
+    add(item: T) {
+        const key = this.lookup(item)
+        if (!this.keys.has(key)) {
+            this.keys.add(key)
+            this.items.push(item)
+        }
+    }
+
+    getAll(): T[] {
+        return this.items
+    }
+
+    has(id: string): boolean {
+        return this.keys.has(id)
+    }
+
+    [Symbol.iterator](): Iterator<T> {
+        return this.items[Symbol.iterator]()
+    }
+
+    toJSON() {
+        return this.items
+    }
+}

@@ -24,6 +24,11 @@ export default function Settings() {
             children: t('locales'),
         },
         {
+            key: 'data',
+            to: 'data',
+            children: t('data_schema'),
+        },
+        {
             key: 'api-keys',
             to: 'api-keys',
             children: t('api_keys'),

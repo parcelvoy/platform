@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import { env } from './config/env'
-import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, Resource, SearchParams, SearchResult, Series, Subscription, SubscriptionCreateParams, SubscriptionParams, SubscriptionUpdateParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription, VariableSuggestions } from './types'
+import { Admin, AuthMethod, Campaign, CampaignCreateParams, CampaignLaunchParams, CampaignUpdateParams, CampaignUser, Image, Journey, JourneyEntranceDetail, JourneyStepMap, JourneyUserStep, List, ListCreateParams, ListUpdateParams, Locale, Organization, OrganizationUpdateParams, Project, ProjectAdmin, ProjectAdminInviteParams, ProjectAdminParams, ProjectApiKey, ProjectApiKeyParams, Provider, ProviderCreateParams, ProviderMeta, ProviderUpdateParams, QueueMetric, Resource, RulePath, SearchParams, SearchResult, Series, Subscription, SubscriptionCreateParams, SubscriptionParams, SubscriptionUpdateParams, Tag, Template, TemplateCreateParams, TemplatePreviewParams, TemplateProofParams, TemplateUpdateParams, User, UserEvent, UserSubscription, VariableSuggestions } from './types'
 
 function appendValue(params: URLSearchParams, name: string, value: unknown) {
     if (typeof value === 'undefined' || value === null || typeof value === 'function') return
@@ -156,7 +156,18 @@ const api = {
         pathSuggestions: async (projectId: number | string) => await client
             .get<VariableSuggestions>(`${projectUrl(projectId)}/data/paths`)
             .then(r => r.data),
-        rebuildPathSuggestions: async (projectId: number | string) => await client
+    },
+
+    data: {
+        userPaths: {
+            search: async (projectId: number | string, params: SearchParams) => await client
+                .get<SearchResult<RulePath>>(`${projectUrl(projectId)}/data/paths/users`, { params })
+                .then(r => r.data),
+            update: async (projectId: number | string, entityId: number | string, params: Partial<RulePath>) => await client
+                .put<RulePath>(`${projectUrl(projectId)}/data/paths/users/${entityId}`, params)
+                .then(r => r.data),
+        },
+        rebuild: async (projectId: number | string) => await client
             .post(`${projectUrl(projectId)}/data/paths/sync`)
             .then(r => r.data),
     },

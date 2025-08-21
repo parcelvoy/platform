@@ -12,7 +12,7 @@ export default function ProjectSettings() {
     const [project, setProject] = useContext(ProjectContext)
 
     const handleRebuildAttributeSchema = async () => {
-        await api.projects.rebuildPathSuggestions(project.id)
+        await api.data.rebuild(project.id)
         toast.success(t('rebuild_path_suggestions_success'))
     }
 

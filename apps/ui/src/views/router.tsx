@@ -46,6 +46,7 @@ import UserDetailJourneys from './users/UserDetailJourneys'
 import EntranceDetails from './journey/EntranceDetails'
 import { Translation } from 'react-i18next'
 import Organization from './organization/Organization'
+import DataSchema from './settings/DataSchema'
 
 export const useRoute = (includeProject = true) => {
     const { projectId = '' } = useParams()
@@ -315,6 +316,10 @@ export const createRouter = ({
                             {
                                 path: 'locales',
                                 element: <Locales />,
+                            },
+                            {
+                                path: 'data',
+                                element: <DataSchema />,
                             },
                             {
                                 path: 'api-keys',
