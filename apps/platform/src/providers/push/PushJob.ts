@@ -1,11 +1,5 @@
-import { EncodedJob, Job } from '../../queue'
-import { PushTemplate } from '../../render/Template'
-import { MessageTrigger } from '../MessageTrigger'
-import PushError from './PushError'
-import { disableNotifications } from '../../users/UserRepository'
-import { updateSendState } from '../../campaigns/CampaignService'
-import { failSend, finalizeSend, loadSendJob, messageLock, prepareSend } from '../MessageTriggerService'
 import { loadPushChannel } from '.'
+import { updateSendState } from '../../campaigns/CampaignService'
 import { releaseLock } from '../../core/Lock'
 import { EventPostJob } from '../../jobs'
 import { EncodedJob, Job } from '../../queue'
@@ -13,7 +7,7 @@ import { PushTemplate } from '../../render/Template'
 import { getPushDevicesForUser } from '../../users/DeviceRepository'
 import { disableNotifications } from '../../users/UserRepository'
 import { MessageTrigger } from '../MessageTrigger'
-import { finalizeSend, loadSendJob, MessageContextHydrated, messageLock, prepareSend } from '../MessageTriggerService'
+import { failSend, finalizeSend, loadSendJob, MessageContextHydrated, messageLock, prepareSend } from '../MessageTriggerService'
 import PushError from './PushError'
 
 export default class PushJob extends Job {
@@ -27,7 +21,7 @@ export default class PushJob extends Job {
         const data = await loadSendJob<PushTemplate>(trigger)
         if (!data) return
 
-        const { campaign, template, user, project } = data
+        const { campaign, template, user, project, context } = data
         const devices = await getPushDevicesForUser(project.id, user.id)
 
         // Load email channel so its ready to send

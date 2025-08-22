@@ -300,8 +300,7 @@ export const sendCampaignJob = ({ campaign, user, reference_type, reference_id }
         in_app: InAppJob.from(body),
     }
     const job = channels[campaign.channel]
-    job.jobId(`sid_${campaign.id}_${body.user_id}_${body.reference_id}`)
-
+    job.deduplicationKey(`sid_${campaign.id}_${body.user_id}_${body.reference_id}`)
     return job
 }
 
@@ -499,17 +498,17 @@ const recipientClickhouseQuery = async (campaign: Campaign) => {
 
     const channelClause = () => {
         if (campaign.channel === 'email') {
-            return "(users.email != '' AND users.email IS NOT NULL)"
+            return ["(users.email != '' AND users.email IS NOT NULL)"]
         } else if (campaign.channel === 'text') {
-            return "(users.phone != '' AND users.phone IS NOT NULL)"
+            return ["(users.phone != '' AND users.phone IS NOT NULL)"]
         } else if (campaign.channel === 'push') {
-            return '(users.has_push_device = 1)'
+            return ['(users.has_push_device = 1)']
         }
-        return ''
+        return []
     }
 
     const parts = [
-        channelClause(),
+        ...channelClause(),
         `NOT has(unsubscribe_ids, ${campaign.subscription_id})`,
     ]
     if (campaign.exclusion_list_ids?.length) {
