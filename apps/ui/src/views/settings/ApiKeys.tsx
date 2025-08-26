@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useState, MouseEvent } from 'react'
 import api from '../../api'
 import { ProjectContext } from '../../contexts'
 import { ProjectApiKey, projectRoles } from '../../types'
@@ -30,10 +30,10 @@ export default function ProjectApiKeys() {
         }
     }
 
-    const handleCopy = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, value: string) => {
-        await navigator.clipboard.writeText(value)
+    const handleCopy = async (event: MouseEvent<HTMLButtonElement>, value: string) => {
         event.preventDefault()
         event.stopPropagation()
+        await navigator.clipboard.writeText(value)
         toast.success('Copied API Key')
     }
 
@@ -61,7 +61,7 @@ export default function ProjectApiKeys() {
                         cell: ({ item }) => (
                             <div className="cell-content">
                                 {item.value}
-                                <Button icon={<CopyIcon />} size="small" variant="plain" onClickCapture={async (e) => await handleCopy(e, item.value)} />
+                                <Button icon={<CopyIcon />} size="small" variant="plain" onClick={async (e) => await handleCopy(e, item.value)} />
                             </div>
                         ),
                     },

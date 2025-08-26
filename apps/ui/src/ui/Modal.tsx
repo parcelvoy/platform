@@ -46,9 +46,9 @@ export default function Modal({
                     leaveFrom="transition-leave-from"
                     leaveTo="transition-leave-to"
                 >
-                    <div className="modal-overlay" />
+                    <Dialog.Overlay className="modal-overlay" style={{ zIndex }} />
                 </Transition.Child>
-                <div className="modal-wrapper">
+                <div className="modal-wrapper" style={{ zIndex: zIndex + 1 }}>
                     <Transition.Child
                         as={Fragment}
                         enter="transition-enter"

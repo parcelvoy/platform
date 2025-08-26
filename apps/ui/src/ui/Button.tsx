@@ -1,4 +1,4 @@
-import { forwardRef, PropsWithChildren, Ref } from 'react'
+import { forwardRef, MouseEvent, PropsWithChildren, Ref } from 'react'
 import clsx from 'clsx'
 import { Link, To } from 'react-router'
 import './Button.css'
@@ -15,7 +15,7 @@ type BaseButtonProps = PropsWithChildren<{
 }> & JSX.IntrinsicElements['button']
 
 type ButtonProps = {
-    onClick?: () => void
+    onClick?: (event: MouseEvent<HTMLButtonElement>) => void
     type?: 'button' | 'submit'
 } & BaseButtonProps
 

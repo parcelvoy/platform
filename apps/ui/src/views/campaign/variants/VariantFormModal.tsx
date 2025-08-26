@@ -33,7 +33,12 @@ export default function VariantFormModal({ variant, onClose, campaign, onCreate 
             })
 
         const newCampaign = { ...campaign }
-        newCampaign.templates.push(template)
+        const existing = newCampaign.templates.findIndex(t => t.id === template.id)
+        if (existing > -1) {
+            newCampaign.templates[existing] = template
+        } else {
+            newCampaign.templates.push(template)
+        }
         onCreate(newCampaign, template)
         onClose()
     }
@@ -42,9 +47,10 @@ export default function VariantFormModal({ variant, onClose, campaign, onCreate 
         <Modal title={variant?.id ? t('variant_update') : t('variant_create')}
             open={!!variant}
             onClose={() => onClose()}
-            zIndex={1000}>
+            zIndex={2000}>
             <FormWrapper<VariantUpdateParams>
                 onSubmit={async (params) => { await handleSubmitVariant(params) }}
+                defaultValues={variant}
                 submitLabel={variant?.id ? t('variant_update') : t('variant_create')}>
                 {form => <>
                     <TextInput.Field

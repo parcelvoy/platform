@@ -1,31 +1,39 @@
-import { Campaign, VariantUpdateParams } from '../../../types'
+import { Campaign, Template, VariantUpdateParams } from '../../../types'
 import Modal from '../../../ui/Modal'
 import { DataTable } from '../../../ui/DataTable'
 import Button from '../../../ui/Button'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import api from '../../../api'
 import { TemplateContext } from '../../../contexts'
 import { useTranslation } from 'react-i18next'
+import VariantFormModal from './VariantFormModal'
 
 interface VariantEditParams {
     open: boolean
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     setCampaign: (campaign: Campaign) => void
-    onSelectVariant: (template: VariantUpdateParams) => void
 }
 
-export default function VariantListModal({ open, setIsOpen, campaign, setCampaign, onSelectVariant }: VariantEditParams) {
+export default function VariantListModal({ open, setIsOpen, campaign, setCampaign }: VariantEditParams) {
     const { t } = useTranslation()
-    const { variants } = useContext(TemplateContext)
+    const { variants, setTemplate } = useContext(TemplateContext)
+    const [editVariant, setEditVariant] = useState<VariantUpdateParams | undefined>()
 
     const handleRemoveVariant = async (id: number) => {
-        if (!confirm(t('remove_locale_warning'))) return
+        if (!confirm(t('variant_remove_warning'))) return
         await api.templates.delete(campaign.project_id, id)
 
         const templates = campaign.templates.filter(template => template.id !== id)
         const newCampaign = { ...campaign, templates }
         setCampaign(newCampaign)
+        setTemplate(templates[0])
+    }
+
+    const handleCreateVariant = async (campaign: Campaign, template: Template) => {
+        setCampaign(campaign)
+        setTemplate(template)
+        setEditVariant(undefined)
     }
 
     return (
@@ -36,7 +44,7 @@ export default function VariantListModal({ open, setIsOpen, campaign, setCampaig
             <DataTable
                 items={variants}
                 itemKey={({ item }) => item.id}
-                onSelectRow={(item) => onSelectVariant(item)}
+                onSelectRow={(item) => setEditVariant(item)}
                 columns={[
                     {
                         key: 'label',
@@ -51,15 +59,28 @@ export default function VariantListModal({ open, setIsOpen, campaign, setCampaig
                             <Button
                                 size="small"
                                 variant="destructive"
-                                onClick={async () => await handleRemoveVariant(item.id)}>
+                                onClick={async (event) => {
+                                    event.preventDefault()
+                                    event.stopPropagation()
+                                    await handleRemoveVariant(item.id)
+                                }}>
                                 {t('delete')}
                             </Button>
                         ),
                     },
                 ]} />
             <div className="modal-footer">
-                <Button size="small" onClick={() => onSelectVariant({ name: '' })}>{t('variant_add')}</Button>
+                <Button size="small" onClick={() => setEditVariant({ name: '' })}>{t('variant_add')}</Button>
             </div>
+
+            <VariantFormModal
+                variant={editVariant}
+                onClose={() => {
+                    console.log('closing form')
+                    setEditVariant(undefined)
+                }}
+                campaign={campaign}
+                onCreate={handleCreateVariant} />
         </Modal>
     )
 }

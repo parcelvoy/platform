@@ -403,6 +403,7 @@
     "variant_add": "Add Variant",
     "variant_create": "Create Variant",
     "variant_update": "Edit Variant",
+    "variant_remove_warning": "Are you sure you want to delete this variant? The template cannot be recovered.",
     "variants": "Variants",
     "view_all": "View All",
     "visibility": "Visibility",
