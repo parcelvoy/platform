@@ -1,7 +1,5 @@
-import { ReactNode, useContext, useState } from 'react'
-import { Link } from 'react-router'
+import { useContext, useState } from 'react'
 import { CampaignContext, ProjectContext } from '../../contexts'
-import { Journey, List } from '../../types'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import { InfoTable } from '../../ui/InfoTable'
@@ -14,7 +12,7 @@ import ChannelTag from './ChannelTag'
 import CodeExample from '../../ui/CodeExample'
 import { env } from '../../config/env'
 import { useTranslation } from 'react-i18next'
-import { Tag } from '../../ui'
+import { DelimitedJourneys, DelimitedLists } from './ui/DelimitedItems'
 
 export default function CampaignOverview() {
     const [project] = useContext(ProjectContext)
@@ -22,47 +20,6 @@ export default function CampaignOverview() {
     const [preferences] = useContext(PreferencesContext)
     const [campaign, setCampaign] = useContext(CampaignContext)
     const [isEditOpen, setIsEditOpen] = useState(false)
-
-    interface DelimitedItemParams {
-        items?: any[]
-        delimiter?: ReactNode
-        mapper: (item: any) => { id: string | number, title: string, url: string }
-    }
-    const DelimitedItems = ({ items, delimiter = ' ', mapper }: DelimitedItemParams) => {
-        if (!items || items?.length === 0) return <>&#8211;</>
-        return <div className="tag-list">
-            {items?.map<ReactNode>(
-                item => {
-                    const { id, title, url } = mapper(item)
-                    return (
-                        <Tag variant="plain" key={id}><Link to={url}>{title}</Link></Tag>
-                    )
-                },
-            )?.reduce((prev, curr) => prev ? [prev, delimiter, curr] : curr, '')}
-        </div>
-    }
-
-    const DelimitedJourneys = ({ journeys }: { journeys?: Journey[] }) => {
-        return DelimitedItems({
-            items: journeys,
-            mapper: (journey) => ({
-                id: journey.id,
-                title: journey.name,
-                url: `/projects/${project.id}/journeys/${journey.id}`,
-            }),
-        })
-    }
-
-    const DelimitedLists = ({ lists }: { lists?: List[] }) => {
-        return DelimitedItems({
-            items: lists,
-            mapper: (list) => ({
-                id: list.id,
-                title: list.name,
-                url: `/projects/${project.id}/lists/${list.id}`,
-            }),
-        })
-    }
 
     const canEdit = campaign.type === 'trigger' || campaign.state === 'draft' || campaign.state === 'aborted'
 

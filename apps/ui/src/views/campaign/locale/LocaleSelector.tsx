@@ -1,30 +1,31 @@
 import { useContext, useState } from 'react'
-import { TemplateContext } from '../../contexts'
-import { Campaign, LocaleOption, UseStateContext } from '../../types'
-import Button from '../../ui/Button'
-import ButtonGroup from '../../ui/ButtonGroup'
-import { SingleSelect } from '../../ui/form/SingleSelect'
-import LocaleEditModal from './LocaleEditModal'
+import { TemplateContext } from '../../../contexts'
+import { Campaign, LocaleOption, UseStateContext } from '../../../types'
+import Button from '../../../ui/Button'
+import ButtonGroup from '../../../ui/ButtonGroup'
+import { SingleSelect } from '../../../ui/form/SingleSelect'
+import LocaleListModal from './LocaleListModal'
 import { useNavigate } from 'react-router'
-import TemplateCreateModal from './TemplateCreateModal'
+import TemplateCreateModal from '../TemplateCreateModal'
 import { useTranslation } from 'react-i18next'
 
 interface LocaleSelectorParams {
-    campaignState: UseStateContext<Campaign>
     showAddState?: UseStateContext<boolean>
 }
 
-export default function LocaleSelector({
-    campaignState,
-    showAddState,
-}: LocaleSelectorParams) {
+export default function LocaleSelector({ showAddState }: LocaleSelectorParams) {
     const { t } = useTranslation()
     const [editOpen, setEditOpen] = useState(false)
     const [addOpen, setAddOpen] = showAddState ?? useState(false)
-    const [campaign, setCampaign] = campaignState
     const navigate = useNavigate()
 
-    const { currentLocale, locales, setTemplate } = useContext(TemplateContext)
+    const {
+        campaign,
+        setCampaign,
+        currentLocale,
+        locales,
+        setTemplate,
+    } = useContext(TemplateContext)
 
     const handleTemplateCreate = async (campaign: Campaign, locale: LocaleOption) => {
         setCampaign(campaign)
@@ -69,11 +70,9 @@ export default function LocaleSelector({
                 )
             }
         </ButtonGroup>
-        <LocaleEditModal
+        <LocaleListModal
             open={editOpen}
             setIsOpen={setEditOpen}
-            campaign={campaign}
-            setCampaign={setCampaign}
             setAddOpen={setAddOpen} />
         <TemplateCreateModal
             open={addOpen}

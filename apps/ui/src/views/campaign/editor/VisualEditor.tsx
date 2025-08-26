@@ -4,7 +4,7 @@ import grapesJS, { Editor } from 'grapesjs'
 import grapesJSMJML from 'grapesjs-mjml'
 import { useEffect, useState } from 'react'
 import { Font, Resource, Template } from '../../../types'
-import ImageGalleryModal, { ImageUpload } from '../ImageGalleryModal'
+import ImageGalleryModal, { ImageUpload } from './ImageGalleryModal'
 
 interface GrapesAssetManagerProps {
     event: 'open' | 'close'

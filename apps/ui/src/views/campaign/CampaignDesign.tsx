@@ -1,17 +1,15 @@
 import { useContext, useState } from 'react'
-import { CampaignContext, LocaleContext, TemplateContext } from '../../contexts'
+import { useTranslation } from 'react-i18next'
+import { TemplateContext } from '../../contexts'
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
-import LocaleSelector from './LocaleSelector'
+import LocaleSelector from './locale/LocaleSelector'
 import TemplateDetail from './TemplateDetail'
-import { useTranslation } from 'react-i18next'
-import VariantSelector from './VariantSelector'
+import VariantSelector from './variants/VariantSelector'
 
 export default function CampaignDesign() {
     const { t } = useTranslation()
-    const campaignState = useContext(CampaignContext)
-    const [{ currentLocale }] = useContext(LocaleContext)
     const { currentTemplate, templates } = useContext(TemplateContext)
     const showAddState = useState(false)
 
@@ -19,20 +17,15 @@ export default function CampaignDesign() {
         <>
             <Heading title={t('design')} size="h3" actions={
                 <>
-                    <VariantSelector
-                        campaignState={campaignState}
-                        showAddState={showAddState} />
-                    <LocaleSelector
-                        campaignState={campaignState}
-                        showAddState={showAddState} />
+                    <VariantSelector />
+                    <LocaleSelector showAddState={showAddState} />
                 </>
             } />
-            {currentTemplate?.id}
             {templates.filter(template => template.id === currentTemplate?.id)
                 .map(template => (
                     <TemplateDetail template={template} key={template.id} />
                 ))}
-            {!currentLocale
+            {!currentTemplate
                 && <Alert
                     variant="plain"
                     title={t('add_template')}

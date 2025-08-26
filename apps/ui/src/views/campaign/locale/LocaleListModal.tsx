@@ -1,25 +1,25 @@
-import { Campaign } from '../../types'
-import Modal from '../../ui/Modal'
-import { DataTable } from '../../ui/DataTable'
-import Button from '../../ui/Button'
+import Modal from '../../../ui/Modal'
+import { DataTable } from '../../../ui/DataTable'
+import Button from '../../../ui/Button'
 import { useContext } from 'react'
-import api from '../../api'
-import { LocaleContext } from '../../contexts'
-import { localeOption } from './CampaignDetail'
-import { languageName } from '../../utils'
+import api from '../../../api'
+import { languageName } from '../../../utils'
 import { useTranslation } from 'react-i18next'
+import { TemplateContext } from '../../../contexts'
 
 interface EditLocalesParams {
     open: boolean
     setIsOpen: (state: boolean) => void
-    campaign: Campaign
-    setCampaign: (campaign: Campaign) => void
     setAddOpen: (state: boolean) => void
 }
 
-export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaign, setAddOpen }: EditLocalesParams) {
+export default function EditLocalesModal({ open, setIsOpen, setAddOpen }: EditLocalesParams) {
     const { t } = useTranslation()
-    const [{ allLocales }, setLocale] = useContext(LocaleContext)
+    const {
+        campaign,
+        setCampaign,
+        locales,
+    } = useContext(TemplateContext)
 
     async function handleRemoveLocale(locale: string) {
         if (!confirm(t('remove_locale_warning'))) return
@@ -29,12 +29,6 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
         const templates = campaign.templates.filter(template => template.id !== id)
         const newCampaign = { ...campaign, templates }
         setCampaign(newCampaign)
-
-        const template = templates[0]
-        setLocale({
-            currentLocale: template ? localeOption(template.locale) : undefined,
-            allLocales: allLocales.filter(item => item.key !== locale),
-        })
     }
 
     return (
@@ -43,7 +37,7 @@ export default function EditLocalesModal({ open, setIsOpen, campaign, setCampaig
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
-                items={allLocales}
+                items={locales}
                 itemKey={({ item }) => item.key}
                 columns={[
                     {

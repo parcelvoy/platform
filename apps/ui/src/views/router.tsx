@@ -233,7 +233,7 @@ export const createRouter = ({
                         path: 'campaigns/:entityId/editor',
                         apiPath: api.campaigns,
                         context: CampaignContext,
-                        element: (<EmailEditor />),
+                        element: <EmailEditor />,
                     }),
                     createStatefulRoute({
                         path: 'journeys',

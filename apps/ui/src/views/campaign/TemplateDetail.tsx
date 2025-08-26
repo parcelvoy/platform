@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { CampaignContext, ProjectContext } from '../../contexts'
+import { CampaignContext, ProjectContext, TemplateContext } from '../../contexts'
 import Button, { LinkButton } from '../../ui/Button'
 import { Column, Columns } from '../../ui/Columns'
 import { UseFormReturn } from 'react-hook-form'
@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next'
 
 const EmailTable = ({ data }: { data: EmailTemplateData }) => {
     const { t } = useTranslation()
+    const { currentTemplate, variants } = useContext(TemplateContext)
     const validate = (field: string, value: string | undefined, required = true) => {
         if (!value && required) return <Tag variant="warn">{t('missing')}</Tag>
         if (['cc', 'bcc', 'reply_to', 'from_email'].includes(field) && value && !value.includes('@')) {
@@ -28,6 +29,7 @@ const EmailTable = ({ data }: { data: EmailTemplateData }) => {
 
     return <>
         <InfoTable rows={{
+            ...variants.length ? { [t('variant')]: currentTemplate?.name } : {},
             [t('from_email')]: validate('from_email', data.from?.address),
             [t('from_name')]: validate('from_name', data.from?.name),
             [t('reply_to')]: validate('reply_to', data.reply_to, false),
@@ -223,7 +225,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
 
                 <Column fullscreen={true}>
                     <Heading title={t('design')} size="h4" actions={
-                        type === 'email' && campaign.state !== 'finished' && <LinkButton size="small" variant="secondary" to={`../editor?locale=${template.locale}`}>{t('edit_design')}</LinkButton>
+                        type === 'email' && campaign.state !== 'finished' && <LinkButton size="small" variant="secondary" to={`../editor?template=${template.id}`}>{t('edit_design')}</LinkButton>
                     } />
                     <Preview template={{ type, data }} />
                 </Column>
@@ -235,7 +237,7 @@ export default function TemplateDetail({ template }: TemplateDetailProps) {
             >
                 <FormWrapper<TemplateUpdateParams>
                     onSubmit={handleTemplateSave}
-                    defaultValues={{ type, data }}
+                    defaultValues={{ data }}
                     submitLabel="Save"
                 >
                     {form => <>

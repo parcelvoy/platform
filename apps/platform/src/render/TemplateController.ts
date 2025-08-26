@@ -130,6 +130,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
                 type: 'string',
                 enum: ['email'],
             },
+            name: { type: 'string', nullable: true },
             campaign_id: { type: 'integer' },
             locale: { type: 'string' },
             data: templateDataEmailParams as any,
@@ -144,6 +145,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
                 type: 'string',
                 enum: ['text'],
             },
+            name: { type: 'string', nullable: true },
             campaign_id: { type: 'integer' },
             locale: { type: 'string' },
             data: templateDataTextParams as any,
@@ -158,6 +160,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
                 type: 'string',
                 enum: ['push'],
             },
+            name: { type: 'string', nullable: true },
             campaign_id: { type: 'integer' },
             locale: { type: 'string' },
             data: templateDataPushParams as any,
@@ -172,6 +175,7 @@ const templateCreateParams: JSONSchemaType<TemplateParams> = {
                 type: 'string',
                 enum: ['webhook'],
             },
+            name: { type: 'string', nullable: true },
             campaign_id: { type: 'integer' },
             locale: { type: 'string' },
             data: templateDataWebhookParams as any,
@@ -249,7 +253,8 @@ const templateUpdateParams: JSONSchemaType<TemplateUpdateParams> = {
     }],
 }
 router.patch('/:templateId', async ctx => {
-    const payload = validate(templateUpdateParams, ctx.request.body)
+    const body = { ...ctx.request.body, type: ctx.state.template!.type }
+    const payload = validate(templateUpdateParams, body)
     ctx.body = await updateTemplate(ctx.state.template!.id, payload)
 })
 

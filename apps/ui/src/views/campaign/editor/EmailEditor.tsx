@@ -1,29 +1,30 @@
 import { SetStateAction, Suspense, lazy, useContext, useEffect, useState } from 'react'
-import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext } from '../../../contexts'
+import { CampaignContext, ProjectContext, TemplateContext } from '../../../contexts'
 import './EmailEditor.css'
 import Button, { LinkButton } from '../../../ui/Button'
 import api from '../../../api'
-import { Campaign, Resource, Template } from '../../../types'
+import { Resource, Template } from '../../../types'
 import { useBlocker, useNavigate } from 'react-router'
-import { localeState } from '../CampaignDetail'
 import Modal from '../../../ui/Modal'
 import HtmlEditor from './HtmlEditor'
-import LocaleSelector from '../LocaleSelector'
+import LocaleSelector from '../locale/LocaleSelector'
 import { toast } from 'react-hot-toast/headless'
 import { QuestionIcon } from '../../../ui/icons'
 import { useTranslation } from 'react-i18next'
-import ResourceModal from '../ResourceModal'
+import ResourceModal from './ResourceModal'
+import { TemplateContextProvider } from '../TemplateContextProvider'
+import VariantSelector from '../variants/VariantSelector'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))
 
-export default function EmailEditor() {
+function EmailEditor() {
+
     const navigate = useNavigate()
     const { t } = useTranslation()
     const [project] = useContext(ProjectContext)
-    const [campaign, setCampaign] = useContext(CampaignContext)
+    const { campaign, setCampaign, currentTemplate } = useContext(TemplateContext)
     const { templates } = campaign
 
-    const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
     const [resources, setResources] = useState<Resource[]>([])
 
     const [template, setTemplate] = useState<Template | undefined>(templates[0])
@@ -50,10 +51,10 @@ export default function EmailEditor() {
         }
     }, [blocker.state])
 
-    async function handleTemplateSave({ id, type, data }: Template) {
+    async function handleTemplateSave({ id, data }: Template) {
         setIsSaving(true)
         try {
-            const value = await api.templates.update(project.id, id, { type, data })
+            const value = await api.templates.update(project.id, id, { data })
 
             const newCampaign = { ...campaign }
             newCampaign.templates = templates.map(obj => obj.id === id ? value : obj)
@@ -70,73 +71,74 @@ export default function EmailEditor() {
         setTemplate(change)
     }
 
-    const campaignChange = (change: SetStateAction<Campaign>) => {
-        setCampaign(change)
-    }
+    return (
+        <Modal
+            size="fullscreen"
+            title={campaign.name}
+            open
+            onClose={async () => {
+                await navigate(`../campaigns/${campaign.id}/design?template=${currentTemplate?.id}`)
+            }}
+            actions={
+                <>
+                    <Button
+                        size="small"
+                        variant="secondary"
+                        onClick={() => setShowConfig(true)}
+                    >Config</Button>
+                    <LinkButton
+                        icon={<QuestionIcon />}
+                        variant="secondary"
+                        size="small"
+                        to="https://docs.parcelvoy.com/how-to/campaigns/templates"
+                        target="_blank" />
+                    <VariantSelector />
+                    <LocaleSelector />
+                    {template && (
+                        <Button
+                            size="small"
+                            isLoading={isSaving}
+                            onClick={async () => await handleTemplateSave(template)}
+                        >{t('template_save')}</Button>
+                    )}
+                </>
+            }
+        >
+            {currentTemplate && <section className="email-editor">
+                {currentTemplate?.data.editor === 'visual'
+                    ? (
+                        <Suspense key={currentTemplate.id} fallback={null}>
+                            <VisualEditor
+                                template={currentTemplate}
+                                setTemplate={handleTemplateChange}
+                                resources={resources}
+                            />
+                        </Suspense>
+                    )
+                    : <HtmlEditor
+                        template={currentTemplate}
+                        key={currentTemplate.id}
+                        setTemplate={handleTemplateChange} />
+                }
+            </section>}
 
+            <ResourceModal
+                open={showConfig}
+                onClose={() => setShowConfig(false)}
+                resources={resources}
+                setResources={setResources}
+            />
+        </Modal>
+    )
+}
+
+export default function EmailEditorWrapper() {
+    const [campaign, setCampaign] = useContext(CampaignContext)
     return (
         <>
-            <LocaleContext.Provider value={[locale, setLocale]}>
-                <Modal
-                    size="fullscreen"
-                    title={campaign.name}
-                    open
-                    onClose={async () => {
-                        await navigate(`../campaigns/${campaign.id}/design?locale=${locale.currentLocale?.key}`)
-                    }}
-                    actions={
-                        <>
-                            <Button
-                                size="small"
-                                variant="secondary"
-                                onClick={() => setShowConfig(true)}
-                            >Config</Button>
-                            <LinkButton
-                                icon={<QuestionIcon />}
-                                variant="secondary"
-                                size="small"
-                                to="https://docs.parcelvoy.com/how-to/campaigns/templates"
-                                target="_blank" />
-                            <LocaleSelector campaignState={[campaign, campaignChange]} />
-                            {template && (
-                                <Button
-                                    size="small"
-                                    isLoading={isSaving}
-                                    onClick={async () => await handleTemplateSave(template)}
-                                >{t('template_save')}</Button>
-                            )}
-                        </>
-                    }
-                >
-                    <section className="email-editor">
-                        {templates.filter(template => template.locale === locale.currentLocale?.key)
-                            .map(template => (
-                                template.data.editor === 'visual'
-                                    ? (
-                                        <Suspense key={template.id} fallback={null}>
-                                            <VisualEditor
-                                                template={template}
-                                                setTemplate={handleTemplateChange}
-                                                resources={resources}
-                                            />
-                                        </Suspense>
-                                    )
-                                    : <HtmlEditor
-                                        template={template}
-                                        key={template.id}
-                                        setTemplate={handleTemplateChange} />
-                            ))
-                        }
-                    </section>
-
-                    <ResourceModal
-                        open={showConfig}
-                        onClose={() => setShowConfig(false)}
-                        resources={resources}
-                        setResources={setResources}
-                    />
-                </Modal>
-            </LocaleContext.Provider>
+            <TemplateContextProvider campaign={campaign} setCampaign={setCampaign}>
+                <EmailEditor />
+            </TemplateContextProvider>
         </>
     )
 }

@@ -2,85 +2,25 @@ import Button from '../../ui/Button'
 import PageContent from '../../ui/PageContent'
 import { Outlet, useNavigate } from 'react-router'
 import { NavigationTabs } from '../../ui/Tabs'
-import { useContext, useEffect, useState } from 'react'
-import { CampaignContext, LocaleContext, LocaleSelection, ProjectContext, TemplateContext } from '../../contexts'
-import { checkProjectRole, languageName } from '../../utils'
-import { Campaign, LocaleOption, Template } from '../../types'
+import { useContext, useState } from 'react'
+import { CampaignContext, ProjectContext } from '../../contexts'
+import { checkProjectRole } from '../../utils'
 import api from '../../api'
 import { CampaignTag } from './Campaigns'
-import LaunchCampaign from './LaunchCampaign'
+import LaunchCampaign from './launch/LaunchCampaign'
 import { ArchiveIcon, DuplicateIcon, ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
 import { useTranslation } from 'react-i18next'
 import { Menu, MenuItem } from '../../ui'
-
-export interface LocaleParams {
-    locale: string
-    data: {
-        editor: string
-    }
-}
-
-export const localeOption = (locale: string): LocaleOption => {
-    const language = languageName(locale)
-    return {
-        key: locale,
-        label: language ? `${language} (${locale})` : locale,
-    }
-}
-
-export const locales = (templates: Template[]) => {
-    const locales = [...new Set(templates.map(item => item.locale))]
-    return locales.map(locale => localeOption(locale))
-}
-
-export const localeState = (templates: Template[]) => {
-    const allLocales = locales(templates)
-
-    const url: URL = new URL(window.location.href)
-    const searchParams: URLSearchParams = url.searchParams
-    const queryLocale = searchParams.get('locale')
-    return {
-        currentLocale: allLocales.find(item => item.key === queryLocale) ?? allLocales[0],
-        allLocales: locales(templates ?? []),
-    }
-}
-
-export const createLocale = async ({ locale, data }: LocaleParams, campaign: Campaign): Promise<Template> => {
-    const baseLocale = 'en'
-    const template = campaign.templates.find(template => template.locale === baseLocale) ?? campaign.templates[0]
-    return await api.templates.create(campaign.project_id, {
-        campaign_id: campaign.id,
-        type: campaign.channel,
-        locale,
-        data: template?.data || data ? { ...template?.data, ...data } : undefined,
-    })
-}
+import { TemplateContextProvider } from './TemplateContextProvider'
 
 export default function CampaignDetail() {
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
     const navigate = useNavigate()
     const [campaign, setCampaign] = useContext(CampaignContext)
-    const { name, templates, state, send_at, progress } = campaign
-
-    const [template, setTemplate] = useState<Template | undefined>()
-
-    const [locale, setLocale] = useState<LocaleSelection>(localeState(templates ?? []))
-    useEffect(() => {
-        setLocale(localeState(templates ?? []))
-        setTemplate(templates[0])
-    }, [campaign.id])
+    const { name, state, send_at, progress } = campaign
     const [isLaunchOpen, setIsLaunchOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-
-    const templateManager = {
-        currentTemplate: template,
-        templates: campaign.templates,
-        currentLocale: template?.locale ? localeOption(template?.locale) : undefined,
-        locales: locales(campaign.templates),
-        variants: campaign.templates.filter(t => t.locale === template?.locale),
-        setTemplate,
-    }
 
     const handleDuplicate = async (id: number) => {
         const campaign = await api.campaigns.duplicate(project.id, id)
@@ -203,13 +143,10 @@ export default function CampaignDetail() {
             }
             fullscreen={true}>
             <NavigationTabs tabs={tabs} />
-            <LocaleContext.Provider value={[locale, setLocale]}>
-                <TemplateContext.Provider value={templateManager}>
-                    <Outlet />
-                </TemplateContext.Provider>
-            </LocaleContext.Provider>
-
-            <LaunchCampaign open={isLaunchOpen} onClose={setIsLaunchOpen} />
+            <TemplateContextProvider campaign={campaign} setCampaign={setCampaign}>
+                <Outlet />
+                <LaunchCampaign open={isLaunchOpen} onClose={setIsLaunchOpen} />
+            </TemplateContextProvider>
         </PageContent>
     )
 }

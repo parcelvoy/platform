@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useContext } from 'react'
 import api from '../../../api'
-import { Campaign, JourneyStepType, LocaleOption } from '../../../types'
+import { Campaign, JourneyStepType } from '../../../types'
 import { EntityIdPicker } from '../../../ui/form/EntityIdPicker'
 import { ActionStepIcon } from '../../../ui/icons'
 import { CampaignForm } from '../../campaign/CampaignForm'
@@ -10,7 +10,8 @@ import { ChannelIcon } from '../../campaign/ChannelTag'
 import Preview from '../../../ui/Preview'
 import { SingleSelect } from '../../../ui/form/SingleSelect'
 import { Heading, LinkButton } from '../../../ui'
-import { locales } from '../../campaign/CampaignDetail'
+import { TemplateContextProvider } from '../../campaign/TemplateContextProvider'
+import { TemplateContext } from '../../../contexts'
 
 interface ActionConfig {
     campaign_id: number
@@ -18,19 +19,23 @@ interface ActionConfig {
 
 const JourneyTemplatePreview = ({ campaign }: { campaign: Campaign }) => {
     const { t } = useTranslation()
-    const allLocales = locales(campaign.templates)
-    const [locale, setLocale] = useState<LocaleOption | undefined>(allLocales[0])
-    const template = campaign.templates.find(value => value.locale === locale?.key)
+    const { variants, locales, currentLocale, currentTemplate, setTemplate, setLocale } = useContext(TemplateContext)
     return <>
         <Heading
             title={t('preview')}
             size="h4"
             actions={
                 <>
-                    <SingleSelect
-                        options={allLocales}
+                    {variants.length > 1 && <SingleSelect
+                        options={variants}
                         size="small"
-                        value={locale}
+                        value={currentTemplate}
+                        onChange={(variant) => setTemplate(variant)}
+                    />}
+                    <SingleSelect
+                        options={locales}
+                        size="small"
+                        value={currentLocale}
                         onChange={(locale) => setLocale(locale)}
                     />
                     <LinkButton
@@ -43,7 +48,7 @@ const JourneyTemplatePreview = ({ campaign }: { campaign: Campaign }) => {
                 </>
             }
         />
-        {template && <Preview template={template} />}
+        {currentTemplate && <Preview template={currentTemplate} />}
     </>
 }
 
@@ -120,7 +125,9 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                     )}
                 />
 
-                {campaign && <JourneyTemplatePreview campaign={campaign} />}
+                {campaign && <TemplateContextProvider campaign={campaign} setCampaign={() => {}}>
+                    <JourneyTemplatePreview campaign={campaign} />
+                </TemplateContextProvider>}
             </>
         )
     },

@@ -1,12 +1,12 @@
 import { useContext, useMemo, useState, useEffect } from 'react'
-import { CampaignContext, LocaleContext, ProjectContext } from '../../contexts'
+import { ProjectContext, TemplateContext } from '../../contexts'
 import './CampaignPreview.css'
 import api from '../../api'
 import Preview from '../../ui/Preview'
 import { toast } from 'react-hot-toast/headless'
 import { debounce } from '../../utils'
 import Heading from '../../ui/Heading'
-import LocaleSelector from './LocaleSelector'
+import LocaleSelector from './locale/LocaleSelector'
 import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import { Column, Columns } from '../../ui/Columns'
@@ -18,6 +18,7 @@ import SourceEditor from '../../ui/SourceEditor'
 import { useTranslation } from 'react-i18next'
 import { flattenUser } from '../../ui/utils'
 import { UserLookup } from '../users/UserLookup'
+import VariantSelector from './variants/VariantSelector'
 
 interface SendProofProps extends Omit<ModalProps, 'title'> {
     type: ChannelType
@@ -46,21 +47,20 @@ export default function CampaignPreview() {
 
     const [project] = useContext(ProjectContext)
     const { t } = useTranslation()
-    const campaignState = useContext(CampaignContext)
-    const [{ currentLocale }] = useContext(LocaleContext)
+    const { currentTemplate } = useContext(TemplateContext)
     const showAddState = useState(false)
     const [isUserLookupOpen, setIsUserLookupOpen] = useState(false)
     const [templatePreviewError, setTemplatePreviewError] = useState<string | undefined>(undefined)
     const [isSendProofOpen, setIsSendProofOpen] = useState(false)
-    const template = campaignState[0].templates.find(template => template.locale === currentLocale?.key)
     const [proofResponse, setProofResponse] = useState<any>(undefined)
 
-    if (!template) {
+    if (!currentTemplate) {
         return (<>
             <Heading title={t('preview')} size="h3" actions={
-                <LocaleSelector
-                    campaignState={campaignState}
-                    showAddState={showAddState} />
+                <>
+                    <VariantSelector />
+                    <LocaleSelector showAddState={showAddState} />
+                </>
             } />
             <Alert
                 variant="plain"
@@ -71,13 +71,13 @@ export default function CampaignPreview() {
         </>)
     }
 
-    const [data, setData] = useState(template.data)
+    const [data, setData] = useState(currentTemplate.data)
     const [value, setValue] = useState<string | undefined>('{\n    "user": {},\n    "event": {}\n}')
-    useEffect(() => { handleEditorChange(value) }, [value, template])
+    useEffect(() => { handleEditorChange(value) }, [value, currentTemplate])
 
     const handleEditorChange = useMemo(() => debounce(async (value?: string) => {
         try {
-            const { data } = await api.templates.preview(project.id, template.id, JSON.parse(value ?? '{}'))
+            const { data } = await api.templates.preview(project.id, currentTemplate.id, JSON.parse(value ?? '{}'))
             setTemplatePreviewError(undefined)
             setData(data)
         } catch (error: any) {
@@ -87,11 +87,11 @@ export default function CampaignPreview() {
             }
             setTemplatePreviewError(error.message)
         }
-    }), [template])
+    }), [currentTemplate])
 
     const handleSendProof = async (recipient: string) => {
         try {
-            const response = await api.templates.proof(project.id, template.id, {
+            const response = await api.templates.proof(project.id, currentTemplate.id, {
                 variables: JSON.parse(value ?? '{}'),
                 recipient,
             })
@@ -105,7 +105,7 @@ export default function CampaignPreview() {
             return
         }
         setIsSendProofOpen(false)
-        template.type === 'webhook'
+        currentTemplate.type === 'webhook'
             ? toast.success('Webhook test has been successfully sent!')
             : toast.success('Template proof has been successfully sent!')
     }
@@ -113,9 +113,10 @@ export default function CampaignPreview() {
     return (
         <>
             <Heading title="Preview" size="h3" actions={
-                <LocaleSelector
-                    campaignState={campaignState}
-                    showAddState={showAddState} />
+                <>
+                    <VariantSelector />
+                    <LocaleSelector showAddState={showAddState} />
+                </>
             } />
             <Columns>
                 <Column fullscreen={true}>
@@ -136,7 +137,7 @@ export default function CampaignPreview() {
                 </Column>
                 <Column fullscreen={true}>
                     <Heading title="Preview" size="h4" actions={
-                        template.type === 'webhook'
+                        currentTemplate.type === 'webhook'
                             ? <Button
                                 size="small"
                                 variant="secondary"
@@ -151,7 +152,7 @@ export default function CampaignPreview() {
                         title={t('template_error')}>
                         {t('template_handlebars_error')}{templatePreviewError}
                     </Alert>}
-                    <Preview template={{ type: template.type, data }} response={proofResponse} />
+                    <Preview template={{ type: currentTemplate.type, data }} response={proofResponse} />
                 </Column>
             </Columns>
 
@@ -168,7 +169,7 @@ export default function CampaignPreview() {
                 open={isSendProofOpen}
                 onClose={setIsSendProofOpen}
                 onSubmit={handleSendProof}
-                type={template.type} />
+                type={currentTemplate.type} />
         </>
     )
 }

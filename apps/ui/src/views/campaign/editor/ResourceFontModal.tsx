@@ -1,12 +1,12 @@
-import Modal, { ModalStateProps } from '../../ui/Modal'
+import Modal, { ModalStateProps } from '../../../ui/Modal'
 import './ImageGalleryModal.css'
-import { Font, Resource } from '../../types'
+import { Font, Resource } from '../../../types'
 import { useTranslation } from 'react-i18next'
-import FormWrapper from '../../ui/form/FormWrapper'
-import TextInput from '../../ui/form/TextInput'
-import api from '../../api'
+import FormWrapper from '../../../ui/form/FormWrapper'
+import TextInput from '../../../ui/form/TextInput'
+import api from '../../../api'
 import { useContext } from 'react'
-import { ProjectContext } from '../../contexts'
+import { ProjectContext } from '../../../contexts'
 
 interface ResourceModalProps extends ModalStateProps {
     onInsert?: (resource: Resource) => void

@@ -40,19 +40,12 @@ export const getTemplate = async (id: number, projectId: number) => {
 }
 
 export const createTemplate = async (projectId: number, params: TemplateParams) => {
-    const hasLocale = await Template.exists(
-        qb => qb.where('locale', params.locale)
-            .where('project_id', projectId)
-            .where('campaign_id', params.campaign_id),
-    )
-    if (hasLocale) throw new RequestError('A template with this locale already exists.')
-
-    const template = await Template.insertAndFetch({
+    return await Template.insertAndFetch({
         ...params,
+        name: params.name ?? 'Control',
         data: params.data ?? {},
         project_id: projectId,
     })
-    return template
 }
 
 export const updateTemplate = async (templateId: number, params: TemplateUpdateParams) => {
@@ -189,4 +182,16 @@ export const templateInUserLocale = (templates: Template[], project?: Project, u
         || templates.find(item => item.locale === project?.locale)
         || templates.find(item => partialMatchLocale(item.locale, project?.locale))
         || templates[0]
+}
+
+export const templatesInUserLocale = (templates: Template[], project?: Project, user?: User) => {
+    let results = templates.filter(item => item.locale === user?.locale)
+    if (results.length) return results
+    results = templates.filter(item => partialMatchLocale(item.locale, user?.locale))
+    if (results.length) return results
+    results = templates.filter(item => item.locale === project?.locale)
+    if (results.length) return results
+    results = templates.filter(item => partialMatchLocale(item.locale, project?.locale))
+    if (results.length) return results
+    return templates
 }

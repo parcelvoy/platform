@@ -8,7 +8,10 @@ import { Database } from '../config/database'
 
 export const pluralize = (noun: string, count = 2, suffix = 's') => `${noun}${count !== 1 ? suffix : ''}`
 
-export const random = <T>(array: T[]): T => array[Math.floor(Math.random() * array.length)]
+export const random = <T>(array: T[]): T => {
+    if (array.length === 1) return array[0]
+    return array[Math.floor(Math.random() * array.length)]
+}
 
 export const cleanString = (value: string | undefined): string | undefined => {
     if (value === 'NULL' || value == null || value === 'undefined' || value === '') return undefined

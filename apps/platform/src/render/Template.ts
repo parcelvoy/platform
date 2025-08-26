@@ -10,6 +10,7 @@ import { paramsToEncodedLink } from './LinkService'
 export default class Template extends Model {
     project_id!: number
     campaign_id!: number
+    name?: string
     type!: ChannelType
     data!: Record<string, any>
     locale!: string

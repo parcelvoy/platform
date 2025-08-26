@@ -1,7 +1,6 @@
 import { Campaign, LocaleOption } from '../../types'
 import FormWrapper from '../../ui/form/FormWrapper'
 import Modal from '../../ui/Modal'
-import { LocaleParams, createLocale, localeOption } from './CampaignDetail'
 import RadioInput from '../../ui/form/RadioInput'
 import { useContext, useEffect, useState } from 'react'
 import api from '../../api'
@@ -10,12 +9,20 @@ import { SingleSelect } from '../../ui/form/SingleSelect'
 import { LinkButton } from '../../ui'
 import { useTranslation } from 'react-i18next'
 import { checkOrganizationRole } from '../../utils'
+import { localeOption } from './TemplateContextProvider'
 
 interface CreateTemplateParams {
     open: boolean
     setIsOpen: (state: boolean) => void
     campaign: Campaign
     onCreate: (campaign: Campaign, locale: LocaleOption) => void
+}
+
+interface LocaleParams {
+    locale: string
+    data: {
+        editor: string
+    }
 }
 
 export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreate }: CreateTemplateParams) {
@@ -30,11 +37,18 @@ export default function CreateTemplateModal({ open, setIsOpen, campaign, onCreat
             .catch(() => {})
     }, [])
 
-    async function handleCreateTemplate(params: LocaleParams) {
-        const template = await createLocale(params, campaign)
+    async function handleCreateTemplate({ locale, data }: LocaleParams) {
+        const clonedTemplate = campaign.templates.find(template => template.locale === 'en') ?? campaign.templates[0]
+        const template = await api.templates.create(campaign.project_id, {
+            campaign_id: campaign.id,
+            type: campaign.channel,
+            locale,
+            data: clonedTemplate?.data || data ? { ...clonedTemplate?.data, ...data } : undefined,
+        })
+
         const newCampaign = { ...campaign }
         newCampaign.templates.push(template)
-        onCreate(newCampaign, localeOption(params.locale))
+        onCreate(newCampaign, localeOption(locale))
         setIsOpen(false)
     }
 
