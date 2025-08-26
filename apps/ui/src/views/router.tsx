@@ -196,7 +196,11 @@ export const createRouter = ({
                 children: [
                     {
                         index: true,
-                        loader: async () => {
+                        loader: async ({ params: { projectId = '' } }) => {
+                            const project = await api.projects.get(projectId)
+                            if (project.role === 'support') {
+                                return redirect(`/projects/${project.id}/users`)
+                            }
                             return redirect('campaigns')
                         },
                     },
