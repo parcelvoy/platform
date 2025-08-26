@@ -30,12 +30,6 @@ export default function ProjectApiKeys() {
         }
     }
 
-    const handleCopy = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, value: string) => {
-        await navigator.clipboard.writeText(value)
-        event.stopPropagation()
-        toast.success('Copied API Key')
-    }
-
     return (
         <>
             <SearchTable
@@ -58,9 +52,19 @@ export default function ProjectApiKeys() {
                         key: 'value',
                         title: t('value'),
                         cell: ({ item }) => (
-                            <div className="cell-content">
+                            <div className="cell-content" onClick={(e) => e.stopPropagation()}>
                                 {item.value}
-                                <Button icon={<CopyIcon />} size="small" variant="plain" onClickCapture={async (e) => await handleCopy(e, item.value)} />
+                                <Button
+                                    icon={<CopyIcon />}
+                                    size="small"
+                                    variant="plain"
+                                    type="button"
+                                    onClick={() => {
+                                        void navigator.clipboard.writeText(item.value).then(() => {
+                                            toast.success('Copied API Key')
+                                        })
+                                    }}
+                                />
                             </div>
                         ),
                     },
