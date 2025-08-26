@@ -45,7 +45,7 @@ export default class Template extends Model {
 }
 
 export type TemplateParams = Omit<Template, ModelParams | 'map' | 'screenshotUrl' | 'validate' | 'requiredErrors'>
-export type TemplateUpdateParams = Pick<Template, 'type' | 'data'>
+export type TemplateUpdateParams = Pick<Template, 'type' | 'name' | 'data'>
 export type TemplateType = EmailTemplate | TextTemplate | PushTemplate | WebhookTemplate
 
 type CompiledEmail = Omit<Email, 'to' | 'headers'> & { preheader?: string }
