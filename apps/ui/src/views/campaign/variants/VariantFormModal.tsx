@@ -51,7 +51,7 @@ export default function VariantFormModal({ variant, onClose, campaign, onCreate 
             <FormWrapper<VariantUpdateParams>
                 onSubmit={async (params) => { await handleSubmitVariant(params) }}
                 defaultValues={variant}
-                submitLabel={variant?.id ? t('variant_update') : t('variant_create')}>
+                submitLabel={variant?.id ? t('variant_save') : t('variant_create')}>
                 {form => <>
                     <TextInput.Field
                         form={form}

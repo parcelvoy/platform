@@ -29,7 +29,7 @@ interface LaunchConfirmationProps {
 function LaunchConfirmation({ campaign, onSubmit }: LaunchConfirmationProps) {
     const { t } = useTranslation()
     const { variants, variantMap, locales } = useContext(TemplateContext)
-    const variantList = Object.entries(variantMap).map(([locale, variants]) => `${localeOption(locale).shortLabel} (${variants.length})`).join(', ')
+    const variantList = Object.entries(variantMap).map(([locale, variants]) => `${localeOption(locale).shortLabel} (${variants.length}x)`).join(', ')
     return <>
         <p>{t('launch_confirmation_subtitle')}</p>
         <InfoTable rows={{

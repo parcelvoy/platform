@@ -38,7 +38,7 @@ export default function VariantListModal({ open, setIsOpen, campaign, setCampaig
 
     return (
         <Modal title={t('variants')}
-            description={t('translations_description')}
+            description={t('variants_description')}
             open={open}
             onClose={() => setIsOpen(false)}>
             <DataTable
