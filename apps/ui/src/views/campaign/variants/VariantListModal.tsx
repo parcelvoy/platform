@@ -75,10 +75,7 @@ export default function VariantListModal({ open, setIsOpen, campaign, setCampaig
 
             <VariantFormModal
                 variant={editVariant}
-                onClose={() => {
-                    console.log('closing form')
-                    setEditVariant(undefined)
-                }}
+                onClose={() => setEditVariant(undefined)}
                 campaign={campaign}
                 onCreate={handleCreateVariant} />
         </Modal>

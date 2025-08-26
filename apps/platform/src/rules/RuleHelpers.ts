@@ -16,6 +16,14 @@ export const queryValue = <T>(
     return jsonpath.query(value, path).map(v => cast(v))
 }
 
+export const userPathForQuery = (path: string) => {
+    const column = path.replace('$.', '')
+    if (reservedPaths.user.includes(column)) {
+        return path
+    }
+    return '$.data' + path.replace('$', '')
+}
+
 const formattedQueryValue = (value: any) => typeof value === 'string' ? `'${value}'` : value
 
 export const queryPath = (rule: RuleTree): string => {

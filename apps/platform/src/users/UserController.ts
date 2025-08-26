@@ -15,6 +15,8 @@ import { getUserEvents } from './UserEventRepository'
 import { projectRoleMiddleware } from '../projects/ProjectService'
 import { pagedEntrancesByUser } from '../journey/JourneyRepository'
 import { removeUsers } from './UserImport'
+import { filterObjectForRulePaths } from '../projects/ProjectRulePathRepository'
+import { RulePathVisibility } from '../rules/ProjectRulePath'
 
 const router = new Router<
     ProjectState & { user?: User }
@@ -166,7 +168,11 @@ router.param('userId', async (value, ctx, next) => {
 })
 
 router.get('/:userId', async ctx => {
-    ctx.body = ctx.state.user
+    const visibilities: RulePathVisibility[] = ctx.state.projectRole === 'admin'
+        ? ['public', 'classified']
+        : ['public']
+
+    ctx.body = await filterObjectForRulePaths(ctx.state.user!, ctx.state.project.id, visibilities)
 })
 
 router.delete('/:userId', projectRoleMiddleware('editor'), async ctx => {

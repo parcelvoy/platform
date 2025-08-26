@@ -45,10 +45,7 @@ export default function VariantSelector() {
         </ButtonGroup>
         <VariantListModal
             open={isListOpen}
-            setIsOpen={(open) => {
-                console.log('closing list')
-                setIsListOpen(open)
-            }}
+            setIsOpen={(open) => setIsListOpen(open)}
             campaign={campaign}
             setCampaign={setCampaign} />
     </>
