@@ -19,16 +19,13 @@ import { loadUserStepDataMap } from '../journey/JourneyService'
 import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
 import { SubscriptionState } from '../subscriptions/Subscription'
 
-export type MessageContextHydrated = {
+interface MessageTriggerHydrated<T> {
     user: User
     journey: Record<string, unknown> // step.data_key -> user step data
     campaign: Campaign
+    template: T
     project: Project
     context: RenderContext
-}
-
-type MessageTriggerHydrated<T> = MessageContextHydrated & {
-    template: T
 }
 
 export async function loadSendJob<T extends TemplateType>({ campaign_id, user_id, reference_type, reference_id }: MessageTrigger): Promise<MessageTriggerHydrated<T> | undefined> {
@@ -159,8 +156,6 @@ export const prepareSend = async <T>(
 
 export const throttleSend = async (channel: Channel, points = 1): Promise<RateLimitResponse | undefined> => {
 
-    // Only rate limit channels that have a provider
-    if (!('provider' in channel)) return
     const provider = channel.provider
 
     // If no rate limit, just break

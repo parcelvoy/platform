@@ -3,12 +3,15 @@ import { Variables } from '../../render'
 import { InAppTemplate, PushTemplate } from '../../render/Template'
 import { PushDevice } from '../../users/Device'
 import PushChannel from '../push/PushChannel'
+import { PushProvider } from '../push/PushProvider'
 
 export default class InAppChannel {
-    readonly pushChannel: PushChannel
+    private pushChannel: PushChannel
+    readonly provider: PushProvider
     constructor(pushChannel: PushChannel) {
         if (pushChannel) {
             this.pushChannel = pushChannel
+            this.provider = pushChannel.provider
         } else {
             throw new Error('A valid push notification provider must be defined!')
         }
