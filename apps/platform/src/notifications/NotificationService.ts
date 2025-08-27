@@ -5,7 +5,8 @@ export const getNotifications = async (user: User, cursor?: string) => {
     return Notification.search({ limit: 25, cursor }, qb =>
         qb.where('project_id', user.project_id)
             .where('user_id', user.id)
-            .whereNull('read_at'),
+            .whereNull('read_at')
+            .where(q => q.whereNull('expires_at').orWhere('expires_at', '>', new Date())),
     )
 }
 
