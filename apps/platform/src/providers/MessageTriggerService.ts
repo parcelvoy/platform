@@ -1,23 +1,23 @@
-import JourneyUserStep from '../journey/JourneyUserStep'
 import App from '../app'
 import Campaign from '../campaigns/Campaign'
 import { getCampaignSend, updateSendState } from '../campaigns/CampaignService'
 import { Channel } from '../config/channels'
 import { RateLimitResponse } from '../config/rateLimit'
 import { acquireLock } from '../core/Lock'
+import JourneyProcessJob from '../journey/JourneyProcessJob'
+import { loadUserStepDataMap } from '../journey/JourneyService'
+import JourneyUserStep from '../journey/JourneyUserStep'
 import Project from '../projects/Project'
 import { EncodedJob } from '../queue'
 import { RenderContext } from '../render'
 import Template, { TemplateType } from '../render/Template'
 import { templatesInUserLocale } from '../render/TemplateService'
+import { SubscriptionState } from '../subscriptions/Subscription'
+import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
 import { User } from '../users/User'
+import { createEvent } from '../users/UserEventRepository'
 import { random, randomInt } from '../utilities'
 import { MessageTrigger } from './MessageTrigger'
-import JourneyProcessJob from '../journey/JourneyProcessJob'
-import { createEvent } from '../users/UserEventRepository'
-import { loadUserStepDataMap } from '../journey/JourneyService'
-import { getUserSubscriptionState } from '../subscriptions/SubscriptionService'
-import { SubscriptionState } from '../subscriptions/Subscription'
 
 interface MessageTriggerHydrated<T> {
     user: User
@@ -155,7 +155,6 @@ export const prepareSend = async <T>(
 }
 
 export const throttleSend = async (channel: Channel, points = 1): Promise<RateLimitResponse | undefined> => {
-
     const provider = channel.provider
 
     // If no rate limit, just break

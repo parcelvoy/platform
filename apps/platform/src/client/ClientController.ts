@@ -1,16 +1,16 @@
 import Router from '@koa/router'
-import EventPostJob from './EventPostJob'
-import { JSONSchemaType, validate } from '../core/validate'
-import { ClientIdentifyParams, ClientIdentityKeys, ClientPostEventsRequest } from './Client'
+import App from '../app'
 import { ProjectState } from '../auth/AuthMiddleware'
+import { JSONSchemaType, validate } from '../core/validate'
+import { getNotifications, readNotification } from '../notifications/NotificationService'
 import { projectMiddleware } from '../projects/ProjectController'
 import { DeviceParams } from '../users/Device'
-import UserPatchJob from '../users/UserPatchJob'
-import UserDeviceJob from '../users/UserDeviceJob'
 import UserAliasJob from '../users/UserAliasJob'
-import { getNotifications, readNotification } from '../notifications/NotificationService'
+import UserDeviceJob from '../users/UserDeviceJob'
+import UserPatchJob from '../users/UserPatchJob'
 import { getUserFromClientId } from '../users/UserRepository'
-import App from '../app'
+import { ClientIdentifyParams, ClientIdentityKeys, ClientPostEventsRequest } from './Client'
+import EventPostJob from './EventPostJob'
 
 const router = new Router<ProjectState>()
 router.use(projectMiddleware)

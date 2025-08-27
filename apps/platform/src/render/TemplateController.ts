@@ -1,15 +1,15 @@
 import Router from '@koa/router'
+import { isHandlerbarsError, Variables } from '.'
 import { ProjectState } from '../auth/AuthMiddleware'
-import { JSONSchemaType, validate } from '../core/validate'
+import { ChannelType } from '../config/channels'
+import { RequestError } from '../core/errors'
 import { searchParamsSchema } from '../core/searchParams'
+import { JSONSchemaType, validate } from '../core/validate'
+import { User } from '../users/User'
+import { UserEvent } from '../users/UserEvent'
 import { extractQueryParams } from '../utilities'
 import Template, { TemplateParams, TemplateUpdateParams } from './Template'
 import { createTemplate, deleteTemplate, getTemplate, pagedTemplates, sendProof, updateTemplate } from './TemplateService'
-import { isHandlerbarsError, Variables } from '.'
-import { User } from '../users/User'
-import { UserEvent } from '../users/UserEvent'
-import { RequestError } from '../core/errors'
-import { ChannelType } from '../config/channels'
 
 const router = new Router<
     ProjectState & { template?: Template }

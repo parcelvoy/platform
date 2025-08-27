@@ -1,13 +1,13 @@
+import { htmlToText } from 'html-to-text'
 import Render, { RenderObject, Variables, Wrap } from '.'
-import { Webhook } from '../providers/webhook/Webhook'
 import { ChannelType } from '../config/channels'
 import Model, { ModelParams } from '../core/Model'
 import { isValid, IsValidSchema } from '../core/validate'
-import { Email, NamedEmail } from '../providers/email/Email'
-import { htmlToText } from 'html-to-text'
-import { paramsToEncodedLink } from './LinkService'
 import { NotificationContent } from '../notifications/Notification'
+import { Email, NamedEmail } from '../providers/email/Email'
 import { BasePush } from '../providers/push/Push'
+import { Webhook } from '../providers/webhook/Webhook'
+import { paramsToEncodedLink } from './LinkService'
 
 export default class Template extends Model {
     project_id!: number
