@@ -1,7 +1,6 @@
 import { BaseNotification } from '../../notifications/Notification'
 
 export interface BasePush extends BaseNotification {
-    topic: string
     silent: boolean
 }
 

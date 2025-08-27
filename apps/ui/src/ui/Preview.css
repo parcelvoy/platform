@@ -170,24 +170,30 @@
 }
 
 .in-app-frame {
-    background: #010101;
-    max-width: 375px;
-    min-height: max(100%, 600px);
-    width: 125%;
-    transform: scale(0.8);
-    transform-origin: center center;
+    width: 375px;
     margin: 0;
     padding: 10px;
+}
 
-    border: 1px solid #1b1721;
-    border-radius: 45px;
-    box-shadow: inset 0 0 4px 2px #c0b7cd,inset 0 0 0 6px #342c3f;
-    aspect-ratio: 19.5 / 9;
+.in-app-frame-phone {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    overflow: hidden;
+    margin: 0;
+    aspect-ratio: 9 / 19.5;
 }
 
 .in-app-frame iframe {
+    width: 125%;
+    margin: 0;
+    padding: 0;
+    transform: scale(0.8);
+    transform-origin: center center;
     background: linear-gradient(45deg, rgba(2,0,36,1) 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
-    border-radius: 32px;
+    border: 1px solid #1b1721;
+    border-radius: 45px;
+    box-shadow: inset 0 0 4px 2px #c0b7cd,inset 0 0 0 6px #342c3f;
 }
 
 .preview.small .email-frame iframe {
@@ -225,4 +231,20 @@
     transform: scale(0.8);
     transform-origin: top left;
     width: 125%;
+}
+
+.preview.small .in-app-frame {
+    width: 100%;
+}
+
+.preview.small .in-app-frame-phone {
+    width: 125%;
+    transform: scale(0.8);
+    transform-origin: top left;
+}
+
+.preview.small .in-app-frame iframe {
+    width: 125%;
+    transform: scale(0.8);
+    transform-origin: top center;
 }

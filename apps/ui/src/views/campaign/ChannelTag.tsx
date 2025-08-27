@@ -1,5 +1,5 @@
 import { ChannelType } from '../../types'
-import { EmailIcon, PushIcon, TextIcon, WebhookIcon } from '../../ui/icons'
+import { EmailIcon, InAppIcon, PushIcon, TextIcon, WebhookIcon } from '../../ui/icons'
 import Tag, { TagProps } from '../../ui/Tag'
 import { useTranslation } from 'react-i18next'
 
@@ -9,13 +9,14 @@ interface ChannelTagParams {
 }
 
 export function ChannelIcon({ channel }: Pick<ChannelTagParams, 'channel'>) {
-    const Icon = channel === 'email'
-        ? EmailIcon
-        : channel === 'text'
-            ? TextIcon
-            : channel === 'push' || channel === 'in_app'
-                ? PushIcon
-                : WebhookIcon
+    const icons = {
+        email: EmailIcon,
+        text: TextIcon,
+        push: PushIcon,
+        webhook: WebhookIcon,
+        in_app: InAppIcon,
+    }
+    const Icon = icons[channel]
     return <Icon />
 }
 

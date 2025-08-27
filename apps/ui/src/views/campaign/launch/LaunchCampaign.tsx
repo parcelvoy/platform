@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router'
 import DateTimeField from './DateTimeField'
 import { Button, InfoTable } from '../../../ui'
 import { snakeToTitle } from '../../../utils'
-import { localeOption } from '../TemplateContextProvider'
+import { localeOption } from '../template/TemplateContextProvider'
 import { DelimitedLists } from '../ui/DelimitedItems'
 import { UseFormReturn, useWatch } from 'react-hook-form'
 
@@ -41,7 +41,7 @@ function LaunchConfirmation({ campaign, onSubmit }: LaunchConfirmationProps) {
             [t('exclusion_lists')]: DelimitedLists({ lists: campaign.exclusion_lists }),
         }} />
         <InfoTable rows={{
-            ...variants.length ? { [t('variants')]: variantList } : {},
+            ...variants.length > 1 ? { [t('variants')]: variantList } : {},
             [t('translations')]: locales.map(l => l.label).join(', '),
         }} />
         <Button variant="primary" type="submit" onClick={onSubmit}>{t(campaign.send_at ? 'reschedule' : 'launch')}</Button>

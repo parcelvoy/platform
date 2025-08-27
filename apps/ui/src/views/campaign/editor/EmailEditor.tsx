@@ -12,7 +12,7 @@ import { toast } from 'react-hot-toast/headless'
 import { QuestionIcon } from '../../../ui/icons'
 import { useTranslation } from 'react-i18next'
 import ResourceModal from './ResourceModal'
-import { TemplateContextProvider } from '../TemplateContextProvider'
+import { TemplateContextProvider } from '../template/TemplateContextProvider'
 import VariantSelector from '../variants/VariantSelector'
 
 const VisualEditor = lazy(async () => await import('./VisualEditor'))

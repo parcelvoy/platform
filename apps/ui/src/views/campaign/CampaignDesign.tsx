@@ -5,7 +5,7 @@ import Alert from '../../ui/Alert'
 import Button from '../../ui/Button'
 import Heading from '../../ui/Heading'
 import LocaleSelector from './locale/LocaleSelector'
-import TemplateDetail from './TemplateDetail'
+import TemplateDetail from './template/TemplateDetail'
 import VariantSelector from './variants/VariantSelector'
 
 export default function CampaignDesign() {

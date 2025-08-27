@@ -191,7 +191,10 @@ export class PushTemplate extends Template {
             title: Render(this.title, variables),
             body: Render(this.body, variables),
             silent: this.silent,
-            custom: { ...custom, url },
+            custom: {
+                ...custom,
+                ...url ? { url } : {},
+            },
         }
     }
 
@@ -287,19 +290,29 @@ export class WebhookTemplate extends Template {
 
 export class InAppTemplate extends Template {
     declare type: 'in_app'
-    provider_id!: number
     content!: NotificationContent
 
     parseJson(json: any) {
         super.parseJson(json)
-
-        const { provider_id, ...content } = json?.data
-        this.provider_id = provider_id
-        this.content = content
+        this.content = json?.data
     }
 
     compile(variables: Variables): NotificationContent {
-        return RenderObject(this.content, variables) as NotificationContent
+        const base = {
+            title: Render(this.content.title, variables),
+            body: Render(this.content.body, variables),
+            custom: RenderObject(this.content.custom, variables),
+        }
+
+        if (this.content.type === 'banner') {
+            return { ...base, type: 'banner' }
+        }
+
+        return {
+            ...base,
+            html: Render(this.content.html, variables),
+            type: this.content.type,
+        }
     }
 
     validate() {
@@ -307,14 +320,11 @@ export class InAppTemplate extends Template {
             type: 'object',
             required: ['type', 'title', 'body'],
             properties: {
-                type: { type: 'string' },
+                read_on_show: { type: 'boolean' },
                 title: { type: 'string' },
                 body: { type: 'string' },
             },
             additionalProperties: true,
-            errorMessage: {
-                required: this.requiredErrors('type', 'title', 'body'),
-            },
         }, this.data)
     }
 }

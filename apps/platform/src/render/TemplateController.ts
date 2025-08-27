@@ -123,7 +123,6 @@ const templateDataWebhookParams = {
 
 const templateDataInAppParams = {
     type: 'object',
-    required: ['html'],
     properties: {
         html: { type: 'string' },
         custom: {

@@ -6,7 +6,7 @@ import ButtonGroup from '../../../ui/ButtonGroup'
 import { SingleSelect } from '../../../ui/form/SingleSelect'
 import LocaleListModal from './LocaleListModal'
 import { useNavigate } from 'react-router'
-import TemplateCreateModal from '../TemplateCreateModal'
+import TemplateCreateModal from '../template/TemplateCreateModal'
 import { useTranslation } from 'react-i18next'
 
 interface LocaleSelectorParams {

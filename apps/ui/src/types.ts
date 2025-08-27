@@ -473,6 +473,7 @@ export type InAppTemplateData = {
     body: string
     custom: Record<string, string | number>
     type: NotificationType
+    read_on_view?: boolean
 } & (
     | {
         type: 'alert'

@@ -10,7 +10,7 @@ import { ChannelIcon } from '../../campaign/ChannelTag'
 import Preview from '../../../ui/Preview'
 import { SingleSelect } from '../../../ui/form/SingleSelect'
 import { Heading, LinkButton } from '../../../ui'
-import { TemplateContextProvider } from '../../campaign/TemplateContextProvider'
+import { TemplateContextProvider } from '../../campaign/template/TemplateContextProvider'
 import { TemplateContext } from '../../../contexts'
 
 interface ActionConfig {

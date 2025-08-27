@@ -12,6 +12,7 @@ type BannerNotification = BaseNotification & { type: 'banner' }
 
 interface StyledNotification extends BaseNotification {
     html: string
+    read_on_show?: boolean
 }
 
 interface AlertNotification extends StyledNotification {

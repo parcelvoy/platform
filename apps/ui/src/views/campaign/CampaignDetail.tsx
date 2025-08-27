@@ -11,7 +11,7 @@ import LaunchCampaign from './launch/LaunchCampaign'
 import { ArchiveIcon, DuplicateIcon, ForbiddenIcon, RestartIcon, SendIcon } from '../../ui/icons'
 import { useTranslation } from 'react-i18next'
 import { Menu, MenuItem } from '../../ui'
-import { TemplateContextProvider } from './TemplateContextProvider'
+import { TemplateContextProvider } from './template/TemplateContextProvider'
 
 export default function CampaignDetail() {
     const [project] = useContext(ProjectContext)

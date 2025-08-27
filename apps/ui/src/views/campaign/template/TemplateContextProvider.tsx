@@ -1,7 +1,7 @@
 import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
-import { TemplateContext } from '../../contexts'
-import { Campaign, LocaleOption, Template } from '../../types'
-import { languageName } from '../../utils'
+import { TemplateContext } from '../../../contexts'
+import { Campaign, LocaleOption, Template } from '../../../types'
+import { languageName } from '../../../utils'
 import { useSearchParams } from 'react-router'
 
 export const localeOption = (locale: string): LocaleOption => {
