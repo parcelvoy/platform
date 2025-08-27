@@ -5,6 +5,7 @@ Object {
   "from": "from",
   "html": "<html><body><a href=\\"https://google.com\\">link</a><img border=\\"0\\" width=\\"1\\" height=\\"1\\" alt=\\"\\" src=\\"https://parcelvoy.com/o?u=M8LRMWZ645&c=M8LRMWZ645&s=1\\" /></body></html>",
   "subject": "subject",
+  "silent": false,
   "text": "link [https://google.com]",
 }
 `;
@@ -14,6 +15,7 @@ Object {
   "from": "from",
   "html": "<html><body><a href=\\"https://parcelvoy.com/c?u=M8LRMWZ645&c=M8LRMWZ645&s=1&r=https%253A%252F%252Fgoogle.com\\">link</a><img border=\\"0\\" width=\\"1\\" height=\\"1\\" alt=\\"\\" src=\\"https://parcelvoy.com/o?u=M8LRMWZ645&c=M8LRMWZ645&s=1\\" /></body></html>",
   "subject": "subject",
+  "silent": false,
   "text": "link [https://google.com]",
 }
 `;
