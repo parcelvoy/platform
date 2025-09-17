@@ -211,7 +211,7 @@ Truncate a string to the specified `length`
 #### Truncate Words
 Truncate a string to have the specified number of words.
 ```handlebars
-{{ trucateWords "This is a long piece of text" 3 }} // = `This is a`
+{{ truncateWords "This is a long piece of text" 3 }} // = `This is a`
 ```
 
 ### Numbers
