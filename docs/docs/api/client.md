@@ -97,7 +97,7 @@ Body: {
 Ingest information about the users device including the push notification token used for sending push notifications.
 
 #### Endpoint
-`POST /devices`
+`POST /api/client/devices`
 
 #### Body
 - **anonymous_id** string
