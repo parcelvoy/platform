@@ -39,7 +39,7 @@ export default function Sidebar({ children, links, prepend, append }: PropsWithC
     return (
         <>
             <header className="header">
-                <Button onClick={() => setIsOpen(!isOpen)} icon={<MenuIcon />} aria-label="Menu" variant="secondary" size="small"/>
+                <Button onClick={() => setIsOpen(!isOpen)} icon={<MenuIcon />} aria-label="Menu" variant="secondary" size="small" />
                 <Link className="logo" to="/">
                     <Logo />
                 </Link>
@@ -68,7 +68,7 @@ export default function Sidebar({ children, links, prepend, append }: PropsWithC
                             <span className="profile-name">
                                 {
                                     profile.first_name
-                                        ? `${profile.first_name} ${profile.last_name}`
+                                        ? `${profile.first_name} ${profile.last_name ?? ''}`.trim()
                                         : 'User'
                                 }
                             </span>
