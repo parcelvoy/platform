@@ -38,7 +38,7 @@ export const CampaignTag = ({ state, progress, send_at }: Pick<Campaign, 'state'
     const label = state === 'aborting' && send_at ? 'rescheduling' : state
 
     return <Tag variant={variant[state]}>
-        <Translation>{ (t) => t(label) }</Translation>
+        <Translation>{(t) => t(label)}</Translation>
         {progress && ` (${percentStr})`}
     </Tag>
 }
@@ -84,7 +84,7 @@ export default function Campaigns() {
         useCallback(async params => await api.campaigns.search(project.id, params), [project.id]),
         {
             filter: {
-                type: 'blast',
+                type: 'trigger',
             },
         })
     const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -123,6 +123,7 @@ export default function Campaigns() {
             )}>
                 <SearchTable
                     {...state}
+                    emptyMessage={t('no_campaigns_found')}
                     columns={[
                         {
                             key: 'name',
@@ -131,7 +132,7 @@ export default function Campaigns() {
                             minWidth: '225px',
                             cell: ({ item: { id, name, channel } }) => (
                                 <div className="multi-cell">
-                                    { channel === 'email'
+                                    {channel === 'email'
                                         ? <PreviewImage url={apiUrl(project.id, `campaigns/${id}/preview`)} width={50} height={40}>
                                             <div className="placeholder">
                                                 <ChannelIcon channel={channel} />

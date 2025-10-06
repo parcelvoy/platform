@@ -45,6 +45,7 @@
     "campaign_list_generating": "This list is still generating or has not been published. Sending before it has completed could result in this campaign not sending to all users who will enter the list. Are you sure you want to continue?",
     "campaign_name": "Campaign Name",
     "campaign_variant_add": "Create Experiment",
+    "no_campaigns_found": "No Results, please try adjusting your search or filter criteria.",
     "campaigns": "Campaigns",
     "campaign": "Campaign",
     "cancel": "Cancel",
