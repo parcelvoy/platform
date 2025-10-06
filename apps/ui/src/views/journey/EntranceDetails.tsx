@@ -27,10 +27,11 @@ export default function EntranceDetails() {
 
     const entrance = userSteps[0]
     const error = userSteps.find(s => s.type === 'error')
+    const displayName = user.full_name ?? user.email ?? user.phone ?? user.id
 
     return (
         <PageContent
-            title={`${user.full_name} - ${journey.name}`}
+            title={`${displayName} - ${journey.name}`}
             desc={
                 <>
                     <Tag variant={error ? 'error' : entrance.ended_at ? 'success' : 'info'}>
