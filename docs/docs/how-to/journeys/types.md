@@ -20,6 +20,14 @@ sidebar_position: 1
 ## Send
 Sends are the main action you can perform inside of a journey. A send encapsulates a campaign under the hood giving you all of the same configuration you can get from a campaign. When a user reaches a send step the campaign is queued to be sent to the user.
 
+You are able to access
+
+```json
+{
+    "result": "{{{ journeys[data_key]... }}}"
+}
+```
+
 #### Parameters
 - **Name**: What you would like to call the step
 - **Data Key**: A unique key you can set to reference the result of the action ([more on that here](/how-to/journeys/data))
@@ -107,6 +115,13 @@ If you are trying to determine which of various options might perform the best, 
 ## Gate
 To split a user between paths depending on the result of a condition you can use a gate. Under the hood a gate uses the same rule builder as lists allowing you to build complex selectors targeting what a user has done (events) and properties on the user themselves. If a user matches the criteria, they are passed along to the `Yes` path, otherwise they are passed to the `No` path.
 
+Variables in templates are prefixed with `$.`. User properties can be accessed directly at the root level. Journey step data can be accessed via `$.journey[data_key]`.
+
+```
+$.email                     # The user's email address
+$.journey.webhook.updated   # The "updated" field from the "webhook" journey step
+```
+
 ![Journeys Gate](/img/journeys_gate.png)
 
 #### Parameters
@@ -123,6 +138,18 @@ Links allow you to bring a user to the start of a selected journey. This can be 
 
 ## Update
 An update step allows you to make changes to the properties on a user. This can be useful if you are wanting to mark that a user went down a given path or you want to set values on the user from the result of another step.
+
+It is possible to write Handlebars templates within the JSON that will be shallow merged into the user's profile data. The user's current profile data is available in the `user` variable. Data collected from previous journey steps can be accessed in `journey[data_key]`.
+
+```json
+{
+    "full_name": "{{{ journey.entrance.first_name }}} {{{ journey.entrance.last_name }}}"
+    "last_viewed_product": "{{{ journey.product.name }}}",
+    "last_viewed_category": "{{{ journey.product.category }}}"
+}
+```
+
+> 🚧 The merge is shallow, nested objects are fully replaced, not merged.
 
 #### Parameters
 - **Name**: What you would like to call the step

@@ -1,4 +1,4 @@
-import { TemplateEvent } from '../users/UserEvent'
+import { TemplateEvent } from 'users/UserEvent'
 import { TemplateUser, User } from '../users/User'
 import { Rule, AnyJson, RuleTree, Operator, RuleGroup, RuleType, EventRuleFrequency, EventRuleTree } from './Rule'
 import NumberRule from './NumberRule'
@@ -26,6 +26,7 @@ class Registry<T> {
 export interface RuleCheckInput {
     user: TemplateUser
     events: TemplateEvent[] // all of this user's events
+    journey: Record<string, AnyJson>
 }
 
 export interface RuleBaseParams {
@@ -39,7 +40,7 @@ export interface RuleQueryParams extends RuleBaseParams {
 
 export interface RuleCheckParams extends RuleBaseParams {
     input: RuleCheckInput // all contextual input data
-    value: Record<string, unknown> // current value to evaluate against
+    value: Record<string, AnyJson> // current value to evaluate against
 }
 
 export interface RuleCheck {
@@ -71,7 +72,15 @@ export const check = (input: RuleCheckInput, rule: RuleTree | RuleTree[]) => {
             children: rule,
         })
     }
-    return ruleRegistry.get(rule.type).check({ registry: ruleRegistry, input, rule, value: input.user })
+
+    // NOTE: we have to flatten the user object to be backwards compatible with existing rules
+    // the journey property within the user object is overwritten if defined.
+    const value = {
+        ...input.user,
+        journey: input.journey,
+    }
+
+    return ruleRegistry.get(rule.type).check({ registry: ruleRegistry, input, rule, value })
 }
 
 export const checkQuery = async (user: User, rule: RuleTree | RuleTree[]) => {

@@ -1,3 +1,4 @@
+import { AnyJson } from 'rules/Rule'
 import Model from '../core/Model'
 import { type JourneyStep } from './JourneyStep'
 
@@ -9,7 +10,7 @@ export default class JourneyUserStep extends Model {
     delay_until?: Date
     entrance_id?: number
     ended_at?: Date
-    data?: Record<string, unknown> | null
+    data?: Record<string, AnyJson> | null
     ref?: string
 
     step?: JourneyStep
@@ -20,7 +21,7 @@ export default class JourneyUserStep extends Model {
     static virtualAttributes = ['step']
 
     static getDataMap(steps: JourneyStep[], userSteps: JourneyUserStep[]) {
-        return userSteps.reduceRight<Record<string, unknown>>((a, { data, step_id }) => {
+        return userSteps.reduceRight<Record<string, AnyJson>>((a, { data, step_id }) => {
             const step = steps.find(s => s.id === step_id)
             if (data && step && !a[step.dataKey]) {
                 a[step.dataKey] = data

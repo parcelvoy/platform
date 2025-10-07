@@ -395,7 +395,7 @@
     "user_update_desc": "Make updates to a user's profile.",
     "user_update_edit_desc1": "Write a Handlebars template that renders JSON that will be shallow merged into the user's profile data.",
     "user_update_edit_desc2": " The user's current profile data is available in the ",
-    "user_update_edit_desc3": "variable, and data collected at other steps are available in ",
+    "user_update_edit_desc3": " variable, and data collected at other steps are available in ",
     "user_update_empty": "(click to see updated fields)",
     "users": "Users",
     "users_change_subscription_status": "Are you sure you want to change the status of this subscription?",

@@ -39,10 +39,8 @@ This is the base data structure available in Journey (and Send step Campaign) pr
         },
         // Send steps that use webhooks can also store the response
         "data_key_from_webhook_send": {
-            "response": {
-                "total_reward_points": 300,
-                "remaining_balance": 150
-            }
+            "total_reward_points": 300,
+            "remaining_balance": 150
         }
     }
 }
@@ -52,7 +50,7 @@ To make stored step data available to subsequent steps, specify the Data Key:
 
 ![Journey Data Key Example](/img/journeys_data_key.png)
 
-Gate steps can then access that data under `journey.DATA_KEY.*` (in this example, `journey.data_key_from_webhook_send.total_reward_points`).
+Gate steps can then access that data under `$.journey.DATA_KEY.*` (in this example, `$.journey.data_key_from_webhook_send.total_reward_points`).
 
 ![Journey Data Key Gate Example](/img/journeys_data_key_gates.png)
 
