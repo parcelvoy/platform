@@ -334,7 +334,7 @@ export const pagedUsersByStep = async (stepId: number, params: PageParams) => {
 
 export const getEntranceLog = async (entranceId: number) => {
     const userSteps = await JourneyUserStep.all(q => q
-        .where(function() {
+        .where(function () {
             return this.where('id', entranceId).orWhere('entrance_id', entranceId)
         })
         .orderBy('id', 'asc'),
@@ -364,7 +364,7 @@ export const exitUserFromJourney = async (userId: number, entranceId: number, jo
             .where('id', entranceId)
             .whereNull('ended_at')
             .where('journey_id', journeyId),
-        { ended_at: new Date() },
+        { ended_at: new Date(), delay_until: null, type: 'completed' },
     )
 }
 

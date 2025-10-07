@@ -9,7 +9,7 @@ import { UserLookup } from '../users/UserLookup'
 import { typeVariants } from './EntranceDetails'
 import { ModalProps } from '../../ui/Modal'
 import { JourneyUserStep, User } from '../../types'
-import { EditIcon } from '../../ui/icons'
+import { EditIcon, TrashIcon } from '../../ui/icons'
 import { DataTableCol } from '../../ui/DataTable'
 
 interface StepUsersProps extends Omit<ModalProps, 'title'> {
@@ -28,12 +28,20 @@ export function JourneyStepUsers({ open, onClose, stepType, stepId }: StepUsersP
         ? [{
             key: 'options',
             title: t('options'),
-            cell: ({ item: { id, user } }) => {
-                if (user) {
+            cell: ({ item: { id, user, type } }) => {
+                if (user && type !== 'completed') {
                     return (
                         <Menu size="small">
                             <MenuItem onClick={async () => await handleSkipDelay(id, user)}>
                                 <EditIcon />{t('skip_delay')}
+                            </MenuItem>
+                            <MenuItem>
+                                <Button icon={<TrashIcon />}
+                                    variant="destructive"
+                                    onClick={async () => await handleRemoveFromJourney(id, user)}
+                                    size="small">
+                                    {t('remove_from_journey')}
+                                </Button>
                             </MenuItem>
                         </Menu>
                     )
@@ -56,6 +64,11 @@ export function JourneyStepUsers({ open, onClose, stepType, stepId }: StepUsersP
 
     const handleSkipDelay = async (stepId: number, user: User) => {
         await api.journeys.users.skipDelay(projectId, journeyId, user.id, stepId)
+        await state.reload()
+    }
+
+    const handleRemoveFromJourney = async (stepId: number, user: User) => {
+        await api.journeys.users.removeFromJourney(projectId, journeyId, user.id, stepId)
         await state.reload()
     }
 

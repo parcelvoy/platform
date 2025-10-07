@@ -333,6 +333,7 @@
     "setup_integration_no_providers": "There are no providers configured for this channel. Please add a provider to continue.",
     "sign_out": "Sign Out",
     "skip_delay": "Skip Delay",
+    "remove_from_journey": "Remove from journey",
     "sms_opt_out_message": "SMS Opt Out Message",
     "sms_opt_out_message_subtitle": "Instructions on how to opt out of SMS that will be appended to every text.",
     "sms_help_message": "SMS Help Message",

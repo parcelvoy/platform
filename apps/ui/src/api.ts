@@ -221,6 +221,9 @@ const api = {
             skipDelay: async (projectId: number | string, journeyId: number | string, userId: number | string, stepId: number | string) => await client
                 .post<JourneyEntranceDetail>(`${projectUrl(projectId)}/journeys/${journeyId}/users/${userId}/steps/${stepId}/resume`)
                 .then(r => r.data),
+            removeFromJourney: async (projectId: number | string, journeyId: number | string, userId: number | string, stepId: number | string) => await client
+                .delete<number>(`${projectUrl(projectId)}/journeys/${journeyId}/users/${userId}/step/${stepId}`)
+                .then(r => r.data),
         },
     },
 

@@ -6,7 +6,7 @@ export default class JourneyUserStep extends Model {
     type!: string
     journey_id!: number
     step_id!: number
-    delay_until?: Date
+    delay_until?: Date | null
     entrance_id?: number
     ended_at?: Date
     data?: Record<string, unknown> | null

@@ -211,15 +211,15 @@ router.get('/:journeyId/steps/:stepId/users', async ctx => {
     ctx.body = await pagedUsersByStep(step.id, params)
 })
 
-router.delete('/:journeyId/users/:userId', async ctx => {
+router.delete('/:journeyId/users/:userId/step/:stepId', async ctx => {
     const user = await getUserFromContext(ctx)
     if (!user) return ctx.throw(404)
     const results = await JourneyUserStep.update(
-        q => q.where('user_id', user.id)
-            .whereNull('entrance_id')
+        q => q.where('id', parseInt(ctx.params.stepId))
+            .where('user_id', user.id)
             .whereNull('ended_at')
             .where('journey_id', ctx.state.journey!.id),
-        { ended_at: new Date() },
+        { ended_at: new Date(), delay_until: null, type: 'completed' },
     )
     ctx.body = { exits: results }
 })
