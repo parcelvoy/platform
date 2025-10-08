@@ -163,7 +163,7 @@ function JourneyStepNode({
                             project,
                             journey,
                             value: data,
-                            onChange: () => {},
+                            onChange: () => { },
                         })
                     }
                     {
@@ -451,6 +451,7 @@ export default function JourneyEditor() {
         void loadSteps()
     }, [loadSteps])
 
+    const [publishing, setPublishing] = useState(false)
     const [saving, setSaving] = useState(false)
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
     const [viewUsersStep, setViewUsersStep] = useState<null | { stepId: number, stepType: string }>(null)
@@ -473,19 +474,21 @@ export default function JourneyEditor() {
         setNodes(nodes)
     }
 
-    const saveSteps = useCallback(async () => {
+    async function saveDraft() {
+        const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
 
+        const refreshed = stepsToNodes(stepMap, {
+            setViewUsersStep,
+        })
+
+        setNodes(refreshed.nodes)
+        setEdges(refreshed.edges)
+    }
+
+    const saveSteps = useCallback(async () => {
         setSaving(true)
         try {
-            const stepMap = await api.journeys.steps.set(project.id, journey.id, nodesToSteps(nodes, edges))
-
-            const refreshed = stepsToNodes(stepMap, {
-                setViewUsersStep,
-            })
-
-            setNodes(refreshed.nodes)
-            setEdges(refreshed.edges)
-
+            await saveDraft()
             toast.success(t('journey_saved'))
         } catch (error: any) {
             toast.error(`Unable to save: ${error}`)
@@ -512,13 +515,19 @@ export default function JourneyEditor() {
 
     const publishJourney = async () => {
         if (!confirm(t('journey_publish_confirmation'))) return
-        setSaving(true)
+
+        // NOTE: we have to save the draft before publishing
+        if (hasUnsavedChanges) {
+            await saveDraft()
+        }
+
+        setPublishing(true)
         try {
             await api.journeys.publish(project.id, journey.id)
             window.location.href = `/projects/${project.id}/journeys/${journey.parent_id ?? journey.id}`
             toast.success(t('journey_published'))
         } finally {
-            setSaving(false)
+            setPublishing(false)
         }
     }
 
@@ -712,7 +721,7 @@ export default function JourneyEditor() {
                             {checkProjectRole('publisher', project.role) && (
                                 <Button
                                     onClick={publishJourney}
-                                    isLoading={saving}
+                                    isLoading={publishing}
                                     variant="secondary"
                                 >
                                     {t('publish')}
@@ -741,7 +750,7 @@ export default function JourneyEditor() {
                             {draftId
                                 ? <Button
                                     onClick={() => editDraft(draftId)}
-                                    isLoading={saving}
+                                    isLoading={publishing}
                                     variant="primary"
                                 >
                                     {t('journey_draft_edit')}
