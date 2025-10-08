@@ -109,6 +109,8 @@ function JourneyStepNode({
         )
     }
 
+    const isValid = type.validate ? type.validate(data) : true
+
     return (
         <>
             {
@@ -122,6 +124,7 @@ function JourneyStepNode({
                     type.category,
                     selected && 'selected',
                     Array.isArray(type.sources) && 'journey-step-labelled-sources',
+                    isValid ? '' : 'error',
                     editing && 'editing',
                 )}
             >
@@ -163,7 +166,7 @@ function JourneyStepNode({
                             project,
                             journey,
                             value: data,
-                            onChange: () => {},
+                            onChange: () => { },
                         })
                     }
                     {

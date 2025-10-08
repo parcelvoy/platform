@@ -77,4 +77,7 @@ export const journeyLinkStep: JourneyStepType<JourneyLinkConfig> = {
             onChange={delay => onChange({ ...value, delay }) } />
         </>
     },
+    validate: ({ target_id, delay }) => {
+        return !!target_id && !!delay
+    },
 }

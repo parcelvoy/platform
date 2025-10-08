@@ -111,7 +111,7 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                     } else {
                         s = 'once'
                     }
-                } catch {}
+                } catch { }
             }
             return (
                 <div style={{ maxWidth: 300 }}>
@@ -264,6 +264,15 @@ export const entranceStep: JourneyStepType<EntranceConfig> = {
                 }
             </>
         )
+    },
+    validate: ({ trigger, event_name, list_id, schedule }) => {
+        if (trigger === 'event') {
+            return !!event_name
+        }
+        if (trigger === 'schedule') {
+            return !!list_id && !!schedule
+        }
+        return true
     },
     hasDataKey: true,
     hideTopHandle: true,

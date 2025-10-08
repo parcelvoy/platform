@@ -81,7 +81,7 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                     {campaign?.name ?? <>&#8211;</>}
                 </div>
                 <div className="journey-step-action-preview">
-                    { campaign && template
+                    {campaign && template
                         ? <Preview template={template} size="small" />
                         : (
                             <div className="journey-step-action-preview-placeholder">{t('journey_campaign_create_preview')}</div>
@@ -125,11 +125,14 @@ export const actionStep: JourneyStepType<ActionConfig> = {
                     )}
                 />
 
-                {campaign && <TemplateContextProvider campaign={campaign} setCampaign={() => {}}>
+                {campaign && <TemplateContextProvider campaign={campaign} setCampaign={() => { }}>
                     <JourneyTemplatePreview campaign={campaign} />
                 </TemplateContextProvider>}
             </>
         )
+    },
+    validate: ({ campaign_id }) => {
+        return !!campaign_id
     },
     hasDataKey: true,
 }

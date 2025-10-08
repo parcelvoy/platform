@@ -361,6 +361,7 @@ export interface JourneyStepType<T = any, E = any> {
     hasDataKey?: boolean
     hideTopHandle?: boolean
     hideBottomHandle?: boolean
+    validate?: (data: T) => boolean
 }
 
 export interface JourneyUserStep {

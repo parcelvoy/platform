@@ -47,6 +47,7 @@ export const exitStep: JourneyStepType<ExitConfig> = {
             .map((node) => ({ id: node.id, label: entranceName(node) }))
         return (
             <SingleSelect
+                required
                 options={steps}
                 label={t('exit_entrance_label')}
                 subtitle={t('exit_entrance_desc')}
@@ -55,6 +56,9 @@ export const exitStep: JourneyStepType<ExitConfig> = {
                 toValue={x => x.id}
             />
         )
+    },
+    validate: ({ entrance_uuid }) => {
+        return !!entrance_uuid
     },
     hideBottomHandle: true,
 }

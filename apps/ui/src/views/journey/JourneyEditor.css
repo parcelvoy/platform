@@ -92,21 +92,25 @@
     color: var(--color-red-hard);
 }
 
-.component.entrance .component-handle svg, .journey-step.entrance .step-header-icon svg {
+.component.entrance .component-handle svg,
+.journey-step.entrance .step-header-icon svg {
     margin-left: -4px;
 }
 
-.component.delay .component-handle, .journey-step.delay .step-header-icon {
+.component.delay .component-handle,
+.journey-step.delay .step-header-icon {
     background-color: var(--color-yellow-soft);
     color: var(--color-yellow-hard);
 }
 
-.component.action .component-handle, .journey-step.action .step-header-icon {
+.component.action .component-handle,
+.journey-step.action .step-header-icon {
     background-color: var(--color-blue-soft);
     color: var(--color-blue-hard);
 }
 
-.component.flow .component-handle, .journey-step.flow .step-header-icon {
+.component.flow .component-handle,
+.journey-step.flow .step-header-icon {
     background-color: var(--color-green-soft);
     color: var(--color-green-hard);
 }
@@ -195,6 +199,10 @@
     box-shadow: 0px 4px 30px rgba(22, 33, 74, 0.05);
     border-radius: 8px;
     min-width: 200px;
+}
+
+.journey-step.error {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
 }
 
 .editing .journey-step {
@@ -331,7 +339,7 @@
 
 .journey-step-header .step-header-stats:hover .stat {
     color: var(--color-grey-hard);
-    
+
 }
 
 .journey-step-header .step-header-stats .stat {
